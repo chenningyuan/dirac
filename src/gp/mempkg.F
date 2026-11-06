@@ -17,6 +17,8 @@
 C
 C
 !/* Comdeck memlog */
+!261028-tsaue: store IDENT8 in WORK with TRANSFER instead of internal READ
+!              (internal I/O is very slow and MEMGET2 is called very often)
 !060316-hjaaj: for DBG_LENID check memcb1.h
 !910110-hjaaj: MEMREL: removed non-standard char. concat. in CALL MEMCHK
 !901004-hjaaj: NWNMEM introduced, no final check on NWNMEM (yet)
@@ -40,7 +42,7 @@ C
       LUEMEM = LUEME1
       NWNMEM = 0
       IDENT8 = '** KFREE'
-      READ (IDENT8,'(A8)') WIDENT_KFREE
+      WIDENT_KFREE = TRANSFER(IDENT8,WIDENT_KFREE)
       RETURN
       END
 C  /* Deck memget */
@@ -98,7 +100,7 @@ C
       CHARACTER*(*) DATA_TYPE, IDENT
       DIMENSION     WORK(*)
 C
-#include "iratdef.h"
+#include "iratdef.h" ! JJA: IRAT
 #include "memcb1.h"
 #include "logging.h"
 C
@@ -177,7 +179,7 @@ C        KFREE = 1 case, initialize memory vector info:
 C     save ident and length for new allocation
 
  7003 CONTINUE
-      READ (IDENT8,'(A8)') WORK(KFREE-LENID)
+      WORK(KFREE-LENID) = TRANSFER(IDENT8,WORK(1))
       WORK(KFREE-LENID+1) = WLREAL
 
       KBASE  = KFREE
@@ -573,7 +575,7 @@ C
       DIMENSION     WORK(*)
       LOGICAL       ALLOC
 C
-#include "iratdef.h"
+#include "iratdef.h" ! JJA: IRAT, IRAT2
 #include "memcb1.h"
 C
       IF (DATA_TYPE(1:4) .EQ. 'REAL') THEN
@@ -638,7 +640,7 @@ C     save ident and length for new allocation
 
  8013 CONTINUE
       IF (ALLOC) THEN
-         READ (IDENT8,'(A8)') WORK(KFREE-LENID)
+         WORK(KFREE-LENID) = TRANSFER(IDENT8,WORK(1))
          WORK(KFREE-LENID+1) = WLREAL
       END IF
 

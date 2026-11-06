@@ -22,7 +22,6 @@ C
 #include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
-#include "ccpar.inc"
 
       real*8,intent(inout) :: S1(ndimt1*rcw)
       real*8,intent(in)    :: TAU(ndimt2*rcw)
@@ -96,7 +95,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 C

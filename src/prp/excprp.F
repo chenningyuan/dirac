@@ -195,12 +195,8 @@ C     Written by Erik Tellgren, aug 2004
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbxqr.h"
 #include "dgroup.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dcbham.h"
 !
       LOGICAL prponly
       LOGICAL nonzeroflag
@@ -243,11 +239,8 @@ C     Written by Erik Tellgren, sep 2004
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbxqr.h"
 #include "dcbxpr.h"
-#include "dcbxrs.h"
-#include "dcbgen.h"
 #include "dgroup.h"
 C
       REAL*8 D0
@@ -264,8 +257,7 @@ C
       INTEGER leftsym,rightsym,opbsym
       INTEGER NFC,IQRF,I,J,K,JF,JB
 C
-#include "ibtfun.h"
-      MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
+      MULD2H(I,J) = IEOR(I-1,J-1) + 1
 C
       CALL QENTER('EXCPRPCALC')
 C
@@ -325,9 +317,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxqr.h"
-#include "dcbxrs.h"
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcbxpr.h"
 C
       REAL*8 D1
@@ -427,11 +417,8 @@ C     Written by Erik Tellgren, aug 2004
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbxqr.h"
-#include "dcbxrs.h"
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcbxpr.h"
 C
       LOGICAL stateOK, prponly
@@ -439,8 +426,7 @@ C
       INTEGER I,iop,ifer,ibos
       INTEGER lstsym,rstsym
       INTEGER NFC
-#include "ibtfun.h"
-      MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
+      MULD2H(I,J) = IEOR(I-1,J-1) + 1
 !     number of boson symmetries per fermion symmetry
       NFC = NBSYM / NFSYM
 !     are different left and right states allowed?
@@ -513,9 +499,6 @@ C*****************************************************************************
 #include "priunit.h"
 #include "dcbxqr.h"
 #include "dgroup.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dcbham.h"
 !
       REAL*8 D1
       PARAMETER ( D1=1.0D0 )
@@ -654,12 +637,9 @@ C     Written by Erik Tellgren, aug 2004
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbxpr.h"
 #include "dcbxqr.h"
 #include "dgroup.h"
-#include "dcborb.h"
-#include "dcbbas.h"
 #include "dcbham.h"
 !
       INTEGER tmomlist(5,MAXQR)
@@ -668,8 +648,7 @@ C***********************************************************************
       INTEGER K
       LOGICAL unique
 !
-#include "ibtfun.h"
-      MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
+      MULD2H(I,J) = IEOR(I-1,J-1) + 1
 !
       CALL QENTER('ADDTOFREQLIST')
 !     copy some data
@@ -727,9 +706,6 @@ C***********************************************************************
 #include "dcbxpr.h"
 #include "dcbxqr.h"
 #include "dgroup.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dcbham.h"
 !
       LOGICAL prponly, toomanyeqs
       INTEGER tmomlist(5,MAXQR)
@@ -738,8 +714,7 @@ C***********************************************************************
       INTEGER recnum, NFC, I, J, K, numeqs
       REAL*8 freq1,freq2,lrfreq
 !
-#include "ibtfun.h"
-      MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
+      MULD2H(I,J) = IEOR(I-1,J-1) + 1
 !
       CALL QENTER('FREQLISTSETUP')
       toomanyeqs = .false.
@@ -854,9 +829,6 @@ C***********************************************************************
 #include "priunit.h"
 #include "dcbxqr.h"
 #include "dcbxpr.h"
-#include "dcbxrs.h"
-#include "dcborb.h"
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "pgroup.h"
 C
@@ -876,8 +848,7 @@ C
       INTEGER I,J,K,NFR
       REAL*8 freq1,freq,rsp,oscstr
 C
-#include "ibtfun.h"
-      MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
+      MULD2H(I,J) = IEOR(I-1,J-1) + 1
 C
       CALL QENTER('EXCPRP_PRINT')
 C

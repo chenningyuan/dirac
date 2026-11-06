@@ -39,7 +39,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       PARAMETER (D0 = 0.0D00)
 C
@@ -109,8 +108,6 @@ C
       PARAMETER ( THRZER = 1.0D-12 )
 C
 #include "dcbopt.h"
-#include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION CREF(*), FCAC(*), H2AC(*), GCI(*), WORK(*)
 C
@@ -135,17 +132,18 @@ C
          IF (ABS(EMCACT-EMCACX) .GT. THRSML) THEN
             WRITE(LUPRI,9000)
      &           '*** ERROR in RCIGRAD ***',
-     &           EMCACT,EMCACX
+     &           EMCACT,EMCACX,EMCACT-EMCACX
             CALL QUIT('*** ERROR in RCIGRAD ***')
          ELSE
             WRITE(LUPRI,9000)
      &           '*** WARNING in RCIGRAD ***',
-     &           EMCACT,EMCACX
+     &           EMCACT,EMCACX,EMCACT-EMCACX
          END IF
       END IF
  9000 FORMAT(1P,//,A,
-     &     /,1X,'(RCIGRAD) Active energy from DV and PV:',D25.15,
-     &     /,1X,'(RCIGRAD) Active energy from RCIGRAD:  ',D25.15,/)
+     &     /' (RCIGRAD) Active energy from DV and PV:',D25.15,
+     &     /' (RCIGRAD) Active energy from RCIGRAD:  ',D25.15,
+     &     /' (RCIGRAD) Difference:                  ',D25.15,/)
 C
       CALL RTKTIME(.FALSE.,10)
       CALL QEXIT('RCIGRAD')
@@ -418,7 +416,6 @@ C
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION G(NZHOPE,*), GR(*)
 C
@@ -462,7 +459,6 @@ C
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION G(NZHOPE,*), GR(*)
 C

@@ -111,7 +111,7 @@ endif()
 
 add_library(
     pcm_dirac
-    OBJECT
+    STATIC
     ${FIXED_PCM_DIRAC_FORTRAN_SOURCES}
     ${FREE_PCM_DIRAC_FORTRAN_SOURCES}
 )

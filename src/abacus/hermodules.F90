@@ -14,42 +14,31 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
-!     !!! MODULE FOR READING XYZ FILES !!!
-!     Module for reading xyz files.
-!     The coordinates are given in the .xyz file.
-!     The basisset and possible charges and nuclear exponents are
-!     specified in the .inp file
+!     !!! MODULE FOR DIRAC XYZ/BASIS SETUP !!!
+!     Module for reading DIRAC basis set information connected to xyz files.
 !
 !     In the long run the readingsection for the .inp file move to dirac/dirrdn.F
 !     JHS 05-07-07
 
-      MODULE READ_XYZFILE
-        USE FILE
+      MODULE HERMODULES
+        USE READ_XYZFILE
         IMPLICIT NONE
 
         PRIVATE
 
-        PUBLIC READ_XYZ, get_atoms, del_atoms
-!     Module to read xyz files with the format
-!       Line 1: Number of atoms
-!       Line 2: Comment
-!       Other lines: atom name, coordinates
+        PUBLIC READ_XYZ
+        PUBLIC basistype, atomtype, firstatomtype
+        PUBLIC count_types
+        PUBLIC UNIT_CONVERSION, UNIT_CONVERSION_SET, XTANG
+#ifdef HAS_PELIB
+        PUBLIC pelib_sym_xyz
+#endif
 
         INTEGER, PARAMETER :: namelen=8, basislen=32,linelen=192
         REAL(KIND=8), PARAMETER :: D0 = 0.0D0
         INTEGER            :: i,ios
 
-        TYPE,public :: atom
-!     Defines a list for storing atomic data, like coordinates, charges and nuclear exponents.
-          CHARACTER(LEN=namelen)  :: name=' '
-          REAL(KIND=8)            :: x(3)=(/(0.0,i=1, 3)/)
-          REAL(KIND=8)            :: charge=0.0D0    ! this is the actual charge that may be taken zero or fractional
-          REAL(KIND=8)            :: bascharge=0.0D0 ! this is the charge for the specified element that is used when searching the basis set library
-          REAL(KIND=8)            :: nucexp=0.0D0
-          TYPE(atom), POINTER     :: next
-        END TYPE atom
-
-        TYPE basistype
+        TYPE :: basistype
 !     Defines a list for storing the information about the basis sets.
           CHARACTER(LEN=namelen)     :: name=' '
           CHARACTER(LEN=basislen)    :: type=' '
@@ -61,7 +50,7 @@
           TYPE(basistype), POINTER   :: next
         END TYPE basistype
 
-        TYPE atomtype
+        TYPE :: atomtype
              TYPE(atom), POINTER      :: first
              TYPE(basistype), POINTER :: basis
              INTEGER                  :: natom
@@ -69,8 +58,7 @@
         END TYPE atomtype
 
 !     Global variables
-!     Start of linked lists of atoms, basistypes and atomtypes
-        TYPE(atom), POINTER :: firstatom
+!     Start of linked lists of basistypes and atomtypes
         TYPE(basistype), POINTER :: firstbas
         TYPE(atomtype), POINTER  :: firstatomtype
 
@@ -79,68 +67,12 @@
         INTEGER :: NSYMOP=0
         CHARACTER(LEN=1) :: KASYM(3,3)=' '
         INTEGER :: natoms_given
-
-!     The unit conversion global variable is used when reading/writing xyz files
-       REAL(KIND=8),PUBLIC  :: UNIT_CONVERSION
-       LOGICAL,PUBLIC       :: UNIT_CONVERSION_SET=.FALSE.
-
-       INTERFACE GET_ATOMS
-           module procedure READ_XYZ_ATOMS
-       END INTERFACE
-
-#ifdef HAS_PELIB 
+#ifdef HAS_PELIB
 !     Variable for PElib (to ensure symmetry detection is disabled for xyz)
-LOGICAL, PUBLIC :: pelib_sym_xyz
-#endif 
+        LOGICAL :: pelib_sym_xyz
+#endif
 
       CONTAINS
-
-        SUBROUTINE ADD_ATOM(latom, fatom, name,x)
-!
-!       fatom: pointer to the first atom in the list
-!       latom: pointer to the last atom in the list
-!
-!     JHS050707 Adds a new node to the atom list.
-!     LV2011-simplified and added on-the-fly sort
-
-          TYPE(atom), POINTER :: latom,fatom,newatom,sameatom
-          CHARACTER(LEN=*), INTENT(IN)     :: name
-          REAL(KIND=8),INTENT(IN),OPTIONAL :: x(1:3)
-
-!         Make a new atom
-          ALLOCATE(newatom)
-          newatom%name=name
-          IF (PRESENT(x)) newatom%x=x
-          newatom%charge=find_charge(name)
-          newatom%bascharge=find_charge(name)
-          newatom%next=>NULL()
-!
-!         This might be the first call, if so: set fatom to this atom
-!         and allocate also the last atom pointer
-
-          IF (.not. associated(latom)) THEN
-             fatom=>newatom
-             ALLOCATE(latom)
-             latom=>newatom
-             RETURN
-          END IF
-
-!         Find out whether we already have atoms of this type
-          sameatom=>find_atom(fatom, name, .true.)
-          IF (associated(sameatom)) THEN
-!            insert after the others of this type
-             newatom%next=>sameatom%next
-             sameatom%next=>newatom
-!            important: update the latom pointer as well
-             if (latom%name .eq. sameatom%name) latom=>newatom
-          ELSE
-!            we did not see this type before, put at the end of the list
-             latom%next=>newatom
-             latom=>newatom
-          END IF
-
-
-        END SUBROUTINE ADD_ATOM
 
         SUBROUTINE ADD_BASIS(prevbas, fbas,basdata,basnext)
 !     JHS050707 Adds a new node to the basislist
@@ -236,67 +168,6 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
           END SELECT
         END SUBROUTINE
 
-        SUBROUTINE READ_ATOMS(filenum, linelen,fatom,lupri)
-!       Reads atom name and coordinates from the .XYZ file
-!       and writes it to the atoms list.
-!       TODO: better checking for errors in the xyz file
-          TYPE(atom), POINTER :: fatom
-          INTEGER, INTENT(IN)                :: filenum, linelen,lupri
-          TYPE(atom), POINTER                :: latom
-          CHARACTER(LEN=namelen)             :: name
-          REAL(KIND=8)                       :: x(3)
-          INTEGER                            :: ios
-
-          CALL QENTER('READ_ATOMS')
-
-          latom=>null()
-
-          ios=0
-          do while (ios.eq.0)
-
-            name='init'
-            x(1:3)=0.0
-
-            READ(filenum, *,iostat=ios) name, x(1), x(2), x(3)
-
-            if (ios.eq.0.AND.name.ne.'init') then
-              CALL ADD_ATOM(latom,fatom,name,x)
-            end if
-          end do
-
-          CALL QEXIT('READ_ATOMS')
-
-        END SUBROUTINE READ_ATOMS
-
-
-        FUNCTION find_atom(fatom, name, last)
-!     JHS050707 Returns a pointer to the first (or last)  atom in the list with this name
-!               or NULL() if is no such atom.
-           TYPE(atom), POINTER :: fatom
-           TYPE(atom), POINTER :: find_atom
-           TYPE(atom), POINTER :: mol
-           LOGICAL, OPTIONAL   :: last
-           CHARACTER(LEN=*), INTENT(IN)    :: name
-
-           find_atom=>NULL()
-
-           mol=>fatom
-           DO WHILE(ASSOCIATED(mol))
-              IF (mol%name==name) THEN
-                 find_atom=>mol
-                 if (.not. present(last)) then
-                    return
-                 else
-                    if (.not. last) return
-                 end if
-              END IF
-              mol=>mol%next
-           END DO
-
-
-        END FUNCTION find_atom
-
-
         FUNCTION find_basis(fbas, name)
 !     JHS050707 Returns a pointer to the next basisset with name in the list with basissets
 !               or NULL() if there is no such basis.
@@ -317,27 +188,6 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
            find_basis=>NULL()
 
         END FUNCTION find_basis
-
-        INTEGER FUNCTION count_atoms(fatom, name)
-!     JHS050707 Counts the length of the atomlist.
-         ! TYPE(atom), POINTER, INTENT(IN) :: fatom
-          TYPE(atom), POINTER :: fatom
-          TYPE(atom), POINTER             :: mol
-          CHARACTER(LEN=*), OPTIONAL      :: name
-          count_atoms=0
-          mol=>fatom
-          IF (PRESENT(name)) THEN
-            DO WHILE (associated(mol))
-              IF (name==mol%name) count_atoms=count_atoms+1
-              mol=>mol%next
-            END DO
-          ELSE
-            DO WHILE (associated(mol))
-              count_atoms=count_atoms+1
-              mol=>mol%next
-            END DO
-          END IF
-        END FUNCTION count_atoms
 
         INTEGER FUNCTION count_types(ftype)
           TYPE(atomtype), POINTER :: ftype
@@ -397,30 +247,8 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 
         END SUBROUTINE MAKE_ATOMTYPES
 
-        INTEGER FUNCTION FIND_CHARGE(atomname,LUPRI)
-!     JHS050707 For a given atomname the corresponding charge is searched for in nucdata.h
-          CHARACTER(LEN=*),INTENT(IN) :: atomname
-          INTEGER,OPTIONAL,INTENT(IN) :: LUPRI
-          INTEGER :: i
-#include "nucdata.h"
-
-          find_charge=0
-          DO i=1,SIZE(NUCLABEL)
-            IF (atomname==NUCLABEL(i)) THEN
-              find_charge=i
-              RETURN
-            END IF
-          END DO
-          IF (PRESENT(LUPRI)) WRITE(LUPRI,*)                            &
-     &         'WARNING: No charge found for element: ', atomname
-
-        END FUNCTION
-
-
         SUBROUTINE READ_BASIS(filenum,linelen,lupri)
 #include "codata.h"
-#include "infpar.h"
-#include "cbirea.h"
 #include "dgroup.h" 
 
 ! using OPTIMI
@@ -469,6 +297,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 
           NSYMOP=0
           ADDSYM=.TRUE.
+          NONATM=.FALSE. ! Forcing linear symmetry not using atomic supersymmetry
           KASYM(:,:)=' '
           KCHARG=0
 #ifdef HAS_PELIB 
@@ -533,8 +362,13 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
      &                 section(3)=='.NOSYM') THEN
                        ADDSYM=.FALSE.
 #ifdef HAS_PELIB
-              pelib_sym_xyz = .false.
+                       pelib_sym_xyz = .false.
 #endif
+
+!            Use linear symmetry even when single atom
+              ELSE IF (section(2)=='*SYMMETRY'.AND.                     &
+     &                 section(3)=='.LINEAR') THEN
+                       NONATM=.TRUE.
 !             Basis specification
               ELSE IF (section(2)=='*BASIS'.AND.                        &
      &                 section(3)=='.DEFAULT') THEN
@@ -757,25 +591,17 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 
       IMPLICIT NONE
 !     CONSTANTS
-#include "dummy.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 
 !     COMMON BLOCKS
-#include "cbirea.h"
 
       INTEGER, INTENT(IN)             :: lupri
 
       INTEGER :: ncent,natom,natom_type,nq
       TYPE(atom), POINTER             :: mol
-
-#include "molinp.h"
-#include "ccom.h"
 #include "nuclei.h"
-#include "nucdata.h"
-
+!
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
       REAL(KIND=8) :: XMASS
 
@@ -789,7 +615,6 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
          CALL QUIT('*** ERROR (READIN) ncent>mxcent')
       END IF
 
-!     nuclei.h
       NUCIND=0
       mol=>firstatom
       natom=0
@@ -898,17 +723,16 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
       use RECP_NTR
       IMPLICIT NONE
 !     CONSTANTS
-#include "codata.h"
-#include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 #include "symmet.h"
 
 !     COMMON BLOCKS
 ! cbirea.h : UNCONT, IPREAD, TOL_SYMADD, ...
+! infpar.h : mytid
 #include "cbirea.h"
+#include "infpar.h"
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
 
       INTEGER,INTENT(IN) :: lupri,infile,KANG,KSETS,KBLOCK,KPRIM
@@ -946,13 +770,11 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 !     JHS050707 For type conversion purposes.
       INTEGER :: int8
       integer blk
-
-#include "molinp.h"
+!
 #include "ccom.h"
 #include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
-#include "dcbham.h"
 #include "dgroup.h"
 #else
 #include "gnrinf.h"
@@ -1271,7 +1093,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
       CALL BASPRO(WORK,LWORK,NSYMOP,IQM,NBLCK,JCO,NUC,NRC,              &
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM, &
      &            DOOWN, blk)
-      IF (LINEAR.and. NUCDEP .Eq. 1) ATOMIC = .TRUE.
+      IF (LINEAR.and. (NUCDEP .Eq. 1) .and. (.NOT. NONATM) ) ATOMIC = .TRUE.
 !
 !     *************************************************
 !     ***** Print orbital and geometry input data *****
@@ -1279,7 +1101,9 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 !
 #ifdef BUILD_GEN1INT
 !     initialize basis sets (large and small components) used in Gen1Int interface
-      call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,               &
+!     NB! workers obtain gen1int info from gen1int's own mpi calls
+      if (mytid .eq. 0)                                                 &
+     &call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,               &
      &                       NBLCK, KANG, JCO, KBLOCK,                  &
      &                       NUC, NRC, KPRIM, ALPHA, CPRIMU)
 #endif
@@ -1319,29 +1143,6 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
           DEALLOCATE(CPRIMU)
 
         END SUBROUTINE WRITE_ATOMTYPES
-
-        SUBROUTINE PRINT_ATOMS(firstatom, lupri)
-          !TYPE(atom), POINTER, INTENT(IN) :: firstatom
-          TYPE(atom), POINTER :: firstatom
-          INTEGER, INTENT(IN) :: lupri
-          TYPE(atom), POINTER :: mol
-
-          CALL TITLER('XYZ coordinates read','*',118)
-          WRITE(lupri,'(a,t13,a,t25,a,t37,a,t49,a,t61,a)') 'Label',     &
-     &         'x','y','z','charge','nuc exp'
-          mol=>firstatom
-          DO
-            IF (associated(mol)) THEN
-              WRITE(lupri,'(a,t9, 5g12.6)')                             &
-     &          TRIM(mol%name), mol%x, mol%charge, mol%nucexp
-              mol=>mol%next
-            ELSE
-              EXIT
-            ENDIF
-          END DO
-        WRITE(lupri,'(a)') ' '
-
-        END SUBROUTINE PRINT_ATOMS
 
         SUBROUTINE PRINT_BASIS(firstbas, lupri)
           !TYPE(basistype), POINTER, INTENT(IN) :: firstbas
@@ -1388,28 +1189,6 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
           END DO
 
         END SUBROUTINE DEL_ATOMTYPES
-
-        SUBROUTINE DEL_ATOMS(firstatom)
-!     FREES THE MEMORY RESERVED FOR THE LIST OF ATOMS.
-
-          TYPE(atom),POINTER :: firstatom
-          TYPE(atom), POINTER :: mol
-
-          IF (.NOT.associated(firstatom)) RETURN
-
-          mol=>firstatom
-          DO
-            IF (associated(mol%next)) THEN
-              firstatom=>mol%next
-              DEALLOCATE(mol)
-              mol=>firstatom
-            ELSE
-              NULLIFY(firstatom)
-              EXIT
-            ENDIF
-          END DO
-
-        END SUBROUTINE DEL_ATOMS
 
         SUBROUTINE DEL_BASIS(firstbas)
 !     FREES THE MEMORY RESERVED FOR THE LIST OF ATOMS.
@@ -1497,42 +1276,5 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 
         END SUBROUTINE READ_XYZ
 
-        SUBROUTINE READ_XYZ_ATOMS (molfile,atoms,luprint)
-
-!       Reads the coordinates from an XYZ-FILE and returns them as a linked list
-
-        INTEGER, INTENT(IN) :: molfile
-        INTEGER, INTENT(IN), optional  :: luprint
-        type(atom), pointer, intent(out) :: atoms
-
-        INTEGER             :: lupri
-        INTEGER             :: ios, i
-
-        if (present(luprint)) then
-           lupri = luprint
-        else
-           lupri = 6
-        end if 
-
-!       In the XYZ format coordinates are supposed to start at the third line
-        REWIND (molfile)
-!       Check whether the first line has a number that can be used to check the number of atoms
-        natoms_given = 0
-        READ (molfile,*,iostat=ios) natoms_given
-!       Skip the comment line
-        CALL RDLINE(molfile)
-        CALL READ_ATOMS(molfile,linelen,firstatom,lupri)
-!       Check number of atoms
-        IF (natoms_given .NE. count_atoms(firstatom)) THEN
-          WRITE(LUPRI,*) " Read ",count_atoms(firstatom)," atoms",      &
-     &                   " but expected ",natoms_given," atoms"
-          CALL QUIT(' *** ERROR (READ_XYZ_COORDINATES) wrong number of atoms')
-        END IF
-
-        allocate(atoms)
-        atoms=>firstatom
-
-       END SUBROUTINE READ_XYZ_ATOMS
-
-      END MODULE READ_XYZFILE
+      END MODULE HERMODULES
 !  -- End of abacus/hermodules.F90 --

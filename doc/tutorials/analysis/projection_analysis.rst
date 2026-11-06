@@ -103,7 +103,7 @@ in its proper basis.
 
 We now run the projection analysis using::
 
-   pam --inp=prj --mol=CH4.xyz --put "C_C.h5=C.h5 H_H.h5=H.h5 PBE_CH4.h5=CHECKPOINT.h5" --noh5
+   pam --inp=prj --mol=CH4.xyz --put "C.h5 H.h5 PBE_CH4.h5=CHECKPOINT.h5" --noh5
 
 Note that we set the pam flag ``--noh5`` to avoid generating a new HDF5 checkpoint file, since nothing new is added to the existing one.   
 
@@ -290,14 +290,12 @@ We are now ready to do the projection analysis. We prepare the input file ``prj.
 
 and prepare the coefficient files::
 
-   $ ln -s U_U.h5 U.h5
-   $ ln -s O_O.h5 O1.h5
-   $ ln -s O_O.h5 O2.h5
-   $ ln -s HF_UO2.h5 CHECKPOINT.h5
+   $ ln -s O.h5 O1.h5
+   $ ln -s O.h5 O2.h5
 
 We run the projection analysis::
 
-   pam --incmo --inp=prj --mol=UO2 --copy="U.h5 O1.h5 O2.h5"
+   pam --inp=prj --mol=UO2 --put="U.h5 O1.h5 O2.h5 HF_UO2.h5=CHECKPOINT.h5"
 
 Interpreting the output
 -----------------------

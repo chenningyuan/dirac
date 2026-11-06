@@ -18,9 +18,10 @@
  COMFACTOR
  1.0
 **VISUAL
-.ESPNRH
- DFCOEF
-.3D_INTEGRATE
-.SCALE
- -1.0
+.GRIDS 
+1
+id=1 input=dft
+.GRIDFUNCTIONS
+1
+name=espnrho id_grid=1 uscale=-1.0 purpose=integration outpri=yes
 *END OF

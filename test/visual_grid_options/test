@@ -1,0 +1,259 @@
+#!/usr/bin/env python
+
+import os
+import sys
+from pathlib import Path
+
+try:
+    import h5py
+    h5py_available = True
+except:
+    h5py_available = False
+
+if not h5py_available:
+    sys.stderr.write('ERROR: this test requires h5py\n')
+    sys.exit(-1)
+
+#
+# prepare environment, define functions
+#
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+from runtest_rs import CompareHDF5
+test = TestRun(__file__, sys.argv)
+
+#
+# prepare grid files
+#
+grid_3d_h5=Path(test.work_dir, 'grid_3d.h5')
+grid_3d_h5.unlink(missing_ok=True)
+grid_3d_h5=grid_3d_h5.symlink_to(Path(Path(__file__).parents[1].resolve(), 'testdata', 'grid_visual_3D.h5'))
+
+#
+# run tests
+#
+test.run(['dc.inp'], ['h2o.mol'], args='--outcmo --get="numerical_grid"')
+
+test.run(['vis_2d.inp'], ['h2o.mol'], args='--incmo --get="ed_on2Dgrid_generated.h5 grid_2d_generated.h5 ed_on2Dgrid_generated.csv"')
+test.run(['vis_3d_list.inp'], ['h2o.mol'], args='--incmo --get="ed_on3DgridLIST.h5 grid_3d_fromLIST.h5"')
+test.run(['vis_line.inp'], ['h2o.mol'], args='--incmo --get="ed_onLINE.h5 grid_fromLINE.h5"')
+
+test.run(['vis_3d_hdf5.inp'], ['h2o.mol'], args='--incmo --put="grid_3d.h5" --get="ed_on3Dgrid.h5"')
+test.run(['vis_3d.inp'], ['h2o.mol'], args='--incmo --get="ed_on3Dgrid_generated.h5 grid_3d_generated.h5"')
+test.run(['vis_3d_old.inp'], ['h2o.mol'], args='--incmo --get="ed_on3Dgrid_generated_old.h5 grid_3d_generated_old.h5"')
+
+test.run(['vis_3d_radial.inp'], ['h2o.mol'], args='--incmo --get="ed_on3Dradial.h5 grid_3d_fromRADIAL.h5 ed_on3Dradial.csv"')
+test.run(['vis_3d_dftgrid.inp'], ['h2o.mol'], args='--incmo --put="numerical_grid" --get="ed_on3Ddftgrid.h5 dftgrid_3d.h5"')
+test.run(['vis_3d_multigrid.inp'], ['h2o.mol'], args='--incmo --put="numerical_grid" --get="ed_on3Ddftgrid_multi.h5 ed_on3Dgrid_generated_multi.h5 ed_on3Dgrid_generated_spacing_multi.h5"')
+test.run(['vis_3d_multigrid_2gf.inp'], ['h2o.mol'], args='--incmo --put="numerical_grid" \
+        --get="ed_on3Ddftgrid_multi_2gf.h5 ed_on3Dgrid_generated_multi_2gf.h5 rdg_on3Dgrid_generated_multi_2gf.h5 grid_3d_generated_multi_2gf.h5 dftgrid_3d_multi_2gf.h5"')
+
+#
+# compare generated data with reference
+#
+rs = CompareHDF5(test.work_dir)
+
+# test grid functions
+
+testset = ["ed_on3Dgrid.h5", "ed_on3DgridLIST.h5"]
+for t in testset:
+
+    rs.verify(ftest=t,\
+              fref='result/ed_3d.h5',\
+              typ='array',\
+              gf_label='/result/grid_function/ed/visualization/values/',
+              gf_test_key='t0_icomp_1')
+
+testset = ["ed_onLINE.h5", "ed_on2Dgrid_generated.h5", "ed_on3Dradial.h5"]
+for t in testset:
+
+    rs.verify(ftest=t,\
+              fref='result/'+t,\
+              typ='array',\
+              gf_label='/result/grid_function/ed/visualization/values/',
+              gf_test_key='t0_icomp_1')
+
+testset = ["rdg_on3Dgrid_generated_multi_2gf.h5"]
+for t in testset:
+
+    rs.verify(ftest=t,\
+              fref='result/'+t,\
+              typ='array',\
+              gf_label='/result/grid_function/rdg/visualization/values/',
+              gf_test_key='t0_icomp_1')
+
+testset = ["ed_on3Dgrid_generated.h5", "ed_on3Dgrid_generated_old.h5", "ed_on3Dgrid_generated_multi.h5", "ed_on3Dgrid_generated_multi_2gf.h5"]
+for t in testset:
+
+    rs.verify(ftest=t,\
+              fref='result/ed_on3Dgrid_generated.h5',\
+              typ='array',\
+              gf_label='/result/grid_function/ed/visualization/values/',
+              gf_test_key='t0_icomp_1')
+
+testset = ["ed_on3Dgrid_generated_spacing_multi.h5"]
+for t in testset:
+
+    rs.verify(ftest=t,\
+              fref='result/ed_on3Dgrid_generated_spacing.h5',\
+              typ='array',\
+              gf_label='/result/grid_function/ed/visualization/values/',
+              gf_test_key='t0_icomp_1')
+
+
+# test generated grids
+
+testset = ["grid_3d_fromLIST.h5"]
+for t in testset:
+
+    rs.verify(ftest=t,\
+              fref='grid_3d.h5',\
+              typ='single',\
+              gf_label='/result/grid/ndim')
+
+    rs.verify(ftest=t,\
+              fref='grid_3d.h5',\
+              typ='single',\
+              gf_label='/result/grid/nr_points_total')
+
+    for l in ['coor_1', 'coor_2', 'coor_3']:
+        rs.verify(ftest=t,\
+                  fref='grid_3d.h5',\
+                  typ='array',\
+                  gf_label='/result/grid/points/',\
+                  gf_test_key=l)
+
+
+testset = ["grid_fromLINE.h5"]
+for t in testset:
+
+    rs.verify(ftest=t,\
+              fref='result/'+t,\
+              typ='single',\
+              gf_label='/result/grid/ndim')
+
+    rs.verify(ftest=t,\
+              fref='result/'+t,\
+              typ='single',\
+              gf_label='/result/grid/nr_points_total')
+
+    for l in ['coor_1', 'coor_2', 'coor_3']:
+        rs.verify(ftest=t,\
+                  fref='result/'+t,\
+                  typ='array',\
+                  gf_label='/result/grid/points/',\
+                  gf_test_key=l)
+
+testset = ["grid_3d_fromRADIAL.h5"]
+for t in testset:
+
+    rs.verify(ftest=t,\
+              fref='result/'+t,\
+              typ='single',\
+              gf_label='/result/grid/radial_nr_steps')
+
+    rs.verify(ftest=t,\
+              fref='result/'+t,\
+              typ='single',\
+              gf_label='/result/grid/radial_nr_points_angular')
+
+    rs.verify(ftest=t,\
+              fref='result/'+t,\
+              typ='array',\
+              gf_label='/result/grid/',\
+              gf_test_key='radial_points')
+
+
+testset = ["grid_3d_generated.h5", "grid_3d_generated_old.h5", "grid_3d_generated_multi_2gf.h5"]
+for t in testset:
+
+    rs.verify(ftest=t,\
+              fref='result/grid_3d_generated.h5',\
+              typ='single',\
+              gf_label='/result/grid/ndim')
+
+    rs.verify(ftest=t,\
+              fref='result/grid_3d_generated.h5',\
+              typ='single',\
+              gf_label='/result/grid/nr_points_total')
+
+    for l in ['coor_1', 'coor_2', 'coor_3']:
+        rs.verify(ftest=t,\
+                  fref='result/grid_3d_generated.h5',\
+                  typ='array',\
+                  gf_label='/result/grid/points/',\
+                  gf_test_key=l)
+
+
+testset = ["grid_2d_generated.h5"]
+for t in testset:
+
+    rs.verify(ftest=t,\
+              fref='result/'+t,\
+              typ='single',\
+              gf_label='/result/grid/ndim')
+
+    rs.verify(ftest=t,\
+              fref='result/'+t,\
+              typ='single',\
+              gf_label='/result/grid/nr_points_total')
+
+    for l in ['coor_1', 'coor_2', 'coor_3']:
+        rs.verify(ftest=t,\
+                  fref='result/'+t,\
+                  typ='array',\
+                  gf_label='/result/grid/points/',\
+                  gf_test_key=l)
+
+
+testset = ["dftgrid_3d.h5", "dftgrid_3d_multi_2gf.h5"]
+for t in testset:
+
+    rs.verify(ftest=t,\
+              fref='result/dftgrid_3d.h5',\
+              typ='single',\
+              gf_label='/result/grid/ndim')
+
+    rs.verify(ftest=t,\
+              fref='result/dftgrid_3d.h5',\
+              typ='single',\
+              gf_label='/result/grid/nr_points_total')
+
+    for l in ['coor_1', 'coor_2', 'coor_3']:
+        rs.verify(ftest=t,\
+                  fref='result/dftgrid_3d.h5',\
+                  typ='array',\
+                  gf_label='/result/grid/points/',\
+                  gf_test_key=l)
+
+    rs.verify(ftest=t,\
+              fref='result/dftgrid_3d.h5',\
+              typ='array',\
+              gf_label='/result/grid/points/',\
+              gf_test_key='weights')
+
+# test grid and grid functions
+
+testset = ["ed_on3Ddftgrid.h5", "ed_on3Ddftgrid_multi.h5", "ed_on3Ddftgrid_multi_2gf.h5"]
+for t in testset:
+
+    rs.verify(ftest=t,\
+              fref='result/ed_on3Ddftgrid.h5',\
+              typ='single',\
+              gf_label='/result/grid_function/ed/integration/integrated_values/',
+              gf_test_key='t0_icomp_1')
+
+    for l in ['coor_1', 'coor_2', 'coor_3']:
+        rs.verify(ftest=t,\
+                  fref='result/ed_on3Ddftgrid.h5',\
+                  typ='array',\
+                  gf_label='/result/grid/points/',\
+                  gf_test_key=l)
+
+    rs.verify(ftest=t,\
+              fref='result/ed_on3Ddftgrid.h5',\
+              typ='array',\
+              gf_label='/result/grid/points/',\
+              gf_test_key='weights')
+
+sys.exit(test.return_code)

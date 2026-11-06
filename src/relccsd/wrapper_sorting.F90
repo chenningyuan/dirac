@@ -661,7 +661,6 @@
     integer      :: sort_type_dummy,AllocateStatus,total_dim
 
 #include "symm.inc"
-#include "param.inc"
 #include "complex.inc"
 
     type(sorting_list)     :: a
@@ -1179,7 +1178,7 @@
 !     IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
 !     call getovov(G%presorted)
 
-      write(*,*)'not yet implemented'
+!     write(*,*)'Loic 250918 : Here case(5) of wrapper_sorting : not yet implemented'
 
     case (6)
 
@@ -1188,7 +1187,7 @@
 !     call getovvo(G%presorted)
 
 
-      write(*,*)'not yet implemented'
+!     write(*,*)'Loic 250918 : Here case (6) of wrapper_sorting : not yet implemented'
 
     case (7)
 

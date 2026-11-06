@@ -40,6 +40,7 @@
   write(iunit,*) 'thfull  ',thfull
   write(iunit,*) 'thdiag  ',thdiag
   write(iunit,*) 'thgrad  ',thgrad
+  write(iunit,*) 'thxvec  ',thxvec
   write(iunit,*) 'lgfull  ',lgfull
   write(iunit,*) 'lgdiag  ',lgdiag
   write(iunit,*) 'lggrad  ',lggrad
@@ -117,6 +118,7 @@
   write(iunit,*) 'iprprj  ',iprprj
   write(iunit,*) 'prothr  ',prothr
   write(iunit,*) 'ownbas  ',ownbas
+  write(iunit,*) 'c1read  ',c1read
   write(iunit,*) 'maxref  ',maxref
   write(iunit,*) 'twocomp ',twocomp
   write(iunit,*) 'x2c     ',x2c

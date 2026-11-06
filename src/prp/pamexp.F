@@ -56,7 +56,7 @@ C***********************************************************************
       use labeled_storage
       use checkpoint
       use dircmo
-      use x2c_fio
+!     use x2c_fio
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -465,7 +465,6 @@ C     Last revision May 27 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 C
       DIMENSION EXPVAL(*),WORK(LWORK)
@@ -531,17 +530,14 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-      PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16,D2=2.0D0)
-      
+      PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16,D2=2.0D0)      
 C
-#include "cbihr1.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbexp.h"
 #include "dcbgen.h"
 #include "dcbxpr.h"
-#include "dcbprp.h"
 #include "dcbdhf.h"
 #include "dcbprj.h"
       LOGICAL LEXPST(2,*),FILEX,FIRST(NZ)
@@ -689,7 +685,8 @@ C
           CALL MEMGET('REAL',KFMAT,NFDIM,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KPM  ,NTOT,WORK,KFREE,LFREE)
 C.........Calculate density matrix in fragment basis
-          CALL PRJEX4(WORK(KDFMT),WORK(KBVEC),NP(1,0),NP(1,2),IPREXP)
+          CALL PRJEX4(WORK(KDFMT),WORK(KBVEC),NP(1,0),NP(1,2),IPREXP,
+     &                WORK,KFREE,LFREE)          
         ENDIF
       ELSE
         KRVEC = KFREE
@@ -774,7 +771,7 @@ C.............calculate expectation value
               IOPEN = GETIOPEN(J,IFRP)
               EXPVAL(I) = EXPVAL(I) + EXPBUF*DF(IOPEN)
               FMT = MXFORM(EXPBUF,15)
-              WRITE(LUPRI,'(4X,A3,I5,3X,'//FMT//',5X,F6.4,5X'//FMT//')')
+             WRITE(LUPRI,'(4X,A3,I5,3X,'//FMT//',5X,F6.4,5X,'//FMT//')')
      &          FREP(IFRP),J,EXPBUF/D2,D2*DF(IOPEN),EXPBUF*DF(IOPEN)
               CALL FLSHFO(LUPRI)
             ENDDO
@@ -844,14 +841,9 @@ C***********************************************************************
 C
 #include "mxcent.h"
 #include "dcbxpr.h"
-#include "dcbprl.h"
 #include "dcbexp.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcborb.h"
-C#include "dcbdhf.h"
-#include "dcbgen.h"
-#include "dcbham.h"
 C
 !     radovan:                    ONLY_TS: allow only totally symmetric
       LOGICAL FIRST(NZ),LEXPST(2),ONLY_TS
@@ -920,14 +912,9 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
-#include "mxcent.h"
 #include "dcbxpr.h"
-#include "dcbprp.h"
-#include "dcbexp.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcborb.h"
-#include "dcbdhf.h"
 C
       LOGICAL FIRST(NZ),LEXPST(2)
       DIMENSION DMAT(N2BBASX,NZ),WORK(*),
@@ -990,12 +977,9 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0)
 C
-#include "mxcent.h"
 #include "dcbxpr.h"
-#include "dcbexp.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcborb.h"
 C
       LOGICAL FIRST(NZ)
       DIMENSION PFO(*),PAO(N2BBASX,NZ),NCNT(*),RVEC(*),WORK(*)
@@ -1087,12 +1071,8 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0,D2=2.0D0)
 C
-#include "mxcent.h"
 #include "dcbxpr.h"
-#include "dcbexp.h"
-#include "dcbbas.h"
 #include "dgroup.h"
-#include "dcborb.h"
 #include "dcbprj.h"
 C
       DIMENSION PFO(*),DFO(*),NCNT(*),NMO(*),BVEC(*),IBUF(*),PBUF(*),
@@ -1284,13 +1264,16 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck prjex4 */
-      SUBROUTINE PRJEX4(DFO,BVEC,NFO,NMO,IPRINT)
+      SUBROUTINE PRJEX4(DFO,BVEC,NFO,NMO,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Make density matrix in fragment basis
+C     It may be that the user has selected orbitals to analyze that
+C     does not coincide with all occupied ones; this is taken into
+C     account below      
 C
 C     NFO(IFRP) - number of fragment orbitals in fermion ircop IFRP
-C     NMO(IFRP)   - number of molecular orbitals in fermion ircop IFRP
+C     NMO(IFRP) - number of molecular orbitals in fermion ircop IFRP
 C
 C     Written by Trond Saue Oct 21 2003 
 C
@@ -1301,27 +1284,43 @@ C***********************************************************************
 C
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbdhf.h"
-      DIMENSION DFO(*),NFO(*),NMO(*),BVEC(*)
+#include "dcbprj.h"      
+      DIMENSION DFO(*),NFO(*),NMO(*),BVEC(*),WORK(*)
+      DIMENSION NSTR(2,0:2,0:0),IQ(4)
+      integer, allocatable :: JMOL(:,:)
+      real(8), allocatable :: OCC(:)
+      DATA IQ/1,2,3,4/      
 C
 C     Make density matrix in fragment orbitals
 C
       IPD = 1
       IPB = 1
       DO 10 IFRP = 1,NFSYM
-        IF(NMO(IFRP).EQ.0) GOTO 10
-        CALL DENST1(DFO(IPD),NFO(IFRP),NFO(IFRP),NZ,D1,D0,
-     &              BVEC(IPB),NFO(IFRP),NMO(IFRP),
-     &              1,NISH(IFRP),NFO(IFRP))  
-        ISTART = NISH(IFRP)+1
-        DO IOPEN = 1,NOPEN
-          NVEC = NACSH(IFRP,IOPEN)
-          CALL DENST1(DFO(IPD),NFO(IFRP),NFO(IFRP),NZ,DF(IOPEN),D1,
-     &                BVEC(IPB),NFO(IFRP),NMO(IFRP),
-     &                ISTART,NVEC,NFO(IFRP))  
-          ISTART = ISTART + NVEC
-        END DO
-
+      IF(NMO(IFRP).EQ.0) GOTO 10
+        NSTR(IFRP,1,0) = NESH(IFRP)
+        NSTR(IFRP,2,0) = NPSH(IFRP)
+        CALL ORBNUM(VECPRJ(IFRP),IFRP,KVEC,NSTR(1,0,0),
+     &       WORK,KFREE,LFREE)
+        IF(NSTR(IFRP,2,0).NE.0) THEN
+          CALL QUIT('PRJEX4: Do not know how to handle '//
+     &            'negative-energy orbs')
+        ENDIF
+        allocate(OCC(NMO(IFRP)))
+        allocate(JMOL(3,NMO(IFRP)))
+        CALL PRJINF(JMOL,IFRP,0,0,NSTR(1,0,0),WORK(KVEC),NPSH(IFRP))
+        CALL SETOCC(NMO(IFRP),OCC,JMOL)
+        deallocate(JMOL)
+        FAC  = D0
+        IPB1 = IPB
+        DO K = 1,NMO(IFRP)
+          CALL QGEMM(NFO(IFRP),NFO(IFRP),1,OCC(K),
+     &     'N','N',IQ,BVEC(IPB1),NFO(IFRP),NMO(IFRP),NZ,
+     &     'H','N',IQ,BVEC(IPB1),NFO(IFRP),NMO(IFRP),NZ,
+     &          FAC,IQ,DFO(IPD),NFO(IFRP),NFO(IFRP),NZ)
+          FAC  = D1
+          IPB1 = IPB1 + NFO(IFRP)
+        ENDDO
+        deallocate(OCC)
         IF(IPRINT.GE.2) THEN
           WRITE(LUPRI,'(A,I3)')
      &    'Density matrix in fragment basis..',IFRP
@@ -1353,7 +1352,6 @@ C***********************************************************************
        use dircmo
        use labeled_storage
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
 #include "dcbbas.h"

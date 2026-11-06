@@ -40,9 +40,6 @@ C
 #include "dcbham.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "cbiher.h"
-#include "cbihr1.h"
-#include "cbisol.h"
 C
       CALL QENTER('TYPE1DRV')
 c
@@ -152,9 +149,6 @@ C
 #include "dcbham.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "cbiher.h"
-#include "cbihr1.h"
-#include "cbisol.h"
 C
       CALL QENTER('TYPE2DRV')
 c
@@ -300,9 +294,6 @@ C      PARAMETER (D0 = 0.0D0, QTHRS = 1.0D-10)
 #include "dcbham.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "cbiher.h"
-#include "cbihr1.h"
-#include "cbisol.h"
 C
       CALL QENTER('TYPE3DRV')
 c
@@ -659,9 +650,6 @@ C
 #include "dcbham.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "cbiher.h"
-#include "cbihr1.h"
-#include "cbisol.h"
 C
       CALL QENTER('TYPE4DRV')
 c
@@ -769,10 +757,6 @@ C
       DIMENSION OP1INT(NNBBASX),WORK(LWORK)
 #include "dcbbas.h"
 #include "nuclei.h"
-#include "symmet.h"
-#include "cbiher.h"
-#include "cbihr1.h"
-#include "cbisol.h"
 C
       CALL QENTER('TYPE5DRV')
 c
@@ -870,10 +854,8 @@ C
       DIMENSION WORK(LWORK),F1MAT(*),F2MAT(*),DMAT(*)
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "dcborb.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
-#include "cbihr1.h"
 C
       CALL QENTER('CATCORR')
 #include "memint.h"

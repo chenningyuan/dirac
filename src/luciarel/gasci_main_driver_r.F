@@ -37,7 +37,7 @@
       use mospinor_info
       use symmetry_setup_krci
 
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #if defined (VAR_MPI2)
 #include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -133,45 +133,44 @@ C     DIAGONAL_ALLOC keeps track of allocation of T_BUFF_D
       CPIC_PASS_D    = .FALSE.
       DIAGONAL_ALLOC = .FALSE.
 C
-CSK   NTEST = 3
-      IF(NTEST.GE.100) THEN
+
+!     IF(NTEST.GE.100) THEN
         WRITE(LUWRT,*)
-        WRITE(LUWRT,*) ' ====================================='
-        WRITE(LUWRT,*) ' Control has been transferred to GASCI'
-        WRITE(LUWRT,*) ' ====================================='
+        WRITE(LUWRT,*) ' =============================================='
+        WRITE(LUWRT,*) ' Control has been transferred to GASCI_LUCIAREL'
+        WRITE(LUWRT,*) ' =============================================='
         WRITE(LUWRT,*)
-        WRITE(LUWRT,'(A)') '  A few pertinent data : '
-        WRITE(LUWRT,*)
-        WRITE(LUWRT,'(A,I2)') '  CI space         ',ISPC
-        WRITE(LUWRT,*)
-        WRITE(LUWRT,*) ' Number of GAS spaces included ',LCMBSPC(ISPC)
+      IF(NTEST.GT.2) THEN
+        WRITE(LUWRT,'(A/)')   '  A few pertinent data : '
+        WRITE(LUWRT,'(A,I2/)') ' Internal CI space ',ISPC
+      END IF
+      IF (LCMBSPC(ISPC) .GT. 1) THEN
+        WRITE(LUWRT,*) '  Number of GAS spaces included ',LCMBSPC(ISPC)
         WRITE(LUWRT,'(A,10I3)') ' GAS spaces included           ',
      &               (ICMBSPC(II,ISPC),II=1,LCMBSPC(ISPC))
         WRITE(LUWRT,*)
-        WRITE(LUWRT,*) ' Occupation constraints : '
-        WRITE(LUWRT,*) '========================= '
-        WRITE(LUWRT,*)
-        WRITE(LUWRT,*)
+      END IF
+        WRITE(LUWRT,'(A/)') '  Occupation constraints : '
         DO JJGASSPC = 1, LCMBSPC(ISPC)
          JGASSPC = ICMBSPC(JJGASSPC,ISPC)
-        WRITE(LUWRT,*)
-     &  ' Gas space  Min acc. occupation Max acc. occupation '
-        WRITE(LUWRT,*)
-     &  ' ================================================== '
-        DO IGAS = 1, NGAS
-          WRITE(LUWRT,'(3X,I2,13X,I3,16X,I3)') IGAS,
+         WRITE(LUWRT,*)
+     &   ' Gas space  Min acc. occupation Max acc. occupation '
+         WRITE(LUWRT,*)
+     &   ' ================================================== '
+         DO IGAS = 1, NGAS
+           WRITE(LUWRT,'(3X,I2,13X,I3,16X,I3)') IGAS,
      &     IGSOCCX(IGAS,1,JGASSPC),IGSOCCX(IGAS,2,JGASSPC)
+         END DO
         END DO
-        END DO
-C
-       END IF
-CSK    NTEST = 0
-C
+!     END IF
+
 !     already done one routine up
 !     ECORE = ECORE_KRMC
+
       NDET = XISPSM(ISM,ISPC)
-      IF(NTEST > 25) 
-     &  write(LUWRT,*) ' Number of determinants/combinations  ',NDET
+      write(LUWRT,'(/A,I0)')  '  Number of determinants ',NDET
+C
+C
 C     transfer NDET to common block LUCIPARREL
       L_COMBI     = NDET
       L_COMBI_MAX = NDET

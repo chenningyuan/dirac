@@ -147,7 +147,7 @@ and the xyz-file `Mg.xyz`
 
 and run our calculation using::
 
-  pam --inp=ed --mol=Mg.xyz --get "DFCOEF PAMXVC"
+  pam --inp=ed --mol=Mg.xyz --outcmo --get "PAMXVC"
 
 We are keeping some file for later use, see below. It can be seen in the menu file `ed.inp` that excitations are only allowed from the first *gerade* orbital (:math:`1s_{1/2}`) to the sixth *ungerade* one (:math:`3p_{3/2,1/2}`).
 The nature of these orbitals can be seen from the Mulliken population analysis in the output.
@@ -250,7 +250,7 @@ We see that the Hermitian e-e part of the solution vector E+ is the first vector
 
 We now generate the radial distribution using::
 
-  pam --inp=length --mol=Mg.xyz --put "DFCOEF PAMXVC" --get "plot.radial.scalar=length.dat"
+  pam --inp=length --mol=Mg.xyz --incmo --put "PAMXVC" --get "plot.radial.scalar=length.dat"
 
 First we may note at the end of the output
 

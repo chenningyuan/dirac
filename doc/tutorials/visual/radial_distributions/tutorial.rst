@@ -7,6 +7,9 @@ In this tutorial we will investigate the valence :math:`3s\rightarrow 3p` excita
 magnesium atom and investigate at what radial distances the corresponding electric dipole
 transition moments pick up contributions.
 
+Tip: this tutorial is also available as a Jupyter notebook in
+:file:`../../../../demo_notebooks/visual_radial_distributions.ipynb`.
+
 Getting the wave function and transition moments
 ------------------------------------------------
 
@@ -20,9 +23,9 @@ together with the job input (Exc.inp):
     
 to be discussed below. We run the job using the command ::
 		      
-   pam --inp=Exc --mol=Mg.xyz --get "DFCOEF PAMXVC"	    
+   pam --inp=Exc --mol=Mg.xyz --get "CHECKPOINT.h5 PAMXVC RESPONSE.h5"	    
 
-such that we recover both the coefficient file DFCOEF and the file of solution vector PAMXVC.
+such that we recover both the coefficient file CHECKPOINT.h5 and the file of solution vector PAMXVC (and RESPONSE.h5).
 
 The magnesium atom is a light atom, so we expect relativistic effects, spin-orbit interaction in particular, to be quite weak, and we can assume more or less pure singlets and triplets. Single excitations :math:`3s\rightarrow 3p` lead to
 
@@ -88,7 +91,7 @@ number density. The input (dens.inp) reads
 
 where we scale the density down by the 12 electrons of magnesium. We run the job using::
 
-   pam --inp=dens --mol=Mg.xyz --put DFCOEF --get "plot.radial.scalar=dens.dat"
+   pam --inp=dens --mol=Mg.xyz --put CHECKPOINT.h5 --get "plot.radial.scalar=dens.dat"
 
 Next we turn to the transition moment densities. This requires a little bit more thought. 
 Let us have a look at the file PAMXVC of solution vectors. This is an unformatted file, but
@@ -106,7 +109,7 @@ contributions :math:`E` corresponding to e-e rotations, and contributions :math:
 Each component is further split into contributions :math:`X+` that are time symmetric and contributions :math:`X-`
 that are time antisymmetric. The transition moments are obtained by contracting solution vectors with property gradients
 (see :cite:`Bast2009` for details). A time-(anti)symmetric operator gives a non-zero contribution only by contraction with
-the time-(anti)symmetric part of the solution vector. The reduced interaction operator in the lenght and velocity representations
+the time-(anti)symmetric part of the solution vector. The reduced interaction operator in the length and velocity representations
 is time-symmetric and time-antisymmetric, respectively. With this in mind we set up the following input (length.inp) for
 generating the radial distribution of the transition moment in the length representation
 
@@ -114,7 +117,7 @@ generating the radial distribution of the transition moment in the length repres
 
 and run the job using::
 
-   pam --inp=length --mol=Mg.xyz --put "DFCOEF PAMXVC" --get "plot.radial.scalar=length.dat"
+   pam --inp=length --mol=Mg.xyz --put "CHECKPOINT.h5 RESPONSE.h5" --get "plot.radial.scalar=length.dat"
 
 Using the same reasoning, the input (velocity.inp) for generating the radial distribution of the transition moment in the velocity representation reads
 
@@ -122,7 +125,7 @@ Using the same reasoning, the input (velocity.inp) for generating the radial dis
 
 and we run the job using::
 
-   pam --inp=velocity --mol=Mg.xyz --put "DFCOEF PAMXVC" --get "plot.radial.scalar=velocity.dat"
+   pam --inp=velocity --mol=Mg.xyz --put "CHECKPOINT.h5 RESPONSE.h5" --get "plot.radial.scalar=velocity.dat"
 
 In both cases the densities are scaled such that the transition moments integrate up to one.
 Note that we have to also include a sign change. For the length representation this is because

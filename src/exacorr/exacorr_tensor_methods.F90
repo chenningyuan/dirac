@@ -196,6 +196,7 @@ module exacorr_tensor_methods
         !Initialization routine that is used to fill a tensor with AO integrals
 
          use exacorr_datatypes
+         use exacorr_ao
          use exacorr_global
          use exacorr_eri
 
@@ -328,7 +329,7 @@ module exacorr_tensor_methods
         integer function tens_init_ao_seg(tens_body, data_kind, tens_dims, tens_bases) result (ierr)
           !Initialization routine that is used to fill a tensor with AO integrals
 
-          use exacorr_datatypes
+          use exacorr_ao
           use exacorr_global
           use exacorr_eri
 
@@ -696,7 +697,7 @@ module exacorr_tensor_methods
                          mocoef_all_1,mocoef_all_2) result (ierr)
         !Initialization routine that is used to fill a tensor with mo coefficients
 
-         use exacorr_datatypes
+         use exacorr_ao
          use exacorr_global
          use exacorr_eri
 
@@ -916,9 +917,11 @@ module exacorr_tensor_methods
         complex(8),pointer     :: tens5(:,:,:,:,:)
         complex(8),pointer     :: tens6(:,:,:,:,:,:)
         complex(8),pointer     :: tens7(:,:,:,:,:,:,:)
+#ifndef VAR_NVFORTRAN
         complex(8),pointer     :: tens8(:,:,:,:,:,:,:,:)
         complex(8),pointer     :: tens9(:,:,:,:,:,:,:,:,:)
         complex(8),pointer     :: tens10(:,:,:,:,:,:,:,:,:,:)
+#endif
 
         ierr=0
 
@@ -1028,6 +1031,7 @@ module exacorr_tensor_methods
           else 
             call quit('Error: wrong mode in set zero')
           end if
+#ifndef VAR_NVFORTRAN
         case (8)
           call c_f_pointer(tens_body,tens8,tens_dims(1:rank))
           if(mode.eq.3) then
@@ -1049,6 +1053,7 @@ module exacorr_tensor_methods
           else 
             call quit('Error: wrong mode in set zero')
           end if
+#endif
         case default
           call quit('setting zero: rank not implemented')
         end select
@@ -1722,8 +1727,10 @@ module exacorr_tensor_methods
         complex(8),pointer :: t1_tens(:,:)
         complex(8),pointer :: t2_tens(:,:,:,:)
         complex(8),pointer :: t3_tens(:,:,:,:,:,:)
+#ifndef VAR_NVFORTRAN
         complex(8),pointer :: t4_tens(:,:,:,:,:,:,:,:)
         complex(8),pointer :: t5_tens(:,:,:,:,:,:,:,:,:,:)
+#endif
 
         ierr=0 !set error code to success
         if(data_kind /= EXA_DATA_KIND_C8) then
@@ -1813,7 +1820,7 @@ module exacorr_tensor_methods
               end do
             end do
           end if
-
+#ifndef VAR_NVFORTRAN
         case (8)
           call c_f_pointer(tens_body,t4_tens,tens_dims(1:rank)) !map C pointer to 2-dimensional array
           if (.not.lambda) then
@@ -1919,6 +1926,7 @@ module exacorr_tensor_methods
               end do
             end do
           end if
+#endif
 
          case default
             call quit ('Error: wrong dimension of tensor in denominate')
@@ -2410,6 +2418,7 @@ module exacorr_tensor_methods
           !Initialization routine that is used to fill a tensor with AO integrals
 
           use exacorr_datatypes
+          use exacorr_ao
           use exacorr_global
           use exacorr_eri
 
@@ -2560,6 +2569,7 @@ module exacorr_tensor_methods
         !Initialization routine that is used to fill a tensor with AO integrals
 
          use exacorr_datatypes
+         use exacorr_ao
          use exacorr_global
          use exacorr_eri
 

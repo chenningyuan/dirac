@@ -25,7 +25,7 @@
 module x2c_utils
 
 
-  use x2c_fio
+ !use x2c_fio
   use x2c_cb_interface, only:  &
       set_x2c_subblock_data
 
@@ -101,12 +101,19 @@ contains
      integer, intent(in)    :: x2c_file_glb
      integer, intent(in)    :: print_lvl
 !----------------------------------------------------------------------
+     real(8), allocatable   :: v2c(:)
+     real(8), allocatable   :: u_onao(:)
      integer                :: i
+     integer                :: iz
      integer                :: n1esh_f
      integer                :: norb1_f
      integer                :: nbas1_f
      integer                :: nbasL_f
      integer                :: ioff_vmat
+     integer                :: ioff_src
+     integer                :: ioff_dst
+     integer                :: max_v2c
+     integer                :: max_u_onao
      integer                :: j,k,l
      character (len=12)     :: flabel
      character (len=28)     :: debug_string
@@ -114,6 +121,16 @@ contains
 
 !      initialize offset for matrix
        ioff_vmat = 1
+
+!      allocate local storage for the coefficient-side AO product
+       max_v2c = 0
+       max_u_onao = 0
+       do i = 1, nfsym
+         max_v2c = max(max_v2c,naosh_L(i) * nesh_dim(i) * nz)
+         max_u_onao = max(max_u_onao,naosh_all(i) * naosh_L(i) * nz)
+       end do
+       allocate(v2c(max_v2c))
+       allocate(u_onao(max_u_onao))
 
 !      step 1: get transformation matrix V (constructed "on the fly")
 !      ------------------------------------------------------------------------------
@@ -175,8 +192,55 @@ contains
                       n1esh_f,                                  &
                       nz)
 
+!          Make a close-packed AOtoMO transform for the 2C side from the already
+!          available (in xmat) 4C AOtoMO transform.
+           v2c = val_d0
+           do iz = 1, nzt
+             do j = 1, n1esh_f
+               do k = 1, nbasL_f
+                 ioff_src = (iz-1)*nbas1_f*norb1_f              &
+    &                     + (norb1_f-n1esh_f+j-1)*nbas1_f       &
+    &                     + k
+                 ioff_dst = (iz-1)*nbasL_f*n1esh_f              &
+    &                     + (j-1)*nbasL_f                       &
+    &                     + k
+                 v2c(ioff_dst) = xmat(ioff_src)
+               end do
+             end do
+           end do
+
+!          Produce and store the U matrix on AO basis.
+           call qgemm(nbas1_f,                                  &
+                      nbasL_f,                                  &
+                      n1esh_f,                                  &
+                      val_d1,                                   &
+                      'N','N',                                  &
+                      ipq_off_in,                               &
+                      scr_mat2,                                 &
+                      nbas1_f,                                  &
+                      n1esh_f,                                  &
+                      nz,                                       &
+                      'H','N',                                  &
+                      ipq_off_in,                               &
+                      v2c,                                      &
+                      nbasL_f,                                  &
+                      n1esh_f,                                  &
+                      nzt,                                      &
+                      val_d0,                                   &
+                      ipq_off_in,                               &
+                      u_onao,                                   &
+                      nbas1_f,                                  &
+                      nbasL_f,                                  &
+                      nz)
+
+           write(flabel,'(a6,i4,i1)') 'U_onao',1,i
+           call x2c_write(flabel,u_onao,nbas1_f*nbasL_f*nz,x2c_file_glb)
+
+!          Create next the U_AO multiplied by S matrix needed for operator transforms.
+
 !          pctmt 4c-SA-AO -> 2c-SA-AO    = pctmt (4c-SA-AO -> 2c-ON-RKB)         * V+
 !          xmat                          = scr_mat2                              * scr_mat1
+
            call qgemm(nbas1_f,                                  &
                       nbasL_f,                                  &
                       n1esh_f,                                  &
@@ -208,8 +272,6 @@ contains
            if(print_lvl > 2)then
              write(debug_string,'(a27,i1)') 'x2c - pctmat_saao - fsym = ',i
              call print_x2cmat(xmat,nbas1_f,nbasL_f,nz,ipq_off_in,debug_string,6)
-!mathematica write(debug_string,'(a27,i1)') 'x2c - mtxpctmat_saao - fsym = ',i
-!mathematica call print_x2cmtx(xmat,nbas1_f,nbasL_f,nz,ipq_off_in,debug_string,6)
            end if
 
          end if
@@ -218,6 +280,9 @@ contains
          ioff_vmat          = ioff_vmat + n1esh_f * nbas1_f * nz
 
        end do
+
+       deallocate(v2c)
+       deallocate(u_onao)
 
   end subroutine construct_pctmat_saao_bas
 
@@ -1128,9 +1193,7 @@ contains
        saoao(1:nzt*naosh_ls**2) = 0.0d0
 
 !      compute Saoao overlap matrix
-#ifdef PRG_DIRAC
        call gtovlx(saoao,1.0d0)
-#endif
 
        iaomo = 1
 

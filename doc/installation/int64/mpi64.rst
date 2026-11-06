@@ -5,6 +5,8 @@ How to build MPI libraries for 64-bit integers
 
 If you want to use 64-bit integers in parallel DIRAC, you also need 64-bit integers in your MPI installation.
 
+**Important** The ExaCorr core will not be available in compilations with 64-bit integers.
+
 64-bit OpenMPI
 ~~~~~~~~~~~~~~
 
@@ -32,7 +34,7 @@ For Intel compilers use:
 
 ::
 
- ./configure CXX=icpc CC=icc F77=ifort FC=ifort FFLAGS=-i8  FCFLAGS=-i8  CFLAGS=-m64  CXXFLAGS=-m64 --prefix=/path/to/your_openmpi
+ ./configure CXX=icpx CC=icx F77=ifx FC=ifx FFLAGS=-i8  FCFLAGS=-i8  CFLAGS=-m64  CXXFLAGS=-m64 --prefix=/path/to/your_openmpi
 
 For GNU compilers type:
 

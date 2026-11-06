@@ -261,7 +261,6 @@ C     Transform molecular Hessian from symmetry nuclear coordinates
 C     to cartesian nuclear coordinates
 C
 #include "implicit.h"
-#include "mxcent.h"
       DIMENSION SHESS(NDIMS,NDIMS), CHESS(NDIMC,NDIMC),
      &          CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
       real(8), allocatable :: AMAT(:,:)
@@ -291,7 +290,6 @@ C
 C     OC cloned PRIGEO (april 2009) of Jun 29 1988 tuh
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -403,7 +401,6 @@ C
 #include "maxorb.h"
       PARAMETER (D0 = 0.0D00)
 C
-#include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "infinp.h"
@@ -2110,7 +2107,7 @@ C  /* Deck dp0pri */
 #include "mxcent.h"
 #include "maxorb.h"
 #include "chrxyz.h"
-#include "debye.h"
+#include "codata.h"
 #include "cbidip.h"
 #include "symmet.h"
       DIMENSION DIPOLE(3)
@@ -2125,7 +2122,7 @@ C  /* Deck dp0pri */
      *                DIPOLE(I), DEBYE*DIPOLE(I)
             END IF
   100    CONTINUE
-         WRITE (LUPRI,'(/,23X,A,F12.8,A)') ' 1 Debye = ',DEBYE,' a.u. '
+         WRITE (LUPRI,'(/,23X,A,F12.8,A)') ' 1 a.u. = ',DEBYE,' Debye'
       END IF
       !WRITE (LUPRI,'(//)')
       RETURN
@@ -2136,8 +2133,6 @@ C
 C     Determine center of mass in orgcom.h(CMXYZ) from information in common blocks
 C     K.Ruud, June-94
 C
-C     radovan: AMASS is not used !?
-C     hjaaj:   AMASS is passed on to VIBMAS
 C
 #include "implicit.h"
 #include "codata.h"

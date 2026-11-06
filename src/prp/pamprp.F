@@ -28,6 +28,9 @@ C     Loop over wave functions and call PAMPRP_1 for each of them.
 C
 C
 C***********************************************************************
+#ifdef MOD_EXACORR
+      use exacorr_cfg, only: exa_input
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -38,7 +41,7 @@ C
 #include "dcbpsi.h"
 #include "dcbprp.h"
 C
-      CHARACTER WF*4
+      CHARACTER WF*4, WFlabel*6
       INTEGER state
       INTEGER J
 C
@@ -94,8 +97,26 @@ C
      &           'Unknown wave function: ' // WF)
            END IF
          endif !(if .not.doexacc)
-         CALL TITLER('Properties for ' // WF // ' wave function',
-     &        '*',110)
+
+         WFlabel = WF
+#ifdef MOD_EXACORR
+         if ((WF.EQ.'CCSD').AND.(exa_input%lambda)) then
+           select case (exa_input%iterative_level)
+             case (2)
+             ! Distinguish between CCSD and CCD.
+             ! CC2 not implemented for first order properties.
+             if (exa_input%iterative_scheme == 20) WFlabel = 'CCD'
+             case (3)
+             WFlabel = 'CCSDT'
+             case (4)
+             WFlabel = 'CCSDTQ'
+             case default
+             WFlabel = WF
+           end select
+         end  if
+#endif
+         CALL TITLER('Properties for ' // trim(WFlabel) //
+     &               ' wave function','*',110)
 
          IF (WF .EQ. 'EOM ') THEN
            CALL number_of_states(state)
@@ -144,15 +165,11 @@ C***********************************************************************
       use fde_mod
 
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 C
-#include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbexp.h"
 #include "dcbesr.h"
-#include "dcbxlr.h"
-#include "dcborb.h"
 #include "dcbpsi.h"
 C
       real(8), allocatable :: WORK(:)
@@ -206,10 +223,9 @@ C***********************************************************************
 C*****  E S R   P R O P E R T I E S      *******************************
 C***********************************************************************
 C
-#ifdef MOD_ESR
       IF (DOESR) THEN
          KFRSAV = KFREE
-         CALL ESR_INIT(WF,IPRESR,N_CIESR,WORK,KFREE,LFREE)
+         CALL ESR_INIT(WF,IPRESR,WORK,KFREE,LFREE)
 C
          LENESR = 2*MULTIPESR*MULTIPESR*MAX(4,NESRP)
 C        max(4,nesrp): make sure sufficient space for ESRPHASE
@@ -218,7 +234,6 @@ C        max(4,nesrp): make sure sufficient space for ESRPHASE
          CALL MEMREL('after PRPESR',WORK,KWORK,KFRSAV,KFREE,LFREE)
 C        ... remove this MEMREL if WORK(KESR) to be used in PRPOUT below
       END IF
-#endif
 C
 C***********************************************************************
 C*****  P P   E X C I T A T I O N   E N E R G I E S  *******************
@@ -316,7 +331,6 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER(DM1 = -1.0D0)
-#include "dcbexp.h"
 #include "dcbxpr.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION INDDIP(3),PFAC(3)
@@ -556,7 +570,6 @@ C     Written by T.Saue Feb 26 2003
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "mxcent.h"
 #include "nuclei.h"
@@ -586,7 +599,6 @@ C*****************************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "maxorb.h"
 #include "symmet.h"
 #include "pgroup.h"
@@ -599,6 +611,7 @@ C*****************************************************************************
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
       LOGICAL   DOATOM(NUCIND)
+      INTEGER :: IFIRST, ISECND, ITHIRD
 C
       ITYP = 0
       IPTYP     = 1
@@ -653,7 +666,6 @@ C     Last revision: J. Thyssen - Oct 13 1998
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "mxcent.h"
 #include "nuclei.h"
@@ -683,7 +695,6 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "maxorb.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
@@ -696,7 +707,6 @@ C
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
 C
       ITYP = 0
       IPTYP     = 1
@@ -706,10 +716,10 @@ C
          IF (.NOT. DOATOM(IATOM)) GOTO 100
          DO 200 ICOOR1 = 1, 3
          DO 200 ICOOR2 = ICOOR1, 3
-            ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
             IOFF = 0
             DO 300 IREPC = 0, MAXREP
-               IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+               IF (IAND(ISTBNU(IATOM),IEOR(IREPC,ISYMIJ)).EQ.0) THEN
                   IOFF = IOFF + 1
                   ITYP = ITYP + 1
                   PNAME        = 'EFG: '//CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)
@@ -750,7 +760,6 @@ C     Written by J. Thyssen - Oct 7 1999
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "mxcent.h"
 #include "nuclei.h"
@@ -780,7 +789,6 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "maxorb.h"
 #include "codata.h"
 #include "pi.h"
@@ -794,7 +802,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"
-#include "chrxyz.h"
 #include "ibtfun.h"
 C
       ITYP = 0
@@ -808,7 +815,7 @@ C
       DO 100 IATOM = 1, NUCIND
          IF (DOATOM(IATOM)) THEN
             DO 200 IREP = 0, MAXREP
-               IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+               IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
                   ITYP = ITYP + 1
                   PNAME = 'PVC: '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                    //CHRNOS(IPTNUC(IATOM,IREP)/10)//
@@ -858,7 +865,6 @@ C     Written by: J. Thyssen - Sept 30 1999
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "mxcent.h"
 #include "nuclei.h"
@@ -893,7 +899,6 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "maxorb.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8,
@@ -907,7 +912,6 @@ Ctec
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
 Ctec
       ITYP = 0
       IPTYP     = 1
@@ -926,12 +930,12 @@ Ctec
          DO 201 ICOOR2 = ICOOR1, 3
          DO 202 ICOOR3 = ICOOR2, 3
          DO 203 ICOOR4 = ICOOR3, 3
-            ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
-            ISYMIJ = IBTXOR(ISYMIJ          ,ISYMAX(ICOOR3,1))
-            ISYMIJ = IBTXOR(ISYMIJ          ,ISYMAX(ICOOR4,1))
+            ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            ISYMIJ = IEOR(ISYMIJ          ,ISYMAX(ICOOR3,1))
+            ISYMIJ = IEOR(ISYMIJ          ,ISYMAX(ICOOR4,1))
             IOFF = 0
             DO 300 IREPC = 0, MAXREP
-               IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+               IF (IAND(ISTBNU(IATOM),IEOR(IREPC,ISYMIJ)).EQ.0) THEN
                   IOFF = IOFF + 1
                   ITYP = ITYP + 1
                   PNAME        = PNPREFIX//
@@ -993,7 +997,6 @@ C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "mxcent.h"
 #include "nuclei.h"
@@ -1037,11 +1040,16 @@ C
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),IOP(3)
 #include "chrnos.h"
-#include "ibtfun.h"
 C
 C
       NSCOOR = 3*NUCDEP
       CALL IZERO(IPSPNSPN,2*NSCOOR)
+C
+C     Here we set up the operators needed for the linear reponse
+C
+C     Define left-hand operators: (-c) i.alpha x r/r^3
+C     ================================================
+C
 C     XAVECTOR
       IOP(1) = 5
 C     YAVECTOR
@@ -1057,9 +1065,6 @@ C
       DO 100 IREPO = 0, MAXREP
 C
 C       Atoms
-C
-C
-C       First define left-hand operators
 C
         DO 200 IATOM1 = 1, NUCIND
         IF(DOATOM(IATOM1)) THEN
@@ -1084,8 +1089,8 @@ C
               IPTYP    = IOP(ICOOR1)
               IC1      = MOD(ICOOR1+1,3) + 1
               IC2      = MOD(ICOOR1  ,3) + 1
-              IREP1    = IBTXOR(IREPO,ISYMAX(IC2,1))
-              IREP2    = IBTXOR(IREPO,ISYMAX(IC1,1))
+              IREP1    = IEOR(IREPO,ISYMAX(IC2,1))
+              IREP2    = IEOR(IREPO,ISYMAX(IC1,1))
               IS1      = IPTCNT(3*(IATOM1 - 1) + IC1,IREP1,1)
               IS2      = IPTCNT(3*(IATOM1 - 1) + IC2,IREP2,1)
               IF((IS1.LE.0).OR.(IS2.LE.0))
@@ -1106,7 +1111,8 @@ C
               CALL OP1IND('XSPNA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
               IPSPNSPN(1,ISCOR1) = INDOP1
 C
-C             Right hand operators
+C             Define right-hand operators: (-c) i.alpha x r/r^3
+C             =================================================
 C
               DO 400 IATOM2 = 1, MXATM2
               IF (DOATOM(IATOM2)) THEN
@@ -1127,7 +1133,9 @@ C
   200   CONTINUE
   100 CONTINUE
 C
-C     Define right hand operators
+C
+C     Define right-hand operators: (-c) i.alpha x r/r^3
+C     =================================================
 C
       DO I = 1,NSCOOR
         IF(IPSPNSPN(2,I).GT.0) THEN
@@ -1364,7 +1372,7 @@ C
 #else
       IF (SHIELD .OR. ESRGTENS .OR. ESR_HFCC) THEN
 #endif
-        CALL DEF_SHIELD(WORK,LWORK,IPRPRP)
+        CALL DEF_SHIELD(IPRPRP)
       ENDIF
 C
 C     Diamagnetic contribution to shieldings
@@ -1404,6 +1412,7 @@ C
 C     PV contribution to NMR shielding
 C
       IF(PVC_SHIELD) THEN
+         IF(LONDON) CALL QUIT('.PVCSHI only implemented for CGO')
          CALL DEF_PVC_SHIELD(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
@@ -1417,6 +1426,12 @@ C     PV contribution to nuclear spin-rotation constant
 C
       IF(PVC_SPINRO) THEN
          CALL DEF_PVC_SPINRO(PNAME,PLABEL,PFAC,IPRPRP)
+      ENDIF
+C
+C     PV contribution to EFG
+C
+      IF(PVC_EFG) THEN
+        CALL DEF_PVC_EFG(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
 ! gosia:
@@ -1461,7 +1476,8 @@ C***********************************************************************
       use london_helper
 #endif
 #ifdef HAS_PELIB
-        use pe_variables, only: peqm, pe_gspol, pe_lf
+        use pelib_dirac_interface, only: use_pelib, pelib_ifc_gspol,
+     &                                   pelib_ifc_do_lf
 #endif
 #include "implicit.h"
 #include "priunit.h"
@@ -1580,7 +1596,7 @@ C
 C     Optical rotation
 C
       IF(OPTROT) THEN
-        CALL PRP_OPTROT(ABLRF,ABCNV,WORK,KFREE,LFREE)
+        CALL PRP_OPTROT(ABLRF,ABCNV)
       ENDIF
 C
 C     PV contribution to NMR shielding
@@ -1598,12 +1614,17 @@ C
       IF(PVC_SPINRO)
      &  CALL PRP_PVC_SPINRO(ABLRF,ABCNV)
 C
+C     PV contribution to EFG
+C
+      IF(PVC_EFG)
+     &  CALL PRP_PVC_EFG(ABLRF,ABCNV)
+C
 #ifdef HAS_PELIB
-      if (peqm) then
+      if (use_pelib()) then
          write(lupri,'(/A)')
      &      'Polarizable environment included using PElib'//
      &      ' (https://gitlab.com/pe-software/pelib-public).'
-         if (pe_gspol) then
+         if (pelib_ifc_gspol()) then
             write(lupri,'(/A)')
      &      'Response properties calculated with dynamical'//
      &      ' polarizable embedding disabled (.GSPOL)'
@@ -1612,7 +1633,7 @@ C
      &      'Response properties calculated with full inclusion of'//
      &      ' polarizable environment.'
          endif
-         if (pe_lf) write(lupri,'(/A)')
+         if (pelib_ifc_do_lf()) write(lupri,'(/A)')
      &   'Effective external field (EEF) correction applied.'
       endif
 #endif
@@ -1638,8 +1659,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "debye.h"
-C
+#include "codata.h"
 #include "mxcent.h"
 #include "dipole.h"
 #include "dcbexp.h"
@@ -1686,7 +1706,7 @@ C
      &        (DIPME(I)+DIPMN(I)),' a.u.'
       ENDDO
       CALL PRSYMB(LUPRI,'-',76,0)
-      WRITE(LUPRI,'(/A,F12.8,A)') ' 1 a.u = ',DEBYE,' Debye'
+      WRITE(LUPRI,'(/A,F12.8,A)') ' 1 a.u. = ',DEBYE,' Debye'
 C
       RETURN
       END
@@ -1751,7 +1771,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "nqcc.h"
-#include "ibtfun.h"
 C
       IF (.NOT.EFG) THEN
 C
@@ -1894,7 +1913,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "nqcc.h"
-#include "ibtfun.h"
       CALL DZERO(EFGEL,9*MXCENT)
       CALL DZERO(TEMP,9*MXCENT)
       ITYP = 0
@@ -1902,10 +1920,10 @@ C
          IF (.NOT. DOATOM(IATOM)) GOTO 100
          DO 200 ICOOR1 = 1, 3
             DO 210 ICOOR2 = ICOOR1, 3
-               ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+               ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
                DO 300 IREPC = 0, MAXREP
-                  IF (IBTAND(ISTBNU(IATOM),
-     &                IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+                  IF (IAND(ISTBNU(IATOM),
+     &                IEOR(IREPC,ISYMIJ)).EQ.0) THEN
                      ITYP = ITYP + 1
                      TEMP(ICOOR1,ICOOR2,IATOM) =
      &                  TEMP(ICOOR1,ICOOR2,IATOM) + EXPVAL(IPEFG(ITYP))
@@ -1920,13 +1938,13 @@ C
       DO 110 IATOM = 1, NUCIND
       IF(DOATOM(IATOM)) THEN
         DO 310 IREPC = 0, MAXREP
-        IF (IBTAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
+        IF (IAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
           NATOM = NATOM + 1
           IATOMD = IATOMD + 1
           DO 220 I = 1, 3
             DO 230 J = I, 3
               EFGEL(I,J,NATOM) = TEMP(I,J,IATOM)*
-     &                           PT(IBTAND(IBTXOR(ISYMAX(I,1),
+     &                           PT(IAND(IEOR(ISYMAX(I,1),
      &                           ISYMAX(J,1)),IREPC))
               IF (I .NE. J) EFGEL(J,I,NATOM) = EFGEL(I,J,NATOM)
  230        CONTINUE
@@ -2007,7 +2025,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "nqcc.h"
-#include "ibtfun.h"
 C
 C
       CALL PRSYMB(LUPRI,'-',76,0)
@@ -2360,7 +2377,6 @@ C
      &            5,12,14,
      &            6,13,15/
 C
-#include "ibtfun.h"
 C
       CALL QENTER('PRP_EFT')
 C
@@ -2397,12 +2413,12 @@ c        IF (.NOT. DOATOM(IATOM)) GOTO 100
          DO ICOOR3 = ICOOR2, 3
          DO ICOOR4 = ICOOR3, 3
             IELEM = IELEM + 1
-            ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
-            ISYMIJ = IBTXOR(ISYMIJ          ,ISYMAX(ICOOR3,1))
-            ISYMIJ = IBTXOR(ISYMIJ          ,ISYMAX(ICOOR4,1))
+            ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            ISYMIJ = IEOR(ISYMIJ          ,ISYMAX(ICOOR3,1))
+            ISYMIJ = IEOR(ISYMIJ          ,ISYMAX(ICOOR4,1))
             IOFF = 0
             DO 300 IREPC = 0, MAXREP
-               IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+               IF (IAND(ISTBNU(IATOM),IEOR(IREPC,ISYMIJ)).EQ.0) THEN
                   ITYP = ITYP + 1
                   IF (TRLESS) THEN
                      IPE = IPEFT(ITYP)
@@ -2426,7 +2442,7 @@ C
       DO 110 IATOM = 1,NUCIND
 c        IF (.NOT. DOATOM(IATOM)) GOTO 110
          DO IREPC = 0,MAXREP
-            IF (IBTAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
+            IF (IAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
                NATOM = NATOM + 1
                IELEM = 0
                DO ICOOR1 = 1, 3
@@ -2434,11 +2450,11 @@ c        IF (.NOT. DOATOM(IATOM)) GOTO 110
                DO ICOOR3 = ICOOR2, 3
                DO ICOOR4 = ICOOR3, 3
                   IELEM = IELEM + 1
-                  ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
-                  ISYMIJ = IBTXOR(ISYMIJ          ,ISYMAX(ICOOR3,1))
-                  ISYMIJ = IBTXOR(ISYMIJ          ,ISYMAX(ICOOR4,1))
+                  ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+                  ISYMIJ = IEOR(ISYMIJ          ,ISYMAX(ICOOR3,1))
+                  ISYMIJ = IEOR(ISYMIJ          ,ISYMAX(ICOOR4,1))
                   EFTEL(IELEM,NATOM) =
-     &               TEMPEFT(IELEM,IATOM) * PT(IBTAND(ISYMIJ,IREPC))
+     &               TEMPEFT(IELEM,IATOM) * PT(IAND(ISYMIJ,IREPC))
                END DO
                END DO
                END DO
@@ -2649,19 +2665,16 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
-C
-C
 C     Initialization of GEOM
 C     (copied from abacus/hergp.F:CMMASS)
 C
       JATOM = 0
       DO IATOM = 1, NUCIND
          DO ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                   DO KCOOR = 1, 3
                      GEOM(3*JATOM + KCOOR) =
-     &                    PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
+     &                    PT(IAND(ISYMAX(KCOOR,1),ISYMOP))
      &                    *CORD(KCOOR,IATOM)
                   END DO
                   JATOM = JATOM + 1
@@ -2675,12 +2688,12 @@ C
       NATOM = 1
       DO 10 I = 1, NUCIND
          DO 20 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
                LL = 1
                DO 100 I2 = 1, NUCIND
                   IF (CHARGE(I2) .EQ. 0.0D0) GOTO 100
                   DO 110 ISYM = 0, MAXOPR
-                     IF (IBTAND(ISYM,ISTBNU(I2)) .EQ. 0) THEN
+                     IF (IAND(ISYM,ISTBNU(I2)) .EQ. 0) THEN
                         IF (LL .NE. KK) THEN
                            XCOOR = GEOM(LL) - GEOM(KK)
                            YCOOR = GEOM(LL + 1) - GEOM(KK + 1)
@@ -2875,7 +2888,6 @@ C***********************************************************************
 #include "nuclei.h"
 #include "symmet.h"
 #include "nqcc.h"
-#include "ibtfun.h"
 #include "codata.h"
 C
       CALL QENTER('PRP_PVC')
@@ -3048,7 +3060,6 @@ C
      &          CHESS(3*NUCDEP,3*NUCDEP),
      &          SPNPAR(5,*),IBUF(3*NUCDEP,2),WORK(*)
 C
-#include "ibtfun.h"
       CALL QENTER('PRP_SPNSP1')
       CALL TITLER
      &    ('INDIRECT NUCLEAR SPIN-SPIN-COUPLINGS','*',116)
@@ -3224,6 +3235,70 @@ Cjth - changed because of the new version of TRACOR ( => new version of TRAHES)
      &                NSCOOR,NSCOOR,1,IPQTOQ(1,0),LUPRI)
         ENDIF
 Cold code        CALL TRAHES(SPNMAT,NSCOOR,CHESS,NSCOOR,NSCOOR,2)
+C
+
+C       Print indirect spin-spin coupling tensors (Hz)
+C       for each pair of nuclei and isotope combination.
+        IF (IPRPRP .GE. 2) THEN
+          CALL HEADER
+     &    ('Indirect Spin-spin tensors (Hz):',1)
+C         Loop over all unique pairs of nuclei
+          DO I = 1,NSPEC
+            IISO   = IATINF(3,I)
+            IATOM1 = IATINF(1,I)
+            DO J = 1,(I-1)
+              JISO   = IATINF(3,J)
+              IATOM2 = IATINF(1,J)
+C
+C             Packed index for storing pairs
+              IATIJ = IATOM1*(IATOM1 -1)/2 + IATOM2
+C
+C             Locate the 3x3 spin-spin tensor block corresponding
+C             to the atom pair (IATOM1,IATOM2) for the global (NCHES x NCHES) matrix CHESS.
+              IA = 3*(IATOM1-1)
+              JA = 3*(IATOM2-1)
+C
+C             Loop over all isotope combinations for the curent atom pair.
+              DO I3 = 1,IISO
+                IF(IATOM1.EQ.IATOM2) THEN
+                  J3END = I3 - 1
+                ELSE
+                  J3END = JISO
+                ENDIF
+C
+                DO J3 = 1,J3END
+C                 Atomic units to Hz using the gyromagnetic ratios
+C                 of the selected isotopes.
+                  FACTOR = AUTOHZ * RATINF(3,I3,I) * RATINF(3,J3,J)
+C
+C                 Print atom/isotope information.
+                  WRITE(LUPRI,'(/,3X,A5,3X,A3,2X,A5,3X,A3)')
+     &            'Atom1','iso','Atom2','iso'
+C
+                  WRITE(LUPRI,'(3X,A6,2X,A3,2X,A6,2X,A3)')
+     &            '------','---','------','---'
+C
+                  WRITE(LUPRI,'(3X,A6,2X,I3,2X,A6,2X,I3)')
+     &            NAMDEP(IATOM1),I3,NAMDEP(IATOM2),J3
+C
+C                 Print the 3x3 indirect spin-spin coupling tensor
+C                 in Cartesian coordinates (Hz).
+                  WRITE (LUPRI,'(/,18X,3(A,11X))') 'x', 'y', 'z'
+                  WRITE(LUPRI,'(3(3X,A,6X,3F12.4,/))')
+     &            'x',(FACTOR*CHESS(IA+1,JA+JC),JC=1,3),
+     &            'y',(FACTOR*CHESS(IA+2,JA+JC),JC=1,3),
+     &            'z',(FACTOR*CHESS(IA+3,JA+JC),JC=1,3)
+C
+                END DO
+              END DO
+C
+C             Separator between different atom pairs.
+              IF (I .GT. 1) CALL PRSYMB(LUPRI,'=',46,0)
+C
+            END DO
+          END DO
+        END IF
+C
 C
 C       Analyze results
 C
@@ -3550,7 +3625,6 @@ C
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),IOP(3)
 #include "chrnos.h"
-#include "ibtfun.h"
 C
       WRITE(LUPRI,'(3X,A,A/A,I5)')
      &  'Diamagnetic spin-orbit integrals are generated by ',
@@ -3704,7 +3778,6 @@ C
      &          CHESS(3*NUCDEP,3*NUCDEP),
      &          SPNPAR(5,*),IBUF(3*NUCDEP,2),WORK(*)
 C
-#include "ibtfun.h"
 C
       AUTOHZ = ALPHA2*ALPHA2*nmagnau*nmagnau*xthz
       REDHZ=1E19*nmagn*nmagn/planck
@@ -3925,38 +3998,11 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_SHIELD */
-      SUBROUTINE DEF_SHIELD(WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_SHIELD(IPRINT)
 C***********************************************************************
 C
-C     Define operator for NMR shieldings
-C
-C     Written by T. Enevoldsen Nov 7 1997
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "mxcent.h"
-#include "nuclei.h"
-      DIMENSION WORK(LWORK)
-      logical, allocatable :: DOATOM(:)
-C
-#include "memint.h"
-      allocate(DOATOM(NUCIND))
-C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
-C     (-29: accept .SELECT specification)
-      CALL SETATM(DOATOM,NATOM,-29)
-      CALL DEF_SHIELD1(DOATOM,WORK(KFREE),LFREE,IPRINT)
-      deallocate(DOATOM)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck def_shield1 */
-      SUBROUTINE DEF_SHIELD1(DOATOM,WORK,LWORK,IPRINT)
-C***********************************************************************
-C
-C     Define operators for shieldings or ESR
-C     DEF_SPNSP1 by T. Saue used as skeleton
+C     Define operators for NMR shieldings or ESR
+C     DEF_SPNSPN by T. Saue used as skeleton
 C     Written by T. Enevoldsen - Oct. 1997
 C     Last revision: 7. Nov. 1997
 C                    22. Mar. 2000 (added ESR options, Anette Noerager + HJAaJ)
@@ -3985,22 +4031,27 @@ C***********************************************************************
 #include "dcbexp.h"
 #include "dcbnmr.h"
 #include "chrxyz.h"
-      LOGICAL DOATOM(NUCIND)
-      CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4,LABELC*7
-      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+
+      logical, allocatable :: DOATOM(:)
+      CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4
+      REAL*8    PFAC(3),IOP(3)
 #include "chrnos.h"
-#include "ibtfun.h"
 C
-      CALL QENTER('DEF_SHIELD1')
+      CALL QENTER('DEF_SHIELD')
 C
+      allocate(DOATOM(NUCIND))
+C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
+C     (-29: accept .SELECT specification)
+      CALL SETATM(DOATOM,NATOM,-29)
+
       NNSTIN = 0
       NSCOOR = 3*NUCDEP
       CALL IZERO(IPSHIELD,3+MXCOOR)
 C
-C     Here we set up the operators needed for the linear reponse part
+C     Here we set up the operators needed for the linear reponse
 C
-C     Define left-hand operators: -c alpha x r/r^3
-C     ============================================
+C     Define left-hand operators: (-c) i.alpha x r/r^3
+C     ================================================
 C
 C     XAVECTOR
       IOP(1) = 5
@@ -4033,7 +4084,7 @@ C
             ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR1,IREPO,2)
             IF (ISCOR1 .GE. 1000) THEN
               CALL QUIT(
-     &'DEF_SHIELD1: Max 1000 coords in this implementation !')
+     &'DEF_SHIELD: Max 1000 coords in this implementation !')
             ENDIF
             IF (ISCOR1 .GT. 0) THEN
               IFIRST = ISCOR1/100
@@ -4045,8 +4096,8 @@ C
               IPTYP    = IOP(ICOOR1)
               IC1      = MOD(ICOOR1+1,3) + 1
               IC2      = MOD(ICOOR1  ,3) + 1
-              IREP1    = IBTXOR(IREPO,ISYMAX(IC2,1))
-              IREP2    = IBTXOR(IREPO,ISYMAX(IC1,1))
+              IREP1    = IEOR(IREPO,ISYMAX(IC2,1))
+              IREP2    = IEOR(IREPO,ISYMAX(IC1,1))
               IS1      = IPTCNT(3*(IATOM1 - 1) + IC1,IREP1,1)
               IS2      = IPTCNT(3*(IATOM1 - 1) + IC2,IREP2,1)
               IF((IS1.LE.0).OR.(IS2.LE.0))
@@ -4119,8 +4170,8 @@ C                ... make sure the PRPEXP is always called !!! /hjaaj nov2002
   100 CONTINUE
 C
 C
-C     Define right-hand operators: (c/2) alpha x r
-C     ============================================
+C     Define right-hand operators: -(c/2) i.alpha x r
+C     ===============================================
 C     (PFAC(1:2) for Dirac mag. field, PFAC(3) for g_1 QED correction)
 C
       IF (LONDON) THEN
@@ -4328,7 +4379,8 @@ C
         ENDDO
       ENDIF
 
-      CALL QEXIT('DEF_SHIELD1')
+      deallocate(DOATOM)
+      CALL QEXIT('DEF_SHIELD')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4469,7 +4521,7 @@ C     define s_z and l_z as j_z = s_z + l_z
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_EEDM */
-      SUBROUTINE DEF_EEDM(IPRINT,WORK,LWORK)
+      SUBROUTINE DEF_EEDM(IPRINT)
 C***********************************************************************
 C
 C     Define operator for electron EDM calculation
@@ -4494,27 +4546,21 @@ C
 #include "dgroup.h"
 #include "pgroup.h"
 C
-      CHARACTER PNAME(1)*16, PLABEL(1)*8
-      DIMENSION WORK(LWORK),PFAC(1),IOP(1)
-C
 C     define operator type, factor, name and label
-C
-      NPCOMP = 1
-      PFAC(1)  = 4.0D0*CVAL
-C
 C     4*ic gamma^0 gamma^5 p^2/2m
 C
-      PNAME(1) = 'P2-EDM'
+      CHARACTER, PARAMETER :: PNAME*16 = 'P2-EDM  '
+      CHARACTER, PARAMETER :: PLABEL*8 = 'KINENERG'
+      INTEGER,   PARAMETER :: NPCOMP = 1, IOP = 23
+      REAL*8               :: PFAC
+C
 CTF   Since we are working with the p^2 form of the EDM operator, there
 CTF   is no explicit reference to Atom1 or Atom2 (etc.). We evaluate
 CTF   over EDM integrals in the molecular spinor basis.
 C
-      IOP(1)   = 21
-      PLABEL(1) = 'KINENERG'
-      CALL XPRIND(PNAME(1),IOP(1),NPCOMP,PFAC(1),PLABEL(1),
+      PFAC = 4.0D0*CVAL
+      CALL XPRIND(PNAME,IOP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-C      SUBROUTINE XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-C     &           INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('KRCI PROPEDM',LUCIINDTRP,LPROP_KRCI,
      &            NPROP_KRCI,INDXPR,MXPROP_KRCI)
       if (IPRINT.GE.1) then
@@ -4528,39 +4574,12 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_MHYP */
-      SUBROUTINE DEF_MHYP(IPRINT,WORK,LWORK)
+      SUBROUTINE DEF_MHYP(IPRINT)
 C***********************************************************************
 C
 C     Define operator for magnetic hyperfine constants
 C
 C     Written by Malaya K. Nayak August 30 2013
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "mxcent.h"
-#include "nuclei.h"
-      CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
-C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
-C     MHYP: INTTYP = 29 (electric field at individual nuclei)
-C     (-29: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-29)
-      CALL DEF_MHYP1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_MHYP',WORK,KWORK,KWORK,KFREE,LFREE)
-C      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck DEF_MHYP1 */
-      SUBROUTINE DEF_MHYP1(DOATOM,WORK,LWORK,IPRINT)
-C***********************************************************************
-C
-C     Define operator for magnetic hyperfine constants
-C
-C     Written by Malaya K. Nayak Aug 30 2013
 C
 C***********************************************************************
 #include "implicit.h"
@@ -4583,12 +4602,19 @@ C
 #include "dcbxlr.h"
 #include "dcborb.h"
 #include "dcbbas.h"
-      LOGICAL DOATOM(NUCIND),SAME
+      LOGICAL   SAME
       CHARACTER PNAME*16, PLABEL(2)*8
-      DIMENSION WORK(LWORK),PFAC(2),IOP(3)
+      REAL*8    PFAC(2)
+      INTEGER   IOP(3)
 #include "chrnos.h"
-#include "ibtfun.h"
 C
+      logical, allocatable :: DOATOM(:)
+C
+      allocate(DOATOM(NUCIND))
+C     MHYP: INTTYP = 29 (electric field at individual nuclei)
+C     (-29: accept .SELECT specification)
+      CALL SETATM(DOATOM,NATOM,-29)
+
 C     XAVECTOR
       IOP(1) = 5
 C     YAVECTOR
@@ -4629,8 +4655,8 @@ C     &                   //NAMN(IATOM)//REP(IREPO)//CHRXYZ(ICOOR)
               IPTYP    = IOP(ICOOR)
               IC1      = MOD(ICOOR+1,3) + 1
               IC2      = MOD(ICOOR  ,3) + 1
-              IREP1    = IBTXOR(IREPO,ISYMAX(IC2,1))
-              IREP2    = IBTXOR(IREPO,ISYMAX(IC1,1))
+              IREP1    = IEOR(IREPO,ISYMAX(IC2,1))
+              IREP2    = IEOR(IREPO,ISYMAX(IC1,1))
               IS1      = IPTCNT(3*(IATOM - 1) + IC1,IREP1,1)
               IS2      = IPTCNT(3*(IATOM - 1) + IC2,IREP2,1)
               IF((IS1.LE.0).OR.(IS2.LE.0))
@@ -4646,54 +4672,25 @@ C     &                   //NAMN(IATOM)//REP(IREPO)//CHRXYZ(ICOOR)
               ITHIRD = MOD(MOD(IS2,100),10)
               PLABEL(2)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
      &                     //CHRNOS(ITHIRD)//' '
-C       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-C     &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &           INDXPR,ISYXPR,ITRXPR,IPRINT)
-       CALL OP1IND('KRCI PROPHYP',LUCIINDTRP,LPROP_KRCI,
+              CALL OP1IND('KRCI PROPHYP',LUCIINDTRP,LPROP_KRCI,
      &           NPROP_KRCI,INDXPR,MXPROP_KRCI)
-       IF (IPRINT.GE.1) THEN
-        write(6,*)'Hyperfine DEF Testing',LPROP_KRCI(NPROP_KRCI),
+              IF (IPRINT.GE.2) THEN
+               write(6,*)'Hyperfine DEF Testing',LPROP_KRCI(NPROP_KRCI),
      &             NPROP_KRCI,INDXPR,PRPNAM(INDXPR)
-       END IF
+              END IF
             ENDIF
   300     CONTINUE
         END IF
   200   CONTINUE
   100 CONTINUE
-C      RETURN
-      END
+      RETURN
+      deallocate(DOATOM)
+      END ! DEF_MHYP
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_ENSPS */
-      SUBROUTINE DEF_ENSPS(IPRINT,WORK,LWORK)
-C***********************************************************************
-C
-C     Define operator for electron-Nucleus Scalar-Pseudoscalar
-C     P,T-odd interaction constant determining parameter
-C
-C     Written by Malaya K. Nayak Feb 26 2014
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "mxcent.h"
-#include "nuclei.h"
-      CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
-C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
-C     ENSPS: INTTYP = 62 (nuclear charge density normalised)
-C     (-62: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-62)
-      CALL DEF_ENSPS1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_ENSPS',WORK,KWORK,KWORK,KFREE,LFREE)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck DEF_ENSPS1 */
-      SUBROUTINE DEF_ENSPS1(DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_ENSPS(IPRINT)
 C***********************************************************************
 C
 C     Define operator for electron-Nucleus Scalar-Pseudoscalar
@@ -4717,18 +4714,23 @@ C***********************************************************************
 #include "krciprop.h"
 #include "dgroup.h"
 #include "pgroup.h"
-      CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
-      LOGICAL   DOATOM(NUCIND)
 #include "dcbxpr.h"
 #include "dcbexp.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
 C
-      IPTYP     = 21
+      CHARACTER PNAME*16, PLABEL*8
+      REAL*8    PFAC(2)
+      logical, allocatable :: DOATOM(:)
+C
+      allocate(DOATOM(NUCIND))
+C     ENSPS: INTTYP = 62 (nuclear charge density normalised)
+C     (-62: accept .SELECT specification)
+      CALL SETATM(DOATOM,NATOM,-62)
+
+      IPTYP     = 23
       NPCOMP    = 1
       IF(GAUNUC) THEN
         PFAC(1) = D1
@@ -4738,24 +4740,22 @@ C
       DO 100 IATOM = 1, NUCIND
          IF (DOATOM(IATOM)) THEN
             DO 200 IREP = 0, MAXREP
-               IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+               IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
 C                  PNAME = 'SPS: '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
 C     &                    //CHRNOS(IPTNUC(IATOM,IREP)/10)//
 C     &                    CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
                   PNAME = 'A'//CHRNOS(IATOM)//'-SPS'
 C....             Gaussian nucleus
                   IF(GAUNUC) THEN
-                    PLABEL(1) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+                    PLABEL = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                        //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                        CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
 C....             Point charge
                   ELSE
-                    PLABEL(1) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+                    PLABEL = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                        //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                        CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
                   ENDIF
-C                  CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-C     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
                   CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,IPRINT)
                   CALL OP1IND('KRCI PROPENSPS',LUCIINDTRP,LPROP_KRCI,
@@ -4769,38 +4769,12 @@ C     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
          END IF
   100 CONTINUE
 C
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_NMQM */
-      SUBROUTINE DEF_NMQM(IPRINT,WORK,LWORK)
-C***********************************************************************
-C
-C     Define operator for nuclear magnetic quadruple moment constant
-C
-C     Written by Malaya K. Nayak March 20 2015
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "mxcent.h"
-#include "nuclei.h"
-      CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
-C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
-C     NMQM: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
-C     (-30: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-30)
-      CALL DEF_NMQM1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_NMQM',WORK,KWORK,KWORK,KFREE,LFREE)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck def_nmqm1 */
-      SUBROUTINE DEF_NMQM1(DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_NMQM(IPRINT)
 C***********************************************************************
 C
 C     Define nuclear quadruple moment interaction constant
@@ -4816,8 +4790,7 @@ C***********************************************************************
 #include "maxorb.h"
       PARAMETER(D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3)
       CHARACTER PNAME*16, PLABEL(2)*8
-      DIMENSION WORK(LWORK),PFAC(2)
-      LOGICAL   DOATOM(NUCIND)
+      REAL*8    PFAC(2)
 #include "dcbxpr.h"
 #include "dcbexp.h"
 C
@@ -4825,9 +4798,15 @@ C
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
 #include "krciprop.h"
 C
+      logical, allocatable :: DOATOM(:)
+C
+      allocate(DOATOM(NUCIND))
+C     NMQM: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
+C     (-30: accept .SELECT specification)
+      CALL SETATM(DOATOM,NATOM,-30)
+
       ITYP = 0
 C     ZAVECTOR
       IPTYP     = 7
@@ -4840,10 +4819,10 @@ Cproperties.
          IF (.NOT. DOATOM(IATOM)) GOTO 100
                 ICOOR1 = 2
                 ICOOR2 = 3
-            ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
             IOFF = 0
             DO 300 IREPC = 0, MAXREP
-               IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+               IF (IAND(ISTBNU(IATOM),IEOR(IREPC,ISYMIJ)).EQ.0) THEN
                   IOFF = IOFF + 1
                   ITYP = ITYP + 1
 C                  PNAME        = 'EFG:
@@ -4857,15 +4836,13 @@ C     &                 //CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
                   PLABEL(2) = CHRXYZ(ICOOR1-1)//CHRXYZ(ICOOR2)//'EFG'//
      &                 CHRNOS(IATOM/10)//
      &                 CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
-C                  CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-C     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
                   CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
+     &                 INDXPR,ISYXPR,ITRXPR,IPRINT)
                   CALL OP1IND('KRCI PROPNMQM',LUCIINDTRP,LPROP_KRCI,
      &                 NPROP_KRCI,INDXPR,MXPROP_KRCI)
 C                  CALL OP1IND(CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'
 C     *                 ,IPEFG(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
-      IF(IPRINT.GE.1) THEN
+      IF(IPRINT.GE.2) THEN
         write(6,*)'NMQM DEF Testing',LPROP_KRCI(NPROP_KRCI),
      &             NPROP_KRCI,INDXPR,PRPNAM(INDXPR)
       ENDIF
@@ -4874,6 +4851,7 @@ C     *                 ,IPEFG(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
  200     CONTINUE
  100  CONTINUE
 C
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4888,42 +4866,11 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "mxcent.h"
-#include "nuclei.h"
-      CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION PFAC(3)
-C
-      logical, allocatable :: DOATOM(:)
-C
-      allocate(DOATOM(NUCIND))
-C     NMQM: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
-C     (-30: accept .SELECT specification)
-      CALL SETATM(DOATOM,NATOM,-30)
-      CALL DEF_PRP_NMQM1(DOATOM,LTRPP,NTRPP,MAXTRP,IPRINT)
-      deallocate(DOATOM)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck def_prp_nmqm1 */
-      SUBROUTINE DEF_PRP_NMQM1(DOATOM,LTRPP,NTRPP,MAXTRP,IPRINT)
-C***********************************************************************
-C
-C     Define nuclear quadruple moment interaction constant
-C
-C     Written by Malaya K. Nayak - July 19 2018
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
+      INTEGER   LTRPP,NTRPP,MAXTRP,IPRINT
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "maxorb.h"
-      PARAMETER (D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3)
-      CHARACTER PNAME*16, PLABEL(2)*8
-      DIMENSION PFAC(2)
-      LOGICAL   DOATOM(NUCIND)
 #include "dcbxpr.h"
 #include "dcbexp.h"
 C
@@ -4931,7 +4878,16 @@ C
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
+C
+      PARAMETER (D3INV = 1.0D0/3.0D0)
+      CHARACTER PNAME*16, PLABEL(2)*8
+      REAL*8    PFAC(2)
+      logical, allocatable :: DOATOM(:)
+C
+      allocate(DOATOM(NUCIND))
+C     NMQM: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
+C     (-30: accept .SELECT specification)
+      CALL SETATM(DOATOM,NATOM,-30)
 C
       ITYP = 0
 CMKN  ZAVECTOR
@@ -4942,12 +4898,12 @@ CMKN  ZAVECTOR
 CMKN  Factor and Sign included, see Eq. (19) of reference on TaN P,T-odd properties.
       DO 100 IATOM = 1, NUCIND
          IF (.NOT. DOATOM(IATOM)) GOTO 100
-                ICOOR1 = 2
-                ICOOR2 = 3
-            ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            ICOOR1 = 2
+            ICOOR2 = 3
+            ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
             IOFF = 0
             DO 300 IREPC = 0, MAXREP
-               IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+               IF (IAND(ISTBNU(IATOM),IEOR(IREPC,ISYMIJ)).EQ.0) THEN
                   IOFF = IOFF + 1
                   ITYP = ITYP + 1
                   PNAME    = CHRXYZ(ICOOR2)//CHRNOS(IATOM)//'-MQM'
@@ -4969,6 +4925,7 @@ CMKN  Factor and Sign included, see Eq. (19) of reference on TaN P,T-odd propert
  200     CONTINUE
  100  CONTINUE
 C
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -5001,7 +4958,6 @@ C
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "chrnos.h"
-#include "ibtfun.h"
 C
 
       INTEGER IPRINT,IATOM,IXYZ,NATOM,ISCOOR,NSCOOR,NPCOMP,
@@ -5028,8 +4984,8 @@ C     (-29: accept .SELECT specification)
 C
 C     Here we set up the operators needed for the linear reponse calculation
 C
-C     Define left-hand operators: nuclear-spin-dependent PV
-C     =====================================================
+C     Define left-hand operators: nuclear-spin-dependent PV: c i.alpha rho(r)
+C     =======================================================================
 C
 C     XALPHA
       IOP(1) = 2
@@ -5050,13 +5006,13 @@ C
       DO IATOM = 1,NUCDEP
         IF(DOATOM(IATOM)) THEN
           DO IREP = 0,MAXREP
-            IF(IBTAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF(IAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
 C
-              IF(GAUNUC) THEN !gaussian model
+              IF(GAUNUC) THEN ! Gaussian nuclear model
                 PLABEL(1) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                           //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                           //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
-              ELSE !point nucleus
+              ELSE ! Point nucleus
                 PLABEL(1) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                           //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                           //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
@@ -5083,8 +5039,8 @@ C
       ENDDO
 C
 C
-C     Define right-hand operators: (c/2) alpha x r
-C     ============================================
+C     Define right-hand operators: -(c/2) i.alpha x r
+C     ===============================================
 C
 C     XAVECTOR
       IOP(1) = 5
@@ -5237,7 +5193,6 @@ C
       DIMENSION PFAC(3),IOP(3)
 C
 #include "chrnos.h"
-#include "ibtfun.h"
 C
 C
 C     right hand
@@ -5272,8 +5227,8 @@ C
               IPTYP = IOP(IXYZ)
               IC1   = MOD(IXYZ+1,3)+1
               IC2   = MOD(IXYZ  ,3)+1
-              IREP1 = IBTXOR(IREP,ISYMAX(IC2,1))
-              IREP2 = IBTXOR(IREP,ISYMAX(IC1,1))
+              IREP1 = IEOR(IREP,ISYMAX(IC2,1))
+              IREP2 = IEOR(IREP,ISYMAX(IC1,1))
               IS1   = IPTCNT(3*(IATOM-1)+IC1,IREP1,1)
               IS2   = IPTCNT(3*(IATOM-1)+IC2,IREP2,1)
 C
@@ -5318,7 +5273,7 @@ C
 C     this prefactor (CVAL) guarantees the NRL employes in the literature
 C     in the printout section we will divide by CVEL
 C
-      IF(.NOT.GAUNUC) THEN !point nucleus
+      IF(.NOT.GAUNUC) THEN ! Point nucleus
         DO IXYZ = 1,3
           PFAC(IXYZ) = PFAC(IXYZ)*D3/(D4*GFAC*PI)
         ENDDO
@@ -5327,13 +5282,13 @@ C
       DO IATOM = 1,NUCDEP
         IF(DOATOM(IATOM)) THEN
           DO IREP = 0,MAXREP
-            IF(IBTAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF(IAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
 C
-              IF(GAUNUC) THEN !gaussian model
+              IF(GAUNUC) THEN ! Gaussian nuclear model
                 PLABEL(1) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                           //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                           //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
-              ELSE !point nucleus
+              ELSE ! Point nucleus
                 PLABEL(1) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                           //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                           //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
@@ -5362,6 +5317,194 @@ C
       ENDDO
 C
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_PVC_EFG */
+      SUBROUTINE DEF_PVC_EFG(PNAME,PLABEL,PFAC,IPRINT)
+C***********************************************************************
+C
+C     Define operators for PV contributions to EFG
+C
+C     Written by Juan J. Aucar - March 2025
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use memory_allocator
+C
+      implicit none
+C
+      integer I,J
+C
+#include "priunit.h"
+#include "mxcent.h"   ! parameters of maximum number of nuclei
+#include "maxaqn.h"   ! highest angular quantum number
+#include "maxorb.h"   ! maximum number of orbitals/basis functions
+#include "nuclei.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "chrxyz.h"
+#include "dcbprp.h"   ! common block for expectation values
+#include "dcbxlr.h"   ! common block for linear reponse
+#include "dcbgen.h"
+#include "consts.h"
+#include "codata.h"
+#include "pi.h"
+#include "chrnos.h"
+#include "dcbexp.h"
+C
+      INTEGER IPRINT,IATOM,IXYZ,NATOM,
+     &        IC1,IC2,ICOOR,IFIRST,INDOP1,
+     &        INDXPR,IOP,IPTYP,IREP,IREP1,IREP2,IS1,
+     &        IS2,ISCOOR,ISECND,NSCOORA,NSCOORB, INDEXA,
+     &        INDEXB, ISYXPR,ITRXPR,NPCOMP,
+     &        ITYP, ICOOR1, ICOOR2, ISYMIJ, IOFF, IREPC
+C
+      DOUBLE PRECISION PFAC(NUCIND)
+C
+      logical, allocatable :: DOATOM(:)
+C
+      CHARACTER PNAME*16, PLABEL(2)*8
+      DIMENSION IOP(1)
+C
+      CALL QENTER('DEF_PVC_EFG')
+C
+      NSCOORA = 9*NUCIND
+      NSCOORB = NUCIND
+C
+      CALL IZERO(IP_PVC_EFG,MXCOOR)
+      allocate(DOATOM(NUCIND))
+C
+C     (accept .SELECT specification)
+      CALL SETATM(DOATOM,NATOM,-29)
+
+C     Open print section for PVC to EFG
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(1X,A)') 'Parity-violation contribution to '//
+     &'electric field gradient:'
+      CALL PRSYMB(LUPRI,'=',75,0)
+
+
+C
+C     Define left-hand operators: EFG components
+C     ===========================================
+C
+        PFAC = 1
+        ITYP = 0
+        IPTYP     = 1
+        NPCOMP    = 1
+        PFAC   = D1
+        DO 100 IATOM = 1, NUCIND
+        IF (.NOT. DOATOM(IATOM)) GOTO 100
+        DO 200 ICOOR1 = 1, 3
+        DO 200 ICOOR2 = ICOOR1, 3
+          ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+          IOFF = 0
+          DO 300 IREPC = 0, MAXREP
+            IF (IAND(ISTBNU(IATOM),IEOR(IREPC,ISYMIJ)).EQ.0) THEN
+              IOFF = IOFF + 1
+              ITYP = ITYP + 1
+              PNAME = 'EFG: '//CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)
+     &                       //CHRNOS(IATOM/10)
+     &                       //CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
+              PLABEL(1) = CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'//
+     &        CHRNOS(IATOM/10)//
+     &        CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
+
+!             Set A operators
+              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &        INDXPR,ISYXPR,ITRXPR,IPRINT)
+              CALL OP1IND(CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG',
+     &        INDEXA, LLRAPU,NLRAPT,INDXPR,MAXLLR)
+              ISCOOR = IPTCNT((IATOM),IREPC,2)
+              IF(ISCOOR.GT.0) THEN
+                IP_PVC_EFG(1,ITYP) = INDEXA
+              ENDIF
+C              CALL WRIXPR(INDEXB,INDXPR)
+            END IF
+ 300      CONTINUE
+ 200    CONTINUE
+ 100  CONTINUE
+C
+C
+C     Define right-hand operators: nuclear-spin-independent PV
+C     =======================================================
+C
+      ITYP = 0
+      NPCOMP  = 1
+      PFAC = 1
+C
+      IF(.NOT.GAUNUC) THEN ! Point nucleus
+          PFAC = PFAC *D3/(D4*GFAC*PI)
+      ENDIF
+C
+      DO IATOM = 1,NUCIND
+        IF(DOATOM(IATOM)) THEN
+          DO IREP = 0,MAXREP
+            IF(IAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
+C
+              IF(GAUNUC) THEN ! Gaussian nuclear model
+                PLABEL(1) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                           //CHRNOS(IPTNUC(IATOM,IREP)/10)
+     &                           //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+              ELSE ! Point nucleus
+                PLABEL(1) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                           //CHRNOS(IPTNUC(IATOM,IREP)/10)
+     &                           //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+              ENDIF
+              PNAME = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                       //CHRNOS(IPTNUC(IATOM,IREP)/10)
+     &                       //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+C             Set B operators
+              IPTYP = 9
+              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &                    INDXPR,ISYXPR,ITRXPR,IPRINT)
+              CALL OP1IND(PNAME(1:6),INDEXB,LLRBPU,NLRBPT,
+     &                    INDXPR,MAXLLR)
+              ISCOOR = IPTCNT((IATOM),IREP,2)
+              IF(ISCOOR.GT.0) THEN
+                IP_PVC_EFG(2,ISCOOR) = INDEXB
+              ENDIF
+C              CALL WRIXPR(INDEXA,INDXPR)
+            ENDIF
+          ENDDO
+        ENDIF
+      ENDDO
+C
+C     Print section for A and B operators
+C     ===================================
+C
+C     A operators
+C     -----------
+      CALL PRSYMB(LUPRI,'-',75,0)
+      WRITE(LUPRI,'(1X,A)')
+     & '** A operators for PV electric field gradient **'
+      CALL PRSYMB(LUPRI,'-',75,0)
+      DO I = 1,NSCOORA
+        INDOP1 = IP_PVC_EFG(1,I)
+        IF(INDOP1.GT.0) THEN
+          INDXPR = LLRAPU(INDOP1)
+          CALL WRIXPR(INDOP1,INDXPR)
+        ENDIF
+      ENDDO
+C
+C     B operators
+C     -----------
+      CALL PRSYMB(LUPRI,'-',75,0)
+      WRITE(LUPRI,'(1X,A)')
+     &'** B operators for PV electric field gradient **'
+      CALL PRSYMB(LUPRI,'-',75,0)
+      DO I = 1,NSCOORB
+        INDOP1 = IP_PVC_EFG(2,I)
+        IF(INDOP1.GT.0) THEN
+          INDXPR = LLRBPU(INDOP1)
+          CALL WRIXPR(INDOP1,INDXPR)
+        ENDIF
+      ENDDO
+C
+C
+      deallocate(DOATOM)
+C
+      CALL QEXIT('DEF_PVC_EFG')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -5426,7 +5569,6 @@ C
       CHARACTER PNAME*16, PLABEL(3)*8, LABEL*4
       DIMENSION PFAC(3),IOP(3)
 #include "chrnos.h"
-#include "ibtfun.h"
 
       CALL QENTER('DEF_NSTDIA1')
 
@@ -5440,7 +5582,7 @@ C  always do control print out
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A)')
      &' NMR diamagnetic shielding contributions '//
-     &' (Aucar et al, JCP 110 (1999) 6208)'
+     &' (Aucar et al., JCP 110 (1999) 6208)'
        IF (LONDON) THEN
         WRITE(LUPRI,'(2X,A)')
      &'- for London atomic orbitals (invariant gauge origin)'
@@ -5528,7 +5670,7 @@ C
 #include "dcbexp.h"
 #include "dcbsusc.h"
 #include "dcbham.h"
-      CHARACTER PNAME*16, PLABEL(3)*8, LABELC*7
+      CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),IOP(3)
 
       CALL QENTER('DEF_MSUSCP')
@@ -5577,8 +5719,8 @@ C      ... ZAVECTOR
 C
 C     Define operators for conventional orbitals
        NPCOMP   = 2
-       PFAC(1)  = DI2*CVAL
-       PFAC(2)  = DI2*CVAL
+       PFAC(1)  = -DI2*CVAL
+       PFAC(2)  = -DI2*CVAL
 C   ....X componete of B-field
 C      PNAME     = 'MAGFLDX'
        PNAME     = 'X magnetic field'
@@ -6912,7 +7054,6 @@ C***********************************************************************
       CHARACTER*1 CJB
 #include "nuclei.h"
 #include "symmet.h"
-#include "ibtfun.h"
 C
       CALL QENTER('PRP_SHIELD1')
 C
@@ -7248,7 +7389,7 @@ C
         IATOM = 0
         DO 100 I = 1, NUCIND
           DO 200 ISYMOP = 0, MAXOPR
-          IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
+          IF (IAND(ISTBNU(I),ISYMOP).EQ.0) THEN
             IATOM = IATOM + 1
             IF (DOATOM(I)) THEN
               CALL SHIANA(TMAT(1,1,IATOM),DMAT(1,1,IATOM),
@@ -7281,7 +7422,7 @@ C
         IATOM = 0
         DO 300 I = 1, NUCIND
           DO 400 ISYMOP = 0, MAXOPR
-          IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
+          IF (IAND(ISTBNU(I),ISYMOP).EQ.0) THEN
             IATOM = IATOM + 1
             IF (DOATOM(I)) THEN
               WRITE (LUPRI,'(A,A,7F14.4)') '@',
@@ -7561,7 +7702,6 @@ C
 #include "symmet.h"
 #include "consts.h"
 #include "codata.h"
-#include "ibtfun.h"
 C
       logical, allocatable :: DOATOM(:)
 
@@ -7589,10 +7729,10 @@ C
      &  'NMR SHIELDING TENSOR','*',116)
 C
       WRITE(LUPRI,'(10X,A)')
-     & 'According to A. L. Barra et al, '//
+     & 'According to A. L. Barra et al., '//
      & 'Europhys. Lett. 5 (1988) p.217'
       WRITE(LUPRI,'(19X,A)')
-     & 'and R. Bast et al, JCP 125 (2006) p.064504'
+     & 'and R. Bast et al., JCP 125 (2006) p.064504'
       CALL PRSYMB(LUPRI,'-',81,0)
       WRITE(LUPRI,*) ''
 C
@@ -7721,7 +7861,7 @@ C     to NMR shielding constants
 C
 C     This routine is modelled after SPRRES subroutine
 C
-C     Agustin Aucar - Nov 2022
+C     Agustin Aucar - November 2022
 C
 C***********************************************************************
       implicit none
@@ -7737,7 +7877,6 @@ C
 #include "symmet.h"
 #include "spinro.h"
 #include "orgcom.h"
-#include "ibtfun.h"
 #include "dgroup.h"
 #include "dcbham.h"
 #include "codata.h"
@@ -7762,7 +7901,7 @@ C     Set up g-values of all nuclei
          NATTYP = IZATOM(IATOM)
          NUMIS  = ISOTOP(IATOM)
          DO 110 ISYMOP = 0, MAXOPR
-         IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+         IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
            JATOM = JATOM + 1
            AMASS(JATOM) = DISOTP(NATTYP,NUMIS,'MASS')
            GVAL(JATOM)  = DISOTP(NATTYP,NUMIS,'GVAL')
@@ -7775,7 +7914,7 @@ C
       IATOM = 0
       DO 98 K = 1, NUCIND
        DO 200 ISYMOP = 0, MAXOPR
-        IF (IBTAND(ISTBNU(K),ISYMOP).EQ.0) THEN
+        IF (IAND(ISTBNU(K),ISYMOP).EQ.0) THEN
          IATOM = IATOM + 1
          IF (DOATOM(K)) THEN
           IF (CHARGE(IATOM) .GT. D0) THEN
@@ -7826,9 +7965,9 @@ C
              CALL HEADER('Total PVC to NMR shielding '//
      &              'tensor',-1)
              WRITE (LUPRI,'(3X,A,6X,3E16.8)')
-     &                 'x', (GTRANT(I,1,IATOM),I = 1,3),
-     &                 'y', (GTRANT(I,2,IATOM),I = 1,3),
-     &                 'z', (GTRANT(I,3,IATOM),I = 1,3)
+     &                 'x', (GTRANT(1,I,IATOM),I = 1,3),
+     &                 'y', (GTRANT(2,I,IATOM),I = 1,3),
+     &                 'z', (GTRANT(3,I,IATOM),I = 1,3)
              WRITE (LUPRI,'(/,3X,A,4X,E16.8)')
      &                 'iso', (GTRANT(1,1,IATOM)
      &              +GTRANT(2,2,IATOM)+GTRANT(3,3,IATOM))/3
@@ -7839,17 +7978,17 @@ C
            IF (IPRINT .GE. 1) THEN
              CALL HEADER('sigma^PV(e-e)',-1)
              WRITE (LUPRI,'(3X,A,6X,3E16.8)')
-     &                 'x', (GTRANPEE(I,1,IATOM),I = 1,3),
-     &                 'y', (GTRANPEE(I,2,IATOM),I = 1,3),
-     &                 'z', (GTRANPEE(I,3,IATOM),I = 1,3)
+     &                 'x', (GTRANPEE(1,I,IATOM),I = 1,3),
+     &                 'y', (GTRANPEE(2,I,IATOM),I = 1,3),
+     &                 'z', (GTRANPEE(3,I,IATOM),I = 1,3)
             WRITE (LUPRI,'(/,3X,A,4X,E16.8)')
      &                 'iso', (GTRANPEE(1,1,IATOM)
      &              +GTRANPEE(2,2,IATOM)+GTRANPEE(3,3,IATOM))/3
              CALL HEADER('sigma^PV(e-p)',-1)
              WRITE (LUPRI,'(3X,A,6X,3E16.8)')
-     &                 'x', (GTRANPEP(I,1,IATOM),I = 1,3),
-     &                 'y', (GTRANPEP(I,2,IATOM),I = 1,3),
-     &                 'z', (GTRANPEP(I,3,IATOM),I = 1,3)
+     &                 'x', (GTRANPEP(1,I,IATOM),I = 1,3),
+     &                 'y', (GTRANPEP(2,I,IATOM),I = 1,3),
+     &                 'z', (GTRANPEP(3,I,IATOM),I = 1,3)
              WRITE (LUPRI,'(/,3X,A,4X,E16.8)')
      &                 'iso', (GTRANPEP(1,1,IATOM)
      &              +GTRANPEP(2,2,IATOM)+GTRANPEP(3,3,IATOM))/3
@@ -7955,7 +8094,6 @@ C
 C
 #include "symmet.h"
 #include "dgroup.h"
-#include "ibtfun.h"
 C
       FACTOR = (GFERMI*(D1-D4*S2THETAW))/(CVEL*SQRT(D2))
       FACTOR = (FACTOR*XTHZ)/(D2*PI*CVEL*CVEL)
@@ -7965,7 +8103,7 @@ C
      &  'SPIN-SPIN COUPLING','*',116)
 C
       WRITE(LUPRI,'(10X,A)')
-     & 'According to A. L. Barra et al, '//
+     & 'According to A. L. Barra et al., '//
      & 'Europhys. Lett. 5 (1988) p.217'
       CALL PRSYMB(LUPRI,'-',81,0)
       WRITE(LUPRI,*) ''
@@ -8033,6 +8171,348 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck PRP_PVC_EFG */
+      SUBROUTINE PRP_PVC_EFG(ABLRF,ABCNV)
+C=======================================================================
+C     PV contributions to EFG
+C-----------------------------------------------------------------------
+C     Juan J. Aucar                                    March 2025
+C     doi Ref.: https://doi.org/10.1039/D4CP04840G
+C=======================================================================
+      use memory_allocator
+C
+      implicit none
+C
+      integer I,J
+C
+#include "priunit.h"
+#include "consts.h"
+#include "mxcent.h"
+#include "dcbprp.h"
+#include "dcbxlr.h"
+#include "nuclei.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "codata.h"
+#include "pi.h"
+#include "symmet.h"
+C
+      logical, allocatable :: DOATOM(:)
+      integer, allocatable :: ISOT(:)
+      double precision, allocatable :: PVEFGMAT(:,:,:), FACTORS(:)
+C
+      LOGICAL TEST
+      INTEGER IBUF(6*NUCIND,2),IXYZ,JXYZ,IATOM,JATOM,L,NATOM,
+     &        IATINF(3,NUCIND),IDEG,IDEP,IFREQ,INUC,ISO,IZ,NISO,
+     &        IA,IB,JA,JB,K,KA,KB,NA,NB,NSCOOR,NCHES,NSPEC,
+     &        IABLRF_EE,IABLRF_EP,MASSNUM(NUCIND),ISOFLAG,
+     &        NSCOORA, NSCOORB, ITENSOR, NPROTON,NNEUTRON,ICHARGE,
+     &        IMASS
+      DOUBLE PRECISION FACTOR,DISOTP,ABND,SELEC_ABND,GVALUE,
+     &                 ABCNV(NBFREQ,NLRBPT),RATINF(3,5,NUCIND),
+     &                 ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
+     &                 RESPEE(3,3,NUCIND),RESPEP(3,3,NUCIND),
+     &                 RESP(3,3,NUCIND),QW, QW_SELECTED(NUCIND),
+     &                 IMASS_SELECTED(NUCIND)
+C
+      NSCOOR = 3*NUCIND
+      NSCOORA = 6*NUCIND
+      NSCOORB = NUCIND
+      NCHES  = NSCOOR*NSCOOR
+      allocate(DOATOM(NUCIND))
+      allocate(PVEFGMAT(6*NUCIND,NUCIND,2))
+      allocate(FACTORS(NUCIND))
+C
+      CALL QENTER('PRP_PVC_EFG')
+C
+      FACTOR = 1
+      FACTORS = 1
+      CALL DZERO(PVEFGMAT,6*NUCIND*NUCIND*2)
+C
+      CALL TITLER('PARITY-VIOLATION CONTRIBUTION TO '//
+     &  'EFG','*',116)
+!      WRITE(LUPRI,*) ''
+      WRITE(LUPRI,'(6X,A,/,6X,A,/,6X,A)')
+     & 'According to J. J. Aucar and A. F. Maldonado,',
+     & 'Parity Violation Effects on the Electric Field Gradient,',
+     & 'Phys. Chem. Chem. Phys., 27, 7594 (2025)'
+      CALL PRSYMB(LUPRI,'-',56,6)
+      WRITE(LUPRI,*) ''
+
+C
+C     (-29: accept .SELECT specification)
+      CALL SETATM(DOATOM,NATOM,-29)
+C
+C     ***************************************
+C     ***** Extract nuclear information *****
+C     ***************************************
+C
+      ISOFLAG = 0
+      WRITE(LUPRI,'(A)') '@ Nuclear species:'
+      CALL PRSYMB(LUPRI,'=',63,0)
+      WRITE(LUPRI,'(A,9X,A,11X,A)')
+     &  '@ name  charge  isotope   mass','abundance','Qw'
+      CALL PRSYMB(LUPRI,'-',63,0)
+      NSPEC = 0
+      IDEP  = 0
+      DO INUC = 1,NUCIND
+        IDEG = NUCDEG(INUC)
+        IF(DOATOM(INUC)) THEN
+          TEST = .FALSE.
+          IZ   = IZATOM(INUC)
+          NISO = 0
+!         Abundance of the selected isotope
+          SELEC_ABND = DISOTP(IZ,ISOTOP(INUC),'ABUNDANCE')
+          IF (SELEC_ABND.LT.ABUND) ISOFLAG = ISOFLAG + 1
+          DO ISO = 1,5
+            ABND   = DISOTP(IZ,ISO,'ABUNDANCE')
+            IMASS = DISOTP(IZ,ISO,'A')
+            NPROTON  = IZ
+            NNEUTRON = IMASS - IZ
+            QW = (D1 - D4*S2THETAW) * NPROTON -
+     &      D1 * NNEUTRON
+
+            IF(ABND.GT.ABUND.OR.(.NOT.TEST)) THEN
+              TEST = .TRUE.
+              NISO = NISO + 1
+              RATINF(1,NISO,NSPEC+1) = DISOTP(IZ,ISO,'A')
+              RATINF(2,NISO,NSPEC+1) = ABND
+              RATINF(3,NISO,NSPEC+1) = QW
+            ENDIF
+          ENDDO
+
+!         Store values for selected isotopes
+          IMASS = DISOTP(IZ,ISOTOP(INUC),'A')
+          NNEUTRON = IMASS - IZ
+          QW_SELECTED(INUC) = (D1 - D4*S2THETAW) * NPROTON -
+     &      D1 * NNEUTRON
+          IMASS_SELECTED(INUC) = IMASS
+
+!         Print section for isotopes above abundance threshold
+          IF(NISO.GT.0) THEN
+            IATINF(1,NSPEC+1) = IDEP + 1
+            IATINF(2,NSPEC+1) = IZ
+            IATINF(3,NSPEC+1) = NISO
+            WRITE(LUPRI,
+     &      '(A1,1X,A4,5X,I3,6X,I3,3X,F10.6,3X,F9.3,3X,F12.4)')
+     &      '@',NAMN(INUC),IZ,1,(RATINF(K,1,NSPEC+1),K=1,3)
+            DO J = 2,NISO
+              WRITE(LUPRI,'(A1,19X,I3,3X,F10.6,3X,F9.3,3X,F12.4)')
+     &        '@',J,(RATINF(K,J,NSPEC+1),K=1,3)
+            ENDDO
+            DO K = 2,IDEG
+              IATINF(1,NSPEC+K) = IDEP + K
+              IATINF(2,NSPEC+K) = IZ
+              IATINF(3,NSPEC+K) = NISO
+              DO L = 1,NISO
+                RATINF(1,L,NSPEC+K) = RATINF(1,L,NSPEC+1)
+                RATINF(2,L,NSPEC+K) = RATINF(2,L,NSPEC+1)
+                RATINF(3,L,NSPEC+K) = RATINF(3,L,NSPEC+1)
+              ENDDO
+            ENDDO
+            NSPEC = NSPEC + IDEG
+          ENDIF
+        ENDIF
+        IDEP = IDEP + IDEG
+      ENDDO
+      CALL PRSYMB(LUPRI,'-',61,0)
+C
+      IF (ISOFLAG.GT.0) THEN
+      write(lupri,'(/,A)')
+     &  'Some selected isotopes are below the abundances threshold.'
+      write(lupri,'(A)')
+     &  'Dimish the abundances keyword under PROPERTIES to get proper'
+     &  //' nuclear information.'
+      END IF
+C
+      IF(NSPEC.EQ.0) THEN
+        WRITE(LUPRI,'(A)') '* No suitable isotopes. Returning'
+        CALL QEXIT('PRP_PVC_EFG')
+        RETURN
+      ENDIF
+
+
+!     Print section for selected isotopes
+      WRITE(LUPRI,'(/,A)') '@ Selected nuclear species:'
+      CALL PRSYMB(LUPRI,'=',63,0)
+      WRITE(LUPRI,'(A,9X,A,11X,A)')
+     &  '@ name  charge  isotope   mass','abundance','Qw'
+      CALL PRSYMB(LUPRI,'-',63,0)
+
+      DO INUC = 1, NUCIND
+        IF(DOATOM(INUC)) THEN
+        IZ   = IZATOM(INUC)
+        ABND   = DISOTP(IZ,ISOTOP(INUC),'ABUNDANCE')
+        write(lupri,'(A1,1X,A4,5X,I3,6X,I3,3X,F10.6,3X,F9.3,3X,F12.4)')
+     &    '@',NAMN(INUC),IZ,ISOTOP(INUC),IMASS_SELECTED(INUC),
+     &    ABND,QW_SELECTED(INUC)
+
+!       FACTOR: Qw * Gf [au] / (2 * raiz(2))
+        FACTORS(INUC) = (QW_SELECTED(INUC)*GFERMI)/(2*SQRT(D2))
+        END IF
+      END DO
+      CALL PRSYMB(LUPRI,'-',61,0)
+      WRITE(LUPRI,'(3/)')
+
+C
+C     **********************************************************************
+C     ******************* Extract PV contributions to EFG ******************
+C     **********************************************************************
+C
+      NA = 0
+      NB = 0
+
+C     The NSCOORA PV operators as A operators in <<A;B>> :
+      DO I = 1,NSCOORA
+        IF(IP_PVC_EFG(1,I).GT.0) THEN
+          NA = NA + 1
+          IBUF(NA,1) = I
+        ENDIF
+      END DO
+C     The NSCOORB EFG operators as B operators in <<A;B>> :
+      DO I = 1,NSCOORB
+        IF(IP_PVC_EFG(2,I).GT.0) THEN
+          NB = NB + 1
+          IBUF(NB,2) = I
+        ENDIF
+      END DO
+C
+      IF (NA.LE.0) THEN
+        WRITE(LUPRI,'(2X,A,I2)') 'PRP_PVC_EFG: NA=',NA
+        CALL QUIT('PRP_PVC_EFG: Wrong value of NA!')
+      ENDIF
+      IF (NB.LE.0) THEN
+        WRITE(LUPRI,'(2X,A,I2)') 'PRP_PVC_EFG: NB=',NB
+        CALL QUIT('PRP_PVC_EFG: Wrong value of NB!')
+      ENDIF
+C
+C     LINEAR RESPONSE PART OF PVC EFG
+C     Fill matrices of parity-violation contribution to EFG
+C
+      IF (XLR_SKIPEE) THEN
+        IABLRF_EE = -999999999
+        IF (XLR_SKIPEP) THEN
+          IABLRF_EP = -999999999
+        ELSE
+          IABLRF_EP = 2
+        END IF
+      ELSE
+        IABLRF_EE = 2
+        IF (XLR_SKIPEP) THEN
+          IABLRF_EP = -999999999
+        ELSE
+          IABLRF_EP = 3
+        END IF
+      END IF
+C
+C
+      DO IFREQ = 1,NBFREQ
+        IF(.NOT.BFREQ(IFREQ).EQ.D0) THEN
+          CALL PRSYMB(LUPRI,'-',72,2)
+          WRITE(LUPRI,'(A,F15.8,A)')
+     &         '*** Frequency    :',BFREQ(IFREQ),' a.u.'
+        ENDIF
+C
+        DO IA = 1,NA
+          JA = IBUF(IA,1)
+          KA = IP_PVC_EFG(1,JA)
+          DO IB = 1,NB
+            JB = IBUF(IB,2)
+            KB = IP_PVC_EFG(2,JB)
+C           First extract the e-e contribution
+            IF (.NOT. XLR_SKIPEE)
+     &      PVEFGMAT(JA,JB,1) = ABLRF(IFREQ,KA,KB,IABLRF_EE)
+C           then extract the e-p contribution
+            IF (.NOT. XLR_SKIPEP)
+     &      PVEFGMAT(JA,JB,2) = ABLRF(IFREQ,KA,KB,IABLRF_EP)
+          ENDDO
+        ENDDO
+      ENDDO
+C
+C     Analyze results
+C
+C     Here we exploit that we are in C1 symmetry,
+C     so that all nuclei are symmetry-independent!
+C
+C     Initialize response matrices
+      CALL DZERO(RESPEE,3*3*NUCIND)
+      CALL DZERO(RESPEP,3*3*NUCIND)
+      CALL DZERO(RESP,3*3*NUCIND)
+C
+C     Print some notes
+      IF(.NOT.GAUNUC) THEN ! Point nucleus
+        write(lupri,'(A,/,A)')
+     &  'The PVC to EFG tensor strongly depends on the nuclear model.',
+     &  'Gaussian model is suggested over point-like model.'
+      ENDIF
+
+
+C     Extract response
+C     ================
+C     First index in PVEFGMAT is related to the EFG operators
+C     second index in PVEFGMAT is related to the PV spin-independent operators
+      ITENSOR = 1
+      DO IATOM = 1,NUCIND
+        IF(DOATOM(IATOM)) THEN
+          DO IXYZ = 1,3
+          DO JXYZ = IXYZ,3
+C           Get the ee and pp parts of the PVC to EFG
+            RESPEE(JXYZ,IXYZ,IATOM) = FACTORS(IATOM)*
+     &      PVEFGMAT(ITENSOR,IATOM,1)
+            RESPEE(IXYZ,JXYZ,IATOM) = RESPEE(JXYZ,IXYZ,IATOM)
+            RESPEP(JXYZ,IXYZ,IATOM) = FACTORS(IATOM)*
+     &      PVEFGMAT(ITENSOR,IATOM,2)
+            RESPEP(IXYZ,JXYZ,IATOM) = RESPEP(JXYZ,IXYZ,IATOM)
+            ITENSOR = ITENSOR+1
+          ENDDO
+          ENDDO
+!         Total PV contribution to EFG
+          RESP = RESPEE + RESPEP
+        ENDIF
+      ENDDO
+
+      WRITE(lupri,'(/)')
+      IF (IPRPRP .LT. 1) CALL HEADER
+     & ('Total PV contributions to EFG tensor (a.u.):',1)
+
+C     Print the response tensor.
+      DO IATOM = 1,NUCIND
+        IF(DOATOM(IATOM)) THEN
+          IF (IPRPRP .GE. 1) CALL PRSYMB(LUPRI,'=',91,0)
+          WRITE (LUPRI ,'(2X,A9,A4)')'Nucleus: ',NAMDEP(IATOM)
+          IF (IPRPRP .GE. 1) CALL HEADER
+     &    ('Total PV contributions to EFG tensor (a.u.):',1)
+          WRITE (LUPRI,'(19X,3(A,13X))') 'x', 'y', 'z'
+          WRITE(LUPRI,'(3(3X,A,6X,3E14.6,/))')
+     &    'x', (RESP(1,I,IATOM), I = 1,3),
+     &    'y', (RESP(2,I,IATOM), I = 1,3),
+     &    'z', (RESP(3,I,IATOM), I = 1,3)
+C
+C       Print out of e-e and e-p response contributions
+          IF (IPRPRP .GE. 1) THEN
+            CALL HEADER('e-p and e-e '//
+     &            'response contributions (a.u.):',1)
+            WRITE (LUPRI,'(12X,3(A,13X),4X,3(A,13X))')
+     &             'x', 'y', 'z', 'x','y','z'
+            WRITE (LUPRI,'(3(2X,A,3E14.6,4X,3E14.6,/))'),
+     &  'x', (RESPEP(1,I,IATOM), I = 1,3),(RESPEE(1,I,IATOM), I = 1,3),
+     &  'y', (RESPEP(2,I,IATOM), I = 1,3),(RESPEE(2,I,IATOM), I = 1,3),
+     &  'z', (RESPEP(3,I,IATOM), I = 1,3),(RESPEE(3,I,IATOM), I = 1,3)
+          END IF
+C
+        END IF
+      END DO
+      IF (IPRPRP .GE. 1) CALL PRSYMB(LUPRI,'=',91,0)
+C
+      CALL QEXIT('PRP_PVC_EFG')
+C
+      deallocate(FACTORS)
+      deallocate(PVEFGMAT)
+      deallocate(DOATOM)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PRP_EFN */
       SUBROUTINE PRP_EFN(EXPVAL,EXP_CORR,CORR,WORK,KFREE,LFREE)
 C***********************************************************************
@@ -8090,7 +8570,6 @@ C
       DIMENSION EXPVAL(*),EXP_CORR(*),EFNVEC(3,NUCDEP,3),TEMP(3,NUCIND)
 #include "nuclei.h"
 #include "symmet.h"
-#include "ibtfun.h"
 C
       CALL PRSYMB(LUPRI,'-',76,0)
       WRITE(LUPRI,'(A/)') '* Electric field at nuclei:'
@@ -8153,7 +8632,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "nqcc.h"
-#include "ibtfun.h"
       CALL DZERO(EFNEL,3*NUCDEP)
       CALL DZERO(TEMP,3*NUCIND)
       ITYP = 0
@@ -8161,8 +8639,8 @@ C
       IF (.NOT. DOATOM(IATOM)) GOTO 100
         DO 50 IREPC = 0, MAXREP
           DO 200 ICOOR = 1, 3
-          IF (IBTAND(ISTBNU(IATOM),
-     &        IBTXOR(IREPC,ISYMAX(ICOOR,1))).EQ.0) THEN
+          IF (IAND(ISTBNU(IATOM),
+     &        IEOR(IREPC,ISYMAX(ICOOR,1))).EQ.0) THEN
             ITYP = ITYP + 1
             TEMP(ICOOR,IATOM) = TEMP(ICOOR,IATOM)
      &                        + EXPVAL(IPEFN(ITYP))/NUCDEG(IATOM)
@@ -8175,12 +8653,12 @@ C
       DO 110 IATOM = 1, NUCIND
       IF (DOATOM(IATOM)) THEN
         DO 310 IREPC = 0, MAXREP
-        IF (IBTAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
+        IF (IAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
           NATOM = NATOM + 1
           IATOMD = IATOMD + 1
           DO 220 I = 1, 3
             EFNEL(I,NATOM) = TEMP(I,IATOM)*
-     &                       PT(IBTAND(ISYMAX(I,1),IREPC))
+     &                       PT(IAND(ISYMAX(I,1),IREPC))
  220      CONTINUE
           IF (IPRINT .GE. 2) THEN
             WRITE (LUPRI ,'(/2X,A,A/)')
@@ -8254,7 +8732,6 @@ C
 #include "dcbxpr.h"
 #include "dcbexp.h"
 C
-#include "ibtfun.h"
 C
       DFAC = D4*GFAC*PI/D3
 C
@@ -8264,7 +8741,7 @@ C
       DO 100 IREP = 0, MAXREP
         DO 200 IATOM = 1, NUCIND
         IF (DOATOM(IATOM)) THEN
-          IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+          IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
             PLABEL(1) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                        //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                        //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
@@ -8287,7 +8764,7 @@ C  /* Deck def_rotg */
 C*****************************************************************************
 C
 C     Define operators for molecular rotational g-tensor
-C     DEF_SHIELD1 as skeleton
+C     DEF_SHIELD as skeleton
 C     and based on DEF_SPINRO as well (Agustin Aucar)
 C
 C     Written by T. Enevoldsen - Jul. 1998
@@ -8329,8 +8806,8 @@ C
 C
 C     Here we set up the operators needed for the linear reponse part
 C
-C     Define left-hand operators: L and S
-C     ===================================
+C     Define left-hand operators: i.L and i.S
+C     =======================================
 C
 C     Orbital angular momentum
 C
@@ -8397,8 +8874,8 @@ C
      &                       INDXPR,MAXLLR)
 C
 C
-C     Define right-hand operators: (c/2) alpha x r
-C     ============================================
+C     Define right-hand operators: -(c/2) i.alpha x r
+C     ===============================================
 C
 C     XAVECTOR
       IOP(1) = 5
@@ -8476,7 +8953,7 @@ C
 C     Print reference
 C
       WRITE(LUPRI,'(4X,A)')
-     & 'Reference: I. A. Aucar et al, JCP 141, 194103 (2014)'
+     & 'Reference: I. A. Aucar et al., JCP 141, 194103 (2014)'
 C
 C     A operators
 C     ===========
@@ -8570,7 +9047,7 @@ C
 C
       CALL TITLER('MOLECULAR ROTATIONAL G-TENSOR','*',116)
       WRITE(LUPRI,'(13X,A)')
-     & 'According to I. A. Aucar et al, JCP 141 (2014) p.194103'
+     & 'According to I. A. Aucar et al., JCP 141 (2014) p.194103'
       CALL PRSYMB(LUPRI,'-',81,0)
 C
 C--------------------------------------------------------------------
@@ -8731,7 +9208,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "rotg.h"
-#include "ibtfun.h"
 #include "priunit.h"
 #include "consts.h"
 C
@@ -8757,7 +9233,7 @@ C
       KK = 1
       DO 10 I = 1, NUCIND
          DO 20 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
               IF (CHARGE(I) .GT. D0) THEN
                XCOOR1 = GEOM(KK) - ORIGIN(1)
                YCOOR1 = GEOM(KK + 1) - ORIGIN(2)
@@ -8813,7 +9289,6 @@ C
 #include "symmet.h"
 #include "rotg.h"
 #include "orgcom.h"
-#include "ibtfun.h"
 #include "dgroup.h"
 #include "dcbprp.h"
 #include "codata.h"
@@ -8847,11 +9322,11 @@ C     Set up coordinates (relative to center of mass) and masses of all nuclei
          NATTYP = IZATOM(IATOM)
          NUMIS  = ISOTOP(IATOM)
          DO 110 ISYMOP = 0, MAXOPR
-         IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+         IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
            JATOM = JATOM + 1
            AMASS(JATOM) = DISOTP(NATTYP,NUMIS,'MASS')
            DO 120 ICOOR = 1, 3
-             GEOM(JATOM,ICOOR) = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+             GEOM(JATOM,ICOOR) = PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
      &                          *CORD(ICOOR,IATOM) - CMXYZ(ICOOR)
  120       CONTINUE
          END IF
@@ -8868,11 +9343,11 @@ C        PLANAR=T : planar molecule
 C        LINMOL=T : linear molecule (EIGVAL(1) = 0.0)
 C
 C
-C iaa To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be defined before
+Ciaa  To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be defined before
       IF (IPRINT .GE. 8) THEN
        CALL HEADER
      &    ('Nuclear angular velocity (a.u.)',0)
-       WRITE (LUPRI,'(3X,A,F16.8)')
+       WRITE (LUPRI,'(3X,A,2X,F16.8)')
      &       'Omega_A',OMEGA(1),
      &       'Omega_B',OMEGA(2),
      &       'Omega_C',OMEGA(3)
@@ -8882,22 +9357,21 @@ C    Print inertia tensor or moment
 C
       IF (IPRINT .GE. 0) THEN
        IF (LINEAR) THEN      ! Linear molecule detected using symmetry
-              WRITE (LUPRI,'(2X,A,F16.8,/)')
+              WRITE (LUPRI,'(/,2X,A,F16.8,/)')
      &         'Moment of inertia (a.u.): ', XFAMU/EIGVAL(3)
        ELSE
         IF(LINMOL) THEN      ! Linear molecule (without symmetry detection)
-         WRITE (LUPRI,'(2X,A,F16.8,/)')
+         WRITE (LUPRI,'(/,2X,A,F16.8,/)')
      &         'Moment of inertia (a.u.): ', XFAMU/EIGVAL(3)
         ELSE                 ! Non-linear molecule
          CALL HEADER
      &    ('Principal moments of inertia (a.u.) and principal axes',0)
-         WRITE (LUPRI,'(3X,A,F16.8,6X,3F16.8)')
-     &       'IA',XFAMU/EIGVAL(1), (EIGVEC(I,1),I = 1,3),
-     &       'IB',XFAMU/EIGVAL(2), (EIGVEC(I,2),I = 1,3),
-     &       'IC',XFAMU/EIGVAL(3), (EIGVEC(I,3),I = 1,3)
-C
-         WRITE (LUPRI,'(/,2X,A)') 'Components of molecular rotational'//
-     &                     ' g-tensor in the principal axis system'
+         WRITE (LUPRI,'(3X,A,2X,F16.8,6X,3F16.8)')
+     &       'IA',XFAMU/EIGVAL(1), (EIGVEC(1,I),I = 1,3),
+     &       'IB',XFAMU/EIGVAL(2), (EIGVEC(2,I),I = 1,3),
+     &       'IC',XFAMU/EIGVAL(3), (EIGVEC(3,I),I = 1,3)
+         WRITE (LUPRI,'(/,2X,A)') 'Molecular rotational g-tensor '    //
+     &                'elements are given in the principal axis system.'
         END IF
        END IF
       END IF
@@ -9002,25 +9476,25 @@ C    Inertia tensor of a non-linear molecule (with and without symmetry):
           IF (IPRINT .GE. 0) THEN
             CALL HEADER('Total molecular rotational g-tensor',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &               'A', (GTRANT(I,1),I = 1,3),
-     &               'B', (GTRANT(I,2),I = 1,3),
-     &               'C', (GTRANT(I,3),I = 1,3)
+     &               'A', (GTRANT(1,I),I = 1,3),
+     &               'B', (GTRANT(2,I),I = 1,3),
+     &               'C', (GTRANT(3,I),I = 1,3)
             WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &               'iso', (GTRANT(1,1)
      &            +GTRANT(2,2)+GTRANT(3,3))/3
             CALL HEADER('Nuclear contribution (g^nuc)',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &               'A', (GTRANN(I,1),I = 1,3),
-     &               'B', (GTRANN(I,2),I = 1,3),
-     &               'C', (GTRANN(I,3),I = 1,3)
+     &               'A', (GTRANN(1,I),I = 1,3),
+     &               'B', (GTRANN(2,I),I = 1,3),
+     &               'C', (GTRANN(3,I),I = 1,3)
             WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &               'iso', (GTRANN(1,1)
      &            +GTRANN(2,2)+GTRANN(3,3))/3
             CALL HEADER('Electronic contribution (g^LR)',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &               'A', (GTRANP(I,1),I = 1,3),
-     &               'B', (GTRANP(I,2),I = 1,3),
-     &               'C', (GTRANP(I,3),I = 1,3)
+     &               'A', (GTRANP(1,I),I = 1,3),
+     &               'B', (GTRANP(2,I),I = 1,3),
+     &               'C', (GTRANP(3,I),I = 1,3)
             WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &               'iso', (GTRANP(1,1)
      &            +GTRANP(2,2)+GTRANP(3,3))/3
@@ -9031,33 +9505,33 @@ C
           IF (IPRINT .GE. 1) THEN
             CALL HEADER('g^LR-L(e-e)',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &               'A', (GTRANPLEE(I,1),I = 1,3),
-     &               'B', (GTRANPLEE(I,2),I = 1,3),
-     &               'C', (GTRANPLEE(I,3),I = 1,3)
+     &               'A', (GTRANPLEE(1,I),I = 1,3),
+     &               'B', (GTRANPLEE(2,I),I = 1,3),
+     &               'C', (GTRANPLEE(3,I),I = 1,3)
             WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &               'iso', (GTRANPLEE(1,1)
      &            +GTRANPLEE(2,2)+GTRANPLEE(3,3))/3
             CALL HEADER('g^LR-S(e-e)',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &               'A', (GTRANPSEE(I,1),I = 1,3),
-     &               'B', (GTRANPSEE(I,2),I = 1,3),
-     &               'C', (GTRANPSEE(I,3),I = 1,3)
+     &               'A', (GTRANPSEE(1,I),I = 1,3),
+     &               'B', (GTRANPSEE(2,I),I = 1,3),
+     &               'C', (GTRANPSEE(3,I),I = 1,3)
             WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &               'iso', (GTRANPSEE(1,1)
      &            +GTRANPSEE(2,2)+GTRANPSEE(3,3))/3
             CALL HEADER('g^LR-L(e-p)',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &               'A', (GTRANPLEP(I,1),I = 1,3),
-     &               'B', (GTRANPLEP(I,2),I = 1,3),
-     &               'C', (GTRANPLEP(I,3),I = 1,3)
+     &               'A', (GTRANPLEP(1,I),I = 1,3),
+     &               'B', (GTRANPLEP(2,I),I = 1,3),
+     &               'C', (GTRANPLEP(3,I),I = 1,3)
             WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &               'iso', (GTRANPLEP(1,1)
      &              +GTRANPLEP(2,2)+GTRANPLEP(3,3))/3
             CALL HEADER('g^LR-S(e-p)',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &               'A', (GTRANPSEP(I,1),I = 1,3),
-     &               'B', (GTRANPSEP(I,2),I = 1,3),
-     &               'C', (GTRANPSEP(I,3),I = 1,3)
+     &               'A', (GTRANPSEP(1,I),I = 1,3),
+     &               'B', (GTRANPSEP(2,I),I = 1,3),
+     &               'C', (GTRANPSEP(3,I),I = 1,3)
             WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &               'iso', (GTRANPSEP(1,1)
      &            +GTRANPSEP(2,2)+GTRANPSEP(3,3))/3
@@ -9125,7 +9599,7 @@ C
 C     ... allocate for LL-only operator
       N2BBASXQ_L = NTBAS(1)*NTBAS(1)*NZ
       CALL MEMGET('REAL',KPRLL,N2BBASXQ_L,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
+      CALL MEMGET('LOGI',KFIRST,NZ       ,WORK,KFREE,LFREE)
       IF (IPRINT.GE.3) THEN
         CALL HEADER('*** Output from PROP2BSS ***',-1)
       ENDIF
@@ -9210,24 +9684,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "mxcent.h"
-#include "nuclei.h"
-      CALL DEF_OPTROT1(IPRINT)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck def_optrot1 */
-      SUBROUTINE DEF_OPTROT1(IPRINT)
-C***********************************************************************
-C
-C     Define operator for optical rotation; based on DEF_SHIELD
-C     and DEF_EPOLAR
-C     Written by T. Saue and K. Ruud Jan 8 2008
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
       PARAMETER(DM1 = -1.0D0, DMI2 = -0.5D0)
 C
 #include "maxorb.h"
@@ -9244,12 +9700,12 @@ C
 #include "dcbexp.h"
 #include "dcbnmr.h"
 #include "chrxyz.h"
-      CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4,LABELC*7
-      DIMENSION PFAC(3),IOP(3)
+      CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4
+      REAL*8    PFAC(3)
+      INTEGER   IOP(3)
 #include "chrnos.h"
-#include "ibtfun.h"
 C
-      CALL QENTER('DEF_OPTROT1')
+      CALL QENTER('DEF_OPTROT')
 C
 C     First define left-hand operators
 C
@@ -9368,35 +9824,12 @@ C
         ENDIF
       ENDDO
 
-      CALL QEXIT('DEF_OPTROT1')
+      CALL QEXIT('DEF_OPTROT')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Prp_optrot */
-      SUBROUTINE PRP_OPTROT(ABLRF,ABCNV,WORK,KFREE,LFREE)
-C***********************************************************************
-C
-C     Output routine for optical rotation, based on LNROUT from DALTON
-C     Written by T. Saue in collaboration with K. Ruud Feb 2008
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dcbxlr.h"
-      DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
-     &          ABCNV(NBFREQ,NLRBPT),WORK(*)
-      KFRSAV = KFREE
-      CALL MEMGET('REAL',KTEMP,9,WORK,KFREE,LFREE)
-      CALL PRP_OPTRO1(ABLRF,ABCNV,WORK(KTEMP),
-     &            WORK,KFREE,LFREE)
-      CALL MEMREL('PRP_OPTROT',WORK,1,KFRSAV,KFREE,LFREE)
-      RETURN
-C
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck Prp_optrot */
-      SUBROUTINE PRP_OPTRO1(ABLRF,ABCNV,TMPMAT,WORK,KFREE,LFREE)
+      SUBROUTINE PRP_OPTROT(ABLRF,ABCNV)
 C***********************************************************************
 C
 C     Output routine for optical rotation, based on LNROUT from DALTON
@@ -9414,8 +9847,8 @@ C
 #include "nuclei.h"
 #include "codata.h"
 #include "pi.h"
-      DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
-     &          ABCNV(NBFREQ,NLRBPT),TMPMAT(3,3),WORK(*)
+      REAL*8    ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
+     &          ABCNV(NBFREQ,NLRBPT),TMPMAT(3,3)
       EXTERNAL TOTMASS
 C
       FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4)
@@ -9485,10 +9918,9 @@ C
 #include "dcbexp.h"
 #include "dcbnmr.h"
 #include "chrxyz.h"
-      CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4,LABELC*7,chcomp*1
+      CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4,chcomp*1
       DIMENSION WORK(LWORK)
 #include "chrnos.h"
-#include "ibtfun.h"
 #include "dcbxpr.h"
 #include "dcbsusc.h"
 #include "memint.h"
@@ -9594,14 +10026,13 @@ C
 #include "dcbxpr.h"
 #include "dcbexp.h"
 C
-#include "ibtfun.h"
       IPTYP     = 1
       NPCOMP    = 1
       PFAC(1)   = D1
       DO 100 IREP = 0, MAXREP
         DO 200 IATOM = 1, NUCIND
           IF (DOATOM(IATOM)) THEN
-            IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+            IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
               PLABEL(1) = 'ED '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                          //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                          //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
@@ -9675,7 +10106,6 @@ C
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
 C
       ITYP = 0
       IPTYP     = 1
@@ -9691,7 +10121,7 @@ C
       DO 100 IATOM = 1, NUCIND
          IF (DOATOM(IATOM)) THEN
             DO 200 IREP = 0, MAXREP
-               IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+               IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
                   ITYP = ITYP + 1
                   PNAME = 'EFFD:'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                    //CHRNOS(IPTNUC(IATOM,IREP)/10)//
@@ -10131,7 +10561,6 @@ C***********************************************************************
 #include "nuclei.h"
 #include "symmet.h"
 #include "nqcc.h"
-#include "ibtfun.h"
 C
 C     Initialization of GEOM
 C     (copied from abacus/hergp.F:CMMASS)
@@ -10139,10 +10568,10 @@ C
       JATOM = 0
       DO IATOM = 1, NUCIND
          DO ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                   DO KCOOR = 1, 3
                      GEOM(3*JATOM + KCOOR) =
-     &                    PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
+     &                    PT(IAND(ISYMAX(KCOOR,1),ISYMOP))
      &                    *CORD(KCOOR,IATOM)
                   END DO
                   JATOM = JATOM + 1
@@ -10225,7 +10654,6 @@ C***********************************************************************
 #include "symmet.h"
       LOGICAL    DOATOM(*)
       DIMENSION  GEOM(3*NUCDEP),EFNNUC(3,NUCDEP)
-#include "ibtfun.h"
 C
 C
 C     Initialization of GEOM
@@ -10234,10 +10662,10 @@ C
       JATOM = 0
       DO IATOM = 1, NUCIND
          DO ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                   DO KCOOR = 1, 3
                      GEOM(3*JATOM + KCOOR) =
-     &                    PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
+     &                    PT(IAND(ISYMAX(KCOOR,1),ISYMOP))
      &                    *CORD(KCOOR,IATOM)
                   END DO
                   JATOM = JATOM + 1
@@ -10438,7 +10866,7 @@ C***********************************************************************
 C
 C     Define operators for nuclear spin-rotation constants
 C
-C     Written by Agustin Aucar and Trond Saue - Sep 2013
+C     Agustin Aucar and Trond Saue - September 2013
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
@@ -10479,7 +10907,6 @@ C     ANGMOM integrals correspond to -iL, so we set DL = -1
 C     XSIGMA,YSIGMA and ZSIGMA come with imaginary i, so we set DS positive (DS = 0.5)
       PARAMETER(DL = -1.0D0,DS = 0.5D0)
 #include "chrnos.h"
-#include "ibtfun.h"
 C
       CALL QENTER('DEF_SPINRO')
 C
@@ -10540,8 +10967,8 @@ C
 C
 C     Here we set up the operators needed for the linear reponse part
 C
-C     Define left-hand operators: -c alpha x r/r^3
-C     ============================================
+C     Define left-hand operators: (-c) i.alpha x r/r^3
+C     ================================================
 C
 C     XAVECTOR
       IOP(1) = 5
@@ -10581,8 +11008,8 @@ C
               IPTYP    = IOP(ICOOR1)
               IC1      = MOD(ICOOR1+1,3) + 1
               IC2      = MOD(ICOOR1  ,3) + 1
-              IREP1    = IBTXOR(IREPO,ISYMAX(IC2,1))
-              IREP2    = IBTXOR(IREPO,ISYMAX(IC1,1))
+              IREP1    = IEOR(IREPO,ISYMAX(IC2,1))
+              IREP2    = IEOR(IREPO,ISYMAX(IC1,1))
               IS1      = IPTCNT(3*(IATOM1 - 1) + IC1,IREP1,1)
               IS2      = IPTCNT(3*(IATOM1 - 1) + IC2,IREP2,1)
               IF((IS1.LE.0).OR.(IS2.LE.0))
@@ -10610,8 +11037,8 @@ C
       ENDDO
 C
 C
-C     Define right-hand operators: L and S
-C     ====================================
+C     Define right-hand operators: i.L and i.S
+C     ========================================
 C
       LINDET=.FALSE.    ! to detect if linear symmetry is used
 C
@@ -10779,7 +11206,7 @@ C***********************************************************************
 C
 C     Output routine for nuclear spin-rotation constants
 C
-C     Written by Agustin Aucar and Trond Saue - Sep 2013
+C     Agustin Aucar and Trond Saue - September 2013
 C
 C***********************************************************************
       use memory_allocator
@@ -10843,7 +11270,7 @@ C
 C
       CALL TITLER('NUCLEAR SPIN-ROTATION TENSOR','*',116)
       WRITE(LUPRI,'(13X,A)')
-     & 'According to I. A. Aucar et al, JCP 136 (2012) p.204119'
+     & 'According to I. A. Aucar et al., JCP 136 (2012) p.204119'
       CALL PRSYMB(LUPRI,'-',81,0)
       WRITE(LUPRI,*) ''
 C
@@ -11182,7 +11609,6 @@ C
 #include "abainf.h"
 #include "symmet.h"
 #include "spinro.h"
-#include "ibtfun.h"
 #include "consts.h"
 C
       double precision GEOM,ORIGIN
@@ -11213,12 +11639,12 @@ C
       NATOM1 = 1
       DO 10 IATOM1 = 1, NUCIND
          DO 20 ISYM1 = 0, MAXOPR
-            IF (IBTAND(ISYM1,ISTBNU(IATOM1)) .EQ. 0) THEN
+            IF (IAND(ISYM1,ISTBNU(IATOM1)) .EQ. 0) THEN
                IF (CHARGE(IATOM1) .GT. D0) THEN
                   LL = 1
                   DO 30 IATOM2 = 1, NUCIND
                      DO 40 ISYM2 = 0, MAXOPR
-                        IF (IBTAND(ISYM2,ISTBNU(IATOM2)) .EQ. 0) THEN
+                        IF (IAND(ISYM2,ISTBNU(IATOM2)) .EQ. 0) THEN
                            ZVAL2 = CHARGE(IATOM2)
                            IF (ZVAL2 .GT. D0) THEN
                               IF (KK .NE. LL) THEN
@@ -11335,7 +11761,6 @@ C
 #include "symmet.h"
 #include "spinro.h"
 #include "orgcom.h"
-#include "ibtfun.h"
 C
       integer IPRINT,IATOM,ISYMOP,NATOM,NCMAT
 C
@@ -11359,12 +11784,12 @@ C
       NATOM = 1
       DO 10 IATOM = 1, NUCIND
          DO 20 ISYMOP = 0, MAXOPR
-         IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-            COORX = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+         IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+            COORX = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
      &            - CMXYZ(1)
-            COORY = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+            COORY = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
      &            - CMXYZ(2)
-            COORZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
+            COORZ = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
      &            - CMXYZ(3)
             SPRDNL(1,1,NATOM) = (ELFLD(2,NATOM)*COORY
      &                        +  ELFLD(3,NATOM)*COORZ)
@@ -11399,8 +11824,8 @@ C     DMAT  - expectation value term of NSR
 C     PMATL - contribution from orbital angular moment to linear response term
 C     PMATS - contribution from spin angular moment to linear response term
 C
-C     Agustin Aucar and Trond Saue
-C     June 2014
+C     Agustin Aucar and Trond Saue - June  2014
+C     Last revision: Agustin Aucar - March 2024
 C
 C***********************************************************************
       implicit none
@@ -11415,7 +11840,6 @@ C
 #include "symmet.h"
 #include "spinro.h"
 #include "orgcom.h"
-#include "ibtfun.h"
 #include "dgroup.h"
 #include "codata.h"
 #include "consts.h"
@@ -11459,12 +11883,12 @@ C     Set up coordinates (relative to center of mass), g-values and masses of al
          NATTYP = IZATOM(IATOM)
          NUMIS  = ISOTOP(IATOM)
          DO 110 ISYMOP = 0, MAXOPR
-         IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+         IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
            JATOM = JATOM + 1
            AMASS(JATOM) = DISOTP(NATTYP,NUMIS,'MASS')
            GVAL(JATOM)  = DISOTP(NATTYP,NUMIS,'GVAL')
            DO 120 ICOOR = 1, 3
-             GEOM(JATOM,ICOOR) = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+             GEOM(JATOM,ICOOR) = PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
      &                          *CORD(ICOOR,IATOM) - CMXYZ(ICOOR)
  120       CONTINUE
          END IF
@@ -11483,11 +11907,11 @@ C
 C     Transform each nuclear spin-rotation constant to principal axis system,
 C     and multiply by inverse moment of inertia and various constants
 C
-C iaa To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be defined before
+Ciaa  To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be defined before
       IF (IPRINT .GE. 8) THEN
        CALL HEADER
      &    ('Nuclear angular velocity (a.u.)',0)
-       WRITE (LUPRI,'(3X,A,F16.8)')
+       WRITE (LUPRI,'(3X,A,2X,F16.8)')
      &       'Omega_A',OMEGA(1),
      &       'Omega_B',OMEGA(2),
      &       'Omega_C',OMEGA(3)
@@ -11515,11 +11939,11 @@ C
         ELSE                 ! Non-linear molecule
          CALL HEADER
      &    ('Principal moments of inertia (a.u.) and principal axes',0)
-         WRITE (LUPRI,'(3X,A,F16.8,6X,3F16.8)')
-     &       'IA ',XFAMU/EIGVAL(1), (EIGVEC(I,1),I = 1,3),
-     &       'IB ',XFAMU/EIGVAL(2), (EIGVEC(I,2),I = 1,3),
-     &       'IC ',XFAMU/EIGVAL(3), (EIGVEC(I,3),I = 1,3)
-         WRITE (LUPRI,'(/,2X,A)') 'Nuclear spin-rotation tensor'//
+         WRITE (LUPRI,'(3X,A,2X,F16.8,6X,3F16.8)')
+     &       'IA',XFAMU/EIGVAL(1), (EIGVEC(1,I),I = 1,3),
+     &       'IB',XFAMU/EIGVAL(2), (EIGVEC(2,I),I = 1,3),
+     &       'IC',XFAMU/EIGVAL(3), (EIGVEC(3,I),I = 1,3)
+         WRITE (LUPRI,'(/,2X,A)') 'Nuclear spin-rotation tensor'      //
      &               ' elements are given in the principal axis system.'
         END IF
        END IF
@@ -11530,7 +11954,7 @@ C
       IATOM = 0
       DO 98 K = 1, NUCIND
        DO 200 ISYMOP = 0, MAXOPR
-        IF (IBTAND(ISTBNU(K),ISYMOP).EQ.0) THEN
+        IF (IAND(ISTBNU(K),ISYMOP).EQ.0) THEN
          IATOM = IATOM + 1
          IF (DOATOM(K)) THEN
           IF (CHARGE(IATOM).GT. D0) THEN
@@ -11756,27 +12180,27 @@ C           Total NSR for molecules in equilibrium
 C
              CALL HEADER('Total nuclear spin-rotation tensor (NSRT)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANT(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANT(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANT(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANT(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANT(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANT(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANT(1,1,IATOM)
      &              +GTRANT(2,2,IATOM)+GTRANT(3,3,IATOM))/3
 C           Nuclear contribution to NSR for molecules in equilibrium
               CALL HEADER('Nuclear contribution to NSRT (M^nuc)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANNEQ(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANNEQ(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANNEQ(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANNEQ(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANNEQ(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANNEQ(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANNEQ(1,1,IATOM)
      &              +GTRANNEQ(2,2,IATOM)+GTRANNEQ(3,3,IATOM))/3
 C           Total linear response contribution to NSR
               CALL HEADER('Electronic contribution to NSRT (M^LR)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANP(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANP(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANP(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANP(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANP(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANP(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANP(1,1,IATOM)
      &              +GTRANP(2,2,IATOM)+GTRANP(3,3,IATOM))/3
@@ -11787,33 +12211,33 @@ C
              IF (IPRINT .GE. 2*KHZPPM-1) THEN
               CALL HEADER('M^LR-L(e-e)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANPLEE(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANPLEE(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANPLEE(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANPLEE(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANPLEE(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANPLEE(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANPLEE(1,1,IATOM)
      &              +GTRANPLEE(2,2,IATOM)+GTRANPLEE(3,3,IATOM))/3
               CALL HEADER('M^LR-S(e-e)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANPSEE(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANPSEE(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANPSEE(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANPSEE(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANPSEE(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANPSEE(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANPSEE(1,1,IATOM)
      &              +GTRANPSEE(2,2,IATOM)+GTRANPSEE(3,3,IATOM))/3
               CALL HEADER('M^LR-L(e-p)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANPLEP(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANPLEP(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANPLEP(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANPLEP(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANPLEP(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANPLEP(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANPLEP(1,1,IATOM)
      &              +GTRANPLEP(2,2,IATOM)+GTRANPLEP(3,3,IATOM))/3
               CALL HEADER('M^LR-S(e-p)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANPSEP(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANPSEP(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANPSEP(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANPSEP(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANPSEP(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANPSEP(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANPSEP(1,1,IATOM)
      &              +GTRANPSEP(2,2,IATOM)+GTRANPSEP(3,3,IATOM))/3
@@ -11827,18 +12251,18 @@ C           Total nuclear contribution to NSR
      & '*************************************************************'
               CALL HEADER('M^NU',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANNUC(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANNUC(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANNUC(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANNUC(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANNUC(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANNUC(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANNUC(1,1,IATOM)
      &              +GTRANNUC(2,2,IATOM)+GTRANNUC(3,3,IATOM))/3
 C           Total expectation value contribution to NSR
               CALL HEADER('M^EV',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANEXP(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANEXP(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANEXP(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANEXP(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANEXP(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANEXP(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANEXP(1,1,IATOM)
      &              +GTRANEXP(2,2,IATOM)+GTRANEXP(3,3,IATOM))/3
@@ -11864,7 +12288,7 @@ C
 C     Define operators for parity-violation contribution
 C     to nuclear spin-rotation constants
 C
-C     Written by Agustin Aucar - Nov 2022
+C     Agustin Aucar - November 2022
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
@@ -11888,7 +12312,6 @@ C
 #include "codata.h"
 #include "pi.h"
 #include "chrnos.h"
-#include "ibtfun.h"
 C
       INTEGER IPRINT,NATOM,IATOM,ICOOR,INDXPR,
      &        IOP,IPTYP,IREPO,ISCOR,ISYXPR,
@@ -11915,8 +12338,8 @@ C
 C
 C     Here we set up the operators needed for the linear reponse part
 C
-C     Define left-hand operators: nuclear-spin-dependent PV
-C     =====================================================
+C     Define left-hand operators: nuclear-spin-dependent PV: c i.alpha rho(r)
+C     =======================================================================
 C
 C     XALPHA
       IOP(1) = 2
@@ -11969,8 +12392,8 @@ C           Cartesian directions
       ENDDO
 C
 C
-C     Define right-hand operators: L and S
-C     ====================================
+C     Define right-hand operators: i.L and i.S
+C     ========================================
 C
       LINDET=.FALSE.    ! to detect if linear symmetry is used
 C
@@ -12125,7 +12548,7 @@ C
 C     Output routine for Parity-violation contribution
 C     to nuclear spin-rotation constants
 C
-C     Written by Agustin Aucar - Nov 2022
+C     Agustin Aucar - November 2022
 C
 C***********************************************************************
       use memory_allocator
@@ -12183,7 +12606,7 @@ C
      &  'NUCLEAR SPIN-ROTATION TENSOR','*',116)
 C
       WRITE(LUPRI,'(13X,A)')
-     & 'According to I. A. Aucar et al, JCP 155 (2021) p.134307'
+     & 'According to I. A. Aucar et al., JCP 155 (2021) p.134307'
       CALL PRSYMB(LUPRI,'-',81,0)
       WRITE(LUPRI,*) ''
 C
@@ -12426,7 +12849,8 @@ C   INPUT:
 C     PMATL - contribution from orbital angular moment to linear response term
 C     PMATS - contribution from spin angular moment to linear response term
 C
-C     Agustin Aucar - Nov 2022
+C     Agustin Aucar                - November 2022
+C     Last revision: Agustin Aucar - March    2024
 C
 C***********************************************************************
       implicit none
@@ -12441,7 +12865,6 @@ C
 #include "symmet.h"
 #include "spinro.h"
 #include "orgcom.h"
-#include "ibtfun.h"
 #include "codata.h"
 #include "consts.h"
 C
@@ -12478,11 +12901,11 @@ C     Set up coordinates (relative to center of mass), g-values and masses of al
          NATTYP = IZATOM(IATOM)
          NUMIS  = ISOTOP(IATOM)
          DO 110 ISYMOP = 0, MAXOPR
-         IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+         IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
            JATOM = JATOM + 1
            AMASS(JATOM) = DISOTP(NATTYP,NUMIS,'MASS')
            DO 120 ICOOR = 1, 3
-             GEOM(JATOM,ICOOR) = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+             GEOM(JATOM,ICOOR) = PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
      &                          *CORD(ICOOR,IATOM) - CMXYZ(ICOOR)
  120       CONTINUE
          END IF
@@ -12526,11 +12949,11 @@ C
      & ' implementation of PVCSR, the linear molecule should'//
      & ' be placed along the z axis. ***'
       ELSE
-C iaa To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be defined before
+Ciaa  To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be defined before
       IF (IPRINT .GE. 8) THEN
        CALL HEADER
      &    ('Nuclear angular velocity (a.u.)',0)
-       WRITE (LUPRI,'(3X,A,F16.8)')
+       WRITE (LUPRI,'(3X,A,2X,F16.8)')
      &       'Omega_A',OMEGA(1),
      &       'Omega_B',OMEGA(2),
      &       'Omega_C',OMEGA(3)
@@ -12541,12 +12964,12 @@ C
       IF (IPRINT .GE. 0) THEN
          CALL HEADER
      &    ('Principal moments of inertia (a.u.) and principal axes',0)
-         WRITE (LUPRI,'(3X,A,F16.8,6X,3F16.8)')
-     &       'IA',XFAMU/EIGVAL(1), (EIGVEC(I,1),I = 1,3),
-     &       'IB',XFAMU/EIGVAL(2), (EIGVEC(I,2),I = 1,3),
-     &       'IC',XFAMU/EIGVAL(3), (EIGVEC(I,3),I = 1,3)
-         WRITE (LUPRI,'(/,2X,A)') 'Components of PVC to nuclear '//
-     &             'spin-rotation tensor in the principal axis system'
+         WRITE (LUPRI,'(3X,A,2X,F16.8,6X,3F16.8)')
+     &       'IA',XFAMU/EIGVAL(1), (EIGVEC(1,I),I = 1,3),
+     &       'IB',XFAMU/EIGVAL(2), (EIGVEC(2,I),I = 1,3),
+     &       'IC',XFAMU/EIGVAL(3), (EIGVEC(3,I),I = 1,3)
+         WRITE (LUPRI,'(/,2X,A)') 'PVC to nuclear spin-rotation '     //
+     &         'tensor elements are given in the principal axis system.'
       END IF
 C
 C    Print PVC to nuclear spin-rotation constants or tensors
@@ -12554,7 +12977,7 @@ C
       IATOM = 0
       DO 98 K = 1, NUCIND
        DO 200 ISYMOP = 0, MAXOPR
-        IF (IBTAND(ISTBNU(K),ISYMOP).EQ.0) THEN
+        IF (IAND(ISTBNU(K),ISYMOP).EQ.0) THEN
          IATOM = IATOM + 1
          IF (DOATOM(K)) THEN
           IF (CHARGE(IATOM) .GT. D0) THEN
@@ -12607,9 +13030,9 @@ C
               CALL HEADER('Total PVC to nuclear spin-rotation '//
      &              'constant',-1)
               WRITE (LUPRI,'(3X,A,6X,3E16.8)')
-     &                 'A', (GTRANT(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANT(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANT(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANT(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANT(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANT(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,E16.8)')
      &                 'iso', (GTRANT(1,1,IATOM)
      &              +GTRANT(2,2,IATOM)+GTRANT(3,3,IATOM))/3
@@ -12620,33 +13043,33 @@ C
              IF (IPRINT .GE. 1) THEN
               CALL HEADER('M^LR-L(e-e)',-1)
               WRITE (LUPRI,'(3X,A,6X,3E16.8)')
-     &                 'A', (GTRANPLEE(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANPLEE(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANPLEE(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANPLEE(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANPLEE(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANPLEE(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,E16.8)')
      &                 'iso', (GTRANPLEE(1,1,IATOM)
      &              +GTRANPLEE(2,2,IATOM)+GTRANPLEE(3,3,IATOM))/3
               CALL HEADER('M^LR-S(e-e)',-1)
               WRITE (LUPRI,'(3X,A,6X,3E16.8)')
-     &                 'A', (GTRANPSEE(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANPSEE(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANPSEE(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANPSEE(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANPSEE(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANPSEE(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,E16.8)')
      &                 'iso', (GTRANPSEE(1,1,IATOM)
      &              +GTRANPSEE(2,2,IATOM)+GTRANPSEE(3,3,IATOM))/3
               CALL HEADER('M^LR-L(e-p)',-1)
               WRITE (LUPRI,'(3X,A,6X,3E16.8)')
-     &                 'A', (GTRANPLEP(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANPLEP(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANPLEP(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANPLEP(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANPLEP(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANPLEP(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,E16.8)')
      &                 'iso', (GTRANPLEP(1,1,IATOM)
      &              +GTRANPLEP(2,2,IATOM)+GTRANPLEP(3,3,IATOM))/3
               CALL HEADER('M^LR-S(e-p)',-1)
               WRITE (LUPRI,'(3X,A,6X,3E16.8)')
-     &                 'A', (GTRANPSEP(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANPSEP(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANPSEP(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANPSEP(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANPSEP(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANPSEP(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,E16.8)')
      &                 'iso', (GTRANPSEP(1,1,IATOM)
      &              +GTRANPSEP(2,2,IATOM)+GTRANPSEP(3,3,IATOM))/3

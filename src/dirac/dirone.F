@@ -34,7 +34,8 @@ C     Written by T.Saue - May 1996
 C
 C*****************************************************************************
 ! checking
-       use fde_mod
+      use interface_ao_specific
+      use fde_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -45,8 +46,6 @@ C
       LOGICAL TEST
       type(fde_import) :: itmp
 C
-#include "dcbgen.h"
-#include "dcbprl.h"
 #include "dcbham.h"
 #include "dcbcls.h"
 #include "cbihr1.h"
@@ -61,6 +60,8 @@ C.....With modified Hamiltonian this routine is skipped for now
       !mi: always print nuclear contribution to the dipole moment (costs nothing)
       TEST=(DSUM(NUCIND,CHARGE,1).GT.D0)
       IF(TEST) CALL DIPNUC(1,.FALSE.)
+C     Dump AO information in case of numerical integration      
+      call interface_ao_write()
 C
 C     Loop through list of class labels; calculate only the active ones(CLSCAL)
 C     =========================================================================
@@ -93,6 +94,31 @@ C     Effective electronic density on nuclei
 C
       ELSEIF (CLSINT(I).EQ.'EFFDEN ') THEN
         CALL EFFECTIVE_DENS_NUC(WORK,LWORK,COMB)
+C
+C     Self-energy(3component)
+C
+      ELSEIF (CLSINT(I)(3:6).EQ.'FGMG') THEN
+        CALL NUMINT(I,COMB,3,'AN',IPRONE) 
+C
+C     Self-energy(Flambaum)
+C
+      ELSEIF (CLSINT(I)(1:4).EQ.'SEFG') THEN
+        IF(NOSMLV) COMB(4:4) = 'F'
+        CALL NUMINT(I,COMB,0,'SY',IPRONE)       
+C
+C     Self-energy(Pyyko)
+C
+      ELSEIF (CLSINT(I)(1:4).EQ.'SEPZ') THEN
+        IF(NOSMLV) COMB(4:4) = 'F'
+        CALL NUMINT(I,COMB,0,'SY',IPRONE)       
+C
+C     Uehling potential for vacuum polarization
+C
+      ELSEIF (CLSINT(I).EQ.'UEHLING') THEN
+C
+        IF(NOSMLV) COMB(4:4) = 'F'
+        CALL NUMINT(I,COMB,0,'SY',IPRONE)       
+C
 C
 C     Contribution from (static) embedding potential
 C
@@ -161,6 +187,2093 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck numint_ang */
+      SUBROUTINE NUMINT(IOP,COMB,NXYZ,MATINF,IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C      
+C On iuput: IOP   ... Index of operator: e.g. CLSINT(IOP)='UEHLING'
+C           IXYZ  ... Index of XYZ, which is used in angular roop
+C                     ( WT8 = WT8 * ANG(IY,IXYZ) )
+C           NXYZ  ... 0 for scalar operator, 3 for vector operator
+C           MATINF... SY : Symmetric
+C                     AN : Anti-symmetrix
+C                     OF : Off-diagonal
+C      
+C The numerical integration for constructing AO basis matrix
+C
+C Called from: ONEGEN
+C
+C A. Sunaga Nov. 2018
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use num_grid_cfg
+      use interface_ao
+      use dirac_ao_eval
+      use dirac_ao_eval_sub
+      
+#include "implicit.h" 
+#include "priunit.h" 
+#include "pi.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+C
+#include "nuclei.h"      
+#include "ibtfun.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "dcbgen.h"
+#include "nucdata.h"      
+#include "symmet.h"
+#include "dcbcls.h"
+C      
+      LOGICAL ADDSML
+      CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4,MATINF*2
+      CHARACTER RADC*2,ANGC*2,RADANGC*6
+      PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0,DM1=-1.0D0)      
+      real(8), allocatable :: ANG(:,:),GAO(:,:),GAO2(:,:),BUFGAO(:,:)
+      real(8), allocatable :: BUF(:),TC(:), NUMIR(:),R(:)
+      real(8), allocatable :: INTAO(:),INTAOTRI(:)
+      real(8) C(3,MXCENT)
+C
+      CHARACTER CPUTID*12, WALLTID*12, SECTID*12, TITLE_PRINT*50      
+C
+      CALL QENTER('NUMINT')
+      CALL GETTIM(CPU0,WALL0)
+      IF(num_grid_cfg_numint_print)THEN
+         CALL NUMINTOP !Welcome message
+      ENDIF      
+C      
+      NCUTZ = num_grid_cfg_minz
+      INTANG=num_grid_cfg_ANGMIN
+      m = NLEB(INTANG)
+      NDIM2 = NTBAS(0)*NTBAS(0)
+      allocate( ANG      (m,4)   )
+      allocate( TC       (NDIM2) )
+      allocate( INTAO    (NDIM2) )
+      allocate( INTAOTRI (NDIM2) )
+C      
+      CALL DZERO(TC,NDIM2)
+C      
+      CALL LEBEDEV(INTANG,ANG(1,1),ANG(1,2),ANG(1,3),ANG(1,4),n)
+      CALL DSCAL(m,4.0D0*PI,ANG(1,4),1)
+! DSCAl is corresponding to the below part in SLEB/dftgrf.F
+!      DO J=1,NCOUNT
+!         WT(J)=WT(J)*4.0D0*PI
+!     ENDDO
+C
+      IF(NXYZ.EQ.0)THEN
+        INIXYZ = 0
+        MAXXYZ = 0
+      ELSEIF(NXYZ.EQ.3)THEN
+        INIXYZ = 1
+        MAXXYZ = 3
+      ELSEIF(NXYZ.LT.0)THEN
+        INIXYZ = -NXYZ
+        MAXXYZ = -NXYZ
+      ENDIF
+C      
+      DO 5 IXYZ = INIXYZ, MAXXYZ
+C
+C     Label for the operator
+C         
+      IF(IXYZ.EQ.0)THEN
+!     This transformation is important, because LABEL must be 8, while CLSINT(IOP) is 7
+        LABEL = CLSINT(IOP)
+        WRITE(RTNLBL(2)(3:4),'(I2)') 1
+      ELSE   
+        LABEL(2:8) = CLSINT(IOP)
+        WRITE(RTNLBL(2)(3:4),'(I2)') ISYMAX(IXYZ,1)+1
+        IF(IXYZ.EQ.1)THEN
+          LABEL(1:1) = 'X'
+        ELSEIF(IXYZ.EQ.2)THEN
+          LABEL(1:1) = 'Y'
+        ELSEIF(IXYZ.EQ.3)THEN
+          LABEL(1:1) = 'Z'
+        ELSE
+          CALL QUIT('NUMINT_ANG: The initial character of LABEL' //
+     &               'should be X/Y/Z')
+        ENDIF
+      ENDIF 
+C         
+      CALL DZERO(INTAO   ,NDIM2)
+      CALL DZERO(INTAOTRI,NDIM2)
+      NAT = 0
+      ISYMOP = 0
+      DO 10 IATOM = 1, NUCIND !change
+        IF(.NOT.NOORBT(IATOM)) THEN 
+         IF(NINT(CHARGE(IATOM)).GE.NCUTZ .OR.
+     &      num_grid_cfg_allatom.EQV. .TRUE.) THEN
+         NAT = NAT + 1
+         GEXP = GNUEXP(IATOM)
+         NDEG = MULT(ISTBNU(IATOM))
+         C(1,IATOM)= PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+         C(2,IATOM)= PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+         C(3,IATOM)= PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)          
+C         
+C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
+C
+         MXNP = 4000            !same to GRASP
+         CALL MEMSET_NUM(CHARGE(IATOM),IATOM,MXNP,RNT,H,EPH,GRDC,
+     &                    num_grid_cfg_grasp,IPRINT)
+C
+         allocate( NUMIR(MXNP) )
+         allocate( R(MXNP)     )
+C         
+         IF(num_grid_cfg_grasp)THEN
+           R(1) = RNT
+           DO J = 2,MXNP
+              R(J) = R(J-1)*EPH
+           ENDDO
+C     Print out the information
+           IF(num_grid_cfg_numint_print)THEN
+             CALL NUMINFO(ISYMOP,IATOM,CHARGE(IATOM),RNT,R(MXNP),H,MXNP)
+           ENDIF           
+C     R**2 is multiplized in NUMPOT
+           CALL NUMPOT(IOP,NUMIR,R,CHARGE(IATOM),GEXP,MXNP,IPRINT)
+C Additional R is needed for GRASP grid (QUAD2)
+           DO I = 1,MXNP
+              NUMIR(I) = NUMIR(I) * R(I)
+           ENDDO
+C
+         ELSE  ! num_grid_cfg_grasp: DIRAC grid start from here
+           R(1) = RNT
+           DO IR = 2,MXNP
+             R(IR) = (R(IR-1)+GRDC)*EPH-GRDC
+           ENDDO
+C     Print out the information
+           IF(num_grid_cfg_numint_print)THEN
+             CALL NUMINFO(ISYMOP,IATOM,CHARGE(IATOM),RNT,R(MXNP),H,MXNP)
+           ENDIF           
+C R**2 is multiplized in NUMPOT
+           CALL NUMPOT(IOP,NUMIR,R,CHARGE(IATOM),GEXP,MXNP,IPRINT)
+           W = (RNT+GRDC)*H 
+           NUMIR(1) = NUMIR(1) * W
+           DO IR = 2,MXNP
+             W = (R(IR)+GRDC)*H
+             NUMIR(IR) = NUMIR(IR) * W
+           ENDDO
+C          
+         ENDIF   !num_grid_cfg_grasp
+C     Numerical integration
+C     Here, INTAOTRI is a buffer
+         CALL INTSUM(INTAOTRI,NDIM2,NUMIR,R,MXNP,ANG,m,IXYZ,
+     &    C(1,IATOM),num_grid_cfg_grasp,MATINF,IATOM,LABEL,IPRINT)
+C     writing the matrix in output
+         IF(IPRINT.GE.12)THEN
+           WRITE(TITLE_PRINT,'(5A)')
+     &       'NUMINT: ',LABEL,'Symmetrized AO-matrix of ',
+     &       NAMN(IATOM),"atom"
+           CALL HEADER(TITLE_PRINT,-1)
+           CALL OUTPUT(INTAOTRI,1,NTBAS(0),1,NTBAS(0),
+     &                 NTBAS(0),NTBAS(0),-1,LUPRI) 
+         ENDIF   
+
+C       Scale weights with multiplicity of center
+         IF(NDEG.GT.0) THEN
+            FAC = dble(NDEG) 
+            CALL DSCAL(NDIM2,FAC,INTAOTRI,1)
+         ENDIF
+         
+C     Here, INTAOTRI is a buffer
+         CALL DAXPY(NDIM2,D1,INTAOTRI,1,INTAO,1)
+         CALL DZERO(INTAOTRI,NDIM2)
+         deallocate(NUMIR)
+         deallocate(R)
+         ENDIF    ! IF(ZAN(NAT).GE.NCUTZ .OR.num_grid_cfg_allatom.EQV. .TRUE.)
+        ELSE      ! Ghost center case
+         IF(num_grid_cfg_numint_print)THEN
+            WRITE(LUPRI,'(A,A)')" - For ", NAMN(IATOM)
+            WRITE(LUPRI,'(A,/)')"     effQED potential is skipped"
+         ENDIF  
+        ENDIF   ! IF(NOORBT(IATOM))  
+        IF(IATOM.EQ.NUCIND)THEN
+          num_grid_cfg_numint_print = .FALSE.
+        ENDIF
+10    CONTINUE   ! IATOM = 1, NUCIND, ISYMOP = 0, MXOPR 
+C
+      IF(IPRINT.GE.6)THEN
+        WRITE(TITLE_PRINT,'(5A)')
+     &    'NUMINT: ',LABEL,'Total AO-matrix'
+        CALL HEADER(TITLE_PRINT,-1)
+        CALL OUTPUT(INTAO,1,NTBAS(0),1,NTBAS(0),
+     &              NTBAS(0),NTBAS(0),-1,LUPRI) 
+      ENDIF  
+C
+C    Transformation from full-matrix to triangle-matrix
+C      
+      CALL MTFULTRI(INTAO,INTAOTRI,NTBAS(0),IPRINT)
+C     
+C     Generate integral labels
+C
+      CALL GETDAT(RTNLBL(1),RTNLBL(2))
+      RTNLBL(2)(1:2) = MATINF
+      IF(MATINF.EQ.'OF') RTNLBL(2)(1:2) = 'SY' !OFF diagonal but non-anti
+      RTNLBL(2)(5:8) = COMB
+C
+C     Write integrals to file
+C
+      CALL WRTPRO(INTAOTRI,NNBBASX,LABEL,RTNLBL,IPRINT)
+C      
+C     debug print
+C      
+      NRAD = int(-log10(num_grid_cfg_RADINT))
+ 5    CONTINUE !IXYZ
+      deallocate(ANG)
+      deallocate(INTAO)
+      deallocate(INTAOTRI)
+C
+      CALL GETTIM(CPUE,WALLE)
+      CPUTID  = SECTID(CPUE-CPU0)
+      WALLTID = SECTID(WALLE-WALL0)
+      WRITE(LUPRI,'(6A)')
+     &     '  Total time used in ',CLSINT(IOP),' (CPU) ',CPUTID,
+     &     ' and (WALL) ',WALLTID    
+      CALL QEXIT('NUMINT')
+      RETURN         
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck NUMPOT */
+      SUBROUTINE NUMPOT(IOP,NUMIR,R,Z,GEXP,MXNP,IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C     Getting numerical potential for operators
+C
+C     On input:
+C     R(MXNP)... Radial grid
+C     Z......... Nuclear charge       
+C     GEXP...... 3/(2 * <R^2_nuc>)      
+C      
+C     On output:
+C     NUMIR ... Numerical potential
+C
+C     Called from: NUMINT
+C
+C     A. Sunaga AuG. 2019      
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h" 
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "dcbcls.h"
+C
+      REAL*8 NUMIR(MXNP), R(MXNP)
+C     
+      IF(GAUNUC)THEN
+         NUCTYP = 2
+      ELSE   
+         NUCTYP = 1
+      ENDIF   
+C
+      IF(CLSINT(IOP).EQ.'SEFGMG')THEN
+        CALL INTMG(NUMIR,R,Z,GEXP,MXNP,NUCTYP)
+        DO IR = 1,MXNP
+         NUMIR(IR) = NUMIR(IR) * R(IR) * R(IR) 
+        ENDDO
+      ELSEIF(CLSINT(IOP).EQ.'UEHLING')THEN
+        CALL VCMPOL(NUMIR,R,Z,GEXP,MXNP,NNUC,NUCTYP,1)
+        DO IR = 1,MXNP
+          NUMIR(IR) = NUMIR(IR) * R(IR)
+        ENDDO
+      ELSEIF(CLSINT(IOP).EQ.'SEFGHF')THEN
+        CALL INTHF (NUMIR,R,Z,GEXP,MXNP,NUCTYP)
+        DO IR = 1,MXNP
+          NUMIR(IR) = NUMIR(IR) * R(IR) * R(IR) 
+        ENDDO
+      ELSEIF(CLSINT(IOP).EQ.'SEFGLF')THEN
+        CALL INTLF (NUMIR,R,Z,MXNP             )
+        DO IR = 1,MXNP
+          NUMIR(IR) = NUMIR(IR) * R(IR) * R(IR) 
+        ENDDO
+      ELSEIF(CLSINT(IOP).EQ.'SEPZ'  )THEN
+        CALL INTPZ (NUMIR,R,Z,MXNP             )
+        DO IR = 1,MXNP
+          NUMIR(IR) = NUMIR(IR) * R(IR) * R(IR) 
+        ENDDO
+      ENDIF
+C
+      IF(IPRINT.GE.2)THEN
+        WRITE(LUPRI,'(2X,/A)')
+     &        '**Numerical potential (not operator) at each radial grid'
+        WRITE(LUPRI,'(2A)')"  Potential: ",CLSINT(IOP)
+        write(LUPRI,'(A)')'   R(Bohr),           Potential(a.u.)'
+        DO IR = 1,MXNP
+          write(LUPRI,'(A,E14.8e2,E20.8e2)')
+     &      "  ",R(IR),-NUMIR(IR)/(R(IR)*R(IR))
+        ENDDO
+      ENDIF                  
+      RETURN
+      END
+      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck intsum */
+      SUBROUTINE INTSUM(INTSO,NDIM2,VWRR,R,MXNP,ANG,m,IXYZ,C,
+     &                   GRASP,MAT,IATOM,LABEL,IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C     The integration of radial and angular integral   
+C      
+C     On input:
+C     NDIM2     ... NDIM2 = NTBAS(0)*NTBAS(0)
+C     VWRR      ... r-dependent part (Potential and weight)
+C                     DIRAC grid: VWRR = V(r) * W(r) * r * r 
+C                     GRASP grid: VWRR = V(r) * r    * r * r 
+C                   V(r) ... Target potential
+C                   W(r) ... Weight for radial integration using Lindh's grid
+C     R         ... Radial grid      
+C     MXNP      ... Number of radial grid
+C     ANG       ... Angular grid (Lebedev grid)
+C                   Please multiply 4pi to ANG(1,4) before this routine.
+C                   ANG(iy,IXYZ): iy is the grid,
+C                   IXYZ=1,3 is XYZ, IXYZ=4 is weight
+C     m         ... Number of angular grid
+C                    e.g. m = NLEB(num_grid_cfg_ANGMIN)
+C     IXYZ      ... Additional angular momentum
+C     C         ... Center of IATOM: 
+C                   It is obtained by CALL SET_GRID_INFO(NAT,NUM,ZAN,C)
+C     GRASP     ... TRUE : GRASP grid
+C                   FALSE: DIRAC grid
+C     MAT       ... SY : Symmetric
+C                   AN : Anti-symmetrix
+C                   OF : Off-diagonal
+C
+C     On output:
+C     INTSO ... AO matrix at SO basis after the integration + previous INTSO     
+C
+C The numerical integration for constructing AO basis matrix
+C
+C Called from: NUMINT_ANG, NUMINT
+C
+C A. Sunaga Jul. 2019
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use num_grid_cfg
+      use interface_ao
+      use dirac_ao_eval
+      use dirac_ao_eval_sub
+      use xc_max_block_length
+
+#include "implicit.h" 
+#include "priunit.h" 
+#include "dcbbas.h"
+C
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "dgroup.h"
+#include "dcbham.h"
+C      
+#include "shells.h"
+#include "nuclei.h"
+      REAL*8 R(MXNP), ANG(m,4), INTSO(NDIM2), VWRR(MXNP), C(3,1)
+C
+      CHARACTER MAT*2, LABEL*8
+      CHARACTER TITLE_PRINT*100
+      LOGICAL GRASP,TRIMAT,ANTI
+      PARAMETER (D0=0.0D0,D1=1.0D0,DM1=-1.0D0,D2=2.0D0)      
+      REAL*8    ALPHA(2)
+      INTEGER*8 IA(2), IB(2), ITC(2), IOFA(2), IOFB(2)
+      real(8), allocatable :: GAO(:,:),GAO2(:,:),GMAX(:,:),BUFGAO(:,:)
+      real(8), allocatable :: TC(:),TD(:,:),INTAOBUF(:)  
+      real(8), allocatable :: ANGXYZ(:),XYZ8(:,:)
+      real(8), allocatable :: pxyz(:,:),p2(:)
+      real(8), parameter   :: bitstring_parity(0:7) =
+     &    (/1.0d0, -1.0d0, -1.0d0, 1.0d0, -1.0d0, 1.0d0, 1.0d0, -1.0d0/)     
+C    
+      allocate( TC       (NDIM2) )
+      allocate( INTAOBUF (NDIM2) )
+      allocate( ANGXYZ   (m)     )
+C
+      SCREEN = num_grid_cfg_screen
+      nblock_size = min(max_block_length, m)
+      nsize3      = nblock_size*3
+      allocate( XYZ8(nblock_size,3) )
+      allocate( pxyz(nblock_size,3) )
+      allocate( p2  (nblock_size  ) )
+C
+      call dirac_ao_eval_init(0,0,.FALSE.)       
+      allocate( GMAX(0:nr_boson_ireps-1, nr_shells) )
+C
+      CALL DZERO(INTAOBUF,NDIM2)
+      IF(IXYZ.EQ.0)THEN
+        CALL DCOPY(m,ANG(1,4),1,ANGXYZ,1)
+        MTXYZ = 0 
+      ELSE  
+        IF (IXYZ.LE.3)THEN
+          DO iy = 1, m
+            ANGXYZ(iy) = ANG(iy,4)*ANG(iy,IXYZ)
+          ENDDO
+          MTXYZ = ISYMAX(IXYZ,2)
+       ELSE
+         write(*,*)'IXYZ=',IXYZ
+         write(*,*)'is wrong number!' !debug
+         stop
+        ENDIF
+      ENDIF
+C
+      IF(MAT.EQ.'SY')THEN
+         IA(1) = 1
+         IB(1) = 1
+         IA(2) = 2
+         IB(2) = 2
+         ITC(1) = 1
+         ITC(2) = NTBAS(1)*(NTBAS(0)+1) + 1
+         IOFA(1) = 1
+         IOFB(1) = 1
+         IOFA(2) = 1 + NTBAS(1)
+         IOFB(2) = 1 + NTBAS(1)
+         ALPHA(1) = D1
+         ALPHA(2) = D1
+      ELSE !ANTI or OFFD
+         IA(1) = 2
+         IB(1) = 1
+         IA(2) = 1
+         IB(2) = 2
+         ITC(1) = NTBAS(1)          + 1 
+         ITC(2) = NTBAS(1)*NTBAS(0) + 1
+         IOFA(1) = 1 + NTBAS(1)
+         IOFB(1) = 1
+         IOFA(2) = 1
+         IOFB(2) = 1 + NTBAS(1)
+         ALPHA(1) = D1
+         ALPHA(2) = D1
+         IF(MC.EQ.1)THEN
+           IA(1) =  1 
+           ITC(1) =  1 
+           IOFA(1) = 1
+         ENDIF
+      ENDIF
+C
+Ciaa  The next line must be removed if the magnetic part of the Ginges-Flambaum self-energy effective Hamiltonian
+C     is used with i.beta.alpha dot SEFGMG, instead of the current ALPHADOT version (currently we use: i.alpha dot SEFGMG).
+C     If next line is removed, then ALPHADOT must be replaced by BEALDOT in the inputs.
+      IF(MAT.EQ.'AN')ALPHA(1) = DM1
+C
+C      
+      nr_points_on_this_proc=MXNP*m
+C
+C     Determination of the maximum value for each (isym,ishell)
+C     for cutoff of the numerical integration. The flow is
+C      
+C     1. Several AOs are picked up in the numerical integration region
+C       do IR = 1, MXNP_ODD, (MXNP_ODD-1)/2
+C     2. Getting the GMAX(isym,ishell), which is the largest AO at (isym,ishell)
+C      
+C     3. If the GMAX is smaller than the SCREEN, the get AO step is skipped.
+C        at all radial grid.      
+C         IF(GMAX(isym,ishell).GE.SCREEN)THEN
+C      
+      CALL DZERO(GMAX, nr_boson_ireps*nr_shells)
+      MXNP_ODD = MXNP - mod(MXNP,2)
+      do IR = 1, MXNP_ODD, (MXNP_ODD-1)/2  
+        IOF_block = 1
+C                 
+C     In the case of m>100, a special treatment is needed.
+C
+        m_NUM_MAX = INT(m/100) + 1               
+C
+C    GET AO's (from dirac_ao_eval.F90, but adapted for this routine)
+C
+        IOFM = 1
+        DO m_NUM = 1, m_NUM_MAX
+          nblock_length = min(max_block_length, m - IOF_block+ 1)
+          nblock_length = min(nblock_length, m)
+          allocate( GAO2(nblock_length, NTBAS(0)) )
+          CALL DZERO(GAO2,nblock_length*NTBAS(0))
+C         The spherical grid (R(IR), ANG(IOFM,JXYZ)) is transfromed to
+C         Cartesian grid (pxyz(nblock_size,3))
+C         to use get_cartesian_ao_g0 routine
+          DO JXYZ = 1,3
+             XYZ8(:,JXYZ) = C(JXYZ,1)
+             CALL DAXPY(nblock_length,R(IR),ANG(IOFM,JXYZ),1,
+     &                               XYZ8(   1,JXYZ),1)
+          ENDDO
+C
+          i = 1
+          do ishell = 1, nr_shells
+            do isym = 0, nr_boson_ireps - 1
+              if (iand(isym, shell_stabilizing_irep(ishell)) == 0)then
+               DO JXYZ = 1, 3
+                pxyz(:,JXYZ) = DM1 
+     &             * bitstring_parity(iand(irep_of_axes(JXYZ), isym))
+     &             * center_xyz(shell_center(ishell), JXYZ)
+               ENDDO
+C               
+               CALL DAXPY(nsize3,D1,XYZ8,1,pxyz,1)
+C
+               do k = 1, nblock_length
+                  p2(k) = DDOT(3,pxyz(k,1),nblock_size,
+     &                           pxyz(k,1),nblock_size) 
+               end do
+C
+               call get_cartesian_ao_g0(nblock_length, 
+     &                                    ishell,       
+     &                                    pxyz(1,1),           
+     &                                    pxyz(1,2),           
+     &                                    pxyz(1,3),           
+     &                                    p2,
+     &                                    GAO2(1, i))
+C              
+               DO k = 1, nblock_length
+                 DO ICOMP = 1,KHKT(ishell)
+                 GMAX(isym,ishell)
+     &          = MAX( ABS(GAO2(k,i+ICOMP-1)), ABS(GMAX(isym,ishell)) )
+                 ENDDO
+               ENDDO
+               i = i + cartesian_deg(ishell)
+              end if
+            end do  ! isym
+          end do               ! ishell
+          IOFM = IOFM + nblock_length
+          IOF_block = IOF_block + nblock_length
+          deallocate(GAO2)
+        ENDDO                  ! m_NUM
+      end do                ! IR         
+C
+      IF(GRASP)THEN
+        allocate( TD(NDIM2,MXNP) )         
+        do IR = 1, MXNP
+          CALL DZERO(TC,      NDIM2)
+          IOF_block = 1
+          m_NUM_MAX = INT(m/100) + 1              
+          allocate( GAO   (m, NTBAS(0)) )
+          allocate( BUFGAO(m, NTBAS(0)) )
+          CALL DZERO(GAO, m*NTBAS(0))
+          CALL DZERO(BUFGAO,m*NTBAS(0))
+C
+          call dirac_ao_eval_init(0,0,.FALSE.) 
+C
+C    GET AO's
+C
+          IOFM = 1
+          DO m_NUM = 1, m_NUM_MAX
+C                 
+C     In the case of m>100, a speciAL treatment is needed.
+C     m is the number of angular grid             
+C
+            nblock_length = min(max_block_length, m - IOF_block+ 1)
+            nblock_length = min(nblock_length, m)
+            nblock3 = nblock_length*3
+C              
+            allocate( GAO2(nblock_length, NTBAS(0)) )              
+            CALL DZERO(GAO2,nblock_length*NTBAS(0))
+            DO JXYZ = 1,3
+               XYZ8(:,JXYZ) = C(JXYZ,1)
+               CALL DAXPY(nblock_length,R(IR),ANG(IOFM,JXYZ),1,
+     &                                 XYZ8(1   ,JXYZ),1)
+            ENDDO   
+             
+            i = 1
+            do ishell = 1, nr_shells
+              do isym = 0, nr_boson_ireps - 1
+               if (iand(isym, shell_stabilizing_irep(ishell)) == 0)then                 
+                IF(GMAX(isym,ishell).GE.SCREEN)THEN   
+                 DO JXYZ = 1, 3
+                  pxyz(:,JXYZ) = DM1 
+     &               * bitstring_parity(iand(irep_of_axes(JXYZ), isym))
+     &               * center_xyz(shell_center(ishell), JXYZ)
+                 ENDDO 
+C
+                 CALL DAXPY(nsize3,D1,XYZ8,1,pxyz,1)
+C
+                 do k = 1, nblock_length
+                    p2(k) = DDOT(3,pxyz(k,1),nblock_size,
+     &                             pxyz(k,1),nblock_size) 
+                 end do
+C      
+                 call get_cartesian_ao_g0(nblock_length, 
+     &                                      ishell,       
+     &                                      pxyz(1,1),           
+     &                                      pxyz(1,2),           
+     &                                      pxyz(1,3),           
+     &                                      p2,
+     &                                      GAO2(1, i))
+                ENDIF  ! GMAX cutoff  
+                i = i + cartesian_deg(ishell)
+               end if
+              end do  ! isym
+            end do               ! ishell
+            DO J = 1, NTBAS(0)
+               CALL DCOPY(nblock_length,GAO2(1,J),1,GAO(IOFM,J),1)
+            ENDDO
+            IOFM = IOFM + nblock_length
+            deallocate(GAO2)
+            IOF_block = IOF_block + nblock_length
+          ENDDO                 ! m_NUM          
+C          
+          DO  iy = 1, m
+            CALL DAXPY(NTBAS(0),ANGXYZ(iy),GAO(iy,1),m,BUFGAO(iy,1),m)
+          ENDDO
+          CALL DSCAL(NTBAS(0)*m,VWRR(IR),BUFGAO(1,1),1)
+          DO IC = 1, MC
+           CALL DGEMM('T','N',NTBAS(IA(IC)),NTBAS(IB(IC)),m,
+     &                 ALPHA(IC),BUFGAO(1,IOFA(IC)),m,GAO(1,IOFB(IC)),
+     &                 m,D0,TC(ITC(IC)),NTBAS(0))
+          ENDDO 
+          CALL DCOPY(NDIM2,TC,1,TD(1,IR),1)
+          deallocate(GAO)
+          deallocate(BUFGAO)
+        end do                ! IR
+          CALL QUAD2(INTAOBUF,TD,MXNP,NDIM2)
+        deallocate(TD)
+      ELSE  !DIRAC grid from here
+        do IR = 1, MXNP  
+          CALL DZERO(TC,      NDIM2)
+          IOF_block = 1
+C                 
+C     In the case of m>100, a speciAL treatment is needed.
+C
+          m_NUM_MAX = INT(m/100) + 1               
+          allocate( GAO    (m, NTBAS(0)) ) 
+          allocate( BUFGAO (m, NTBAS(0)) )
+          CALL DZERO(GAO, m*NTBAS(0))
+          CALL DZERO(BUFGAO,m*NTBAS(0))
+C
+          call dirac_ao_eval_init(0,0,.FALSE.) 
+C
+C    GET AO's
+C
+          IOFM = 1
+          DO m_NUM = 1, m_NUM_MAX
+            nblock_length = min(max_block_length, m - IOF_block+ 1)
+            nblock_length = min(nblock_length, m)
+C     This allocation is needed, because the size of GAO2
+C     in get_cartesian_ao_g0 must be nblock_length 
+            allocate( GAO2(nblock_length, NTBAS(0)) )   
+            CALL DZERO(GAO2,nblock_length*NTBAS(0))
+            DO JXYZ = 1,3
+               XYZ8(:,JXYZ) = C(JXYZ,1)
+               CALL DAXPY(nblock_length,R(IR),ANG(IOFM,JXYZ),1,
+     &                                 XYZ8(1   ,JXYZ),1)
+            ENDDO
+C
+            i = 1
+            do ishell = 1, nr_shells
+              do isym = 0, nr_boson_ireps - 1
+               if (iand(isym, shell_stabilizing_irep(ishell)) == 0)then                 
+                IF(GMAX(isym,ishell).GE.SCREEN)THEN   
+                 DO JXYZ = 1, 3
+                  pxyz(:,JXYZ) = DM1 
+     &               * bitstring_parity(iand(irep_of_axes(JXYZ), isym))
+     &               * center_xyz(shell_center(ishell), JXYZ)
+                 ENDDO 
+C
+                 CALL DAXPY(nsize3,D1,XYZ8,1,pxyz,1)
+C
+                 do k = 1, nblock_length
+                    p2(k) = DDOT(3,pxyz(k,1),nblock_size,
+     &                             pxyz(k,1),nblock_size) 
+                 end do
+C      
+                 call get_cartesian_ao_g0(nblock_length, 
+     &                                      ishell,       
+     &                                      pxyz(1,1),           
+     &                                      pxyz(1,2),           
+     &                                      pxyz(1,3),           
+     &                                      p2,
+     &                                      GAO2(1, i))
+                end if
+                i = i + cartesian_deg(ishell)
+               ENDIF  ! GMAX
+              end do  ! isym
+            end do               ! ishell
+C     Copy a set of 100 AO (GAO2) to total AO array (GAO)            
+            DO J = 1, NTBAS(0)
+              CALL DCOPY(nblock_length,GAO2(1,J),1,GAO(IOFM,J),1)
+            ENDDO
+            IOFM = IOFM + nblock_length
+            IOF_block = IOF_block + nblock_length
+            deallocate(GAO2)
+          ENDDO                  ! m_NUM
+C     Multiplying the factor for angular part ANGXYZ. BUFGAO = ANGXYZ*GAO
+          DO  iy = 1, m
+            CALL DAXPY(NTBAS(0),ANGXYZ(iy),GAO(iy,1),m,BUFGAO(iy,1),m)
+          ENDDO
+          DO IC = 1, MC
+           CALL DGEMM('T','N',NTBAS(IA(IC)),NTBAS(IB(IC)),m,
+     &                 ALPHA(IC),BUFGAO(1,IOFA(IC)),m,GAO(1,IOFB(IC)),
+     &                 m,D0,TC(ITC(IC)),NTBAS(0))
+          ENDDO
+C sum  weight*r^2*V(r)*Basis^2        
+          CALL DAXPY(NDIM2,VWRR(IR),TC,1,INTAOBUF,1)
+          deallocate(GAO)
+          deallocate(BUFGAO)
+        end do                ! IR
+      ENDIF                     ! GRASP or DIRAC
+      IF(IPRINT.GE.6)THEN
+        WRITE(TITLE_PRINT,'(5A)')
+     &     'INTSUM: ',LABEL,'Before-symmetrized AO-matrix of ',
+     &     NAMN(IATOM),"atom"
+           CALL HEADER(TITLE_PRINT,-1)
+           CALL OUTPUT(INTAOBUF,1,NTBAS(0),1,NTBAS(0),
+     &                 NTBAS(0),NTBAS(0),-1,LUPRI) 
+      ENDIF   
+C
+      CALL MTAOSO(INTAOBUF,INTSO,NTBAS(0),MTXYZ,IPRINT)
+C
+      IF(IPRINT.GE.6)THEN
+        WRITE(TITLE_PRINT,'(5A)')
+     &     'INTSUM: ',LABEL,'After-symmetrized AO-matrix of ',
+     &     NAMN(IATOM),"atom"
+           CALL HEADER(TITLE_PRINT,-1)
+           CALL OUTPUT(INTSO,1,NTBAS(0),1,NTBAS(0),
+     &                 NTBAS(0),NTBAS(0),-1,LUPRI) 
+      ENDIF   
+C
+      deallocate( TC      )
+      deallocate( INTAOBUF)
+      deallocate( XYZ8    )
+      deallocate( pxyz    )
+      deallocate( p2      )
+      deallocate( GMAX    )
+      deallocate( ANGXYZ  )
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck mtfultri */
+      SUBROUTINE MTFULTRI(FUL,TRI,NDIM,IPRINT)
+C***********************************************************************
+C
+C     Matrix transform:
+C     full-matrix (FUL) to lower-triangle matrix (TRI)
+C
+C     Written by A.Sunaga - Aug 2019
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C#include "dcbbas.h"
+      DIMENSION FUL(NDIM*NDIM), TRI(NDIM*NDIM)
+C
+      DO J = 1, NDIM
+        IOFF = 0
+        IOFT = (J-1)*J/2
+        DO IT = 1, J
+           TRI(IT+IOFT) = FUL(J+IOFF)
+           IOFF = IOFF + NDIM
+        ENDDO
+      ENDDO
+C      
+      RETURN
+      END      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE QUAD2(RESULT,TE,NR,NDIM)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C Numerical radial integral
+C
+C Called from: NMINT2
+C
+C copied from /QUAD/grasp.F/GRASP
+C
+C     Modified to DIRAC A. Sunaga Nov. 2018       
+C     Modification: e.g. TE is two dimension 
+C      
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+C
+      PARAMETER( W7 = 1.0D0/90.0D0,
+     &           W6 = -4.0D0*W7,  W5 =   7.0D0*W7,
+     &           W4 = 30.0D0*W7,  W3 =  44.0D0*W7,
+     &           W2 = 68.0D0*W7,  W1 = 112.0D0*W7)
+C
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
+      PARAMETER(EPSI = 1.0D-35,H=1.0D-2) !-35
+!      REAL(8) TE(NR)      
+!      DIMENSION TE(NR)      
+      DIMENSION TE(NDIM,NR), RESULT(NDIM)
+C     
+C   FIND THE STARTING POINT FOR THE INTEGRATION. THIS IS THE POINT
+C   WHERE THE INTEGRAND TE FIRST BECOMES SIGNIFICANT, AND IS CHOSEN
+C   TO PREVENT DIVIDING BY ZERO.
+C
+      DO 5  II = 1,NDIM
+C
+C     In the atomic case (GRASP), 'DO 10 J = 1,"NR"' is fine, because
+C     normally TE(II,nuclear region) >> TE(II,NR).          
+C     In the case of molecule, a situation TE(II,nuclear region) < TE(II,NR)
+C     can occur. So, Ayaki changed from 'DO 10 J = 1,"NR"' to 'DO 10 J = 1,"NR-4"'
+C     "4" is the minumum number for JJ+3 =< NR        
+C         
+      DO 10 J = 1,NR-4
+        IF (ABS (TE(II,J)) .GT. EPSI) GO TO 20
+   10 CONTINUE
+      RESULT(II) = ZERO
+      GO TO 5
+C
+C   CALCULATE THE INTEGRAL USING EXTENDED SIMPSONS RULE, NEGLECTING THE
+C   CONTRIBUTION FROM THE STARTING POINT. CHOOSE THE STARTING POINT
+C   R(JJ) TO GIVE AN ODD NUMBER OF INTEGRATION POINTS.
+C   THE CRAY VERSION OF THE CODE USES THE VECTOR FUNCTION SSUM TO
+C   PERFORM THE SUMMATION.
+C
+   20 SUM = ZERO
+!      write(*,*)"TE1,J,NR",TE(J),J,NR !sunaga
+      NP = NR-J+1
+      ND2 = NP/2
+      N1D2 = (NP+1)/2
+      K = ND2-N1D2+1
+      JJ = J+K
+      JJ1 = JJ+1
+      DO 30 I = JJ1,NR-3,2
+         SUM = SUM + W1*TE(II,I) + W2*TE(II,I+1)
+ 30   CONTINUE
+      SUM = SUM + W1*TE(II,NR-1)
+      SUM = SUM + W4*( TE(II,JJ)   + TE(II,NR)   )
+     &          + W5*( TE(II,JJ1)  + TE(II,NR-1) )
+     &          + W6*( TE(II,JJ+2) + TE(II,NR-2) )
+     &          + W7*( TE(II,JJ+3) + TE(II,NR-3) )
+C      ENDIF
+C
+C   ADD THE CONTRIBUTION FROM 0 TO R(JJ), PLUS THE CONTRIBUTION
+C   TO SIMPSONS RULE FROM TE(JJ).
+C
+      COP = TE(II,J+1)/TE(II,J)
+      IF (COP .LE. ONE) THEN
+         RPX = ZERO
+      ELSE
+         RPX = TE(II,JJ)/LOG (COP)
+      ENDIF
+      RESULT(II) = H*(SUM+RPX)
+    5 CONTINUE
+      RETURN
+C
+      END      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck memset */
+      SUBROUTINE MEMSET_NUM(Z,IATOM,MXNP,RNT,H,EPH,GRDC,GRASP,IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC      
+C
+C     i) Estimating memories, by calculating the uehling potential of
+C     point charge
+C
+C     ii) Deciding some values for numerical integral
+C
+C     On iuput: Z...Nuclear charge of the atom
+C      
+C      
+C     On output: GRDC - Grid for numerical integral
+C                RNT...initial grid      
+C                H.....step size
+C                EPH = exp(H)
+C      
+C     
+C     Called from: NUMINT
+C
+C    Modified for DIRAC, A. Sunaga Dec. 2018
+C  
+************************************************************************
+      use num_grid_cfg
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "dcbham.h"      
+#include "dcbgen.h"
+#include "maxaqn.h"
+#include "ccom.h"
+C     
+      LOGICAL ADDSML,GRASP,UEHCUT
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
+      DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
+C
+      UEHCUT = num_grid_cfg_uehcut
+C      
+      N = MXNP
+      BZ = 0.074D0 + 0.35D0*Z/CVAL
+      CVAL3 = CVAL*CVAL*CVAL
+      PREFAC = BZ * Z*Z*Z*Z / CVAL3
+CUEHLING      
+      PI3 = THREE*PI
+      WD = CVAL+CVAL
+      FACTOR = -(Z+Z)/(PI3*CVAL)
+      IF(GRASP)THEN 
+C
+C     SET UP POTENTIAL FOR POINT NUCLEUS
+C
+        H     = 1.0D-2
+        EPH   = EXP(H)
+        RNT   = 1.0D-06/Z       
+        RTEMP = RNT
+        DO 1 I = 1,N
+           X = PREFAC*EXP(-Z*RTEMP)
+           IF(X.LT.1.0D-50)THEN
+              TEMP = X
+              MXNP = I
+              exit
+           ENDIF   
+           RTEMP = RTEMP*EPH
+C
+c     Ayaki
+c     As far as I check GRASP, the number of grid (MXNP) must be odd number,
+c     for the integral of Vacuum polarization using Ne and Hg atoms.         
+c     If it is even number, the value of QUAD
+c     does not agree with the one of GRASP (Maximu error in each grid is 10e-5).
+C           
+ 1      CONTINUE
+C
+        IF(UEHCUT)THEN
+          RTEMP = RNT
+          DO J = 1,N
+             X = WD*RTEMP
+             IF(X.GT.1.0D+02)THEN !same to FUNK
+                TEMP = FACTOR*FUNK (X,1)              
+                MXNP = J
+                exit
+             ENDIF   
+             RTEMP = RTEMP*EPH
+          ENDDO
+        ENDIF        
+      ELSE !num_grid_cfg_grasp
+C
+C     Get information about basis sets
+C
+        CALL NUCBAS(NUCORB,AA,IPRINT)
+        ADDSML = num_grid_cfg_force_4c_grid.OR.
+     &              (MC.GT.1.AND.(.NOT.LEVYLE))
+        RADDER = num_grid_cfg_RADINT
+        CALL LMGGRID(H,RNT,RH,RADDER,IATOM,ADDSML,NUCORB,AA,IPRINT)
+C
+        EPH   = EXP(H)
+        GRDC  = RNT/(EPH-ONE)
+        RTEMP = RNT
+C     
+C     SET UP POTENTIAL FOR POINT NUCLEUS
+C
+        DO 2 I = 1,N
+           X = PREFAC*EXP(-Z*RTEMP)
+           IF(X.LT.1.0D-50)THEN
+              TEMP = X
+              MXNP = I 
+             exit
+           ENDIF 
+           RTEMP = (RTEMP+GRDC)*EPH-GRDC
+ 2      CONTINUE
+C
+        IF(UEHCUT)THEN
+          RTEMP = RNT
+          DO J = 1,N
+             X = WD*RTEMP
+             IF(X.GT.1.0D+02)THEN !same to FUNK
+                TEMP = FACTOR*FUNK (X,1)              
+                MXNP = J
+                exit
+             ENDIF   
+             RTEMP = (RTEMP+GRDC)*EPH-GRDC
+          ENDDO
+        ENDIF
+      ENDIF    !num_grid_cfg_grasp
+C
+      IF (IPRINT.GE.6) THEN
+         WRITE(LUPRI,'(2X,A)')'**Truncation of radial grid'
+         WRITE(LUPRI,'(2X,A,E8.2e2,A,/)')
+     &    'The value of outer grid ',TEMP,' is less than 1.0D-50'
+      ENDIF   
+C      
+      RETURN
+C
+      END
+************************************************************************
+*
+      SUBROUTINE VCMPOL(TB,R,Z,GEXP,N,NNUC,NUCTYP,NVPORD)
+*      
+*     NUCTYP:
+*     1  Point
+*     2  Gauss
+*     3  Fermi
+*     Ayaki: NUCTYP is optimized to the definition of the DIRAC code      
+*
+*     NVPORD:
+*     1  second (Uehling)
+*     2  Forth order   
+*     
+*   ----------------   SECTION 11   SUBPROGRAM 10  -----------------   *
+*                                                                      *
+*   THIS  ROUTINE CONTROLS THE SETTING UP OF THE VACUUM POLARIZATION   *
+*   POTENTIAL FOR THE GIVEN NUCLEAR CHARGE DISTRIBUTION AT EACH GRID   *
+*   POINT USING THE ANALYTIC FUNCTIONS DEFINED BY  L WAYNE FULLERTON   *
+*   AND  G  A  RINKER  JR  IN  PHYS REV A 13 (1976) 1283. ACTUALLY R   *
+*   TIMES  THEIR  POTENTIAL  IS  TABULATED, AS WE SHALL ONLY REQUIRE   *
+*   THIS WHEN WE INTEGRATE. THE POTENTIAL IS  ACCUMULATED  IN  ARRAY   *
+*   TB(I),I = 1,N WHICH IS IN COMMON BLOCK /TATB/.                     *
+*                                                                      *
+*   SUBROUTINES CALLED: VAC2, VAC4, VACUSR, NCHARG.                    *
+*                                                                      *
+*                                         LAST REVISION: 08 FEB 1988   *
+*                                                                      *
+************************************************************************
+#include "implicit.h"
+C      
+      DIMENSION TB(N), R(N)  
+C     
+C   SECOND-ORDER VACUUM POLARISATION
+C
+      IF(NVPORD.EQ.1)THEN
+        CALL VAC2(TB,R,Z,GEXP,N,NNUC,NUCTYP)
+      ENDIF   
+C
+C   FOURTH-ORDER VACUUM POLARIZATION ... not implemented yet
+C
+      RETURN
+      END
+************************************************************************
+*                                                                      *
+      SUBROUTINE VAC2(TB,R,Z,GEXP,N,NNUC,NUCTYP)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 11  -----------------   *
+*                                                                      *
+*   THIS ROUTINE SETS UP THE SECOND-ORDER VACUUM POLARIZATION POTEN-   *
+*   TIAL  USING  EQUATIONS (1), (4) AND (6) OF FULLERTON AND RINKER.   *
+*   THE POTENTIAL  IS ACCUMULATED IN ARRAY TB(I),I = 1,N WHICH IS IN   *
+*   COMMON BLOCK /TATB/.                                               *
+*                                                                      *
+*   SUBROUTINES CALLED: FUNK, QUAD.                                    *
+*                                                                      *
+*                                         LAST REVISION: 02 OCT 1989   *
+*                                                                      *
+************************************************************************
+      use num_grid_cfg
+
+#include "implicit.h"
+#include "pi.h"
+#include "dcbgen.h"
+C     
+      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
+      DIMENSION TB(N),R(N)
+      real(8), allocatable :: ZCHARG(:),TA(:),RG(:)
+C      
+      PI3 = THREE*PI
+      C2 = CVAL*CVAL
+      EPS = 1.0D-05
+      WD = CVAL+CVAL
+      FACTOR = -(Z+Z)/(PI3*CVAL)
+C
+C   SET UP POTENTIAL FOR POINT NUCLEUS
+C
+      DO 1 I = 1,N
+         X = WD*R(I)
+         TB(I) = FACTOR*FUNK (X,1)
+    1 CONTINUE
+      IF (NUCTYP .EQ. 1) RETURN
+C
+C   OTHER DISTRIBUTIONS (EQUATION (6))
+C
+    2 WB = (C2+C2)/(Z*THREE)
+      IF(num_grid_cfg_grasp)THEN
+         NG = N
+         allocate(RG(NG))
+         CALL DCOPY(NG,R,1,RG,1)
+      ELSE
+        NG = 4000  
+        CALL MEMSET_NUM(Z,IATOM,NG,RNT,H,EPH,GRDC,
+     &                   .TRUE.,1)
+        allocate(RG(NG))
+        RG(1) = RNT
+        DO J = 2,NG
+           RG(J) = RG(J-1)*EPH
+        ENDDO        
+      ENDIF   
+!
+      allocate(TA(NG))
+      allocate(ZCHARG(NG))
+      CALL DZERO(ZCHARG,NG)
+      CALL DZERO(TA,NG)
+
+C     Nuclear charge distribution (e.g., Gauss)
+      CALL NCHARG(ZCHARG,RG,Z,GEXP,NG,NNUC,NUCTYP)
+!      
+      DO 3 I = 1,NG
+        TA(I) = ZCHARG(I)*(RG(I)*RG(I)*RG(I))
+    3 CONTINUE
+      CALL QUAD (FAC3,TA,NG)
+      FAC3 = FAC3*FACTOR*WB
+      DO 4 I = 1,NG
+        TA(I) = TA(I)*(RG(I)*RG(I))
+    4 CONTINUE
+      CALL QUAD (FAC5,TA,NG)
+      FAC5 = FAC5*FACTOR*C2*WB/5.0D00
+C
+C   TABULATE POTENTIALS 
+C
+    5 DO 6 I = 1,N
+         X = WD*R(I)
+         TB(I) = TB(I)+FAC3*FUNK (X,3)+FAC5*FUNK (X,5) 
+    6 CONTINUE
+C
+C   TABULATE POTENTIAL BY INTEGRATING EQUATION (4)
+C
+      FACTOR = -ONE/(PI3*C2*TWO)
+      DO 8 K = 1,N
+         XK = WD*R(K)
+         DO 7 I = 1,NNUC
+            XI = WD*RG(I)
+            XM = ABS (XK-XI)
+            XP = XK+XI
+            TA(I) = (FUNK (XM,0)-FUNK (XP,0))*ZCHARG(I)
+    7    CONTINUE
+         CALL QUAD (X,TA,NG)
+         X = X*FACTOR
+         IF (X .EQ. ZERO) GO TO 11
+         IF (ABS ((TB(K)-X)/X) .LT. EPS) RETURN
+         TB(K) = X
+    8 CONTINUE
+      RETURN
+ 11   DO 12 I = K,N
+         TB(I) = ZERO
+ 12   CONTINUE 
+      deallocate(RG)
+      deallocate(TA)
+      deallocate(ZCHARG)
+      RETURN
+C
+      END
+
+************************************************************************
+*                                                                      * 
+C /* Deck FUNK */
+      FUNCTION FUNK (X,N)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 12  -----------------   *
+*                                                                      *
+*   THIS  FUNCTION  EVALUATES THE KN(X) FUNCTIONS USING THE ANALYTIC   *
+*   FUNCTIONS DEFINED IN TABLES 1 AND 3 OF FULLERTON AND RINKER.       *
+*                                                                      *
+*   NO SUBROUTINES CALLED.                                             *
+*                                                                      *
+*                                         LAST REVISION: 06 AUG 1987   *
+*                                                                      *
+************************************************************************
+#include "implicit.h"
+C
+      DIMENSION P(10,4),B(2,4),C(3,4),D(5,4),E(5,4),NP(4)
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)
+C     
+#include "priunit.h"
+C
+      DATA P/ 8.8357293375D-01, -2.8259817381D-01,
+     &       -5.8904879578D-01,  1.2500133434D-01,
+     &       -3.2729913852D-02,  8.2888574511D-03,
+     &       -1.0327765800D-05,  6.3643668900D-05,
+     &        0.0D00, 0.0D00,
+     &       -7.1740181754D-01,  1.1780972274D00,
+     &       -3.7499963087D-01,  1.3089675530D-01,
+     &       -3.8258286439D-02, -2.4297287300D-05,
+     &       -3.5920148670D-04, -1.7170090700D-05,
+     &        0.0D00, 0.0D00,
+     &        9.9999999987D-01,  1.9770200000D-08,
+     &       -7.5000050190D-01,  7.8540306316D-01,
+     &       -3.4988601655D-01,  6.4596333000D-05,
+     &       -9.8189080747D-03,  8.6513145800D-05,
+     &       -2.3969236620D-04,  0.0D00,
+     &        6.0000000002D 00, -6.4305200000D-08,
+     &        2.1049413000D-06, -2.6711271500D-05,
+     &       -1.3705236152D-01, -6.3476104090D-04,
+     &       -7.8739801501D-02, -1.9641740173D-03,
+     &       -3.4752369349D-03, -7.3145316220D-04/
+C
+      DATA B/-3.19999594323D+02,  2.53900995981D 00,
+     &       -6.40514843293D+01,  7.11722714285D-01,
+     &        5.19010136460D+03,  8.28495496200D+01,
+     &        3.18150793824D+02,  4.33898867347D+01/
+C
+      DATA C/-3.19999594333D+02,  2.53901020662D+00,
+     &        0.0D 00,            6.40514843287D+01,
+     &       -7.11722686403D-01,  8.042207748D-04,
+     &        2.76805406060D+04, -3.27039477790D+02,
+     &        0.0D00,             8.48402116837D+02,
+     &       -2.56939867765D+01,  3.20844906346D-01/
+C
+      DATA D/ 5.018065179D+00,  7.151891262D+01,
+     &        2.116209929D+02,  3.140327478D+01,
+     &       -1.0D00,           2.172386409D+02,
+     &        1.643364528D+03,  2.122244512D+03,
+     &       -4.512004044D+01,  1.0D00,
+     &        8.540770444D 00,  6.076242766D+01,
+     &        9.714630584D+01,  3.154973593D+01,
+     &        1.0D00,           5.9243015865D-01,
+     &        2.0596312871D00,  3.7785190424D 00,
+     &        3.5614853214D00,  1.0D00/
+C
+      DATA E/ 2.669207401D+00,  5.172549669D+01,
+     &        2.969809720D+02,  5.364324164D+02,
+     &        1.535335924D+02,  1.155589983D+02,
+     &        1.292191441D+03,  3.831198012D+03,
+     &        2.904410075D+03,  0.000D00,
+     &        4.543392478D00,   3.514920169D+01,
+     &        6.019668656D+01,  8.468839579D00,
+     &        0.0D00,           3.1511867816D-01,
+     &        3.473245222D-01,  3.8791936870D-02,
+     &       -1.3059741497D-03, 0.0D00/
+C
+      DATA NP/8,8,9,10/
+C
+      IF (X .EQ. ZERO) GO TO 11
+      IF ((N .LT. 0) .OR. (N .EQ. 2) .OR.
+     &    (N .EQ. 4) .OR. (N .GT. 5)) GO TO 98
+      IF (N-3) 1,2,3
+    1 K = N+1
+      XN = ONE
+      GO TO 4
+    2 K = N
+      XN = ONE/(X*X)
+!      IF(N.eq.3)THEN
+!         write(*,*)"BSUM,LOGX,CSUM",BSUM,LOG(X),CSUM
+!         write(*,*)
+!         write(*,*)"X*X,XN",X*X,XN
+!      ENDIF   
+      GO TO 4
+    3 K = N-1
+      XN = ONE/(X**4.0D0)
+    4 IF (X .GT. ONE) GO TO 9
+C
+C   CALCULATE FUNCTION FOR X < = 1
+C
+      NN = NP(K)
+      SUM = ZERO
+      DO 5 I = 1,NN
+         SUM = SUM+P(I,K)*XN
+         XN = XN*X
+    5 CONTINUE
+      X2 = X*X
+      BSUM = B(1,K)+X2*(B(2,K)+X2)
+      CSUM = C(1,K)+X2*(C(2,K)+X2*C(3,K))
+      GO TO (6,8,7,8), K
+    6 BSUM = BSUM*X
+      GO TO 8
+    7 BSUM = BSUM*X2
+    8 CONTINUE
+!      IF(N.eq.3)THEN
+!         write(*,*)"BSUM,LOGX,CSUM",BSUM,LOG(X),CSUM
+!         write(*,*)
+!         write(*,*)"SUM1",SUM
+!      ENDIF   
+      SUM = SUM+BSUM*LOG (X)/CSUM
+!      IF(N.eq.3)THEN
+!         write(*,*)"BSUM,LOGX,CSUM",BSUM,LOG(X),CSUM
+!         write(*,*)"SUM2",SUM
+!      ENDIF   
+      FUNK = SUM
+      RETURN
+C
+C   CALCULATE FUNCTION FOR X > 1
+C
+    9 XN = ONE
+      DSUM = ZERO
+      ESUM = ZERO
+      IF (X .GT. 1.0D+02) GO TO 12
+      DO 10 I = 1,5
+         DSUM = DSUM+D(I,K)*XN
+         ESUM = ESUM+E(I,K)*XN
+         XN = XN/X
+   10 CONTINUE
+      XM = -X
+      SUM = DSUM*EXP (XM)/(ESUM*SQRT (X**3))
+      FUNK = SUM
+      RETURN
+   11 IF (N .NE. 0) GO TO 99
+      FUNK = P(1,1)
+      RETURN
+   12 FUNK = ZERO
+      RETURN
+C
+C   ERROR SECTION
+C
+   98 WRITE (LUPRI,300)
+      WRITE (LUPRI,302)
+      STOP 'Error sentense'
+   99 WRITE (LUPRI,300)
+      WRITE (LUPRI,301)
+      STOP 'Error sentense'
+C
+  300 FORMAT (///' ***** ERROR IN FUNK *****')
+  301 FORMAT (/' ATTEMPT TO CALCULATE FUNK(0,N) FOR N > 0')
+  302 FORMAT (/' ATTEMPT TO CALCULATE FUNK(X,N) FOR N VALUES OTHER THAN'
+     & ,' 0, 1, 3 AND 5.')
+C
+      END
+************************************************************************
+*                                                                      *
+      SUBROUTINE NCHARG(TA,R,Z,GEXP,N,NNUC,NUCTYP)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 19   ----------------   *
+*                                                                      *
+*   EVALUATE  THE normalized NUCLEAR CHARGE DISTRIBUTION (TZ).         *
+*                                                                      *
+*   (Fermi is UNnormalized distribution (10/04/2019)       *
+*                                                                      *
+*   NUCTYP  =  1 : Point                                               *
+*              2 : GAUSSIAN                                            *
+*              3 : FERMI                                               *
+*                                                                      *
+*   NO SUBROUTINES CALLED.                                             *
+*                                                                      *
+*                                         LAST REVISION: 08 FEB 1988   *
+*                                                                      *
+*   Adapted to DIRAC A. Sunaga Apr. 2019                               *
+*                                                                      *
+************************************************************************
+      use num_grid_cfg
+      use codata
+      
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
+      DIMENSION TA(N),R(N)
+C
+      IF (GEXP .LE. ZERO) GO TO 99
+      IF (NUCTYP .EQ. 1) GO TO 200
+C
+C   GAUSSIAN CHARGE DISTRIBUTION
+C
+      IF (NUCTYP .EQ. 2)THEN
+        NNUC = N
+        WB = GEXP                 !THREE/(TWO*RAD*RAD)
+        WA = SQRT(WB)
+        ZNORM = 4.0D0*Z
+        ZNORM = ZNORM*WB*WA/SQRT(PI) ! ZNORM = Z * (xi/pi)^3/2 * 4pi
+        DO 6 I = 1,N
+           TA(I) = ( EXP(-WB*R(I)*R(I)) ) * R(I)*R(I)        
+  6     CONTINUE
+C Normalization
+  8     CALL DSCAL(NNUC,ZNORM,TA,1)
+     
+C
+C   FERMI CHARGE DISTRIBUTION
+C
+      ELSEIF(NUCTYP.EQ.3)THEN
+C Ayaki: Normalization has not been implemented yet
+        GO TO 9  
+        TFM = 2.30D00
+        T = TFM*1.0D-5/xtang  !xtang = 0.5291772083d0. See gp/codata.F90
+        SKI = T/(4.0D0*LOG (3.0d0))      
+        IF (SKI .LE. ZERO) GO TO 98
+        write(*,*)"NNUC",NNUC
+        DO 4 I = 1,NNUC
+           TA(I) = (R(I)*R(I))/(ONE+EXP ((R(I)-RAD)/SKI))
+!           write(*,*)"R,RAD,SKI",R(I),RAD,SKI,TA(I)
+    4   CONTINUE
+      ENDIF
+
+      RETURN
+C      
+ 200  write(*,*)'Point charge should not use NCHARGE routine.
+     &           Something is wrong.'
+      stop
+ 9    write(*,*)'Fermi has not been made in NCHARGE'
+      stop
+
+C      
+C     ERROR SECTION
+C
+   97 WRITE (LUPRI,300)
+      WRITE (LUPRI,302)
+      STOP '111902'
+   98 WRITE (LUPRI,300)
+      WRITE (LUPRI,303)
+      STOP '111903'
+   99 WRITE (LUPRI,300)
+      WRITE (LUPRI,304)
+      STOP '111904'
+C
+  300 FORMAT (///' ***** ERROR IN NCHARG *****')
+  301 FORMAT (/' NO CODE FOR NUCTYP  =  ',I2)
+  302 FORMAT (/' SIX-PARAMETER DISTRIBUTIONS NOT IMPLEMENTED')
+  303 FORMAT (/' SKIN THICKNESS MUST BE POSITIVE')
+  304 FORMAT (/' NUCLEAR RADIUS MUST BE POSITIVE')
+C
+      END
+C
+*****************************************************************************
+*
+      SUBROUTINE INTMG(TB,R,Z,GEXP,N,NUCTYP)
+*
+*     PHI_MG CONTRIBUTION (7) of Flambaum et al. Phys. Rev. A 72 052115 (2005)
+*     Magnetic contribution
+*
+*     Called from: NUMINT
+*      
+*     Modified to DIRAC A. Sunaga Mar. 2019      
+*           
+*****************************************************************************
+#include "implicit.h"
+#include "dcbgen.h"
+#include "pi.h"
+C     
+      DIMENSION TB(N),R(N)
+      PARAMETER(ONE=1.0D0,TWO=2.0D0)
+C
+      IF(NUCTYP.EQ.1)THEN
+*     POINT
+        POTIR=Z 
+        DO 10 I = 1,N
+          DIFFNUCPOT = POTIR/(R(I)*R(I))
+          CALL INTMG2(TB(I),R(I),POTIR,DIFFNUCPOT)
+ 10     CONTINUE
+      ELSE   
+*     GAUSS
+        XI = GEXP              !1.5/(RAD*RAD)
+        WA = SQRT(XI)
+        DO 20 I = 1,N
+          POTIR = Z*ERF(WA*R(I))
+          DIFFNUCPOT = POTIR/(R(I)*R(I))
+     &                 - TWO*Z*SQRT(XI)/(SQRTPI*R(I))*EXP(-XI*R(I)*R(I))
+          CALL INTMG2(TB(I),R(I),POTIR,DIFFNUCPOT)
+ 20     CONTINUE
+      ENDIF  
+C      
+      RETURN
+      END
+*****************************************************************************
+*
+      SUBROUTINE INTMG2(TBI,RI,POTIR,DIFFNUCPOT)
+*
+*     PHI_MG CONTRIBUTION (7) of Flambaum et al. Phys. Rev. A 72 052115 (2005)
+*     Magnetic contribution
+*
+*     Called from: NUMINT
+*      
+*     Modified to DIRAC A. Sunaga Mar. 2019      
+*           
+*****************************************************************************
+#include "implicit.h"
+#include "dcbgen.h"
+#include "pi.h"
+C     
+      PARAMETER(NTMAX = 10000,ONE=1.0D0,TWO=2.0D0)
+      real(8), allocatable :: TT(:),TTX(:)      
+C
+      allocate(TT(NTMAX))
+      allocate(TTX(NTMAX))
+C
+      PREFAC = ONE/(4.0D0*CVAL*CVAL*PI)
+C
+C     PREFAC is different from GRASP.
+C     In GRASP, large*small + small*large are calculated.
+C     In DIRAC, only triangle matrix (large*small) are calculated.
+C     From this, we have to remove TWO from GRASP's source.
+C      
+      CALL G1TGRID(TT,TTX,NTMAX,NT,RI)
+      CALL QUAD_T_US2(TT,TTX,NTMAX,NT,RESULT)
+
+*     radial derivative of the nuclear potential
+      G1A = RESULT*DIFFNUCPOT
+      G1B = DIFFNUCPOT
+*
+      CALL G2TGRID(TT,TTX,NTMAX,NT,RI)
+      CALL QUAD_T_US2(TT,TTX,NTMAX,NT,RESULT)
+      G2 = TWO*RESULT*CVAL*POTIR/RI
+      TBI = PREFAC*(G1A - G1B + G2) 
+C      
+      deallocate(TT)
+      deallocate(TTX)
+C      
+      RETURN
+      END
+************************************************************************
+*                                                                      *
+         SUBROUTINE G1TGRID (F,T,NTMAX,NT,R)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 27   ----------------   *
+*                                                                      *
+*   CREATE T-GRID FOR THE RADIATIVE POTENTIALS                         *
+*   SUBROUTINES CALLED:   PHI_G1_INNER                                 *
+*                                                                      *
+*                                         LAST REVISION: 15 DEC 2008   *
+*                                                                      *
+************************************************************************
+*
+#include <implicit.h>
+*
+      PARAMETER (ONE = 1.0D0, TEN = 10.0D0)
+      INTEGER NT,NTMAX
+      DOUBLEPRECISION T(NTMAX)
+      DOUBLEPRECISION F(NTMAX)
+      TWELVE  = 12.0D0
+      HUNDRED = 100.0D0
+*
+      DO 1 J = 1, NTMAX
+        T(J) = ONE + TEN**(-(TWELVE - DBLE(J)*ONE/HUNDRED))
+        F(J) = PHI_G1_INNER(T(J),R)
+*
+        IF (ABS(F(J)) .LE. 1.0D-32) THEN
+           NT = J
+           GOTO 2
+        END IF
+*
+    1 CONTINUE
+    2 RETURN
+*
+      END
+************************************************************************
+*                                                                      *
+      FUNCTION PHI_G1_INNER (T,R)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 22  -----------------   *
+*                                                                      *
+*   CALCULATE THE FIRST PART OF THE INTEGRAL-KERNAL FOR THE RADIATIVE  *
+*   PHI_G POTENTIAL NO SUBROUTINES CALLED.                             *
+*                                                                      *
+*                                         LAST REVISION: 12 DEC 2007   *
+*                                                                      *
+************************************************************************
+*
+#include "implicit.h"
+#include "dcbgen.h"
+*      
+      PARAMETER (ONE = 1.0D0,TWO=2.0D0)
+*     
+* CALCULATE THE T DEPENDENT PART
+*
+      X1 = ONE/(T*T*SQRT(T*T - ONE))
+      X2 = EXP(-TWO*T*R*CVAL)
+*
+      PHI_G1_INNER = X1*X2
+*
+      RETURN
+*
+      END      
+************************************************************************
+*                                                                      *
+         SUBROUTINE QUAD_T_US2 (F,T,NTMAX,NT,RESULT)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 24   ----------------   *
+*                                                                      *
+*   SIMPSON RULE FOR AN NONUNIFORM GRID                                *
+*   NO SUBROUTINES CALLED.                                             *
+*                                                                      *
+*                                         LAST REVISION: 12 DEC 2007   *
+*                                                                      *
+************************************************************************
+*
+#include "implicit.h"
+*
+      PARAMETER( W7 = 1.0D0/90.0D0,
+     &           W6 = -4.0D0*W7,  W5 =   7.0D0*W7,
+     &           W4 = 30.0D0*W7,  W3 =  44.0D0*W7,
+     &           W2 = 68.0D0*W7,  W1 = 112.0D0*W7)
+*
+      DOUBLEPRECISION T(NTMAX)
+      DOUBLEPRECISION F(NTMAX)
+*
+*   FIND THE STARTING POINT FOR THE INTEGRATION. THIS IS THE POINT
+*   WHERE THE INTEGRAND TA FIRST BECOMES SIGNIFICANT, AND IS CHOSEN
+*   TO PREVENT DIVIDING BY ZERO.
+*
+      SUM = 0.0D0
+      DO 1 J = 1,NT-3,2
+         J1 = J
+         J2 = J + 1
+         J3 = J + 2
+         F1=F(J1)
+         F2=F(J2)
+         F3=F(J3)
+         T1=T(J1)
+         T2=T(J2)
+         T3=T(J3)
+         X1 = F2*(T1-T3)*(T1-T3)
+         X2 = F1*(T2-T3)*(2.0D0*T1-3*T2+T3)
+         X3 = F3*(T1-T2)*(T1-3.0D0*T2+2.0D0*T3)
+         SUM = SUM - (T1-T3)*(X1+X2-X3)/(6.0D0*(T1-T2)*(T2-T3))
+    1 CONTINUE
+      RESULT = SUM
+      RETURN
+*
+      END
+************************************************************************
+*                                                                      *
+         SUBROUTINE G2TGRID (F,T,NTMAX,NT,R)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 28   ----------------   *
+*                                                                      *
+*   CREATE T-GRID FOR THE RADIATIVE POTENTIALS                         *
+*   SUBROUTINES CALLED:   PHI_G2_INNER                                 *
+*                                                                      *
+*                                         LAST REVISION: 15 JAN 2008   *
+*                                                                      *
+************************************************************************
+*
+#include <implicit.h>
+*
+      PARAMETER (ONE = 1.0D0,TEN = 10.0D0)
+      INTEGER NT,NTMAX
+      DOUBLEPRECISION T(NTMAX)
+      DOUBLEPRECISION F(NTMAX)
+      TWELVE  = 12.0D0
+      HUNDRED = 100.0D0
+*
+      DO 1 J = 1, NTMAX
+        T(J) = ONE + TEN**(-(TWELVE - DBLE(J)*ONE/HUNDRED))
+        F(J) = PHI_G2_INNER(T(J),R)
+        IF (ABS(F(J)) .LE. 1.0D-32) THEN
+           NT = J
+           GOTO 2
+        END IF
+*
+    1 CONTINUE
+    2 RETURN
+*
+      END
+************************************************************************
+*                                                                      *
+      FUNCTION PHI_G2_INNER (T,R)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 23  -----------------   *
+*                                                                      *
+*   CALCULATE THE SECOND PART OF THE INTEGRAL-KERNAL FOR THE           *
+*   RADIATIVE PHI_G POTENTIAL NO SUBROUTINES CALLED.                   *
+*                                                                      *
+*                                         LAST REVISION: 12 DEC 2007   *
+*                                                                      *
+************************************************************************
+*
+#include "implicit.h"
+#include "dcbgen.h"
+*
+      PARAMETER (ONE = 1.0D0,TWO=2.0D0)
+*     CALCULATE THE T DEPENDENT PART
+*
+      X1 = ONE/(T*SQRT(T*T - ONE))
+      X2 = EXP(-TWO*T*R*CVAL)
+*
+      PHI_G2_INNER = X1*X2
+*
+      RETURN
+*
+      END      
+*****************************************************************************
+*
+      SUBROUTINE INTLF(TB,R,Z,N)
+*
+*     PHI_L CONTRIBUTION (9) of Flambaum et al. Phys. Rev. A 72 052115 (2005)
+*     Low flequency contribution
+*
+*     Called from: NUMINT
+*      
+*     Modified to DIRAC A. Sunaga Mar. 2019      
+*           
+*****************************************************************************
+#include "implicit.h"
+#include "dcbgen.h"
+C      
+      DIMENSION TB(N),R(N)
+C
+      BZ = 0.074D0 + 0.35D0*Z/CVAL
+      CVAL3 = CVAL*CVAL*CVAL
+      PREFAC = BZ * Z*Z*Z*Z / CVAL3
+      DO 1 I = 1,N
+         TB(I) = EXP(-Z*R(I))
+ 1    CONTINUE
+      CALL DSCAL(N,PREFAC,TB,1)
+C      
+      RETURN
+      END
+*****************************************************************************
+*
+      SUBROUTINE INTHF(TB,R,Z,GEXP,N,NUCTYP)
+*
+*     PHI_L CONTRIBUTION (10) of Flambaum et al. Phys. Rev. A 72 052115 (2005)
+*     High flequency contribution
+*
+*     Called from: NUMINT
+*      
+*     Modified to DIRAC A. Sunaga Mar. 2019      
+*           
+*****************************************************************************
+#include "implicit.h"
+#include "dcbgen.h"
+#include "pi.h"
+C     
+      DIMENSION TB(N),R(N)
+      PARAMETER(ONE = 1.0D0)
+      PARAMETER(NTMAX = 10000)
+      real(8), allocatable :: TT(:),TTX(:),AZTEST(:)      
+C
+      allocate(TT(NTMAX))
+      allocate(TTX(NTMAX))
+      allocate(AZTEST(120))
+C     
+      X1  = (Z-80.0D0)/CVAL
+      X2  = X1 * X1
+      X3  = X2 * X1
+      X4  = X3 * X1
+      ZC7 = 0.07D0 * Z*Z/(CVAL*CVAL)      
+      AZ1COEF = 1.071D0 - 1.976D0*X2 - 2.128D0*X3 + 0.169D0*X4
+      PREFAC  = ONE/(CVAL*PI)
+      IF(NUCTYP.EQ.2)THEN
+        XI = GEXP !1.5D0/(RAD*RAD)
+        WA = SQRT(XI)
+      ENDIF
+C
+      CALL DCOPY(N,R,1,TB,1)
+      CALL DSCAL(N,CVAL,TB,1) 
+C
+      DO 5 I = 1,N
+        IF (NUCTYP .EQ. 1) THEN
+*     POINT
+          POT = Z/R(I) 
+        ELSE
+*     GAUSS
+          POT = Z*ERF(WA*R(I))/R(I)
+        ENDIF
+c     hth  GRID FOR T-INTEGRATION
+        CALL FTGRID(TT,TTX,NTMAX,NT,R(I),Z)
+chth  T-INTEGRATION
+        CALL QUAD_T_US2(TT,TTX,NTMAX,NT,RESULT)
+        AZ1 = AZ1COEF * TB(I)
+        AZ2 = TB(I) + ZC7
+        AZ  = AZ1/AZ2
+        TB(I) = PREFAC*RESULT*POT*AZ
+        
+ 5    CONTINUE
+C
+C     It does not agree with GRASP, because the default of GRASP is n-dependent HF
+C     In order to compare with GRASP, we have to use n-INdependent HF term in GRASP
+      deallocate(TT)
+      deallocate(TTX)
+      deallocate(AZTEST)
+C      
+      RETURN
+      END
+C
+************************************************************************
+*                                                                      *
+         SUBROUTINE FTGRID (F,T,NTMAX,NT,R,Z)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 26   ----------------   *
+*                                                                      *
+*   CREATE T-GRID FOR THE RADIATIVE POTENTIALS                         *
+*   SUBROUTINES CALLED:   PHI_F_INNER                                  *
+*                                                                      *
+*                                         LAST REVISION: 12 DEC 2007   *
+*                                                                      *
+************************************************************************
+*
+#include <implicit.h>
+*
+      INTEGER NT,NTMAX,J
+      PARAMETER(ONE = 1.0D0, TEN = 10.D0)
+      DOUBLEPRECISION T(NTMAX)
+      DOUBLEPRECISION F(NTMAX)
+      TWELVE  = 12.0D0
+      HUNDRED = 100.0D0
+*
+      DO 1 J = 1, NTMAX
+        T(J) = ONE + TEN**(-(TWELVE - DBLE(J)*ONE/HUNDRED))
+        F(J) = PHI_F_INNER(T(J),R,Z)
+        IF (ABS(F(J)) .LE. 1.0D-32) THEN
+           NT = J
+           GOTO 2
+        END IF
+*
+    1 CONTINUE
+    2 RETURN
+*
+      END
+************************************************************************
+*                                                                      *
+      FUNCTION PHI_F_INNER (T,R,Z)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 21  -----------------   *
+*                                                                      *
+*   CALCULATE THE INTEGRAL-KERNAL FOR THE RADIATIVE PHI_F POTENTIAL    *
+*   NO SUBROUTINES CALLED.                                             *
+*                                                                      *
+*                                         LAST REVISION: 12 DEC 2007   *
+*                                                                      *
+************************************************************************
+*
+#include "implicit.h"
+#include "dcbgen.h"
+*      
+      PARAMETER(ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0, FOUR = 4.0D0,
+     &          HALF = 0.5D0)
+*     
+* CALCULATE THE T DEPENDENT PART
+*
+      X1 = ONE/SQRT(T*T-ONE)
+      X2 = ONE - ONE/(TWO*T*T)
+      X3 = LOG(T*T - ONE)
+      X4 = FOUR*LOG(CVAL/Z + HALF)
+      X5 = THREE/TWO
+      X6 = ONE/(T*T)
+      X7 = EXP(-TWO*T*R*CVAL)
+*
+      PHI_F_INNER = X1*(X2*(X3 + X4) - X5 + X6)*X7
+*
+      RETURN
+*
+      END
+      
+*****************************************************************************
+*
+      SUBROUTINE INTPZ(TB,R,Z,N)
+*
+*     Model potential of Pekka and Zhao of J Phys B 36 1469 (2004)
+*
+*     Called from: NUMINT
+*      
+*     Modified to DIRAC A. Sunaga Mar. 2019      
+*           
+*****************************************************************************
+#include "implicit.h"
+C     
+      DIMENSION TB(N),R(N)
+C
+      B0 = -48.6166D0
+      B1 = 1.53666D0
+      B2 = 0.0301129D0
+      BETA0 = -12751.3D0
+      BETA1 = 916.038D0
+      BETA2 = 5.7797D0
+      BFIT = B0 + B1*Z + B2*Z*Z
+      BETAFIT = BETA0 + BETA1*Z + BETA2*Z*Z
+C
+      DO 1 I = 1,N
+         TB(I) = EXP(-BETAFIT*R(I)*R(I))
+ 1    CONTINUE
+      CALL DSCAL(N,BFIT,TB,1)
+C
+C     change
+C     error sentence for 29<Z<83
+C      
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE QUAD(RESULT,TE,NR)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C Numerical radial integral for one dimension
+C
+C copied from /QUAD/grasp.F/GRASP
+C Adapted to DIRAC A. Sunaga Nov. 2018       
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+C
+      PARAMETER( W7 = 1.0D0/90.0D0,
+     &           W6 = -4.0D0*W7,  W5 =   7.0D0*W7,
+     &           W4 = 30.0D0*W7,  W3 =  44.0D0*W7,
+     &           W2 = 68.0D0*W7,  W1 = 112.0D0*W7)
+C
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
+      PARAMETER(H=1.0D-2,EPSI = 1.0D-35) !-35
+!      REAL(8) TE(NR)      
+!      DIMENSION TE(NR)      
+      DIMENSION TE(*)
+C     
+C   FIND THE STARTING POINT FOR THE INTEGRATION. THIS IS THE POINT
+C   WHERE THE INTEGRAND TE FIRST BECOMES SIGNIFICANT, AND IS CHOSEN
+C   TO PREVENT DIVIDING BY ZERO.
+C
+      DO 1 J = 1,NR
+        IF (ABS (TE(J)) .GT. EPSI) GO TO 2
+    1 CONTINUE
+      RESULT = ZERO
+      RETURN
+C
+C   CALCULATE THE INTEGRAL USING EXTENDED SIMPSONS RULE, NEGLECTING THE
+C   CONTRIBUTION FROM THE STARTING POINT. CHOOSE THE STARTING POINT
+C   R(JJ) TO GIVE AN ODD NUMBER OF INTEGRATION POINTS.
+C   THE CRAY VERSION OF THE CODE USES THE VECTOR FUNCTION SSUM TO
+C   PERFORM THE SUMMATION.
+C
+    2 SUM = ZERO
+      NP = NR-J+1
+      ND2 = NP/2
+      N1D2 = (NP+1)/2
+      K = ND2-N1D2+1
+      JJ = J+K
+      JJ1 = JJ+1
+      DO 3 I = JJ1,NR-3,2
+         SUM = SUM + W1*TE(I) + W2*TE(I+1)
+    3 CONTINUE
+      SUM = SUM + W1*TE(NR-1)
+      SUM = SUM + W4*( TE(JJ)   + TE(NR)   )
+     &          + W5*( TE(JJ1)  + TE(NR-1) )
+     &          + W6*( TE(JJ+2) + TE(NR-2) )
+     &          + W7*( TE(JJ+3) + TE(NR-3) )
+C
+C   ADD THE CONTRIBUTION FROM 0 TO R(JJ), PLUS THE CONTRIBUTION
+C   TO SIMPSONS RULE FROM TE(JJ).
+C
+      COP = TE(J+1)/TE(J)
+      IF (COP .LE. ONE) THEN
+         RPX = ZERO
+      ELSE
+         RPX = TE(JJ)/LOG (COP)
+      ENDIF
+      RESULT = H*(SUM+RPX)
+      RETURN
+C
+      END      
+************************************************************************
+*                                                                      *
+C     /* Deck XKONKN */
+      FUNCTION XKONKN (X,N,TOL)
+*                                                                      *
+*   ----------------   SECTION 09   SUBPROGRAM 10   ----------------   *
+*                                                                      *
+*   EVALUATE THE SUM OF THE SERIES (-X)**(K+1)/K**N FROM K = 1         *
+*   UNTIL THE PRESCRIBED TOLERANCE IS MET.                             *
+*                                                                      *
+*   NO SUBROUTINES CALLED                                              *
+*                                                                      *
+*                                         LAST REVISION: 30 AUG 1987   *
+*                                                                      *
+************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C     
+      PARAMETER(MXXK = 100) ! 100 in GRASP      
+      DIMENSION DELTA(MXXK)
+      PARAMETER(HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)
+C
+C   SUMMATION FOR K = 1,...,6
+C
+      XK = ONE
+      FKN = ONE
+      SUM = XK
+      DO 1 K = 2,6
+         XK = -XK*X
+         FKN = DBLE (K**N)
+         TERM = XK/FKN
+         SUM = SUM+TERM
+         IF (ABS (TERM/SUM) .LT. TOL) GO TO 4
+    1 CONTINUE
+C
+C   REMAINDER OF SUM
+C
+      K = 6
+      M = 7
+    2 K = K+1
+      KM = K-M
+      IF (KM .GT. MXXK-1) GO TO 99
+      XK = -XK*X
+      FKN = DBLE (K**N)
+      DELTA(KM+1) = XK*HALF/FKN
+      DO 3 J = KM,1,-1
+         DELTA(J) = HALF*(DELTA(J)+DELTA(J+1))
+    3 CONTINUE
+      SUM = SUM+DELTA(1)
+      IF (ABS (DELTA(1)/SUM) .GT. TOL) GO TO 2
+C
+    4 XKONKN = SUM*X
+      RETURN
+C
+   99 WRITE (LUPRI,300) MXXK
+
+      STOP '091001'
+C
+  300 FORMAT(/' ***** ERROR IN XKONKN *****',//' OVERFLOW IN ARRAY ',
+     & 'DELTA. RECOMPILE WITH VALUE OF SYMBOL XK GREATER THAN ', I3 )
+C
+      END
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck numintop */
+      SUBROUTINE NUMINTOP
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C      
+C Welcome message of numerical integration code
+C
+C Called from: NUMINT
+C
+C A. Sunaga Aug. 2020
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use num_grid_cfg
+#include "priunit.h"
+C      
+       CALL TITLER
+     &   ('Numerical integration for one-electron operators','*',199)
+       WRITE(LUPRI,100)
+ 100   FORMAT(
+     &    3X,'General structure: ',/,
+     &    3X,'    Ayaki Sunaga and Trond Saue ',//,
+     &    3X,'effQED: ',/,
+     &    3X,'    Ayaki Sunaga and Trond Saue',//,
+     &    1X,79('*'))
+       
+       WRITE(LUPRI,200)
+ 200   FORMAT(/' This module is published in:',//
+     &    4X,'effQED: A. Sunaga, M. Salman and T. Saue',/,
+     &    20X,'J. Chem. Phys. 157 (2022) 164101 ',/,
+     &    1X,79('*'),/)
+
+       WRITE(LUPRI,'(A)')
+     &   " ***** SET-UP for NUMERICAL INTEGRATION *****"
+       write(lupri, '(a)') ' - radial quadrature according to'
+C       
+       IF(num_grid_cfg_grasp)THEN
+         write(lupri, '(a)')
+     &'     the GRASP code.'
+       ELSE
+         write(lupri, '(a)')
+     &'     R. Lindh, et al, Theor. Chem. Acc. 106, 178 (2001).'
+         write(lupri, '(a, e12.5)')
+     &'     precision of radial quadrature set to',
+     &           num_grid_cfg_radint
+       ENDIF
+C
+       write(lupri, '(a)')
+     &' - radial integration is truncated by'
+       IF(num_grid_cfg_uehcut)THEN
+         write(lupri, '(a)')
+     &'     Uehling potential '
+       ELSE
+         write(lupri, '(a)')
+     &"     Flambaum-Ginges's low-frequency term"
+       ENDIF 
+C       
+       write(lupri, '(a)')
+     &' - angular quadrature according to'
+       write(lupri, '(a, i2)')
+     &'     the Lebedev scheme exact up to order L = ',
+     &      num_grid_cfg_ANGQED
+       WRITE(LUPRI,'(/,A)')
+     &" ***** SET-UP for EACH ATOM *****"
+C       
+      RETURN         
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck numinfo */
+      SUBROUTINE NUMINFO(ISYMOP,IATOM,Z,RNT,RMAX,H,MXNP)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C      
+C Printing the information for numerical integration 
+C
+C Called from: NUMINT, NUMINT_ANG
+C
+C A. Sunaga Nov. 2020
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use num_grid_cfg
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "nucdata.h"
+C
+      IF(ISYMOP.NE.0)RETURN
+C      
+      WRITE(LUPRI,'(A,A)')
+     &" - For ", NAMN(IATOM)
+      WRITE(LUPRI,'(A,I3,A,E8.2e2,A,E8.2e2)')
+     &"     mass = ",INT(NUCMASS(INT(Z))),
+     &", Rmin = ", RNT, ", Rmax = ",RMAX
+      WRITE(LUPRI,'(A,E8.2e2,A,I4)')
+     &"     stepsize = ",H,", # of radial grid = ",MXNP 
+C
+      IF(IATOM.EQ.NUCIND)THEN
+         num_grid_cfg_numint_print = .FALSE.
+         WRITE(LUPRI,'(A)')         
+      ENDIF
+      RETURN
+      END       
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EFFECTIVE_DENS_NUC(WORK,LWORK,COMB)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
@@ -175,13 +2288,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "cbihr1.h"
-#include "cbiher.h"
 #include "dcbham.h"
 #include "nuclei.h"
 #include "dcbbas.h"
-#include "dcbprl.h"
-#include "dcbcls.h"
 #include "dcbxpr.h"
 C     GEXPEFFDE2 contains nuclear gaussian exponents related to size change
 C     EXPPLC = Exponent placeholder
@@ -276,7 +2385,6 @@ C Written by Robert van Meer, Sept. 2010 last edited Mar. 2011
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "pi.h"
@@ -302,7 +2410,7 @@ C  /* Deck op1gen */
 C*****************************************************************************
 C
 C     Driver for the generation of one-electron integrals
-C    to be placed on the file CHECKPOINT
+C     to be placed on the file CHECKPOINT
 C
 C     On input:  WORD     ...
 C                COMB     ... integral characteritics
@@ -322,7 +2430,6 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-#include "dcbgen.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "cbiher.h"
@@ -361,7 +2468,6 @@ C
          TRIANG = .TRUE.
          MTFORM = 'TRIANG'
       END IF
-
 C
 C     Generate integrals in abacus
 C
@@ -404,7 +2510,6 @@ C
       LOGICAL DOINT(4)
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4
       DIMENSION WORK(LWORK)
-#include "dcbgen.h"
 #include "dcbbas.h"
 C
       CALL QENTER('BETAMT')
@@ -523,7 +2628,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck nucat1 */
       SUBROUTINE NUCAT1(OP1INT,WORK,LWORK,DOINT,OMITVNUC,IPRINT)
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
 C
@@ -532,10 +2636,6 @@ C
       DIMENSION OP1INT(NNBBASX),WORK(LWORK)
 #include "dcbbas.h"
 #include "nuclei.h"
-#include "cbiher.h"
-#include "cbihr1.h"
-#include "cbisol.h"
-#include "dcbgen.h"
 #include "dcbham.h"
 C
       CALL QENTER('NUCAT1')
@@ -580,7 +2680,6 @@ C
       ENDIF
 C
       CALL SYMUPK(WORK(KNUCS),OP1INT,1,NNBBASX)
-
 C
 C     Memory deallocation
 C
@@ -659,7 +2758,6 @@ C
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbgen.h"
-#include "cbihr1.h"
       DIMENSION FOCK(*),WORK(LWORK)
 C
       CALL QENTER('ONEFCK')
@@ -823,6 +2921,8 @@ C
 C
 C     Initialize
 C
+      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &      FILE='AOPROPER')
       allocate(ftri(nnbbasx,nz))
       allocate(op1int(nnbbasx))
       allocate(first(nz))
@@ -875,6 +2975,17 @@ CMI/Febr.2006 Beta matrix is not initialized in OP1INI for the two-component mod
         CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &              OP1INT,FIRST,IPRHAM)
       ENDIF
+C
+C     Energy shift
+C     ============
+C
+      IF (.NOT.TWOCOMP) THEN
+        IOP = IPESHIFT
+        IF(IOP.NE.-1) THEN 
+          CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
+     &          OP1INT,FIRST,IPRHAM)
+        ENDIF
+      ENDIF
 
 C
 C     Finite field perturbations:
@@ -902,7 +3013,7 @@ C
       CALL TRI2SQ(FOCK,FTRI,FIRST,0,1)
       deallocate(ftri)
 c
-c    now add SO integrals
+c     now add SO integrals
 c     SOPP integrals
 c     ==============
 c
@@ -918,6 +3029,16 @@ C     Reindex to sorted basis
 C     =======================
 C
       CALL BUTOBS(FOCK,NZ,WORK(KFREE),LFREE)
+C
+C     Add atomic shift projectors
+C     ---------------------------
+C
+      IF(DOASHIFT) CALL ASHIFT(FOCK,IPRHAM,WORK,KFREE,LFREE)      
+C
+C     Add effective QED potentials
+C     ----------------------------      
+C
+      IF(DOEFFQED) CALL EFFQED(FOCK,WORK,KFREE,LFREE)
 C
 C     Add Fock matrices when requested
 C
@@ -984,6 +3105,7 @@ C
 #include "dcbxpr.h"
 #include "dcbprl.h"
 C
+!      IPRINT=16 !sunaga      
       CHARACTER MXFORM*6, FMT*6, RTNLBL(2)*8,JCHR*1
       LOGICAL FIRST(*), DOINT(4), TRIANG, ONFILE
       DIMENSION PMAT(NDIM,*),OP1INT(NDIM),PRPINT(NDIM,*),IDOINT(4)
@@ -1027,7 +3149,6 @@ C       IBREP - boson irrep of scalar operator
 C
 C       MATRIX OPERATOR:
 C       ----------------
-C
 C       IM4  - pointer to matrix operator
 C       IFAC - sign of coefficient in linear combination
 C       IFAS - sign of matrix operator
@@ -1104,7 +3225,7 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
         ENDIF
 C =============================================================
 C               Get integrals from the CHECKPOINT file
-C     =============================================================
+C =============================================================
         IF(ONFILE) THEN
           CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
      &          OP1INT,NDIM,IPRINT)
@@ -1249,7 +3370,7 @@ C
 C     Written by Miro ILIAS/Strasbourg, March 2006
 C
 C*****************************************************************************
-      use x2c_fio
+!     use x2c_fio
       use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
@@ -1263,7 +3384,6 @@ C
 #include "dcbprp.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
-#include "dummy.h"
 C
       LOGICAL TRIANGULAR,TOBE,YESPCTRA, MAKEPCTRA,FIRST(NZ),ONFILE
       DIMENSION PRPAO(N2BBASX,NZ),PRPINT(*),WORK(LWORK)
@@ -1490,9 +3610,7 @@ C    Written by Miro ILIAS/Strasbourg/March 2006
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
-#include "dcbgen.h"
 #include "dcbbas.h"
       DIMENSION PMAT(N2BBASX,NZ),PTRI(NNBBASX,NZ)
       LOGICAL   FIRST(NZ)
@@ -1501,7 +3619,7 @@ C
 
       DO IZ = 1,NZ
         IF(FIRST(IZ)) THEN
-C ... zero out unused quaternionic blocks of property matrixes...
+C ... zero out unused quaternionic blocks of property matrices...
           CALL DZERO(PMAT(1,IZ),N2BBASX)
         ELSE
           IQ = IPQTOQ(IZ,IREP)
@@ -1530,7 +3648,7 @@ C        NB! Not the symmetrical orthonormalization, which
 C            often has been called the "Lowdin orthonormalization"
 C
 C     METHOD:
-C        In this subroutine V+ is computed.  As the basis set is
+C        In this subroutine V+ is computed. As the basis set is
 C        real it reduces to the transpose:
 C
 C           V+ = TRN(V) = t(s**(-0.5))
@@ -1541,15 +3659,12 @@ C     Last revision: Jan.2006 modified for pure nonrel.case...
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "aovec.h"
 C
-#include "ccom.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
-#include "dcbham.h"
 #include "primit.h"
       LOGICAL LBIT
       DIMENSION VMAT(*),WORK(LWORK)
@@ -1591,11 +3706,9 @@ C     See SUBROUTINE LOWDIN for explanation
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 #include "maxaqn.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
 C
-#include "ccom.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcborb.h"
@@ -1615,6 +3728,7 @@ C     Get overlap matrix packed on fermion irreps
 C     ===========================================
 C
       CALL GTOVLT(SMAT,D1,IPRINT)
+C      
 C
 C     Generate IRKB array for use in RKBLOW
 C     =====================================
@@ -1632,7 +3746,8 @@ C
       IVOFF = 1
       NLINDEP=0
       CALL HEADER('Generating Lowdin canonical matrix:',-1)
-      DO IFRP = 1,NFSYM
+      DO 10 IFRP = 1,NFSYM
+        IF(NFBAS(IFRP,0).EQ.0) GOTO 10
         JSOFF = ISOFF
         JVOFF = IVOFF
 C
@@ -1747,7 +3862,7 @@ C
         END IF
         ISOFF = ISOFF + NFBAS(IFRP,0)*NFBAS(IFRP,0)
         IVOFF = IVOFF + NFBAS(IFRP,0)*NFORB(IFRP,0)
-      ENDDO
+ 10   CONTINUE
       IF(NLINDEP.GT.0) THEN
         WRITE(LUPRI,'(A,I0,A)') '*** WARNING *** : ',NLINDEP,
      &    ' functions deleted due to numerical linear dependence.'
@@ -1768,12 +3883,10 @@ C     Last revision : Nov 15 1994
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 C
-#include "shells.h"
 #include "symmet.h"
 #include "nuclei.h"
       DIMENSION OP1INT(*),WORK(LWORK)
@@ -1822,7 +3935,6 @@ C     Written by T.Saue Sep 12 1995
 C     Last revision: Sep 12 1995
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C Used from COMMON blocks:
 C  DCBBAS: NTBAS(0)
 C
@@ -1851,7 +3963,6 @@ C     Written by T.Saue Sep 12 1995
 C     Last revision: Sep 12 1995
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbbas.h"
 #include "dcborb.h"
       DIMENSION VBUF(NTBAS(0),*)
@@ -1907,11 +4018,8 @@ C     Last revision: May 21 1996 - tsaue
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION FOCK(*),WORK(LWORK)
-#include "dcbgen.h"
-#include "cbihr1.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 C
@@ -2093,9 +4201,6 @@ C*****************************************************************************
       use dircmo
       use x2cmod_cfg
       use dirx2c
-      use x2c_pct_ao, only:
-     &    pctrafo_all_op_driver
-      use x2c_fio
       use x2c_utils, only:
      &    write_fock_matrices_saao_basis_x2c,
      &    read_fock_matrices_saao_basis_x2c
@@ -2121,8 +4226,6 @@ C*****************************************************************************
      &    dump_delta_xc_energy,
      &    goodbye_xamfi,
      &    dump_Xc_c1_dens
-      use xamfi_driver, only:
-     &    get_xamfi_correction
       use xcint_main, only: get_xc_energy
       use aobasis_collector, only: deallocate_aobasis_container
 #endif
@@ -2146,9 +4249,6 @@ C   PAMIOU: LUTMAT
 #include "dcbbas.h"
 #include "dcborb.h"
 ! needed for restart from X2CMAT
-#include "dcbxpr.h"
-#include "maxaqn.h"
-#include "ccom.h"
 #include "dgroup.h"
 #ifdef MOD_XAMFI
 #include "mxcent.h"
@@ -2172,38 +4272,29 @@ C   PAMIOU: LUTMAT
 #ifdef MOD_XAMFI
       real(8), allocatable :: scr1_aoosoc(:)
       real(8), allocatable :: dmat_aoosoc(:)
-      real(8), allocatable :: cmo_aoosoc(:)
-      real(8), allocatable :: pctm_aoosoc(:)
       logical              :: no1esystem_aoosoc, aoc_save
       logical              :: x2c_save
       real*8               :: delta_xc_energy_aoosoc
 #endif
       real(8)              :: timstr(2), timend(2), dum
-      logical              :: x2c_AOA,x2c_Aon
 
       CALL QENTER('GMOTRA')
 
 !     set local 2c-relativistic run flag
       is_2c_rel_run = bss.or.x2c
-
-      call legacy_lwork_get(LWORK)
-
 !     set file unit number for X2CMAT
       lux2c = 40
 
       IF(GOFAST)then
-        if (.NOT.(BSS.or.x2c)) GOTO 10
-        if(x2c)then
-          goto 7
-        end if
+        if (.NOT.is_2c_rel_run) GOTO 10
+        if (x2c) goto 7
       end if
 
+      call legacy_lwork_get(LWORK)
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in GMOTRA')
       KFRSAV = KFREE
 C
-
-
 !     logical flag for keeping track of whether case 3 in gmotra has
 !     been entered
       gmotra_case3 = .false.
@@ -2217,8 +4308,9 @@ C
 C     Make one-center projection matrix
 C     =================================
 C
-      IF (ONECAP.AND.(INTV1C.EQ.1.AND.ICTLV1C(2).EQ.1))
-     &    CALL MK1CEX (WORK,KFREE,LFREE,IPRGEN)
+      IF (ONECAP.AND.(INTV1C.EQ.1.AND.ICTLV1C(2).EQ.1)) THEN
+        CALL MK1CEX (WORK,KFREE,LFREE,IPRGEN)
+      ENDIF
 
 !     we use N2BBASXQ instead of N2BBASX for BSS...to be checked
       CALL MEMGET2('REAL','VMAT',KVMAT,N2BBASXQ,WORK,KFREE,LFREE)
@@ -2240,28 +4332,27 @@ C     ==============================================
       rewind lulmat
 
       if(tobe)then
-        call readi(lulmat,1,ndim_lowmat)
-        call readt(lulmat,ndim_lowmat,work(kvmat))
+        CALL READI(LULMAT,1,NDIM_LOWMAT)
+        CALL READT(LULMAT,NDIM_LOWMAT,WORK(KVMAT))
       else
         CALL TIMER2('START ',TIMSTR,TIMEND)
         CALL LOWDIN(WORK(KVMAT),WORK(KFREE),LFREE,IPRHAM)
         CALL TIMER2('Lwdn_a',TIMSTR,TIMEND)
-
 !       save LOWDIN matrix on file
-        ndim_lowmat = 0
-        do i = 1, nfsym
-          ndim_lowmat = ndim_lowmat + nforb(i,0)*nfbas(i,0)
-        end do
-        call writi(lulmat,1,ndim_lowmat)
-        call writt(lulmat,ndim_lowmat,work(kvmat))
+        NDIM_LOWMAT = 0
+        DO I = 1, NFSYM
+          NDIM_LOWMAT = NDIM_LOWMAT + NFORB(I,0)*NFBAS(I,0)
+        END DO
+        CALL WRITI(LULMAT,1,NDIM_LOWMAT)
+        CALL WRITT(LULMAT,NDIM_LOWMAT,WORK(KVMAT))
       end if
 
       close(lulmat,status='keep')
 
 !     release memory when we invoke the x2c module
-      if(x2c)then
-       call memrel('x2cfre',work,kwork,kwork,kfree,lfree)
-       call dealloc(work)
+      IF(X2C)THEN
+        CALL MEMREL('X2CFRE',WORK,KWORK,KWORK,KFREE,LFREE)
+        CALL DEALLOC(WORK)
       end if
 
 #ifdef MOD_XAMFI
@@ -2289,8 +4380,9 @@ C
 !       Case 1: Unrestricted kinetic balance
 !               or 2-component non-relativistic calculation
 !       ---------------------------------------------------
-  7   IF(URKBAL.OR.(TWOCOMP.AND..NOT.is_2c_rel_run))then
-        NZT = 1
+ 7    CONTINUE
+      IF(URKBAL.OR.(TWOCOMP.AND..NOT.is_2c_rel_run))then
+        NZT   = 1
         KTMAT = KVMAT
         DO IFRP = 1,NFSYM
           NESH(IFRP)  = NFORB(IFRP,1)
@@ -2299,8 +4391,8 @@ C
           NTMO(IFRP)  = NORB(IFRP)
         ENDDO
         IF (TWOCOMP) THEN
-         SSMTRC = D0
-         MC = 1
+          SSMTRC = D0
+          MC     = 1
         ENDIF
         IF (IPRHAM.GE.5) THEN
           write(lupri,*) 'GMOTRA: branch URKBAL'
@@ -2326,135 +4418,20 @@ C
 !       case 2.1 - step a: restart 2c-run from file
 !       -------------------------------------------
         IF(TOBE) THEN
-
-C         BSSMAT or X2CMAT available:
-C         1) open BSSMAT/X2CMAT and remove all property integrals
-C         2) do picture change transformation of integrals on CHECKPOINT
-
           if(bss)then
-
-            WRITE(LUPRI,'(A,A)') '* Info: DIRAC found BSSMAT ',
-     &           '(BSS stuff) ... skipping generation of H2C'
-            LUBSS = 40
-            CALL OPNFIL(LUBSS,'BSSMAT','OLD','GMOTRA')
-            IF (FNDLAB('P2C_0001',LUBSS)) THEN
-              BACKSPACE(LUBSS)
-              CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
-            ENDIF
-            CLOSE(LUBSS,STATUS='KEEP')
-            CALL PROP2BSS(WORK(KVMAT),IPRHAM,WORK(KFREE),LFREE)
-
+            CALL BSS_RESTART(WORK(KVMAT),IPRHAM,WORK,KFREE,LFREE)  
           else if(x2c)then
-
-            write(lupri,'(a,a)') '* Info: DIRAC found X2CMAT ',
-     &           '(X2C stuff) ... skipping generation of H2C'
-            open(lux2c,file='X2CMAT',status='old',form='unformatted',
-     &           access='sequential',action='readwrite',
-     &           position='rewind')
-
-!           find Hamiltonian on file property integral... and step back
-            if(.not.x2cmod_fragment_x2c)then
-              i2cofk =  0
-!             check for hamiltonian integrals on file X2CMAT and set i2cofk
-              call checkpoint_query(
-     &'/result/hamiltonian/x2c/ao_matrices/h12cAOA   10',x2c_AOA)
-              call checkpoint_query(
-     &'/result/hamiltonian/x2c/ao_matrices/h12cAOn   10',x2c_AOn)
-              if(x2c_AOA)then
-                if(noamfi)then
-                  write(lupri,'(a)')
-     &' *** restart error: try to read h1+amfi and noamfi == .true. ***'
-                  call quit(
-     &'*** error in gmotra: mismatch between X2CMAT data and input ***')
-                end if
-!               set i2cofk to |3|: since we restart, it does not matter
-!               how the AMFI part was derived.
-                i2cofk = 3
-              else if(x2c_AOn)then
-                i2cofk = 1
-              else
-                if(x2cmod_mmf_restart)then
-                  i2cofk = -2
-                else
-                  write(lupri,'(a)')
-     &'*** restart error: no hamiltonian integrals stored on X2CMAT ***'
-                  call quit(
-     &'*** error in gmotra: no h1 data on file X2CMAT ***')
-                end if
-              end if
-            else
-!             nothing to do here for now: x2cmod_fragment_x2c is always false.
-            end if
-
-            if(.not.x2cmod_skip_op_pct)then
-
-              call pctrafo_all_op_driver(ntbas(0),
-     &                                   ntbas(1),
-     &                                   nfbas(1,0),
-     &                                   nfbas(1,1),
-     &                                   nfsym,
-     &                                   nz,
-     &                                   irqmat,
-     &                                   ipqtoq,
-     &                                   iqtopq,
-     &                                   iqmult,
-     &                                   jqbas,
-     &                                   iqdef,
-     &                                   i2basx,
-     &                                   lux2c,
-     &                                   lu1int,
-     &                                   jbtof,
-     &                                   nprps,
-     &                                   lwork,
-     &                                   dosphe,
-     &                                   mdirac,
-     &                                   .false.,
-     &                                   onesys,
-     &                                   -1,
-     &                                   df,
-     &                                   -1,
-     &                                   'undef ',
-     &                                   'undef ',
-     &                                   iprham)
-
-          end if
-          close(lux2c,status='keep')
-
-!         allocate
-          call alloc(WORK,LWORK,id='WORK in GMOTRA - part 2')
-#include "memint.h"
-          TWOCOMP = .TRUE.
-          RDINPC = .FALSE.
-          IPREAD = IPREAD - 5
-          CALL READIN(.FALSE.)
-          !> stknecht: take care of 2c-mmf-sf for a linear molecule
-          if(spinfr .and. linear) linear = .false.
-          if(spinfr .and. atomic) atomic = .false.          
-          CALL SETDC1(IPREAD)
-!         set AO-labels for large components - in x2c_main initialized for large and small components
-          call getlab(ipread)
-          IPREAD = IPREAD + 5
-C.........reset NEWPRP to re-initialize AO matrices on CHECKPOINT
-          NEWPRP = .TRUE.
-          CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
-          CALL ONEGEN(WORK,LWORK)
-
-          call dealloc(work)
-
-          if(gofast) goto 10
-
-          end if
-
+            CALL X2C_RESTART(IPRHAM)
+            if(gofast) goto 10
+          endif
+!
 !       case 2.2 - step a: generate 2c-Hamiltonian
 !       ------------------------------------------
         ELSE
-
           if(bss)then
 !           bss module (if asked for it can also perform an X2C transformation)
             CALL MAKE_H2C(WORK(KVMAT),WORK(KFREE),LFREE)
-
           else if(x2c)then
-
 !           todo: put in an interface routine to be called inside x2c_driver
             if(mdirac)then
               NZT            = 1
@@ -2481,7 +4458,7 @@ C.........reset NEWPRP to re-initialize AO matrices on CHECKPOINT
         CALL TIMER2('mk_h2c',TIMSTR,TIMEND)
 
 !       case 2 - step b: generate Lowdin canonical orthonormalization matrix in 2c-mode
-!       -------------------------------------------------------------------------------
+!     -------------------------------------------------------------------------------
         if(.not.(twocompbss.or.x2c).or.x2cmod_mmf)then
 
 
@@ -2512,7 +4489,7 @@ C.........reset NEWPRP to re-initialize AO matrices on CHECKPOINT
         else
 C
           if(.not.x2c)
-     &    CALL MEMREL('BSS.2c',WORK,KWORK,KWORK,KFREE,LFREE)
+     &      CALL MEMREL('BSS.2c',WORK,KWORK,KWORK,KFREE,LFREE)
 
           TWOCOMP = .TRUE.
           RDINPC = .FALSE.
@@ -2565,7 +4542,6 @@ C.........do canonical orthonormalization
           write(lupri,*) 'NESH(IFRP),NPSH(IFRP)',
      &     (NESH(IFRP),NPSH(IFRP),IFRP=1,NFSYM)
         ENDIF
-
 !
 !     -------------------------------------------------------------------
 !     Case 3: Transformation matrix with modified Dirac equation embedded
@@ -2582,7 +4558,7 @@ C.........do canonical orthonormalization
         if(linear.or.atomic) lsymad = .true.
 
 !        in: LOWDIN matrix                   --> KVMAT
-
+!
 !       out: AO2MO                           --> KTMAT
 !       out: AO2MO SL resorted               --> KVMAT
 !       out: MO2MO linear symmetry adapted   --> KTBUF (if linear == .true.; nothing otherwise)
@@ -2624,10 +4600,12 @@ C
 
 #ifdef MOD_XAMFI
       !> store common block variables while still being in 4c mode
-      if(aoomod.and. .not. x2c)then
-         call xamfi_set_cb("set-4c")
-      else if(aoomod .and. x2c)then
-         call xamfi_set_cb("set-2c")
+      if(aoomod)then
+        if (x2c) then
+          call xamfi_set_cb("set-2c")
+        else
+          call xamfi_set_cb("set-4c")
+        endif
       endif
 #endif
 C
@@ -2638,56 +4616,56 @@ C
       IF (SPINFR.or.(linear.and.x2c.and.x2cmod_mmf)) THEN
          SUB_BL = .TRUE.
       ENDIF
-
-      if(linear.and..not.gmotra_case3)then
-C.......SUB_BL will be set true if linear symmetry works
-        CALL DCOPY(N2TMT,WORK(KTMAT),1,WORK(KTBUF),1)
-!       in:  KTMAT + KTBUF
-!       out: KTMAT
-        CALL MEMGET2('REAL','EIG'  ,KEIG  ,NTBAS(0),WORK,KFREE,LFREE)
-        CALL MEMGET2('REAL','TBUF2',KTBUF2,N2BBASXQ,WORK,KFREE,LFREE)
-
-!        in: AO2MO                         --> KTBUF
-
-!       out: AO2MO linear symmetry adapted --> KTMAT
-!       out: AO2MO                         --> KTBUF
-!     out: MO2MO linear symmetry adapted --> KTBUF2 (discarded if not x2c-mmf)
-
-        IF(ATOMIC)THEN
-          CALL GATMSM(WORK(KTMAT),WORK(KTBUF),WORK(KTBUF2),WORK(KEIG),
-     &                WORK(KFREE),LFREE)
-        ELSE
-          CALL GLINSM(WORK(KTMAT),WORK(KTBUF),WORK(KTBUF2),WORK(KEIG),
-     &                WORK(KFREE),LFREE)
-        ENDIF
-        CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
-      else if(linear)then
-        if(x2c.and.x2cmod_mmf)then
-          open(lux2c,file='X2CMAT',status='old',form='unformatted',
-     &         access='sequential',action='readwrite',
-     &         position='rewind')
-          call x2c_read('2cLWAOl   10',work(KTMAT),ndim_lowdinmat,lux2c)
-          close(lux2c,status='keep')
-        else
-
-          open(99,file='AOMOlin',status='old',form='unformatted',
-     &         access='sequential',action='readwrite',
-     &         position='rewind')
-
-          !> rec # 1: U
-          read(99)
-          !> rec # 2: VU
-          call readt(99,N2TMT,work(KTMAT))
-!         file is needed in the 4c-2c transformation after the 4c-SCF
-!         in order to ensure numerical stability (avoiding double
-!         diagonalization, etc.)
-          if(x2cmod_mmf)then
-            close(99,status='keep')
+      if(linear) then
+        if(gmotra_case3) then
+          if(x2c.and.x2cmod_mmf)then
+            open(lux2c,file='X2CMAT',status='old',form='unformatted',
+     &           access='sequential',action='readwrite',
+     &           position='rewind')
+            call x2c_read('2cLWAOl   10',work(KTMAT),
+     7                    ndim_lowdinmat,lux2c)
+            close(lux2c,status='keep')
           else
-            close(99,status='delete')
+            open(99,file='AOMOlin',status='old',form='unformatted',
+     &          access='sequential',action='readwrite',
+     &          position='rewind')
+
+            !> rec # 1: U
+            read(99)
+            !> rec # 2: VU
+            call readt(99,N2TMT,work(KTMAT))
+!           file is needed in the 4c-2c transformation after the 4c-SCF
+!           in order to ensure numerical stability (avoiding double
+!           diagonalization, etc.)
+            if(x2cmod_mmf)then
+              close(99,status='keep')
+            else
+              close(99,status='delete')
+            end if
           end if
-        end if
-      end if
+        else 
+C.........SUB_BL will be set true if linear symmetry works
+          CALL DCOPY(N2TMT,WORK(KTMAT),1,WORK(KTBUF),1)
+!         in:  KTMAT + KTBUF
+!         out: KTMAT
+          CALL MEMGET2('REAL','EIG'  ,KEIG  ,NTBAS(0),WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','TBUF2',KTBUF2,N2BBASXQ,WORK,KFREE,LFREE)
+
+!         in: AO2MO                         --> KTBUF
+!
+!         out: AO2MO linear symmetry adapted --> KTMAT
+!         out: AO2MO                         --> KTBUF
+!         out: MO2MO linear symmetry adapted --> KTBUF2 (discarded if not x2c-mmf)
+          IF(ATOMIC)THEN
+            CALL GATMSM(WORK(KTMAT),WORK(KTBUF),WORK(KTBUF2),WORK(KEIG),
+     &                  WORK(KFREE),LFREE)
+          ELSE
+            CALL GLINSM(WORK(KTMAT),WORK(KTBUF),WORK(KTBUF2),WORK(KEIG),
+     &                WORK(KFREE),LFREE)
+          ENDIF
+          CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
+        end if ! if(gmotra_case3) then
+      end if       ! if(linear) then
 C
 C     Construct right index transformed overlap matrix Saomo = Sao V
 C     Since V(dagger) Sao V = I, Saomo is the inverse of V(dagger)
@@ -2715,7 +4693,6 @@ C     Write transformation matrices
       CALL ORBDAT
 
       CLOSE(LUTMAT,STATUS='KEEP')
-
 #ifdef MOD_XAMFI
       if(.not.x2c.and.x2cmod_mmf.and.aoomod.and.nucdep==1
      &   .and.nucind==1)then
@@ -2734,99 +4711,21 @@ C     Write transformation matrices
        CLOSE(LUTMAT,STATUS='KEEP')
       end if
 #endif
-
       if(x2c.and.x2cmod_mmf)then
         if(aoomod)then
 #ifdef MOD_XAMFI
-          if(nucdep == 1 .and. nucind == 1)then ! generate 2e-SO+scalar corrections in an atomic run
-
+          if(nucdep == 1 .and. nucind == 1)then
 !           release memory
             CALL MEMREL('GMOTRA - aoosoc',WORK,KWORK,KWORK,KFREE,LFREE)
             call dealloc(work)
-
-            !> ... and temporarily switch on 4c mode
-            call xamfi_set_cb("get-4c")
-
-            !> if requested (.FOCC): density matrix for 2e-SO+scalar corrections
-            !> always with fractional occupation for open shell atoms
-            if(aoofocc .and. aoc)then
-              aoc_save   = aoc
-              nfmat_save = nfmat
-              aoc        = .false.
-              nfmat      = 1
-            end if
-
-            !> turn off x2c to properly call twofck in 4c mode
-            x2c_save = x2c
-            x2c      = .false.
-
-!           !> generate density matrix - incoming variable to the aoosoc module
-            allocate(dmat_aoosoc(ntbas(0)**2*nz*nfmat))
-            allocate(cmo_aoosoc(ncmotq))
-            dmat_aoosoc = 0.0d0
-            cmo_aoosoc  = 0.0d0
-!           read coefficients
-            call reacmo_new(cmo=cmo_aoosoc)
-
-!           !> generate density matrix
-            call denmat(dmat_aoosoc,cmo_aoosoc,iprham)
-
-            allocate(pctm_aoosoc(ntbas(0)**2*4))
-
-!           !> read the U matrix
-            ioff_pct_mat = 1
-            do i = 1, nfsym
-              write(flabel,'(a11,i1)') 'pctmtAO   1',i
-              if(nfbas(i,0) * nfbas(i,1) > 0)then
-                call x2c_read(flabel,pctm_aoosoc(ioff_pct_mat),
-     &                        nfbas(i,0) * nfbas(i,1)*nz,lux2c)
-              end if
-              ioff_pct_mat = ioff_pct_mat + nfbas(i,0) * nfbas(i,1) * nz
-            end do
-
-            close(lux2c,status='keep')
-
-!           !> ensure to not calculate any spurious 2e-SO+scalar corrections for actual 1e-systems
+!           generate 2e-SO+scalar corrections in an atomic run
+!>          ensure to not calculate any spurious 2e-SO+scalar corrections for actual 1e-systems
             call rmolchr(ichrg) ! sum of charge of all constituents, here only one atom
-                       no1esystem_aoosoc = .false.
-                       no1esystem_aoosoc = (ichrg - kcharg > 1)
+            no1esystem_aoosoc = .false.
+            no1esystem_aoosoc = (ichrg - kcharg > 1)
             if(onesys) no1esystem_aoosoc = .false.
-
-            lwork_local = lwork - ntbas(0)**2*nz*nfmat
-     &                  - ntbas(0)**2*nz - ncmotq
-
-            call get_xamfi_correction(
-     &                                dmat_aoosoc,
-     &                                cmo_aoosoc,
-     &                                pctm_aoosoc,
-     &                                no1esystem_aoosoc,
-     &                                dirac_cfg_dft_calculation,
-     &                                (linear.or.atomic),
-     &                                lwork_local,
-     &                                iprham
-     &                               )
-
-            !> save XC_energy_4c
-            delta_xc_energy_aoosoc     = 0.0d0
-            if(dirac_cfg_dft_calculation)then
-              delta_xc_energy_aoosoc =
-     &        delta_xc_energy_aoosoc + get_xc_energy()
-            end if
-
-            !> reset common block variables to 2c mode
-            call xamfi_set_cb("get-2c")
-
-            !> restore logicals
-            if(aoofocc)then
-              aoc   = aoc_save
-              nfmat = nfmat_save
-            end if
-            x2c = x2c_save
-            !nzt = nzt_save
-
-            deallocate(pctm_aoosoc)
-            deallocate(cmo_aoosoc)
-            deallocate(dmat_aoosoc)
+            call xamfi_atomcorr(delta_xc_energy_aoosoc,
+     &                          no1esystem_aoosoc)
           end if ! check for atomic run
 #else
         call quit('X-AMFI not available in this version')
@@ -2840,6 +4739,7 @@ C     Write transformation matrices
             CALL MEMREL('GMOTRA - mmfmos',WORK,KWORK,KWORK,KFREE,LFREE)
             call dealloc(work)
           end if
+!     
 !         perform the final steps for the molecular mean-field procedure within the X2C-module
 !         ------------------------------------------------------------------------------------
 
@@ -2984,7 +4884,7 @@ C
           !> read 2c-mos
           call reacmo_new(cmo=cmo_mmf)
 
-          !> calculate inactive (and possibly active) density matrix
+          !> calculate inactive (and possibly active) 2c density matrix
           call denmat(tbuf_mmf,cmo_mmf,iprham)
 
 #ifdef MOD_XAMFI
@@ -3014,35 +4914,35 @@ C
 
 #ifdef MOD_XAMFI
           if(.not.onesys)
-     &    call get_scso_2e_fock(dmat                  = tbuf_mmf,
-     &                          cmo                   = cmo_mmf,
-     &                          fmat                  = tmat_mmf,
-     &                          nrows                 = ntbas(0),
-     &                          ncols                 = ntbas(0),
-     &                          nr_2e_fock_matrices   = nfmat,
-     &                          intflg                = intflg,
-     &                          nz                    = nz,
-     &                          ipqtoq                = ipqtoq,
-     &                          x_nopen               = nopen,
-     &                          x_dfopen              = df(0:nopen),
-     &                          x_n2tmt               = n2tmt,
-     &                          nzt_x                 = nzt,
-     &                          nr_fsym               = nfsym,
-     &                          N2BBASXQ_dim_x        = n2bbasxq,
-     &                          nr_tmo                = ntmo,
-     &                          nr_ao_all             =nfbas(1:nfsym,0),
-     &                          nr_mo_all             = norb(1:nfsym),
-     &                          ioff_tmot             = i2tmot,
-     &                          ioff_tmt              = i2tmt,
-     &                          ioff_aomat_x          = i2basx,
-     &                          myAOMOMAT             = 'AOMOMAT   ',
-     &                          isDFT                 =
+     &    call get_scso_2e_fock(dmat                 = tbuf_mmf,
+     &                          cmo                  = cmo_mmf,
+     &                          fmat                 = tmat_mmf,
+     &                          nrows                = ntbas(0),
+     &                          ncols                = ntbas(0),
+     &                          nr_2e_fock_matrices  = nfmat,
+     &                          intflg               = intflg,
+     &                          nz                   = nz,
+     &                          ipqtoq               = ipqtoq,
+     &                          x_nopen              = nopen,
+     &                          x_dfopen             = df(0:nopen),
+     &                          x_n2tmt              = n2tmt,
+     &                          nzt_x                = nzt,
+     &                          nr_fsym              = nfsym,
+     &                          N2BBASXQ_dim_x       = n2bbasxq,
+     &                          nr_tmo               = ntmo,
+     &                          nr_ao_all            = nfbas(1:nfsym,0),
+     &                          nr_mo_all            = norb(1:nfsym),
+     &                          ioff_tmot            = i2tmot,
+     &                          ioff_tmt             = i2tmt,
+     &                          ioff_aomat_x         = i2basx,
+     &                          myAOMOMAT            = 'AOMOMAT   ',
+     &                          isDFT                =
      &                          dirac_cfg_dft_calculation,
-     &                          isLoA                 =
+     &                          isLoA                =
      &                          (linear.or.atomic),
-     &                          xcmode                = 2,
-     &                          lwork_ext             = lfree,
-     &                          print_lvl             = iprham
+     &                          xcmode               = 2,
+     &                          lwork_ext            = lfree,
+     &                          print_lvl            = iprham
      &                         )
 
           !> subtract XC_energy_2c
@@ -3101,182 +5001,20 @@ C
           deallocate(tmat_mmf)
           deallocate(cmo_mmf)
           deallocate(tbuf_mmf)
-
-        end if ! x2c_2c_mmf_mos == .true.
-
 #ifdef MOD_XAMFI
         !>                                                              ~
         !>  final step for atomic 2e-spin-orbit and scalar corrections: G_A^{++} = {U+ G_A[4c] U}^{++} - G_A[2c]
 
-        if(aoomod .and. no1esystem_aoosoc .and. x2c_2c_mmf_mos)then
-          if(nucdep == 1 .and. nucind == 1)then
-            len_fmat  = ntbas(0)**2*nz
-            allocate(tmat_mmf(len_fmat))
-            allocate(tbuf_mmf(len_fmat))
-            allocate(scratch_mmf(0:1))
-            scratch_mmf = 0.0d0
-            open(lux2c,file='D2FCK_mmf',status='unknown',
-     &           access='sequential',action='readwrite',
-     &           form='unformatted',position='rewind')
-
-            !> read G_A[2c]
-            call read_fock_matrices_saao_basis_x2c(
-     &                                             tmat_mmf,
-     &                                             len_fmat, 1,
-     &                                             lux2c, 0,
-     &                                             scratch_mmf)
-            deallocate(scratch_mmf)
-            close(lux2c, status='keep')
-!#define DEBUG_SOC
-#ifdef DEBUG_SOC
-            CALL HEADER(
-     &      'X-AMFI - G_A[2c]',-1)
-            CALL PRQMAT(tmat_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
-     &                  IPQTOQ(1,0),LUPRI)
-#endif
-
-            !> read {U+ G_A[4c] U}^{++}
-            call read_xamfi_general_matrix(
-     &                                     tbuf_mmf,
-     &                                     ntbas(0),
-     &                                     ntbas(0),
-     &                                     nz,
-     &                                     'aoo2esoX',
-     &                                     nint(charge(1)),
-     &                                     lux2c,
-     &                                     1 !> atomic center id
-     &                                    )
-#ifdef DEBUG_SOC
-            CALL HEADER(
-     &      'X-AMFI - {U+ G_A[4c] U}^{++}',-1)
-            CALL PRQMAT(tbuf_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
-     &                  IPQTOQ(1,0),LUPRI)
-#endif
-            !> ~
-            !> G_A^{++} = {U+ G_A[4c] U}^{++} - G_A[2c]
-            call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
-
-#ifdef DEBUG_SOC
-            CALL HEADER(
-     &      'X-AMFI - 2e-normalized (final)',-1)
-            CALL PRQMAT(tbuf_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
-     &                  IPQTOQ(1,0),LUPRI)
-#undef DEBUG_SOC
-#endif
-
-            call dump_normalized_2e_soc(
-     &                                  tbuf_mmf,
-     &                                  ntbas(0),
-     &                                  ntbas(0),
-     &                                  nz,
-     &                                  'aoo2esoc',
-     &                                  nint(charge(1)),
-     &                                  lux2c,
-     &                                  .true.
-     &                                 )
-            if(dirac_cfg_dft_calculation)then
-!#define DEBUG_SOC
-#ifdef DEBUG_SOC
-              WRITE(LUPRI,'(/a,f12.9)')
-     &        'X-AMFI - DELTA XC energy: ',delta_xc_energy_aoosoc
-#undef DEBUG_SOC
-#endif
-              tbuf_mmf = 0; tmat_mmf = 0
-              !> read {U+ V_A[4c] U}^{++}
-              call read_xamfi_general_matrix(
-     &                                       tbuf_mmf,
-     &                                       ntbas(0),
-     &                                       ntbas(0),
-     &                                       nz,
-     &                                       'amftVxc2',
-     &                                       nint(charge(1)),
-     &                                       103,
-     &                                       1 !> atomic center id
-     &                                      )
-
-              open(103,file='amfVxc2',status='old',
-     &        access='sequential',action='readwrite',
-     &        form='unformatted',position='rewind')
-
-              !> read V_A[2c]
-              read(103) tmat_mmf(1:ntbas(0)*ntbas(0)*nz)
-              close(103,status="delete")
-!#define DEBUG_SOC
-#ifdef DEBUG_SOC
-              CALL HEADER(
-     &        'X-AMFI - Vxc-tilde             ',-1)
-              CALL PRQMAT(tbuf_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                    NZ,IPQTOQ(1,0),LUPRI)
-              CALL HEADER(
-     &        'X-AMFI - Vxc2                  ',-1)
-              CALL PRQMAT(tmat_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                    NZ,IPQTOQ(1,0),LUPRI)
-#endif
-
-              !> ~
-              !> V_A^{++} = {U+ V_A[4c] U}^{++} - V_A[2c]
-              call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
-
-!#define DEBUG_SOC
-#ifdef DEBUG_SOC
-              CALL HEADER(
-     &        'X-AMFI - Vxc-normalized (final)',-1)
-              CALL PRQMAT(tbuf_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                    NZ,IPQTOQ(1,0),LUPRI)
-
-              allocate(cmo_mmf(ncmotq))
-              allocate(scratch_mmf(len_fmats))
-
-              cmo_mmf     = 0
-              scratch_mmf = 0
-              !> read 2c-mos
-              call reacmo_new(cmo=cmo_mmf)
-              !> calculate inactive (and possibly active) density matrix
-              call denmat(scratch_mmf,cmo_mmf,iprham)
-
-              xxxBLUBB = ddot(len_fmat,scratch_mmf,1,tbuf_mmf,1)
-              WRITE(LUPRI,'(/a,f12.9)')
-     &        'X-AMFI - DELTA XCmat (PCE) energy: ',xxxBLUBB
-              deallocate(scratch_mmf)
-              deallocate(cmo_mmf)
-#undef DEBUG_SOC
-#endif
-
-              call dump_normalized_2e_soc(
-     &                                    tbuf_mmf,
-     &                                    ntbas(0),
-     &                                    ntbas(0),
-     &                                    nz,
-     &                                    'aooVxcMA',
-     &                                    nint(charge(1)),
-     &                                    103,
-     &                                    .true.
-     &                                   )
-
-
-              call dump_delta_xc_energy(
-     &                                  delta_xc_energy_aoosoc,
-     &                                  'aooDLXCE',
-     &                                  nint(charge(1)),
-     &                                  lux2c
-     &                                 )
-
-            end if
-
-            call goodbye_xamfi(atom(1)%charge)
-            call deallocate_aobasis_container()
-
-            !> restore logicals
-            if(aoofocc)then
-              aoc   = aoc_save
-              nfmat = nfmat_save
-            end if
-
-            deallocate(tbuf_mmf)
-            deallocate(tmat_mmf)
+        if(aoomod .and. no1esystem_aoosoc)then
+           if(nucdep == 1 .and. nucind == 1)then
+            call xamfi_atomcorr2(delta_xc_energy_aoosoc,
+     &                          no1esystem_aoosoc)              
           end if ! check for atomic run
         end if ! aoomod
 #endif
+
+        end if ! x2c_2c_mmf_mos == .true.
+
       end if ! x2c + x2cmod_mmf == .true.
 
 !     final output
@@ -3392,7 +5130,6 @@ C  DGROUP:
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbdhf.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "cbihr1.h"
@@ -3769,7 +5506,6 @@ C
 C*****************************************************************************
       use memory_allocator
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 C
 #include "dcbham.h"
@@ -3949,7 +5685,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reno */
       SUBROUTINE RENO(LDM,NDIM,SMAT)
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION SMAT(LDM,NDIM)
       DO J = 1,NDIM
         DO I = 1,NDIM
@@ -3969,7 +5704,6 @@ C     cartesian to spherical transformation embedded.
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 C
 #include "dcbbas.h"
@@ -4005,13 +5739,11 @@ C***********************************************************************
 C
 #include "dgroup.h"
 #include "pgroup.h"
-#include "dcbbas.h"
 #include "dcbham.h"
       LOGICAL DONRM
       CHARACTER COMP(2)*1
       DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),TMAT(NCAR,NCAR),WORK(*)
       DATA COMP/'L','S'/
-#include "ibtfun.h"
 C
 C**************************************************
 C***  Generate spherical transformation matrix  ***
@@ -4063,7 +5795,6 @@ C     See SUBROUTINE RKBLO1 for further explanations.
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -4264,9 +5995,11 @@ C
       ENDIF
 
 C
-      IF(IPRINT.GE.3) THEN
+      IF(IPRINT.GE.2) THEN
         CALL HEADER('LOWGEN: Eigenvalues in Lowdin diagonalization:',-1)
-        CALL OUTPUT(EIG,1,NS,1,1,NS,1,-1,LUPRI)
+        DO I = 1,NS
+          WRITE(6,*) I,EIG(I)
+        ENDDO
       ENDIF
 C
       IF(IPRINT.GE.6) THEN
@@ -4303,8 +6036,6 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbgen.h"
-#include "dummy.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
 C
       DIMENSION SMAT(LRS,LCS,NZ),VMAT(LRV,LCV,NZ),EIG(*),IPQ(4),
@@ -4355,8 +6086,6 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbgen.h"
-#include "dummy.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0,D0=0.0D0)
 C
       DIMENSION SMAT(LRS,LCS,NZ),VMAT(LRV,LCV,NZ),EIG(*),IPQ(4),
@@ -4506,8 +6235,7 @@ C
 C    Last modifications: March 2006/MI,Strasbourg
 C
 C*****************************************************************************
-      use x2c_fio, only:
-     &    x2c_read
+!     use x2c_fio, only: x2c_read
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -4527,8 +6255,6 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "nuclei.h"
-#include "symmet.h"
-#include "cbiher.h"
 #include "cbihr1.h"
 #include "cbisol.h"
 
@@ -4794,7 +6520,8 @@ C         n_eff values.
 C
 C     Table of s,p,d,f,g  orbital occupations of the elements
 C     (from which the electron-configuration can be deduced)
-      DIMENSION NOCC(127*5)
+      DIMENSION NOCC(138*5)
+c     DIMENSION NOCC(127*5)
       SAVE NOCC
       DATA NOCC
 C     Periode 1
@@ -4875,15 +6602,21 @@ C    <-- Actinides; (6d block and 7p block)
 C     Periode 8 (8s block)
      &           15,36,40,28,0,  16,36,40,28,0,
      &           16,37,40,28,0,
-C    --> superlanthanides
+C    --> superlanthanides (122-138)
      &           16,37,41,28,0,  16,37,41,29,0,
      &           16,37,41,30,0,  16,37,41,30,1,
-     &           16,37,41,30,2,  16,37,41,30,3/
+     &           16,37,41,30,2,  16,38,40,30,3,
+     &           16,38,40,30,4,  16,38,40,30,5,
+     &           16,38,40,30,6,  16,38,40,30,7,
+     &           16,38,40,30,8,  16,38,40,31,8,
+     &           16,38,40,32,8,  16,38,40,32,9,
+     &           16,38,40,32,10, 16,38,41,31,11,
+     &           16,38,41,31,12/
       CALL QENTER('BNCOR1')
 c
-      IF (NINT(Z) .GT. 127) THEN
+      IF (NINT(Z) .GT. 138) THEN
          WRITE(LUPRI,'(2(A/))') ' FATAL : The bare nucleus '//
-     &   'correction is only implemented for elemtents 1-127',
+     &   'correction is only implemented for elemtents 1-138',
      &   '         You can disable BNCORR with the .NOBNCR keyword '//
      &   'in *SCF'
          CALL QUIT('BNCORR : Unsupported element!')
@@ -5106,16 +6839,13 @@ C     Written by T.Saue March 26 1999
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
 C
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
-#include "dummy.h"
 C
       LOGICAL TOBE
       DIMENSION TMAT(*),TINV(*),WORK(*)
@@ -5211,7 +6941,7 @@ C
       CALL SELFRAG(WORK(KQ),NVECS,WORK(KE),WORK(KI),
      &             NFRAG,NSTR,PRJFIL,PROOWN,NPRJNUC,IOPT,KVEC,
      &             WORK(KCMO),WORK(KEIG),WORK(KIBE),IOFF,
-     &             KRMC_FLG,WORK,KFREE,LFREE)
+     &             KRMC_FLG,.FALSE.,WORK,KFREE,LFREE)
 C
 C     Collect fragment info
 C      
@@ -5245,17 +6975,10 @@ C        Written by L.Visscher
 C        Last revision: Aug 16 2001 - lv
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
 #include "maxaqn.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
 C
-#include "ccom.h"
 #include "dcbgen.h"
-#include "dcbham.h"
-#include "dcborb.h"
-#include "dgroup.h"
-#include "pgroup.h"
 #include "dcbbas.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -5331,14 +7054,11 @@ C        Last revision: Aug 16 2001 - lv
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 #include "maxaqn.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
 C
-#include "ccom.h"
 #include "dcbgen.h"
 #include "dcbham.h"
-#include "dcborb.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbbas.h"
@@ -5436,7 +7156,6 @@ C        Last revision: Aug 16 2001 - lv
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C
       DIMENSION WORK(*)
@@ -5489,7 +7208,6 @@ C
 C*****************************************************************************
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -5784,11 +7502,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbgen.h"
 #include "dcbham.h"
-#include "cbihr1.h"
-#include "dcbbas.h"
-#include "dcborb.h"
 #include "dgroup.h"
       DIMENSION WORK(LWORK),TMAT(*),VMAT(*), TBUF(*), EIG(*)
       CALL QENTER('GLINSM')
@@ -5850,11 +7564,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbgen.h"
 #include "dcbham.h"
-#include "cbihr1.h"
-#include "dcbbas.h"
-#include "dcborb.h"
 #include "dgroup.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -5965,7 +7675,6 @@ C  DGROUP:
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "cbihr1.h"
 #include "dummy.h"
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
@@ -5977,7 +7686,6 @@ C
 
 #include "memint.h"
 C
-
       CALL HEADER('Output from LINSYM',-1)
       NBRP = 4 / NZ
 C
@@ -6426,7 +8134,7 @@ C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('LINSYM')
       RETURN
- 1000 FORMAT (/' Parity   MJ  Functions(total) Functions(LC)'//
+ 1000 FORMAT (/' Parity   MJ  Functions(total) Functions(LC)'
      &         ' Functions(SC)')
  1010 FORMAT (T5,I2,T9,I3,'/2',T20,I5,T33,I5,T46,I5)
       END
@@ -6516,7 +8224,6 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "cbihr1.h"
 #include "dummy.h"
 #include "dcbdhf.h"            
 #include "dcbibt.h"      
@@ -7049,7 +8756,7 @@ C
 C     Construct mj matrix in AO basis
       allocate(TMPA(NTBAS(0)*NTBAS(0)))
       CALL DZERO(TMPA,NTBAS(0)*NTBAS(0))      
-      CALL AMJMAT(TMPA,IPRHAM,WORK,LWORK) !sunaga
+      CALL AMJMAT(TMPA,IPRHAM,WORK,LWORK) 
 C
 C     Output    
 C  
@@ -7192,7 +8899,7 @@ C Small AO-MO transformation (diagonal in kappa because of VMAT => VU)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCC         
          IF (NS.GT.0) THEN
            CALL TSBBL2(IFRP,2,KPADD,TMPA,WORK(KFSS),VMAT,VMAT,
-     &                 WORK(KFREE),LFREE,IPRHAM) !sunaga
+     &                 WORK(KFREE),LFREE,IPRHAM) 
 CCCCCCCCCCCCCCCCCCCCCCC         
 C Small diagonalization
 CCCCCCCCCCCCCCCCCCCCCCC         
@@ -7497,11 +9204,9 @@ C     Written by Luuk Visscher, oct 1999
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "cbihr1.h"
       DIMENSION FOCK(*),WORK(LWORK)
 C
       CALL QENTER('AMJMAT')
@@ -7621,11 +9326,9 @@ C     Written by A. Sunaga, July 2018
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "cbihr1.h"
       DIMENSION FOCK(*),WORK(LWORK)
 C
       CALL QENTER('AMKMAT')
@@ -7834,7 +9537,6 @@ C     Written by T. Saue May 2003
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -7965,7 +9667,6 @@ C     Written by Luuk and copied by Trond Oct 19 2004
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -8129,7 +9830,6 @@ C
 #include "dcbdhf.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "cbihr1.h"
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*)
 C
@@ -8727,7 +10427,6 @@ C***********************************************************************
 #include "dcbmp2.h"
 #include "dcbopt.h"
 #include "../prp/dcbxqr.h"
-#include "../prp/dcbxpp.h"
       ICOSC_INTDEF = new_intflg
       ICOSC_INTFLG = new_intflg
       ICOSC_INTBUF = new_intflg
@@ -8890,13 +10589,11 @@ C
       real*8, allocatable  :: SIGNC(:,:),GEXP(:)
       integer, allocatable :: NCENT(:),JSYMC(:),JCENT(:)
       real*8, allocatable  :: fit_exp(:),fit_coef(:)
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "cbiher.h"
 #include "cbihr1.h"
 #include "cbisol.h"
 C
@@ -9041,14 +10738,14 @@ C***********************************************************************
       integer,intent (inout) :: n_exp
       real*8,intent (out)    :: fit_exp(*),fit_coef(*)
 
-      integer                :: i,intorb,intisg, lupot, lu_not_used
+      integer                :: i,intorb, lupot, lu_not_used
       logical                :: newel, early_exit, emsl_type
       integer, parameter     :: iprint=0
 
       lupot  = lu_not_used(91)
       early_exit = n_exp .eq. -1 ! Use this to query the number of exponents
       call find_element ('SCRPOT',n_charge,lupot,iprint,emsl_type)
-      call find_pos (newel,n_exp,intorb,intisg,lupot,iprint)
+      call find_pos (newel,n_exp,intorb,lupot,iprint,emsl_type)
 
       if (.not. early_exit) then
          do i = 1, n_exp
@@ -9062,4 +10759,456 @@ C***********************************************************************
 #ifdef DEBUG_SOC
 #undef DEBUG_SOC
 #endif
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck ashift */
+      SUBROUTINE ASHIFT(FOCK,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Build atomic shift operator
+C
+C     Written by Trond Saue
+C
+C***********************************************************************
+#include "implicit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+C     
+#include "mxcent.h"
+C
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcb_ashift.h"      
+      DIMENSION FOCK(*),WORK(*)
+      CHARACTER TEXT*74
+      KFRSAV = KFREE
+      NDIM=N2BBASX*NZ
+      CALL MEMGET2('REAL','KBUF',KBUF,NDIM,WORK,KFREE,LFREE)      
+      CALL ATOMIC_DENS(WORK(KBUF),MAXAREF,MAXAVAL,AREFFIL,AVECREF,
+     &     ASHIFT_NVAL,ASHIFT_PAR,IPRINT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','KSMAT',KSMAT,N2BAST,WORK,KFREE,LFREE)
+      CALL GTOVLT(WORK(KSMAT),SSMTRC,IPRINT)
+      DO I = 1,NFSYM
+         CALL QTRANS('AOMO','S',D1,
+     &              NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),
+     &              WORK(I2BASX(I,I)+KBUF),NTBAS(0),NTBAS(0),
+     &                 NZ,IPQTOQ(1,0),
+     &              FOCK(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),
+     &                 NZ,IPQTOQ(1,0),
+     &              WORK(I2BAST(I)+KSMAT),NFBAS(I,0),NFBAS(I,0),1,1,
+     &              WORK(I2BAST(I)+KSMAT),NFBAS(I,0),NFBAS(I,0),1,1,      
+     &              WORK(KFREE),LFREE,IPRINT)
+      ENDDO
+      CALL MEMREL('ASHIFT',WORK,1,KFRSAV,KFREE,LFREE)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BSS_RESTART(VMAT,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Restart BSS run from file
+C
+C     BSSMAT available:
+C     1) open BSSMAT and remove all property integrals
+C     2) do picture change transformation of integrals on CHECKPOINT
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      logical :: FNDLAB
+      integer :: IPRINT
+      DIMENSION VMAT(*),WORK(*)
+      WRITE(LUPRI,'(A,A)') '* Info: DIRAC found BSSMAT ',
+     &      '(BSS stuff) ... skipping generation of H2C'
+      LUBSS = 40
+      CALL OPNFIL(LUBSS,'BSSMAT','OLD','BSS_RESTART')
+      IF (FNDLAB('P2C_0001',LUBSS)) THEN
+        BACKSPACE(LUBSS)
+        CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+      ENDIF
+      CLOSE(LUBSS,STATUS='KEEP')
+      CALL PROP2BSS(VMAT,IPRINT,WORK(KFREE),LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE X2C_RESTART(IPRINT)
+C***********************************************************************
+C
+C     Restart X2C run from file
+C
+C     X2CMAT available:
+C     1) open X2CMAT and remove all property integrals
+C     2) do picture change transformation of integrals on CHECKPOINT
+C***********************************************************************
+      use memory_allocator
+      use checkpoint      
+      use x2cmod_cfg      
+      use x2c_pct_ao, only:
+     &    pctrafo_all_op_driver
+      use quaternion_algebra
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "maxaqn.h"
+#include "ccom.h"
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcbdhf.h"
+#include "dcbcls.h"
+#include "dcbxpr.h"            
+      real(8), allocatable :: WORK(:)
+      logical              :: x2c_AOA,x2c_Aon
+      integer              :: iprint
+C      
+      write(lupri,'(a,a)') '* Info: DIRAC found X2CMAT ',
+     &    '(X2C stuff) ... skipping generation of H2C'
+      open(lux2c,file='X2CMAT',status='old',form='unformatted',
+     &             access='sequential',action='readwrite',
+     &             position='rewind')
+!     find Hamiltonian on file property integral... and step back
+!     I2COFK     - integer number specifying which 2comp. Hamiltonian (in AO basis)
+!                  is to be read in the ONEFCK routine
+      if(.not.x2cmod_fragment_x2c)then
+        i2cofk =  0
+!       check for hamiltonian integrals on file X2CMAT and set i2cofk
+        call checkpoint_query(
+     &'/result/hamiltonian/x2c/ao_matrices/h12cAOA   10',x2c_AOA)
+        call checkpoint_query(
+     &'/result/hamiltonian/x2c/ao_matrices/h12cAOn   10',x2c_AOn)
+        if(x2c_AOA)then ! with AMFI
+          if(noamfi)then
+            write(lupri,'(a)')
+     &' *** restart error: try to read h1+amfi and noamfi == .true. ***'
+            call quit(
+     &'*** error in gmotra: mismatch between X2CMAT data and input ***')
+          end if
+!         set i2cofk to |3|: since we restart, it does not matter
+!         how the AMFI part was derived.
+          i2cofk = 3
+        else if(x2c_AOn)then !without AMFI
+          i2cofk = 1
+        else
+          if(x2cmod_mmf_restart)then
+            i2cofk = -2
+          else
+            write(lupri,'(a)')
+     &'*** restart error: no hamiltonian integrals stored on X2CMAT ***'
+            call quit(
+     &'*** error in gmotra: no h1 data on file X2CMAT ***')
+          end if
+        end if
+      else
+!     nothing to do here for now: x2cmod_fragment_x2c is always false.
+      end if
+      if(.not.x2cmod_skip_op_pct)then
+        call pctrafo_all_op_driver(ntbas(0),
+     &                             ntbas(1),
+     &                             nfbas(1,0),
+     &                             nfbas(1,1),
+     &                             nfsym,
+     &                             nz,
+     &                             irqmat,
+     &                             ipqtoq,
+     &                             iqtopq,
+     &                             iqmult,
+     &                             jqbas,
+     &                             iqdef,
+     &                             i2basx,
+     &                             lux2c,
+     &                             lu1int,
+     &                             jbtof,
+     &                             nprps,
+     &                             lwork,
+     &                             dosphe,
+     &                             mdirac,
+     &                             .false.,
+     &                             onesys,
+     &                             -1,
+     &                             df,
+     &                             -1,
+     &                             'undef ',
+     &                             'undef ',
+     &                             iprint)
+      end if
+      close(lux2c,status='keep')
+!     allocate
+      call legacy_lwork_get(LWORK)
+      call alloc(WORK,LWORK,id='WORK in GMOTRA - part 2')
+#include "memint.h"
+      TWOCOMP = .TRUE.
+      RDINPC = .FALSE.
+      IPREAD = IPREAD - 5
+      CALL READIN(.FALSE.)
+!     > stknecht: take care of 2c-mmf-sf for a linear molecule
+      if(spinfr .and. linear) linear = .false.
+      if(spinfr .and. atomic) atomic = .false.          
+      CALL SETDC1(IPREAD)
+!     set AO-labels for large components - in x2c_main initialized for large and small components
+      CALL GETLAB(IPREAD)
+      IPREAD = IPREAD + 5
+C.......reset NEWPRP to re-initialize AO matrices on CHECKPOINT
+      NEWPRP = .TRUE.
+      CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
+      CALL ONEGEN(WORK,LWORK)
+      call dealloc(work)
+      RETURN
+      END
+#ifdef MOD_XAMFI      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE xamfi_atomcorr(delta_xc_energy_aoosoc,
+     &                          no1esystem_aoosoc)
+      use memory_allocator
+      use xamfi_environment
+      use xamfi_global_parameters
+      use xamfi_driver, only: get_xamfi_correction
+      use xcint_main  , only: get_xc_energy      
+      use dircmo
+      use dirac_cfg, only: dirac_cfg_dft_calculation      
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dcborb.h"            
+#include "dcbdhf.h"
+#include "dgroup.h"      
+      real(8), allocatable :: dmat_aoosoc(:)
+      real(8), allocatable :: cmo_aoosoc(:)
+      real(8), allocatable :: pctm_aoosoc(:)      
+      real*8               :: delta_xc_energy_aoosoc
+      logical              :: x2c_save      
+      logical              :: no1esystem_aoosoc, aoc_save
+      character(len=12)    :: flabel
+      integer              :: lwork
+      integer              :: nfmat_save,ioff_pct_mat,ichrg
+!      integer              :: lux2c=40
+!      lux2c=40
+!>    temporarily switch on 4c mode
+      call xamfi_set_cb("get-4c")
+!> if requested (.FOCC): density matrix for 2e-SO+scalar corrections
+!> always with fractional occupation for open-shell atoms
+      if(aoofocc .and. aoc)then
+        aoc_save   = aoc
+        nfmat_save = nfmat
+        aoc        = .false.
+        nfmat      = 1
+      end if
+!> turn off x2c to properly call twofck in 4c mode
+      x2c_save = x2c
+      x2c      = .false.
+!> generate density matrix - incoming variable to the aoosoc module
+      allocate(dmat_aoosoc(ntbas(0)**2*nz*nfmat))
+      allocate(cmo_aoosoc(ncmotq))
+      dmat_aoosoc = 0.0d0
+      cmo_aoosoc  = 0.0d0
+!     read coefficients
+      call reacmo_new(cmo=cmo_aoosoc)
+!     generate density matrix
+      call denmat(dmat_aoosoc,cmo_aoosoc,iprham)
+      allocate(pctm_aoosoc(ntbas(0)**2*4))
+!>    read the U matrix
+      ioff_pct_mat = 1
+      do i = 1, nfsym
+        write(flabel,'(a11,i1)') 'pctmtAO   1',i
+        if(nfbas(i,0) * nfbas(i,1) > 0)then
+          call x2c_read(flabel,pctm_aoosoc(ioff_pct_mat),
+     &                  nfbas(i,0) * nfbas(i,1)*nz,lux2c)
+        end if
+        ioff_pct_mat = ioff_pct_mat + nfbas(i,0) * nfbas(i,1) * nz
+      end do
+      close(lux2c,status='keep')
+      call legacy_lwork_get(lwork)      
+      lwork_local = lwork-ntbas(0)**2*nz*nfmat-ntbas(0)**2*nz-ncmotq
+      call get_xamfi_correction(
+     &                          dmat_aoosoc,
+     &                          cmo_aoosoc,
+     &                          pctm_aoosoc,
+     &                          no1esystem_aoosoc,
+     &                          dirac_cfg_dft_calculation,
+     &                          (linear.or.atomic),
+     &                          lwork_local,
+     &                          iprham
+     &                          )
+!>    save XC_energy_4c
+      delta_xc_energy_aoosoc     = 0.0d0
+      if(dirac_cfg_dft_calculation)then
+        delta_xc_energy_aoosoc =
+     &  delta_xc_energy_aoosoc + get_xc_energy()
+      end if
+!>    reset common block variables to 2c mode
+      call xamfi_set_cb("get-2c")
+!> restore logicals
+      if(aoofocc)then
+        aoc   = aoc_save
+        nfmat = nfmat_save
+      end if
+      x2c = x2c_save
+!>    release memory      
+      deallocate(pctm_aoosoc)
+      deallocate(cmo_aoosoc)
+      deallocate(dmat_aoosoc)
+
+      end subroutine xamfi_atomcorr
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE xamfi_atomcorr2(delta_xc_energy_aoosoc,
+     &     no1esystem_aoosoc)
+      use dircmo      
+      use dirac_cfg, only: dirac_cfg_dft_calculation
+      use x2c_utils, only:
+     &     read_fock_matrices_saao_basis_x2c
+      use xamfi_global_parameters
+      use xamfi_internal_parameters
+      use xamfi_environment      
+      use xamfi_utils, only:
+     &    dump_normalized_2e_soc,
+     &    read_xamfi_general_matrix,
+     &    dump_delta_xc_energy,
+     &    goodbye_xamfi
+      use aobasis_collector, only: deallocate_aobasis_container
+#include "dcbbas.h"
+#include "dcbham.h"      
+#include "dgroup.h"      
+#include "mxcent.h"
+#include "nuclei.h"
+      real(8), allocatable :: tmat_mmf(:)
+      real(8), allocatable :: tbuf_mmf(:)
+      real(8), allocatable :: cmo_mmf(:)
+      real(8), allocatable :: scratch_mmf(:),loop_factor(:)
+      real*8               :: delta_xc_energy_aoosoc
+      real*8               :: xxxBLUBB
+      integer              :: len_fmat      
+
+      len_fmat  = ntbas(0)**2*nz
+      allocate(tmat_mmf(len_fmat))
+      allocate(tbuf_mmf(len_fmat))
+      allocate(loop_factor(0:1))
+      loop_factor = 0.0d0
+      open(lux2c,file='D2FCK_mmf',status='unknown',
+     &           access='sequential',action='readwrite',
+     &           form='unformatted',position='rewind')
+!>    read G_A[2c]
+      call read_fock_matrices_saao_basis_x2c(
+     &                                       tmat_mmf,
+     &                                       len_fmat, 1,
+     &                                       lux2c, 0,
+     &                                       loop_factor)
+      deallocate(loop_factor)
+      close(lux2c, status='keep')
+#ifdef DEBUG_SOC
+      CALL HEADER('X-AMFI - G_A[2c]',-1)
+      CALL PRQMAT(tmat_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+     &            IPQTOQ(1,0),LUPRI)
+#endif
+!>    read {U+ G_A[4c] U}^{++}
+      call read_xamfi_general_matrix(
+     &                               tbuf_mmf,
+     &                               ntbas(0),
+     &                               ntbas(0),
+     &                               nz,
+     &                               'aoo2esoX',
+     &                               nint(charge(1)),
+     &                               lux2c,
+     &                               1 !> atomic center id
+     &                              )
+#ifdef DEBUG_SOC
+      CALL HEADER('X-AMFI - {U+ G_A[4c] U}^{++}',-1)
+      CALL PRQMAT(tbuf_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+     &            IPQTOQ(1,0),LUPRI)
+#endif
+!> G_A^{++} = {U+ G_A[4c] U}^{++} - G_A[2c]
+      call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
+#ifdef DEBUG_SOC
+      CALL HEADER('X-AMFI - 2e-normalized (final)',-1)
+      CALL PRQMAT(tbuf_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+     &            IPQTOQ(1,0),LUPRI)
+#undef DEBUG_SOC
+#endif
+      call dump_normalized_2e_soc(
+     &                            tbuf_mmf,
+     &                            ntbas(0),
+     &                            ntbas(0),
+     &                            nz,
+     &                            'aoo2esoc',
+     &                            nint(charge(1)),
+     &                            lux2c,
+     &                            .true.
+     &                           )
+      if(dirac_cfg_dft_calculation)then
+#ifdef DEBUG_SOC
+        WRITE(LUPRI,'(/a,f12.9)')
+     &        'X-AMFI - DELTA XC energy: ',delta_xc_energy_aoosoc
+#undef DEBUG_SOC
+#endif
+        tbuf_mmf = 0; tmat_mmf = 0
+!>      read {U+ V_A[4c] U}^{++}
+        call read_xamfi_general_matrix(
+     &                                 tbuf_mmf,
+     &                                 ntbas(0),
+     &                                 ntbas(0),
+     &                                 nz,
+     &                                 'amftVxc2',
+     &                                 nint(charge(1)),
+     &                                 103,
+     &                                 1 !> atomic center id
+     &                                )
+        open(103,file='amfVxc2',status='old',
+     &       access='sequential',action='readwrite',
+     &       form='unformatted',position='rewind')
+!>      read V_A[2c]
+        read(103) tmat_mmf(1:ntbas(0)*ntbas(0)*nz)
+        close(103,status="delete")
+#ifdef DEBUG_SOC
+        CALL HEADER('X-AMFI - Vxc-tilde             ',-1)
+        CALL PRQMAT(tbuf_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &              NZ,IPQTOQ(1,0),LUPRI)
+        CALL HEADER('X-AMFI - Vxc2                  ',-1)
+        CALL PRQMAT(tmat_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &            NZ,IPQTOQ(1,0),LUPRI)
+#endif
+!>      V_A^{++} = {U+ V_A[4c] U}^{++} - V_A[2c]
+        call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
+#ifdef DEBUG_SOC
+        CALL HEADER('X-AMFI - Vxc-normalized (final)',-1)
+        CALL PRQMAT(tbuf_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &              NZ,IPQTOQ(1,0),LUPRI)
+        allocate(cmo_mmf(ncmotq))
+        allocate(scratch_mmf(len_fmats))
+        cmo_mmf     = 0
+        scratch_mmf = 0
+!>      read 2c-mos
+        call reacmo_new(cmo=cmo_mmf)
+!>      calculate inactive (and possibly active) density matrix
+        call denmat(scratch_mmf,cmo_mmf,iprham)
+        xxxBLUBB = ddot(len_fmat,scratch_mmf,1,tbuf_mmf,1)
+        WRITE(LUPRI,'(/a,f12.9)')
+     &        'X-AMFI - DELTA XCmat (PCE) energy: ',xxxBLUBB
+        deallocate(scratch_mmf)
+        deallocate(cmo_mmf)
+#undef DEBUG_SOC
+#endif
+        call dump_normalized_2e_soc(
+     &                              tbuf_mmf,
+     &                              ntbas(0),
+     &                              ntbas(0),
+     &                              nz,
+     &                              'aooVxcMA',
+     &                              nint(charge(1)),
+     &                              103,
+     &                              .true.
+     &                              )
+        call dump_delta_xc_energy(
+     &                            delta_xc_energy_aoosoc,
+     &                            'aooDLXCE',
+     &                            nint(charge(1)),
+     &                            lux2c
+     &                           )
+      end if ! dirac_cfg_dft_calculation
+      call goodbye_xamfi(atom(1)%charge)
+      call deallocate_aobasis_container()
+!>    release memory
+      deallocate(tbuf_mmf)
+      deallocate(tmat_mmf)
+      
+      end subroutine xamfi_atomcorr2
+#endif      
 ! -- end of dirone.F --

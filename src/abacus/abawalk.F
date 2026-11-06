@@ -2032,7 +2032,9 @@ C     ... make a translation of center of cavity to (0,0,0)
          CCAVX = D0
          CCAVY = D0
          CCAVZ = D0
-         IF (NFIELD .GT. 0) THEN
+         ! LV: 2025, deactivated the block below, NFIELD is never set in DIRAC
+         !IF (NFIELD .GT. 0) THEN
+         IF (.FALSE.) THEN
             TOTCHR = D0
 C
 C     If we have a finite field, we must ensure that there is a zero
@@ -2529,7 +2531,7 @@ C
      &      XTANG*CMDIF,' Angstrom'
          WRITE (LUPRI,'(/A,F12.2,A,1P,E12.2,A)')
      &      '@ Accumulated time before step: ',
-     &        TACCUM - TIMSTP, ' au  ',D15*XFSEC*(TACCUM - TIMSTP),' fs'
+     &        TACCUM-TIMSTP, ' au  ',D15*AUTIME*(TACCUM-TIMSTP),' fs'
          EKINX = EKIN0 + ESTART - ERGMOL
          WRITE (LUPRI,'(/A,1P,E12.6)')
      &     ' Kinetic energy before step - exact       : ', EKINX
@@ -2546,7 +2548,7 @@ C
          END IF
          IF (ABS(VREL) .GT. D0) WRITE(LUPRI,'(/A,1P,E12.6,A,0P,F6.2,A)')
      &      '@ Relative velocity before step            : ', ABS(VREL),
-     &      ' (',DM13*ABS(VREL)*XTANG/XFSEC, 'km/s)'
+     &      ' (',DM13*ABS(VREL)*XTANG/AUTIME, 'km/s)'
          IF (ABS(EKINPA) .GT. D0) THEN
             WRITE (LUPRI,'( A,1P,E12.6,A,0P,F5.1,A)')
      &      '@ Relative translational energy before step: ', EKINPA,
@@ -2798,10 +2800,10 @@ C
      &      ' Step size:', STPNRM
          WRITE (LUPRI,'(/A,F12.2,A,1P,E12.2,A)')
      &      ' Time step                  :',
-     &      TIMSTP, ' au ',D15*XFSEC*TIMSTP,' fs '
+     &      TIMSTP, ' au ',D15*AUTIME*TIMSTP,' fs '
          WRITE (LUPRI,'( A,F12.2,A,1P,E12.2,A)')
      &      ' Accumulated time after step:',
-     &      TACCUM, ' au ',D15*XFSEC*TACCUM,' fs '
+     &      TACCUM, ' au ',D15*AUTIME*TACCUM,' fs '
       END IF
       IF (IWKTYP .EQ. 7) THEN
          WRITE (LUPRI,'(/,A,F10.6,A)')

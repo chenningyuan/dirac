@@ -70,9 +70,7 @@ C
      +          CPRIM(KPRIM,KPRIM, KAOVEC)
 ! infpar.h : MYTID, MPARID
 #include "infpar.h"
-#include "dcbgen.h"
 #include "dcbham.h"
-#include "dcbpsi.h"
 C*************************************************************
 C* Variable declarations:                                    *
 C*     BASNAM - A character variable that contains the name  *
@@ -129,7 +127,7 @@ C     from calling routine
       IF (BASNAM(1:1).eq.' ') THEN
          CALL QUIT('BASLIB ERROR, basis set name starts with blank')
       END IF
-      len_BASNAM = LNBLNK(BASNAM)
+      len_BASNAM = INDEX(BASNAM,' ') - 1 ! no blanks allowed in basis set name, so 'mybas abc' will give len_BASNAM=5
 
       BASTMP = ' '
       BASSAV = BASNAM
@@ -456,7 +454,7 @@ C
 C
 C Finds the number of primitives and columns of contraction coefficients
 C
-         CALL FIND_POS ( NEWEL, INTEXP, INTORB, INTISG, LUBAS,
+         CALL FIND_POS ( NEWEL, INTEXP, INTORB, LUBAS,
      &      IPRINT, EMSL_TYPE)
 
 ! Print message if basis set uncontracted because Z>36 (and .UNCONT not specified)
@@ -549,7 +547,7 @@ C
                IF (INTORB .EQ. 0) THEN
                   NBLOCK = NBLOCK - 1
                   CALL FIND_POS ( NEWEL, INTEXP, INTORB,
-     &                            INTISG, LUBAS, IPRINT, EMSL_TYPE)
+     &                            LUBAS, IPRINT, EMSL_TYPE)
                   GOTO 10
                END IF
             ELSE
@@ -618,7 +616,7 @@ C
 C
 C Define the type of the next relevant line in file
 C
-            CALL FIND_POS( NEWEL, INTEXP, INTORB, INTISG,
+            CALL FIND_POS( NEWEL, INTEXP, INTORB,
      &         LUBAS, IPRINT, EMSL_TYPE)
             GOTO 10
          END IF ! .not. NEWEL
@@ -632,7 +630,7 @@ C
          FOUND = .FALSE.
          ISTART = IPOLST
  33      CONTINUE
-         len_BASNAM = LNBLNK(BASNAM(ISTART:))
+         len_BASNAM = LEN_TRIM(BASNAM(ISTART:))
          IF (len_BASNAM .GT. 0) THEN
             CALL FREFRM(BASNAM,ISTART,IQUANT,DUMMY,'INT')
             CALL FREFRM(BASNAM,ISTART,IDUMMY,EXPON,'REA')
@@ -844,7 +842,7 @@ C
          IF (POLFUN) THEN
             ISTART = IPOLST
  33         CONTINUE
-            len_BASNAM = LNBLNK(BASNAM(ISTART:))
+            len_BASNAM = LEN_TRIM(BASNAM(ISTART:))
             IF (len_BASNAM .GT. 0) THEN
                CALL FREFRM(BASNAM,ISTART,IQUANT,DUMMY,'INT')
                CALL FREFRM(BASNAM,ISTART,IDUMMY,EXPON,'REA')
@@ -981,7 +979,7 @@ C           skip core orbitals for Huckel guess for ECP
       IF (POLFUN) THEN
          IREAD = IPOLST
  33      CONTINUE
-         len_BASNAM = LNBLNK(BASNAM(IREAD:))
+         len_BASNAM = LEN_TRIM(BASNAM(IREAD:))
          IF (len_BASNAM .GT. 0) THEN
             CALL FREFRM(BASNAM,IREAD,IQUANT,DUMMY,'INT')
             CALL FREFRM(BASNAM,IREAD,IDUMMY,EXPON,'REA')
@@ -1037,7 +1035,6 @@ C
       CHARACTER SIGN
       LOGICAL EXST, EXST2, USE_BASNAM
 ! infpar.h : MYTID, MPARID
-#include "inftap.h"
 #include "infpar.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
@@ -1254,7 +1251,7 @@ C
      &   STRING(1:IEND),' IOSTAT =',IOERR
       CALL QUIT('I/O error in BASLIB(FIND_ELEMENT)')
  200  CONTINUE
-      len_BASNAM = LNBLNK(BASNAM)
+      len_BASNAM = LEN_TRIM(BASNAM)
       WRITE (LUPRI,'(//A,I5,2A/A//)')
      &   ' ERROR: Nuclear charge',INTQ,
      &   ' is an unsupported element for basis ',BASNAM(1:len_BASNAM),
@@ -1397,7 +1394,7 @@ C
                IF (POLFUN) THEN
                   ISTART = IPOLST
  33               CONTINUE
-                  len_BASNAM = LNBLNK(BASNAM(ISTART:))
+                  len_BASNAM = LEN_TRIM(BASNAM(ISTART:))
                   IF (len_BASNAM .GT. 0) THEN
                      CALL FREFRM(BASNAM,ISTART,IQUANT,DUMMY,'INT')
                      CALL FREFRM(BASNAM,ISTART,IDUMMY,EXPON,'REA')
@@ -1489,11 +1486,12 @@ C
      &   'FIND_NQD: Error when reading from basis file ',
      &   BASDIR(1:LENBAS)//'NQvD',
      &   ' IOSTAT =',IOERR
-      CALL QUIT('I/O error in FIND_NQD')
+      CALL QUIT('BASLIB: I/O error in FIND_NQD')
  200  CONTINUE
       WRITE (LUPRI,'(/I3,2A)') INTQ,
      &     ' is an unsupported element for basis ',BASNAM
-      CALL QUIT('Unsupported element in HERBAS')
+      CALL QUIT('BASLIB FIND_NQD: '//
+     &   'Unsupported element in specified basis set file')
       END
 C/* Deck find_ref */
       SUBROUTINE FIND_REF(BASREF, LUBAS, BASNAM)
@@ -1503,11 +1501,6 @@ C* and finds reference info if available.                *
 C* Based on FIND_POS, LV, 14-5-2003                      *
 C*********************************************************
 #include "implicit.h"
-#include "priunit.h"
-#ifdef VAR_MPI
-#include "infpar.h"
-#endif
-
       CHARACTER BASNAM*(*), BASREF(10)*80
 C*********************************************************
 C* Variable declarations:                                *
@@ -1516,7 +1509,7 @@ C*            what kind of sentence it is.               *
 C*     STRING - A character string to help bulletproofing*
 C*              the subroutine.                          *
 C*********************************************************
-      CHARACTER SIGN, LINE*80, STRING*100
+      CHARACTER SIGN, STRING*100
 C
       REWIND (LUBAS)
 C
@@ -1540,7 +1533,7 @@ C           Check for start of documentation
             IF (INDEX(STRING,'REFERENCE').GT.0) IREF = 1
          ELSE
 C           We have documentation, omit blank lines and store in BASREF
-            len_STRING = LNBLNK(STRING(2:))
+            len_STRING = LEN_TRIM(STRING(2:))
             IF (len_STRING .GT. 0) THEN
                BASREF(IREF) = STRING(2:)
                IREF = IREF + 1
@@ -1577,21 +1570,21 @@ C*                          coefficients                 *
 C*********************************************************
 C
 C/* Deck find_pos */
-      SUBROUTINE FIND_POS(NEWEL, INTEXP, INTORB, INTISG,
+      SUBROUTINE FIND_POS(NEWEL, INTEXP, INTORB,
      &   LUBAS, IPRINT, EMSL_TYPE)
 #include "implicit.h"
 #include "priunit.h"
-C************************************************************
-C* Variable declarations:                                   *
-C*     SIGN - The first sign in a sentence, to find out     *
-C*            what kind of sentence it is.                  *
-C*     STRING - A character string to help bulletproofing   *
-C*              the subroutine.                             *
-C************************************************************
-      LOGICAL   NEWEL
+      LOGICAL   NEWEL, EMSL_TYPE
+
+C*********************************************************
+C* Local variable declarations:                          *
+C*     SIGN - The first sign in a sentence, to find out  *
+C*            what kind of sentence it is.               *
+C*     STRING - A character string to help bulletproofing*
+C*              the subroutine.                          *
+C*********************************************************
       CHARACTER SIGN
       CHARACTER*300 STRING
-      LOGICAL       EMSL_TYPE
 
 C
 C Initializing NEWEL, because one is innocent until proven guilty
@@ -1601,51 +1594,41 @@ C
  20   CONTINUE
       READ (LUBAS, '(A)', IOSTAT = IOERR, ERR = 1000, END = 200)
      +     STRING
-      READ (STRING, '(A1)',IOSTAT=IOS) SIGN
+      len_STRING = LEN_TRIM(STRING)
+      if (string == '$ END OF BASIS') goto 200
+      IF (len_STRING .eq. 0) GOTO 20
+      SIGN = STRING(1:1)
 C
-      IF (SIGN .EQ. ' ') THEN
-C
-         len_STRING = LNBLNK(STRING)
-         IF (len_STRING .LE. 0) THEN
-            GOTO 20
-         ELSE
-            READ (STRING, '(BN,3I5)',IOSTAT=IOS) INTEXP, INTORB, INTISG
-            IF (IOS.NE.0) THEN
-               CALL QUIT('ERROR in reading basis; '//
-     &         'check your mol file formatting')
-            END IF
-            IF (IPRINT.GE.10) THEN
-             write(lupri,'(/,2X,A)') 'Output from FIND_POS...reading'
-             write(lupri,*) 'INTEXP, INTORB, INTISG',
-     &          INTEXP, INTORB, INTISG
-            ENDIF
-            RETURN
-         END IF
-      ELSE IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
+      IF (SIGN .EQ. 'H' .OR. SIGN .EQ. 'h' !        H or h: this is presumably a basis set from EMSL library
+     &   .OR. SIGN .EQ. ' ' ) THEN
+         READ (STRING(2:len_STRING),*,IOSTAT=IOS) INTEXP, INTORB
+         ! in many old basis set files 3 variables: INTEXP, INTORB, INTISG
+         ! but INTISG is never used and is always zero, so it has been removed from herbas.F /Jan. 2025 hjaaj
+      ELSE IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A') .OR.                ! <- traditional Dalton basis set file
+     &         (EMSL_TYPE .AND. INDEX(STRING,'->') .GT. 0) ) THEN       ! <- basis set file made by EMSL without "a" or "A"
          NEWEL = .TRUE.
-         IF (IPRINT.GE.10) THEN
-            WRITE(lupri,'(/A)') '  Output from FIND_POS: New element'
-            WRITE(lupri,*) 'INTEXP, INTORB, INTISG',
-     &         INTEXP, INTORB, INTISG
-         END IF
+         IF (IPRINT.GE.10) WRITE(lupri,'(/A)')
+     &      '  Output from FIND_POS: New element'
          RETURN
       ELSE
          GOTO 20
       END IF
+      IF (IOS.NE.0) GO TO 2000
+      IF (IPRINT.GE.10) WRITE(lupri,'(/2X,A,3I10)')
+     &     'Output from FIND_POS... read INTEXP, INTORB',
+     &       INTEXP, INTORB
+      RETURN
 C
 C No more orbitals when end of file, so the orbitals for the last element
-C are read
+C have been read
 C
  200  CONTINUE
       NEWEL = .TRUE.
 C
 C NEWEL must be .TRUE. to break the if-loop.
 C
-      IF (IPRINT.GE.10) THEN
-        WRITE(lupri,'(/,2X,A)') 'Output from FIND_POS'
-        WRITE(lupri,*) 'INTEXP, INTORB, INTISG',
-     &          INTEXP, INTORB, INTISG
-      END IF
+      IF (IPRINT.GE.10) WRITE(lupri,'(/2X,A)')
+     &   'Output from FIND_POS: Reached end of file'
 
       RETURN
 C
@@ -1653,6 +1636,12 @@ C
       WRITE (LUPRI,'(/A,I5)') 'ERROR in reading basis set file, '//
      &     'your basis is not complete. IOSTAT code:',IOERR
       CALL QUIT('BASLIB FIND_POS: Incomplete basis set file')
+ 2000 CONTINUE
+      WRITE (LUPRI,'(/A,I5/3A)')
+     &     'ERROR in searching basis set file,'//
+     &     ' your basis is not complete. IOSTAT code:',IOS,
+     &     'Last line read: "',STRING(1:len_STRING),'"'
+      CALL QUIT('BASLIB FIND_POS: Error searching basis set file')
       END
 
       SUBROUTINE print_gaussian_inp(icount, iqm,ALPHA,CPRIMU,NPRI,

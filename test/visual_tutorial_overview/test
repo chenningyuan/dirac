@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+
+import os
+import sys
+from pathlib import Path
+
+#
+# prepare environment, define functions
+#
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+from runtest_rs import CompareHDF5
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'Final grid function values (id=',
+      num_lines = 2,
+      rel_tolerance = 1.0e-6)
+
+#
+# prepare files
+#
+
+scf_h5=Path(test.work_dir, 'dc_c6h6.h5')
+scf_h5.unlink(missing_ok=True)
+scf_h5=scf_h5.symlink_to(Path(Path(__file__).parents[1].resolve(), 'testdata', 'dc_c6h6.h5'))
+
+#
+# run tests
+#
+
+test.run(['vis.inp'], ['c6h6.xyz'], f, args='--put="dc_c6h6.h5=CHECKPOINT.h5" --get="*.cube"')
+
+sys.exit(test.return_code)

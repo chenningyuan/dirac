@@ -115,8 +115,8 @@ C***********************************************************************
       use pcm_linear_response, only: compute_mep_asc, pcm_oper_ao_driver
 #endif
 #ifdef HAS_PELIB
-      use polarizable_embedding, only: pe_master
-      use pe_variables, only: peqm
+      use pelib, only: pelib_master
+      use pelib_dirac_interface, only: use_pelib, pelib_ifc_fock
 #endif
 
 #include "implicit.h"
@@ -126,17 +126,14 @@ C***********************************************************************
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0, DP5 = 0.50D00,D2=2.0D0)
 C
 #include "dcbgen.h"
-#include "dcbfir.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
-#include "blocks.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "cbihr2.h"
       type(fde_import) :: itmp
 CTOBS: Note the use of dcbdhf ! Should be generalized !!!
-      LOGICAL TOBE, SAVEFLAGS(4)
+      LOGICAL TOBE
       CHARACTER*6 F2NAME
       DIMENSION FMO(*),FAO(*),CMO(*),IBEIG(*),WORK(*)
       real(8), allocatable :: xc_matrix(:, :, :)
@@ -144,8 +141,6 @@ CTOBS: Note the use of dcbdhf ! Should be generalized !!!
       real(8), allocatable :: fock_pcm(:, :, :)
 #endif
 
-C
-#include "ibtfun.h"
 C
       CALL QENTER('GETFC1')
       LUBUF = 22
@@ -185,22 +180,13 @@ C      with *SCF specified as in the .DHF calculation such that
 C      any user-specified change of INTFLG (e.g. no SSSS) is used.
 C >>>  THIS MUST BE CHANGED FOR MCSCF !!!!
 C
-        ILLINT = IBTAND(INTFLG,1)
-        ISLINT = IBTAND(INTFLG/2,1)
-        ISSINT = IBTAND(INTFLG/4,1)
-        IGTINT = IBTAND(INTFLG/8,1)
+        ILLINT = IAND(INTFLG,1)
+        ISLINT = IAND(INTFLG/2,1)
+        ISSINT = IAND(INTFLG/4,1)
+        IGTINT = IAND(INTFLG/8,1)
         WRITE(LUPRI,'(/A,4I2)')
      &    '*** WARNING *** GETFCK: No 2-Fock found.'//
      &    ' Regenerating with .INTFLG =',ILLINT,ISLINT,ISSINT,IGTINT
-
-      call SaveTaskDistribFlags(saveflags)
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-      if (NPOS.GT.0) THEN
-         CALL MEMGET2('INTE','POS',KPOS,NPOS,WORK,KFREE,LFREE)
-      else
-         KPOS = KFREE
-      endif
 
 C
 C       Closed shell Hartree - Fock or open shell Hartree-Fock
@@ -226,9 +212,8 @@ C          Hermitian operator
      &       CALL GENDEN(FAO(1+N2BBASXQ),CMO,2,IPRINT)
         ENDIF
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,FAO,NFMAT,
-     &       WORK(KPOS),INTFLG,IPRINT,WORK(KFREE),LFREE)
+     &       INTFLG,IPRINT,WORK(KFREE),LFREE)
 
-        IF (PARCAL) call SetTaskDistribFlags(saveflags)
       ENDIF
 
 
@@ -324,7 +309,7 @@ CJTH check this
 ! edh: As the solvent methods before us (see above) we need
 ! to construct the (static) PE contributions from environment
 ! before starting a response calculation
-      IF (PEQM) THEN
+      IF (use_pelib()) THEN
         call genden(fao, cmo, 1, iprint)
         call pelib_ifc_fock(fao, fmo, tot_nrg, el_nrg)
       ENDIF
@@ -572,11 +557,9 @@ C     Written by T.Saue Oct 3 1997
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dcbbas.h"
-#include "dgroup.h"
       CHARACTER INDSTR(3,2)*72
       DIMENSION IORBCL(4,NORBT),NIND(2,3,2),WORK(*)
 C
@@ -964,12 +947,8 @@ C   Johann Pototschnig, Fall 2019
 C---------------Common Blocks--------------------------------------
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
-#include "dcbbas.h"
-#include "dcborb.h"
 #include "dgroup.h"
-#include "dcbgen.h"
 #include "dcbprp.h"
 
       character(4)  :: WF
@@ -997,4 +976,3 @@ C     Add this density matrix to the list to be evaluated
       END IF
 
       END
-

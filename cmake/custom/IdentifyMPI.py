@@ -6,7 +6,7 @@
 # calls "<path>/mpiexec --version"
 # Type is saved as MPI_TYPE variable.
 
-import sys, subprocess, re
+import os, sys, subprocess, re
 
 #! path to mpiexec
 MPI_command = sys.argv[1]
@@ -22,7 +22,7 @@ def identify_mpi_type(compiler,version_flag):
         output_compiler = subprocess.Popen([compiler,version_flag], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output_compiler, stderr = output_compiler.communicate()
     except:
-        output_compiler = ""
+        output_compiler = b""
         stderr=""
         
     if re.search('mpich', output_compiler.decode('utf-8'),re.IGNORECASE):
@@ -46,15 +46,14 @@ def identify_mpi_type(compiler,version_flag):
     else:
         mpitype='None'
 
-# for the moment for cray, we force this for mpich
-    mpitype='MPICH'
-
-    #! if not identified stderr is used 
-    #! this is really needed probably only by Intel which uses stderr 
-    if mpitype=='None':
-        if re.search('intel', stderr.decode('utf-8'),re.IGNORECASE):
-            mpitype='INTEL'
-
+    # "--version" can fail (e.g. Debian Open MPI 5 cannot find its help files).
+    # Then, look at the real launcher, e.g. /usr/bin/mpirun.openmpi, and for
+    # ompi_info, which every Open MPI installs next to it.
+    if mpitype == 'None':
+        launcher = os.path.realpath(compiler)
+        if re.search('openmpi|open-mpi', launcher, re.IGNORECASE) or \
+           os.path.isfile(os.path.join(os.path.dirname(launcher), 'ompi_info')):
+            mpitype='OPENMPI'
 
     return mpitype
 

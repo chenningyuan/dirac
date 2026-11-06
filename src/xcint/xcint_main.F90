@@ -7,7 +7,7 @@ module xcint_main
    use interface_functional_read
    use xc_derv
    use xc_ac
-   use extra
+   use xcint_extra
    use file_units
    use interface_grid
    use dirac_ao_eval
@@ -115,6 +115,7 @@ module xcint_main
    integer                      :: nr_dmat
    real(8), pointer             :: dmat(:, :, :, :)
    real(8), allocatable, target :: dmat_container(:, :, :, :)
+   real(8), allocatable, target :: dmat_empty(:, :, :, :)
 
    integer                      :: nr_fmat
    real(8), pointer             :: fmat(:, :, :, :)
@@ -382,6 +383,11 @@ contains
                dmat => xc_dmat
             end if
          end if
+      else
+!        no perturbed density matrices: associate dmat with a zero-sized array
+!        so it is never a null pointer when passed to non-pointer dummies
+         allocate(dmat_empty(mat_dim, mat_dim, nz, 0))
+         dmat => dmat_empty
       end if
 
       nullify(fmat)
@@ -401,12 +407,11 @@ contains
          allocate(default_fmat_pg_sym(nr_fmat))
          default_fmat_pg_sym = 1
       end if
-      if (nr_dmat > 0) then
-         allocate(default_dmat_pg_sym(nr_dmat))
-         allocate(default_dmat_ih_sym(nr_dmat))
-         default_dmat_pg_sym = 1
-         default_dmat_ih_sym = 0
-      end if
+
+      allocate(default_dmat_pg_sym(nr_dmat))
+      allocate(default_dmat_ih_sym(nr_dmat))
+      default_dmat_pg_sym = 1
+      default_dmat_ih_sym = 0
 
       nullify(fmat_pg_sym)
       nullify(dmat_pg_sym)
@@ -417,12 +422,11 @@ contains
             allocate(fmat_pg_sym_container(nr_fmat))
             fmat_pg_sym => fmat_pg_sym_container
          end if
-         if (nr_dmat > 0) then
-            allocate(dmat_pg_sym_container(nr_dmat))
-            allocate(dmat_ih_sym_container(nr_dmat))
-            dmat_pg_sym => dmat_pg_sym_container
-            dmat_ih_sym => dmat_ih_sym_container
-         end if
+
+         allocate(dmat_pg_sym_container(nr_dmat))
+         allocate(dmat_ih_sym_container(nr_dmat))
+         dmat_pg_sym => dmat_pg_sym_container
+         dmat_ih_sym => dmat_ih_sym_container
       else
          if (present(xc_fmat_pg_sym)) then
             fmat_pg_sym => xc_fmat_pg_sym
@@ -824,6 +828,10 @@ contains
          deallocate(default_dmat_ih_sym)
       end if
 
+      if (allocated(dmat_empty)) then
+         deallocate(dmat_empty)
+      end if
+
    end subroutine
 
    subroutine scale_density_matrices(f)
@@ -1025,7 +1033,6 @@ contains
                      ao,                               &
                      buffer                            &
                     )
-
          call xc_contribution_blas3(                          &
                                     use_gga,                  &
                                     use_gga_qr,               &

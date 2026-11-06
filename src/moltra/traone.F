@@ -28,15 +28,11 @@ C     Written by L. Visscher Mar 1997
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 C
-#include "maxorb.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
 #include "dcbgen.h"
       LOGICAL TOBE,TRASAM
       real*8, intent(in) :: toterg
@@ -140,7 +136,7 @@ C
       Allocate(DMATfull(N2BBASXQ))! Miro: full density matrix
 C
       CALL GTCFC1(FMO,FAO,DMAT,DMATfull,Q1,Q2,QCO,CMO,NDMOQR,ICMOQR,
-     &      NSTR,NDMOQC,ICMOQC,NSPC,QCO2,NSPC2,IPRINT,WORK,KFREE,LFREE)
+     &      NSTR,NDMOQC,ICMOQC,NSPC,NSPC2,IPRINT,WORK,KFREE,LFREE)
 C
 C     Print section
 C
@@ -170,7 +166,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GTCFC1 */
       SUBROUTINE GTCFC1(
      &   FMO,FAO,DMAT,DMATfull,Q1,Q2,QCO,CMO,NDMOQR,ICMOQR,NSTR,
-     &          NDMOQC,ICMOQC,NSPC,QCO2,NSPC2,IPRINT,WORK,KFREE,LFREE)
+     &          NDMOQC,ICMOQC,NSPC,NSPC2,IPRINT,WORK,KFREE,LFREE)
 C*****************************************************************************
 C     
 C     Get core Fock-matrix in MO-basis; 
@@ -190,29 +186,25 @@ C*****************************************************************************
          use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 #include "aovec.h"
 #include "maxorb.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C
 #include "dcbgen.h"
 #include "dcbpsi.h"
-#include "dcbfir.h"
 #include "dcbdhf.h"
-#include "blocks.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbham.h"
-#include "cbihr2.h"
 #include "dcbres.h"
-      LOGICAL TOBE, SAVEFLAGS(4)
+      LOGICAL TOBE
       LOGICAL ::  remove_spinfree_terms=.false.
       LOGICAL :: dirac_cfg_dft_calculation_save
       DIMENSION FMO(*),FAO(*),DMAT(*),DMATfull(*),WORK(*)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
       DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2),NSPC2(2,0:3)
-      DIMENSION Q1(*),Q2(*),QCO(*),QCO2(*),CMO(*)
+      DIMENSION Q1(*),Q2(*),QCO(*),CMO(*)
 
       Integer, Allocatable :: POS(:)
       real(8)              :: f_occ
@@ -252,11 +244,6 @@ C
 C       1. Get two-electron Fock matrix in AO-basis
 C       ===========================================
 C
-      call SaveTaskDistribFlags(saveflags)
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-        Allocate (POS(NPOS))
-
 C       Modified Fall 2019 by J. Pototschnig to allow for open shell core
         IF(NSPC2(1,3).GT.0) THEN
 C         with  frozen open-shell
@@ -287,7 +274,7 @@ C         Hermitian operator
 
 C       Get the two-electron Fock matrix using the density matrix
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,DMAT,NFMAT,
-     &       POS,INTFLG,IPRINT,WORK(KFREE),LFREE)
+     &       INTFLG,IPRINT,WORK(KFREE),LFREE)
 
 ! Miro:  control printout for DFT-COSCI
         IF(IPRINT.GE.5) THEN
@@ -323,9 +310,6 @@ C       Get the two-electron Fock matrix using the density matrix
           ENDIF
         endif
 
-        IF(PARCAL) call SetTaskDistribFlags(saveflags)
-
-        DeAllocate (POS)
       ELSE
         CALL DZERO(FMO, N2BBASXQ)        
         CALL DZERO(DMAT,N2BBASXQ)        
@@ -542,9 +526,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER (D0=0.D0)
 C
-#include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbdhf.h"
 #include "dgroup.h"
 C
       DIMENSION FMO(NORBT,NORBT,NZ)
@@ -623,7 +605,6 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER (D0=0.D0,DM1=-1.D0,D1 = 1.0D0)
 C
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
@@ -917,7 +898,6 @@ C     Luuk Visscher, Mar 18 1997
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       CHARACTER*4 REPA(64)
       DIMENSION MULTB(64,64)
@@ -1049,7 +1029,6 @@ C     Luuk Visscher, Nov 03 2003
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 C
       CHARACTER*4 REPA(4*NORDER)
@@ -1236,7 +1215,6 @@ C     Luuk Visscher, Mar 18 1997
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 #include "pgroup.h"
 C
@@ -1417,575 +1395,141 @@ C       CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MINO(NZ,2),
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck moltodir */
-      SUBROUTINE RELTODIR(XMO,XMOM,NFVO,IRCW,NREP,NV,NO)
+C/* Deck rcctodir */
+      SUBROUTINE RCCTODIR(XMO,XMOM,NDIM,IRCW,NREP,NR,NC,ROWTYP,COLTYP)
 C***********************************************************************
-C     
-C     Joost van Stralen, april 2002
 C
-C     Input:  XMOM - symmetry packed matrix in RELCCSD format (using supersymmetry for linear molecules)
-C     Output: XMO  - The Lagrangian in Dirac format, this matrix is not sym. packed
+C     Copy a one-particle block (VO, OV, OO or VV) of a matrix in
+C     RELCCSD format into the full (not symmetry packed) Dirac MO
+C     matrix XMO. Elements of XMO outside the block are not touched.
 C
-C     Auxilliaries (all input and unchanged)
-C     NFVO - total size of packed VO blocks (is identical to size of T1 amplitude array)
-C     IRCW - real or complex arithmetic used in RELCCSD (1:real, 2:complex)
-C     NREP - number of irreps used in RELCCSD
-C     NV   - for each irrep the number of virtual spinors
-C     NO   - for each irrep the number of occupied spinors
+C     Replaces RELTODIR, DOVTODIR, DOOTODIR and DVVTODIR written by
+C     Joost van Stralen (2002) and extended by S. Knecht and A. Shee.
+C     Global NZ is not modified (gitlab issue #22).
+C
+C     Input:  XMOM   - symmetry packed block in RELCCSD format
+C             NDIM   - total size of the packed block (leading dim.)
+C             IRCW   - arithmetic used in RELCCSD (1:real, 2:complex)
+C             NREP   - number of irreps used in RELCCSD
+C             NR     - for each irrep the number of row spinors
+C             NC     - for each irrep the number of column spinors
+C             ROWTYP - 'hole' (occupied) or 'particle' (virtual) rows
+C             COLTYP - idem for the columns
+C     Output: XMO    - Dirac MO matrix with the block filled in
+C
+C     Storage of the blocks in RELCCSD:
+C     - Spinfree: 4*NBSYM irreps (spin x boson irrep, see GMULTSF),
+C       real arithmetic. The spin-alpha irreps 1..NBSYM hold the
+C       spatial orbital blocks, the others are redundant.
+C     - NZ=4: one irrep per fermion irrep containing both Kramers
+C       partners. The unbarred columns of the (2NR x 2NC) block hold
+C       the (1,i) parts in rows 1..NR and the (j,k) parts below.
+C     - NZ=1,2: Kramers pairs of irreps (j,j+1). The block of irrep j
+C       holds real and imaginary parts in XMOM(:,1) and XMOM(:,2).
+C       Linear molecules use supersymmetry (see Super_Symmetry).
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-      PARAMETER (D0=0.D0,DM1=-1.D0,D1 = 1.0D0)
 C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
-#include "dcbtr3.h"
-#include "dcbmp2.h"
 C
-      INTEGER NREP,NFVO,IRCW 
-      DIMENSION XMO(NORBT,NORBT,NZ)
-      DIMENSION XMOM(NFVO,IRCW)
-      DIMENSION NV(NREP),NO(NREP)
-
-      integer,allocatable :: idxu2g(:,:),idyu2g(:,:) 
-
-      if (spinfr) NZ = 1
-
-      allocate(idxu2g(norbt,nrep),idyu2g(norbt,nrep))
-
-      idxu2g(1:norbt,1:nrep) = 0
-      idyu2g(1:norbt,1:nrep) = 0
-
-      call Super_Symmetry(nrep,nv,idxu2g,'particle') 
-
-      call Super_Symmetry(nrep,no,idyu2g,'hole') 
-
-      IF (nz.NE.4) THEN ! The most common case for small molecules "real" or complex" double groups
-
-         if(nfsym == 1)then ! no inversion symmetry
-           norbc = 1
-           if (spinfr) then
-              do j = 1, nbsym
-                CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
-     &                                 xmo,norbt,norbt,idxu2g(1,j),
-     &                                 idyu2g(1,j),nz)
-                 norbc = norbc + no(j)*nv(j)
-              end do
-           else
-              do j = 1, nrep,2
-                if (nv(j)>0 .and. no(j)>0) 
-     &          CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
-     &                                 xmo,norbt,norbt,idxu2g(1,j),
-     &                                 idyu2g(1,j),nz)
-              norbc = norbc + 2*nv(j)*no(j)
-              end do
-           endif
-         else if(nfsym == 2)then ! inversion symmetry
-!           LV: this code is incomplete, should be checked for spinfree with inversion
-!           LV: non-spinfree code is identical to non-inversion code, can be simplified further
-            norbc = 1
-            do j = 1, nrep,2
-              if (nv(j)>0 .and. no(j)>0) 
-     &        CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
-     &                               xmo,norbt,norbt,idxu2g(1,j),
-     &                               idyu2g(1,j),nz)
-              norbc = norbc + 2*nv(j)*no(j)
-            end do
-         end if
-
-         deallocate(idxu2g,idyu2g)
-
-         IOFF1 = 0
-         IOFF2 = 0
-         IOFF3 = 0
-         IOFF4 = 0
-
-! Complex groups unless when they are run in spinfree (so that the algebra could be chosen as real)
-         IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN 
-
-            DO IFSYM = 1, NFSYM
-               IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
-               IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
-                IAI = 1
-                DO I = 1, NO(IFSYM+IOFF4)
-                    CALL DCOPY(NV(IFSYM+IOFF4),     XMOM(IAI+IOFF3,2),1,
-     &                                      XMO(1+IOFF1,I+IOFF2,2),1)
-                    IAI = IAI + NV(IFSYM+IOFF4)
-                ENDDO
-                IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
-                IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) 
-     &                                      + NORB(IFSYM)
-                IOFF3 = IOFF3 + 2*NV(IFSYM)*NO(IFSYM)
-                IOFF4 = IOFF4 + 1
-            ENDDO
-         ENDIF
-
-      ELSE ! branching for NZ, next comes the code for NZ=4 (quaternion groups, at most inversion symmetry)
-
-         IOFF1 = 0
-         IOFF2 = 0
-         IOFF3 = 0
+      INTEGER NDIM,IRCW,NREP,NR(NREP),NC(NREP)
+      CHARACTER*(*) ROWTYP,COLTYP
+      DIMENSION XMO(NORBT,NORBT,NZ),XMOM(NDIM,IRCW)
+C
+      INTEGER, ALLOCATABLE :: IDXROW(:,:),IDXCOL(:,:)
+      INTEGER RCCOFF
+C
+      IF (NZ.EQ.4 .AND. .NOT.SPINFR) THEN
+C
+C        Quaternion groups: direct copy per fermion irrep
+C
+         IOFF = 0
          DO IFSYM = 1, NFSYM
-           IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
-           IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
-           IAI = 1
-           DO I = 1, NAOCC(IFSYM)
-C    Re
-              CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,1),1,
-     &                                XMO(1+IOFF1,I+IOFF2,1),1)
-
-C    i
-              CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,2),1,
-     &                                XMO(1+IOFF1,I+IOFF2,2),1)
-
-              IAI = IAI + 2*NAVIR(IFSYM)
-           ENDDO
-           IAI = 2*NAVIR(IFSYM)*NAOCC(IFSYM) + 1
-           DO I = 1, NAOCC(IFSYM)
-C    j
-                CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,1),1,
-     &                                  XMO(1+IOFF1,I+IOFF2,3),1)
-
-
-C    k
-                CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,2),1,
-     &                                  XMO(1+IOFF1,I+IOFF2,4),1)
-
-             IAI = IAI + 2*NAVIR(IFSYM)
-           ENDDO
-           IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
-           IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) + NORB(IFSYM)
-           IOFF3 = IOFF3 + 4*NAVIR(IFSYM)*NAOCC(IFSYM)
-         ENDDO
+            NRK  = NR(IFSYM)/2
+            NCK  = NC(IFSYM)/2
+            IROW = RCCOFF(ROWTYP,IFSYM)
+            ICOL = RCCOFF(COLTYP,IFSYM)
+            DO I = 1, NCK
+C              Re and i parts
+               IJ = IOFF + (I-1)*2*NRK + 1
+               CALL DCOPY(NRK,XMOM(IJ,1),1,XMO(IROW+1,ICOL+I,1),1)
+               CALL DCOPY(NRK,XMOM(IJ,2),1,XMO(IROW+1,ICOL+I,2),1)
+C              j and k parts
+               IJ = IJ + 2*NRK*NCK
+               CALL DCOPY(NRK,XMOM(IJ,1),1,XMO(IROW+1,ICOL+I,3),1)
+               CALL DCOPY(NRK,XMOM(IJ,2),1,XMO(IROW+1,ICOL+I,4),1)
+            END DO
+            IOFF = IOFF + 4*NRK*NCK
+         END DO
 C
-      ENDIF
+      ELSE
 C
+C        Spinfree or real/complex groups: gather using index vectors
+C        that map RELCCSD orbitals of an irrep on Dirac MO indices
+C
+         ALLOCATE(IDXROW(NORBT,NREP),IDXCOL(NORBT,NREP))
+         IDXROW = 0
+         IDXCOL = 0
+         CALL SUPER_SYMMETRY(NREP,NR,IDXROW,ROWTYP)
+         CALL SUPER_SYMMETRY(NREP,NC,IDXCOL,COLTYP)
+C
+         IOFF = 1
+         IF (SPINFR) THEN
+            DO IREP = 1, NBSYM
+               IF (NR(IREP).GT.0 .AND. NC(IREP).GT.0)
+     &         CALL MATGAT_SYMM_RELCC(XMOM(IOFF,1),NR(IREP),NC(IREP),
+     &                                XMO,NORBT,NORBT,IDXROW(1,IREP),
+     &                                IDXCOL(1,IREP),1)
+               IOFF = IOFF + NR(IREP)*NC(IREP)
+            END DO
+         ELSE
+C           No imaginary part in XMO for NZ=1 (can have IRCW=2 with CAP)
+            NPLANE = MIN(IRCW,NZ)
+            DO IREP = 1, NREP, 2
+               IF (NR(IREP).GT.0 .AND. NC(IREP).GT.0) THEN
+                  DO IZ = 1, NPLANE
+                     CALL MATGAT_SYMM_RELCC(XMOM(IOFF,IZ),NR(IREP),
+     &                                      NC(IREP),XMO(1,1,IZ),
+     &                                      NORBT,NORBT,IDXROW(1,IREP),
+     &                                      IDXCOL(1,IREP),1)
+                  END DO
+               END IF
+               IOFF = IOFF + 2*NR(IREP)*NC(IREP)
+            END DO
+         END IF
+C
+         DEALLOCATE(IDXROW,IDXCOL)
+      END IF
+C
+      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
-      SUBROUTINE DOVTODIR(XMO,XMOM,NFVO,IRCW,NREP,NO,NV)
+C/* Deck rccoff */
+      INTEGER FUNCTION RCCOFF(ORBTYP,IFSYM)
 C***********************************************************************
-C     
-C     Joost van Stralen, april 2002
 C
-C     XMO - The Lagrangian in Dirac format, this matrix is not sym. packed
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER (D0=0.D0,DM1=-1.D0,D1 = 1.0D0)
-C
-#include "dcborb.h"
-#include "dcbham.h"
-#include "dgroup.h"
-#include "dcbtr3.h"
-#include "dcbmp2.h"
-C
-      INTEGER NREP,NFVO,IRCW 
-      DIMENSION XMO(NORBT,NORBT,NZ)
-      DIMENSION XMOM(NFVO,IRCW)
-      DIMENSION NV(NREP),NO(NREP)
-
-      integer,allocatable :: idxu2g(:,:),idyu2g(:,:) 
-
-      allocate(idxu2g(norbt,nrep),idyu2g(norbt,nrep))
-
-      idxu2g(1:norbt,1:nrep) = 0
-      idyu2g(1:norbt,1:nrep) = 0
-
-      call Super_Symmetry(nrep,no,idxu2g,'hole') 
-
-      call Super_Symmetry(nrep,nv,idyu2g,'particle') 
-
-
-      IF (nz.NE.4) THEN
-
-         if(nfsym == 1)then
-           norbc = 1
-       if (spinfr) then
-
-           do j = 1, nbsym
-             if (nv(j)>0 .and. no(j)>0) 
-     &       CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
-     &                              xmo,norbt,norbt,idxu2g(1,j),
-     &                              idyu2g(1,j),nz)
-           norbc = norbc + no(j)*nv(j)
-           end do
-
-       else
-
-           do j = 1, nrep,2
-             if (nv(j)>0 .and. no(j)>0) 
-     &       CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
-     &                              xmo,norbt,norbt,idxu2g(1,j),
-     &                              idyu2g(1,j),nz)
-           norbc = norbc + 2*nv(j)*no(j)
-           end do
-       endif
-
-         else if(nfsym == 2)then
-           do k = 1, nfsym 
-             if(k == 1)then
-               norbc = 1
-               do j = 1, nrep/2,2
-                 if (nv(j)>0 .and. no(j)>0) 
-     &           CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
-     &                                  xmo,norbt,norbt,idxu2g(1,j),
-     &                                  idyu2g(1,j),nz)
-                 norbc = norbc + 2*nv(j)*no(j)
-               end do
-             else if(k == 2)then
-               do j = nrep/2+1,nrep,2
-                 if (nv(j)>0 .and. no(j)>0) 
-     &           CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
-     &                                  xmo,norbt,norbt,idxu2g(1,j),
-     &                                  idyu2g(1,j),nz)
-                 norbc = norbc + 2*nv(j)*no(j)
-               end do
-             end if
-           end do
-         end if
-
-         deallocate(idxu2g,idyu2g)
-
-
-      IOFF1 = 0
-      IOFF2 = 0
-      IOFF3 = 0
-      IOFF4 = 0
-
-
-         IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
-
-      DO IFSYM = 1, NFSYM
-          IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
-          IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
-          IAI = 1
-          DO I = 1, NV(IFSYM+IOFF4)
-              CALL DCOPY(NO(IFSYM+IOFF4),     XMOM(IAI+IOFF3,2),1,
-     &                                XMO(1+IOFF2,I+IOFF1,2),1)
-          IAI = IAI + NO(IFSYM+IOFF4)
-          ENDDO
-        IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
-        IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) + NORB(IFSYM)
-!        IOFF3 = IOFF3 + 2*NAVIR(IFSYM)*NAOCC(IFSYM)
-        IOFF3 = IOFF3 + 2*NV(IFSYM)*NO(IFSYM)
-        IOFF4 = IOFF4 + 1
-      ENDDO
-         ENDIF
-C
-      ELSE
-C
-      IOFF1 = 0
-      IOFF2 = 0
-      IOFF3 = 0
-      DO IFSYM = 1, NFSYM
-        IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
-        IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
-        IAI = 1
-        DO I = 1, NAVIR(IFSYM)
-C    Re
-           CALL DCOPY(NAOCC(IFSYM),     XMOM(IAI+IOFF3,1),1,
-     &                             XMO(1+IOFF2,I+IOFF1,1),1)
-C    i
-           CALL DCOPY(NAOCC(IFSYM),     XMOM(IAI+IOFF3,2),1,
-     &                             XMO(1+IOFF2,I+IOFF1,2),1)
-           IAI = IAI + 2*NAOCC(IFSYM)
-        ENDDO
-        IAI = 2*NAVIR(IFSYM)*NAOCC(IFSYM) + 1
-        DO I = 1, NAVIR(IFSYM)
-C    j
-             CALL DCOPY(NAOCC(IFSYM),     XMOM(IAI+IOFF3,1),1,
-     &                               XMO(1+IOFF2,I+IOFF1,3),1)
-C    k
-             CALL DCOPY(NAOCC(IFSYM),     XMOM(IAI+IOFF3,2),1,
-     &                               XMO(1+IOFF2,I+IOFF1,4),1)
-             IAI = IAI + 2*NAOCC(IFSYM)
-        ENDDO
-        IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
-        IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) + NORB(IFSYM)
-        IOFF3 = IOFF3 + 4*NAVIR(IFSYM)*NAOCC(IFSYM)
-      ENDDO
-C
-      ENDIF
-C
-      ioff1 = 0
-      ioff2 = 0
-      RETURN
-      END
-
-!========================================================================================
-
-C/* Deck dootodir */
-      SUBROUTINE DOOTODIR(DMO,DMOM,NO,NFOO,NREP,IRCW)
-C***********************************************************************
-C     
-C     Joost van Stralen, may 2002
-C
-C     Transform occ-occ part of 2nd order Density matrix from RELCCSD format 
-C     to Dirac format
+C     Offset in the Dirac MO list of the first active occupied ('hole')
+C     or virtual ('particle') orbital of fermion irrep IFSYM
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-      PARAMETER (D0=0.D0,DM1=-1.D0,D1 = 1.0D0)
-C
 #include "dcborb.h"
-#include "dcbham.h"
-#include "dgroup.h"
-#include "dcbgen.h"
 #include "dcbtr3.h"
 C
-      INTEGER NFOO,NREP,IRCW
-      DIMENSION DMO(NORBT,NORBT,NZ)
-      DIMENSION DMOM(NFOO,IRCW)
-      DIMENSION NO(NREP)
-      integer, allocatable :: idxu2g(:,:)
+      CHARACTER*(*) ORBTYP
 C
-C
-!!!!       CALL DZERO(DMO,NORBT*NORBT*NZ)
-
-      allocate(idxu2g(norbt,nrep))
-      idxu2g(1:norbt,1:nrep) = 0
-
-      call Super_Symmetry(nrep,no,idxu2g,'hole') 
-
-!      write(*,*)'index array',(idxu2g(1,j),j=1,nrep,2)
-
-      IF(NZ.NE.4) THEN
-         IOFF1 = 0
-         IOFF2 = 0
-         IOFF4 = 0
-         if(nfsym == 1)then
-           norbc = 1
-
-        if (spinfr) then
-
-           do j = 1, nbsym
-             CALL MATGAT_symm_relcc(dmom(norbc,1),no(j),no(j),
-     &                              dmo,norbt,norbt,idxu2g(1,j),
-     &                              idxu2g(1,j),nz)
-           norbc = norbc + no(j)**2
-           end do
-
-        else
-
-           do j = 1, nrep,2
-             if (no(j)>0) 
-     &       CALL MATGAT_symm_relcc(dmom(norbc,1),no(j),no(j),
-     &                              dmo,norbt,norbt,idxu2g(1,j),
-     &                              idxu2g(1,j),nz)
-           norbc = norbc + 2*no(j)**2
-           end do
-        endif
-
-         else if(nfsym == 2)then
-           do k = 1, nfsym 
-             if(k == 1)then
-               norbc = 1
-               do j = 1, nrep/2,2
-                 if (no(j)>0) 
-     &           CALL MATGAT_symm_relcc(dmom(norbc,1),no(j),no(j),
-     &                                  dmo,norbt,norbt,idxu2g(1,j),
-     &                                  idxu2g(1,j),nz)
-                 norbc = norbc + 2*no(j)**2
-               end do
-             else if(k == 2)then
-               do j = nrep/2+1,nrep,2
-                 if (no(j)>0) 
-     &           CALL MATGAT_symm_relcc(dmom(norbc,1),no(j),no(j),
-     &                                  dmo,norbt,norbt,idxu2g(1,j),
-     &                                  idxu2g(1,j),nz)
-                 norbc = norbc + 2*no(j)**2
-               end do
-             end if
-           end do
-         end if
-
-         deallocate(idxu2g)
-
-         IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
-         DO IFSYM = 1, NFSYM
-            IOFF1 = IOFF1 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
-               IJ = 1
-               DO I = 1, NO(IFSYM+IOFF4)
-                  CALL DCOPY(NO(IFSYM+IOFF4),       DMOM(IJ+IOFF2,2),1,
-     &                                        DMO(1+IOFF1,I+IOFF1,2),1)
-                  IJ = IJ + NO(IFSYM+IOFF4)
-               ENDDO
-            IOFF1 = IOFF1 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) +NORB(IFSYM)
-            IOFF4 = IOFF4 + 1
-            IOFF2 = IOFF2 + 2*no(ifsym)*no(ifsym) 
-         ENDDO
-         ENDIF
+      IF (ORBTYP.EQ.'hole') THEN
+         RCCOFF = IORB(IFSYM) + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
       ELSE
-         IOFF1 = 0
-         IOFF2 = 0
-         DO IFSYM = 1, NFSYM
-            IOFF1 = IOFF1 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
-C     Re       
-            IJ = 1
-            DO I = 1, (NO(IFSYM)/2)
-               CALL DCOPY((NO(IFSYM)/2),      DMOM(IJ+IOFF2,1),1,
-     &                                  DMO(1+IOFF1,I+IOFF1,1),1)
-C     i
-               CALL DCOPY((NO(IFSYM)/2),      DMOM(IJ+IOFF2,2),1,
-     &                                  DMO(1+IOFF1,I+IOFF1,2),1)
-            IJ = IJ + NO(IFSYM)
-            ENDDO
-C     j
-            IJ = (NO(IFSYM)/2)*NO(IFSYM) + 1
-            DO I = 1, (NO(IFSYM)/2)
-               CALL DCOPY((NO(IFSYM)/2),      DMOM(IJ+IOFF2,1),1,
-     &                                  DMO(1+IOFF1,I+IOFF1,3),1)
-C     k
-               CALL DCOPY((NO(IFSYM)/2),      DMOM(IJ+IOFF2,2),1,
-     &                                  DMO(1+IOFF1,I+IOFF1,4),1)
-            IJ = IJ + NO(IFSYM)
-            ENDDO
-            IOFF1 = IOFF1 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) +NORB(IFSYM)
-            IOFF2 = IOFF2 + NO(IFSYM)*NO(IFSYM)
-         ENDDO
-      ENDIF
+         RCCOFF = IORB(IFSYM) + NPSH(IFSYM) + NOCC(IFSYM)
+      END IF
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck dvvtodir */
-      SUBROUTINE DVVTODIR(DMO,DMOM,NV,NFVV,NREP,IRCW)
-C*****************************************************************************
-C     
-C     Joost van Stralen, may 2002
-C
-C     Transform vir-vir part of 2nd order Density matrix from RELCCSD format 
-C     to Dirac format
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER (D0=0.D0,DM1=-1.D0,D1 = 1.0D0)
-C
-#include "dcborb.h"
-#include "dcbham.h"
-#include "dgroup.h"
-#include "dcbgen.h"
-#include "dcbtr3.h"
-C
-      INTEGER IRCW,NREP,NFVV
-      DIMENSION DMO(NORBT,NORBT,NZ)
-      DIMENSION DMOM(NFVV,IRCW)
-      DIMENSION NV(NREP)
-      integer, allocatable :: idxu2g(:,:)
-
-      allocate(idxu2g(norbt,nrep))
-
-      idxu2g(1:norbt,1:nrep) = 0
-
-      call Super_Symmetry(nrep,nv,idxu2g,'particle') 
-
-      IF(NZ.NE.4) THEN
-         IOFF1 = 0
-         IOFF2 = 0
-         IOFF4 = 0
-         if(nfsym == 1)then
-           norbc = 1
-
-        if (spinfr) then
-
-           do j = 1, nbsym
-             if (nv(j)>0) 
-     &       CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
-     &                              dmo,norbt,norbt,idxu2g(1,j),
-     &                              idxu2g(1,j),nz)
-           norbc = norbc + nv(j)**2
-           end do
-
-        else
-
-           do j = 1, nrep,2
-             if (nv(j)>0) 
-     &       CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
-     &                              dmo,norbt,norbt,idxu2g(1,j),
-     &                              idxu2g(1,j),nz)
-           norbc = norbc + 2*nv(j)**2
-           end do
-      
-        endif
-
-
-         else if(nfsym == 2)then
-           do k = 1, nfsym 
-             if(k == 1)then
-               norbc = 1
-               do j = 1, nrep/2,2
-                 if (nv(j)>0) 
-     &           CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
-     &                                  dmo,norbt,norbt,idxu2g(1,j),
-     &                                  idxu2g(1,j),nz)
-                 norbc = norbc + 2*nv(j)**2
-               end do
-             else if(k == 2)then
-               do j = nrep/2+1,nrep,2
-                 if (nv(j)>0) 
-     &           CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
-     &                                  dmo,norbt,norbt,idxu2g(1,j),
-     &                                  idxu2g(1,j),nz)
-                 norbc = norbc + 2*nv(j)**2
-               end do
-             end if
-           end do
-         end if
-
-         deallocate(idxu2g)
-
-         IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
-            DO IFSYM = 1, NFSYM
-                 IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
-                 IJ = 1
-                 DO I = 1, NV(IFSYM+IOFF4)
-                  CALL DCOPY(NV(IFSYM+IOFF4),       DMOM(IJ+IOFF2,2),1,
-     &                                        DMO(1+IOFF1,I+IOFF1,2),1)
-                    IJ = IJ + NV(IFSYM+IOFF4)
-                 ENDDO
-              IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) +NORB(IFSYM)
-              IOFF2 = IOFF2 + 2*NV(IFSYM)*NV(IFSYM)
-              IOFF4 = IOFF4 + 1
-           ENDDO
-         ENDIF
-      ELSE
-         IOFF1 = 0
-         IOFF2 = 0
-         DO IFSYM = 1, NFSYM
-            IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
-C     Re       
-            IJ = 1
-            DO I = 1, (NV(IFSYM)/2)
-               CALL DCOPY((NV(IFSYM)/2),      DMOM(IJ+IOFF2,1),1,
-     &                                  DMO(1+IOFF1,I+IOFF1,1),1)
-C     i
-               CALL DCOPY((NV(IFSYM)/2),      DMOM(IJ+IOFF2,2),1,
-     &                                  DMO(1+IOFF1,I+IOFF1,2),1)
-            IJ = IJ + NV(IFSYM)
-            ENDDO
-C     j
-            IJ = (NV(IFSYM)/2)*NV(IFSYM) + 1
-            DO I = 1, (NV(IFSYM)/2)
-               CALL DCOPY((NV(IFSYM)/2),      DMOM(IJ+IOFF2,1),1,
-     &                                  DMO(1+IOFF1,I+IOFF1,3),1)
-C     k
-               CALL DCOPY((NV(IFSYM)/2),      DMOM(IJ+IOFF2,2),1,
-     &                                  DMO(1+IOFF1,I+IOFF1,4),1)
-            IJ = IJ + NV(IFSYM)
-            ENDDO
-            IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) +NORB(IFSYM)
-            IOFF2 = IOFF2 + NV(IFSYM)*NV(IFSYM)
-         ENDDO
-      ENDIF
-C
-      RETURN
-      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MATGAT_symm_relcc(AMAT,NRA,NCA,BMAT,NRB,NCB,IDX,IDY,
      &                             NZ)
 !***********************************************************************
@@ -2028,13 +1572,22 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 !------------------------------------------------------------------
 ! Make index array to map RELCCSD MO ordering on DIRAC MO ordering
+!
+! idxu2g(i,j) is the DIRAC MO index of the i-th active occupied
+! ('hole') or virtual ('particle') orbital of RELCCSD irrep j.
+!
+! - Spinfree: RELCCSD irrep j = 1..nbsym holds the spin-alpha
+!   orbitals of boson irrep j-1 (see GMULTSF). These are collected
+!   from all fermion irreps using the boson irrep info (ibeig).
+! - Linear molecules: RELCCSD irreps are mj-values (supersymmetry),
+!   matched against the mj info in ibeig.
+! - Otherwise the RELCCSD irreps j (unbarred of a Kramers pair) map
+!   one-to-one on the active orbitals of the fermion irrep.
 !------------------------------------------------------------------
 #include "implicit.h"
-#include "priunit.h"
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
-#include "dcbgen.h"
 #include "dcbtr3.h"
    
       integer, intent(in) :: nrep
@@ -2043,210 +1596,88 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       integer, intent(inout)   :: idxu2g(norbt,nrep)
 
       integer, allocatable :: ibeig(:)
-      integer              :: nash_x(1:nfsym)
+      integer              :: nash_x(1:nfsym), ioff_x(1:nfsym)
 
 !     !> read ibeig (info array on boson irreps) from CHECKPOINT
       allocate(ibeig(norbt))
       ibeig(1:norbt)         = 0
-      nash_x(1:nfsym)        = 0
-
-!     Start by counting the number of spinors in each fermion irrep
-      i = 1
-      do j = 1, nrep
-         if ( nfsym==2 .and.  j > nrep/2) i = 2
-         nash_x(i) = nash_x(i) + orb_dim(j)
-      end do
-
-      ! but we want nash (meaning number of active shells = active Kramers pairs) so we need to
-      ! divide by 2. Note that this will NOT work for unrestricted calculations.
-      nash_x = nash_x/2
-
-      if (spinfr) then
-        do ifsym = 1,nfsym
-          select case(orbital_type)
-           case('hole') 
-            nash_x(ifsym) = NAOCC(ifsym)
-           case('particle')
-           nash_x(ifsym) = NAVIR(ifsym)
-          end select 
-        enddo
-      endif
-
-
       if( linear .or. spinfr )then
         call reacmo(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
       end if
 
+!     offset and number of active orbitals in each fermion irrep
+      do k = 1, nfsym
+        select case (orbital_type)
+        case ('hole')
+          ioff_x(k) = iorb(k) + npsh(k) + NDMOQC(2,k,1)
+        case ('particle')
+          ioff_x(k) = iorb(k) + npsh(k) + nocc(k)
+        case default
+          call quit('Super_Symmetry: unknown orbital type')
+        end select
+      end do
 
-      if(nfsym == 1)then
-        indx_loop = 0
-        do j = 1, nrep,2
-          indx_loop = indx_loop + 1
-          if(orb_dim(j) > 0)then
-            norbc = 0
-            is_symm = 0
-            if(linear)then
-              !> get mj-value
-              is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
-            else if(spinfr)then
-!              is_symm = mod(indx_loop,2)+1 - 1
-             if (indx_loop.le.nbsym) is_symm = indx_loop-1
-            end if
-            do i = 1, nash_x(1)
+      if (spinfr) then
 
-            select case (orbital_type)
-
-            case('hole')
-
-                  if(is_symm == ibeig(iorb(1)       +
-     &                                npsh(1)       + 
-     &                                NDMOQC(2,1,1) +
-     &                                i))then
-                    norbc = norbc + 1
-                    if (spinfr) then
-                    if (indx_loop.le.nbsym) 
-     &      IDXU2G(norbc,indx_loop) = iorb(1)+npsh(1)+NDMOQC(2,1,1)+i
-                    else
-                    IDXU2G(norbc,j) = iorb(1)+npsh(1)+NDMOQC(2,1,1)+i
-                    endif
-
-                  end if
-            case('particle')
-
-              if(is_symm == ibeig(iorb(1)       +
-     &                            npsh(1)       + 
-     &                            nocc(1)       +
-     &                            i))then
-                norbc = norbc + 1
-
-                if (spinfr) then
-                if (indx_loop.le.nbsym) 
-     &          IDXU2G(norbc,indx_loop) = iorb(1)+npsh(1)+nocc(1)+i
-                else
-                IDXU2G(norbc,j) = iorb(1)+npsh(1)+nocc(1)+i
-                endif
-
-              end if
-             end select
-
-            end do
+!       nash (number of active Kramers pairs = spatial orbitals)
+        do k = 1, nfsym
+          if (orbital_type == 'hole') then
+            nash_x(k) = NAOCC(k)
+          else
+            nash_x(k) = NAVIR(k)
           end if
         end do
-      else if(nfsym == 2)then
-        do k = 1, nfsym 
+
+        do j = 1, nbsym
+          norbc = 0
+          do k = 1, nfsym
+            do i = 1, nash_x(k)
+              if (ibeig(ioff_x(k)+i) == j-1) then
+                norbc = norbc + 1
+                if (norbc <= orb_dim(j))
+     &            idxu2g(norbc,j) = ioff_x(k) + i
+              end if
+            end do
+          end do
+          if (norbc /= orb_dim(j)) call quit
+     &      ('Super_Symmetry: inconsistent spinfree orbital count')
+        end do
+
+      else
+
+!       Count the number of spinors in each fermion irrep. We want nash
+!       (active Kramers pairs) so divide by 2. Note that this will NOT
+!       work for unrestricted calculations.
+        nash_x(1:nfsym) = 0
+        do k = 1, nfsym
+          do j = (k-1)*nrep/nfsym+1, k*nrep/nfsym
+            nash_x(k) = nash_x(k) + orb_dim(j)
+          end do
+        end do
+        nash_x = nash_x/2
+
+        do k = 1, nfsym
           indx_loop = 0
-          if(k == 1)then
-            do j = 1, nrep/2,2
-              indx_loop = indx_loop + 1
-              if(orb_dim(j) > 0)then
-                norbc = 0
-                is_symm = 0
-                if(linear)then
-                  !> get mj-value
-                  is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
-                else if(spinfr)then
-!                 is_symm = mod(indx_loop,2)+1 - 1
-                  if (indx_loop.le.nbsym) is_symm = indx_loop-1
+          do j = (k-1)*nrep/nfsym+1, k*nrep/nfsym, 2
+            indx_loop = indx_loop + 1
+            if (orb_dim(j) > 0) then
+              is_symm = 0
+!             > get mj-value
+              if (linear)
+     &          is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+              norbc = 0
+              do i = 1, nash_x(k)
+                if (is_symm == ibeig(ioff_x(k)+i)) then
+                  norbc = norbc + 1
+                  idxu2g(norbc,j) = ioff_x(k) + i
                 end if
-                do i = 1, nash_x(k)
-
-            select case (orbital_type)
-
-            case('hole')
-
-                  if(is_symm == ibeig(iorb(k)       +
-     &                                npsh(k)       + 
-     &                                NDMOQC(2,k,1) +
-     &                                i))then
-                    norbc = norbc + 1
-
-
-                if (spinfr) then
-                if (indx_loop.le.nbsym) 
-     &  IDXU2G(norbc,indx_loop) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
-                else
-                IDXU2G(norbc,j) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
-                endif
-
-                  end if
-            case('particle')
-
-              if(is_symm == ibeig(iorb(k)       +
-     &                            npsh(k)       + 
-     &                            nocc(k)       +
-     &                            i))then
-                norbc = norbc + 1
-
-                if (spinfr) then
-                if (indx_loop.le.nbsym) 
-     &  IDXU2G(norbc,indx_loop) = iorb(k)+npsh(k)+nocc(k)+i
-                else
-                IDXU2G(norbc,j) = iorb(k)+npsh(k)+nocc(k)+i
-                endif
-
-              end if
-             end select
-
-                end do
-              end if
-            end do
-          else if(k == 2)then
-            do j = nrep/2+1,nrep,2
-              indx_loop = indx_loop + 1
-              if(orb_dim(j) > 0)then
-                norbc = 0
-                is_symm = 0
-                if(linear)then
-                  !> get mj-value
-                  is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
-                else if(spinfr)then
-!                  is_symm = mod(indx_loop,2)+1 - 1
-                  if (indx_loop.le.nbsym) is_symm = indx_loop-1
-                end if
-                do i = 1, nash_x(k)
-
-            select case (orbital_type)
-
-            case('hole')
-
-                  if(is_symm == ibeig(iorb(k)       +
-     &                                npsh(k)       + 
-     &                                NDMOQC(2,k,1) +
-     &                                i))then
-                    norbc = norbc + 1
-
-                if (spinfr) then
-                if (indx_loop.le.nbsym) 
-     &  IDXU2G(norbc,indx_loop) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
-                else
-                IDXU2G(norbc,j) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
-                endif
-
-                  end if
-            case('particle')
-
-              if(is_symm == ibeig(iorb(k)       +
-     &                            npsh(k)       + 
-     &                            nocc(k)       +
-     &                            i))then
-                norbc = norbc + 1
-
-                if (spinfr) then
-                if (indx_loop.le.nbsym) 
-     &          IDXU2G(norbc,indx_loop) = iorb(k)+npsh(k)+nocc(k)+i
-                else
-                IDXU2G(norbc,j) = iorb(k)+npsh(k)+nocc(k)+i
-                endif
-
-              end if
-             end select
-
-                end do
-              end if
-            end do
-          end if
+              end do
+            end if
+          end do
         end do
+
       end if
+
       deallocate(ibeig)
 
       end subroutine
@@ -2270,7 +1701,6 @@ C
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C         
 #include "dcborb.h"
@@ -2334,7 +1764,6 @@ C*****************************************************************************
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbdhf.h"
 C
       CALL DZERO(DMAT,2*N2BBASXQ)
 C     get closed shell denstiy matrix

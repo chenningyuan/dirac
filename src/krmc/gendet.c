@@ -26,9 +26,7 @@
 #define cgendet     cgendet_
 
 #define ibtabini    ibtabini_
-#define fnbits      fnbits_
 #define quit        quit_
-#define getnbitscalls getnbitscalls_
 
 #endif
 
@@ -52,16 +50,10 @@ typedef unsigned int unsigned_integer;
  */
 
 extern void
-getnbitscalls ( integer *fReset, long long int *nCN, long long int *nFN );
-
-extern void
 ibtabini ( unsigned_integer an[] );
 
 extern void
 quit ( char sz[], integer nLen );
-
-extern void
-fnbits ( integer *n , unsigned long long int *i, unsigned_integer anBitTable[] );
 
 extern integer
 cnbits ( unsigned long long int i, unsigned_integer anBitTable[] );
@@ -80,9 +72,6 @@ cgendet1( unsigned long long int anStr[], integer nOrb, integer mElec,
 
 unsigned_integer anBitTable[ 256 ];
 integer nElec, nOrb;
-long long int nCNBitsCalls = 0;
-long long int nFNBitsCalls = 0;
-
 
 extern void
 cgendet ( integer *pnElec, integer *pnAsht,
@@ -163,7 +152,11 @@ cgendet1( unsigned long long int anStr[], integer n, integer m,
 	   (*j)++;
        }
        else {
+#ifdef INT_STAR8
+	 printf ("*** ERROR in CGENDET1 *** Too many strings: %li! Allocate more memory in calling routine!\n", *j );
+#else
 	 printf ("*** ERROR in CGENDET1 *** Too many strings: %i! Allocate more memory in calling routine!\n", *j );
+#endif
 	 quit( "*** ERROR in CGENDET1 ***", 25 );
        }
      }
@@ -230,8 +223,6 @@ cnbits ( unsigned long long int i, unsigned_integer anBitTable[] ) {
 
   unsigned char *j;
 
-  nCNBitsCalls++;
-
   j = (unsigned char *) &i;
 
   return anBitTable[ *j ] + anBitTable[ *(j+1) ] +
@@ -241,34 +232,6 @@ cnbits ( unsigned long long int i, unsigned_integer anBitTable[] ) {
 
 }
 
-extern void
-fnbits ( integer *n, unsigned long long int *i, unsigned_integer anBitTable[] ) {
-
-  unsigned char *j;
-
-  nFNBitsCalls++;
-
-  j = (unsigned char *) i;
-
-  *n =   anBitTable[ *j ] + anBitTable[ *(j+1) ] +
-    anBitTable [ *(j+2) ] + anBitTable[ *(j+3) ] +
-    anBitTable [ *(j+4) ] + anBitTable[ *(j+5) ] +
-    anBitTable [ *(j+6) ] + anBitTable[ *(j+7) ];
-
-}
-
-extern void
-getnbitscalls ( integer *fReset, long long int *nCN, long long int *nFN ) {
-
-  *nCN = nCNBitsCalls;
-  *nFN = nFNBitsCalls;
-
-  if ( *fReset ) {
-    nCNBitsCalls = 0;
-    nFNBitsCalls = 0;
-  }
-
-}
 
 const char *lli_to_b_format ( unsigned long long int x , integer bits)
 {

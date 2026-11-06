@@ -32,8 +32,7 @@
 *
 * NO EOV mark written
 *
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
+#include "implicit.h"
       DIMENSION SEGMNT(*)
 C
       IF( IREW .NE. 0 ) THEN
@@ -90,7 +89,7 @@ C LBLK DEFINES STRUCTURE OF FILE
 *
 *
 C Type of file LUOUT is inherited from LUIN
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       DIMENSION SEGMNT(*)
       integer iscr(2)
       integer LUIN,LUOUT, myluout
@@ -151,8 +150,7 @@ C
 *
 * Copy complex vector from LUIN to LUOUT
 *
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
+#include "implicit.h"
       DIMENSION VEC1(*)
 *
       IF(IREW.NE.0) THEN
@@ -277,8 +275,7 @@ C
 ***********************************************************************
 
       SUBROUTINE DISKUN_REL
-      IMPLICIT REAL*8           (A-H,O-Z)
-#include "ipoist8.inc"
+#include "implicit.h"
 *
 * Assign logical unit numbers for LUCIA:
 *
@@ -336,6 +333,8 @@ C
       INTEGER LUSCR_MPIL,LUDIA_MPIL,LUC_MPIL, LUHC_MPIL, LUSC123_MPIL
       INTEGER LUSC344_MPIL
       LOGICAL EX
+
+      CHARACTER*3, EXTERNAL ::  XSYMFLAB
 *
 * =========================
 * Standard input and output
@@ -399,18 +398,19 @@ C
       Open(Unit=LUDIA,File=NLUDIA_MPI(1:LUDIA_MPIL),Status='UNKNOWN',
      &     Form='UNFORMATTED')
 *. CI vector
-      LUC =   61
+      LUC      =61
       LUC_MPIN ="KRCI_CVECS"
-      LUC_MPIL=14
+      LUC_MPIL =14
       IF( MYPROC .eq. MASTER )THEN
-        IF( IREFSM .le. NMAX_SYM_CI )THEN
+        IF( IREFSM .le. 128 )THEN
           SYMFLABEL = XSYMFLAB(IREFSM)
 C         WRITE(6,*) ' SYMFLABEL is now ',SYMFLABEL
         ELSE 
-          WRITE(LUWRT,*) '  *** Error in DISKUN_REL *** assignment of'//
+          WRITE(LUOUT,*) '  *** Error in DISKUN_REL *** assignment of'//
      &                   ' symmetry label to KRCI_CVECS file failed'   
-          CALL QUIT("*** Error in DISKUN_REL *** assignment of '//
-     &              'symmetry label to KRCI_CVECS file failed ")
+          WRITE(LUOUT,*) 'IREFSM > NMAX_SYM_CI :',IREFSM,NMAX_SYM_CI
+          CALL QUIT('*** Error in DISKUN_REL *** assignment of '//
+     &              'symmetry label to KRCI_CVECS file failed')
         END IF
         IF( .not. RUNXPROP )THEN
            WRITE (NLUC_MPI,'(A10,A1,A3)') LUC_MPIN,'.',SYMFLABEL
@@ -721,6 +721,9 @@ C**********************************************************************
 #include "krciprop.h"
       CHARACTER LUC_NAME*10, my_LUC_NAME*14, SYMFLABEL*3
       LOGICAL EX, open_already
+
+      CHARACTER*3, EXTERNAL ::  XSYMFLAB
+
       EX = .FALSE.
       LUC_NAME    = "KRCI_CVECS"
       LUC_NAMEL   = 14

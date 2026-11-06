@@ -24,7 +24,6 @@ C  /* Deck intexp */
      &                  DINTSKP,GENCNT)
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       LOGICAL NOPMAT, NODV, LONDON, SUSCEP, DDFOCK, EXPECT, GENCNT
       DIMENSION PSO(*), PSA(*), DMAT(*), AOINT(NCCINT,NINTYP),
@@ -104,7 +103,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "aovec.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
@@ -901,7 +899,7 @@ C
      &                               (DINT(I),I=1,NCARTZ)
                               END IF
                            END IF
-#endif  /* ifdef DIRAC */
+#endif  /* ifdef PRG_DIRAC */
                         END IF
                         INT = INT + 1
   600                CONTINUE
@@ -1423,7 +1421,7 @@ C
          END IF
       END IF
       RETURN
- 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine DEROUT >>>>>>>>',/)
+ 1000 FORMAT (//'  ---------- Subroutine DEROUT ----------',/)
  1110 FORMAT (2X,'TWOCEN,...:  ',2L5)
  1120 FORMAT (2X,'ICENT1/2/3/4:',4I7)
  4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
@@ -1438,7 +1436,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
       DIMENSION DERIV(NINTYP), expval(*)
 C
@@ -1728,7 +1725,7 @@ C
          END IF
       END IF
       RETURN
- 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine LNDOUT >>>>>>>>',/)
+ 1000 FORMAT (//'  ---------- Subroutine LNDOUT ----------',/)
  4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
       END
 C  /* Deck lndgc1 */
@@ -1799,7 +1796,7 @@ C
          END IF
       END IF
       RETURN
- 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine LNDGC1 >>>>>>>>',/)
+ 1000 FORMAT (//'  ---------- Subroutine LNDGC1 ----------',/)
  4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
       END
 C  /* Deck lndgc2 */
@@ -1912,7 +1909,7 @@ C
          END IF
       END IF
       RETURN
- 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine LNDGC2 >>>>>>>>',/)
+ 1000 FORMAT (//'  ---------- Subroutine LNDGC2 ----------',/)
  4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
       END
 C  /* Deck pblock */
@@ -1993,7 +1990,6 @@ C  /* Deck pprim */
       SUBROUTINE PPRIM(PAO,PUNC,WORK,LWORK,NORBA,NORBB,NORBC,NORBD,
      &                 NUCA,NUCB,NUCC,NUCD,TPRIAB,TPRICD)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       LOGICAL TPRIAB,TPRICD
       DIMENSION PAO(*), PUNC(*), WORK(LWORK)
@@ -2035,9 +2031,7 @@ C
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "aovec.h"
       LOGICAL TPRIAB,TPRICD
-#include "symmet.h"
       DIMENSION PAO(*), QTR(*), HALF(*), PUNC(*), PHALF(NORBC*NORBD,*)
 C
 C     Loop over second pair of indices and transform over the
@@ -2133,7 +2127,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "aovec.h"
 #include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00, 
@@ -2158,10 +2151,7 @@ C     DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
 #include "twocom.h"
 #include "symmet.h"
 #include "nuclei.h"
-#include "expcom.h"
-#include "dirprt.h"
 #include "dcbgrd.h"
-#include "doxyz.h"
 #include "dcbham.h"
       logical :: allow=.false.
 C
@@ -2485,7 +2475,6 @@ C      the same as is in the older brother dalton
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-C#include <debye.h>
       PARAMETER (D1 = 1.0 D00)
       LOGICAL ALLREP, INERT, LARGE
       DIMENSION AMAT(3,3), IND(3)
@@ -2493,7 +2482,6 @@ C#include <debye.h>
       CHARACTER LAB(3)*2, CHRABC(3)*1
 #include "inirep.h"
 #include "abainf.h"
-#include "inftap.h"
 #include "dorps.h"
 #include "symmet.h"
 #include "chrxyz.h"

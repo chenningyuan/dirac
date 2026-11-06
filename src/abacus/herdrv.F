@@ -48,9 +48,7 @@ C
 #include "nuclei.h"
 #include "orgcom.h"
 #include "huckel.h"
-#include "ccom.h"
-#include "hrunit.h"
-
+C
 #ifdef BUILD_GEN1INT
 #include "gen1int.h"
 #endif
@@ -708,7 +706,7 @@ C&&& MAGCOR - print magnetic coordinates
             END IF
          END IF
          IF (KINENE) WRITE (LUPRI,'(10X,A)')
-     &      '- electronic kinetic energy'
+     &       '- NR electronic kinetic energy'
          IF (MASSVL) WRITE (LUPRI,'(10X,A)')
      &       '- mass velocity integrals'
          IF (DARWIN) WRITE (LUPRI,'(10X,A)')
@@ -926,7 +924,7 @@ C
     5   CALL HRSINP(WORD)
 #else
     5   CALL QUIT('*SUPINT not implemented in Dirac')
-#endif /* ifndef PRG_DIRAC */
+#endif
       GO TO 201
     6 CONTINUE
 C
@@ -936,7 +934,7 @@ C
       CALL HR2INP(WORD)
 #ifndef PRG_DIRAC
       CALL HRSINP(WORD)
-#endif /* ifndef PRG_DIRAC */
+#endif
  1000 CONTINUE
 C     We should check if LUONEL is opened and closed properly,
 C     kr and vb, April-96
@@ -1424,7 +1422,7 @@ C
       END IF
       RETURN
       END
-#endif /* ifndef PRG_DIRAC */
+#endif
 C  /* Deck setdch */
       SUBROUTINE SETDCH
 C

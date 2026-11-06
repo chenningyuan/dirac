@@ -69,7 +69,21 @@ C     set "I/O node master" + "shared memory node master"
       call mospinor_info_init()
       
 !     place spinors (as MOs) in appropriate boson irreps  for further processing (see next step)
-      if(dougrp .ge. 10)then
+
+#ifdef VAR_IFX
+      ! 12. Nov. 2025 - Intel compiler bug fix, ifx 2025.* - hjaaj
+      ! dougrp is printed as 4 in next statement (krci_energy test)
+!ifx  write(0,*) 'hjaaj dougrp',dougrp, nirr_dg
+      ! but goes into the "if group" as if dougrp were .ge. 10 :-(
+      ! leading to segmentation fault, because orbsymVEC is not allocated
+      ! After testing found out that after this (which does nothing as dougrp .gt.0)
+      if (dougrp .lt. 10) goto 100
+      write(0,*) '- ifx compiler still buggy, but workaround works...' ! this line is needed to trick ifx to do the right thing ...
+      ! then the "if (dougrp .ge. 10) then" works correctly .....
+!ifx  write(0,*) 'hjaaj10 dougrp',dougrp, nirr_dg
+#endif
+      if (dougrp .ge. 10) then
+!ifx  write(0,*) 'hjaaj11 dougrp',dougrp, nirr_dg
       
         call alloc(orb_sym_vec,norbt); orb_sym_vec = 0
         call icopy(norbt,orbsymVEC,1,orb_sym_vec,1)
@@ -92,7 +106,7 @@ C     set "I/O node master" + "shared memory node master"
 #endif
 !#undef LUCI_DEBUG
       end if
-
+ 100  continue
 !     generalized routine for handling of all double groups including
 !     linear symmetry (dougrp == 10 or 11)
 !     write(lupri,*) 'bla - go in here???? '
@@ -136,9 +150,6 @@ C
       use symmetry_setup_krci
       IMPLICIT REAL*8           (A-H,O-Z)
 #include "../luciarel/clunit.inc"
-#if defined (VAR_MPI2)
-#include "infpar.h"
-#endif
 #include "parluci.h"
 #include "krciprop.h"
 *
@@ -814,9 +825,7 @@ C     Last revision : 23.01.2001
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
-#include "dcbopt.h"
 C
 #include "../luciarel/mxpdim.inc"
 #include "../luciarel/cicisp.inc"
@@ -884,8 +893,8 @@ C
          IF( MAXCIT .gt. 0 ) CALL LUCI_KRCI(CMO,WORK,LWORK)
 C
       ELSE
-         WRITE(LUPRI,'(A,I18)') ' *** ERROR in LUCI_RCIST ***'//
-     &   ' wrong KR-run type in LUCI_RCIST !',JKRRUNTYPE
+         WRITE(LUPRI,'(A,I0)') ' *** ERROR in LUCI_RCIST ***'//
+     &   ' wrong KR-run type in LUCI_RCIST : ',JKRRUNTYPE
          CALL QUIT('*** ERROR in LUCI_RCIST ***')
       END IF
 C
@@ -910,7 +919,6 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "krmcluci_inf.h"
 C
       CHARACTER*6 CIRUN,RCISTFILE
       LOGICAL PARCAL_SAVE
@@ -1094,7 +1102,6 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "krmcluci_inf.h"
 C
       CHARACTER*6 CIRUN,RCISTFILE
       LOGICAL PARCAL_SAVE
@@ -1431,12 +1438,9 @@ C     Last revision :       T. Fleig             - Mar 16 2002
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbopt.h"
-#include "dcborb.h"
 #include "dgroup.h"
-#include "krmcluci_inf.h"
 C
       LOGICAL   SAVDIA
       CHARACTER*6 CIRUN
@@ -1558,12 +1562,10 @@ C                     occupation numbers   - Sep 28 2007    S. Knecht
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "krmcluci_inf.h"
 C
       LOGICAL CALCR1,CALCR2, natolcr_temp
       CHARACTER*6 CIRUN
@@ -1701,12 +1703,9 @@ C                     activated            - Jan 05, 2005
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbopt.h"
-#include "dcborb.h"
 #include "dgroup.h"
-#include "krmcluci_inf.h"
 C
 #include "../luciarel/clunit.inc"
 C
@@ -1763,12 +1762,9 @@ C     Written by S. Knecht                 - Jan 12, 2014
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbopt.h"
-#include "dcborb.h"
 #include "dgroup.h"
-#include "krmcluci_inf.h"
 C
 #include "../luciarel/clunit.inc"
 C
@@ -1823,12 +1819,9 @@ C     Written by S. Knecht                 - Jan 13, 2014
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbopt.h"
-#include "dcborb.h"
 #include "dgroup.h"
-#include "krmcluci_inf.h"
 C
 #include "../luciarel/clunit.inc"
 C
@@ -1878,8 +1871,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 C
-#include "dcbopt.h"
-C
       CHARACTER*6 CIRUN
       DIMENSION WORK(*)
 C
@@ -1919,11 +1910,7 @@ C***********************************************************************
 C
 #include "dummy.h"
 #include "dcbgen.h"
-#include "dcbopt.h"
-#include "dcborb.h"
 #include "dgroup.h"
-#include "krciprop.h"
-#include "krmcluci_inf.h"
       CHARACTER*6 CIRUN
       DIMENSION VPROP_KRCI(*), WORK(*)
 C               VPROP_KRCI(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,NPROP_KRCI,MZ)
@@ -2116,8 +2103,6 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "dcbgen.h"
-#include "infpar.h"
-#include "parluci.h"
 C
       IF (.NOT.PARCAL) RETURN
 C

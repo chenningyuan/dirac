@@ -20,15 +20,12 @@ C
       SUBROUTINE REAINP(WORD,RELCAL,TSTINP)
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxsymm.h"
       PARAMETER ( NTABLE = 12, D1 = 1.0D0)
       LOGICAL NEWDEF, RELCAL, TSTINP
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 !
 !     Parameter MAXPRD in cbirea.h is default for MAXPRI
 #include "cbirea.h"
-#include "ccom.h"
 Caspg adding numder to set NOMOVE
 #include "numder.h"
 Caspg
@@ -208,7 +205,6 @@ C
 #include "infpar.h"
 #include "maxaqn.h"
 #include "ccom.h"
-#include "mxsymm.h"
 #include "cbirea.h"
 Caspg adding numder to set NOMOVE
 #include "numder.h"
@@ -276,7 +272,7 @@ C               - common block MOLINP: deleted !!!
 C               - common block MOLINC: deleted !!!
 C               - common block HRUNIT: deleted !!!
 C******************************************************************************
-        USE READ_XYZFILE
+        USE HERMODULES, ONLY: READ_XYZ
         use memory_allocator
         use codata
 #include "implicit.h"
@@ -284,10 +280,8 @@ C******************************************************************************
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 C
-#include "abainf.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
@@ -299,22 +293,13 @@ C
       LOGICAL          :: HERMIT,NEWFILE,SET,FEXIST
       CHARACTER(LEN=6) :: KEYWRD
       INTEGER          :: inpfile
-
 C     JHS
       INTEGER :: i
       REAL :: time1,time2
 
 #include "molinp.h"
-#include "ccom.h"
 #include "nuclei.h"
-#include "frame.h"
-#include "primit.h"
-#include "shells.h"
-#include "symmet.h"
-#include "chrsgn.h"
-#include "aosotr.h"
-#include "infpar.h"
-
+C
       integer, parameter   :: LWORK = 15000000 ! do not use WORK_memsize because WORK may be allocated in calling routine
       real(8), allocatable :: WORK(:)          ! and we do not need that much memory in READIN
 C
@@ -485,11 +470,7 @@ C******************************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
-#include "argoscom.h"
-#include "argoscomch.h"
-#include "consts.h"
       PARAMETER (THRMIN = 1.D-15)
 #include "cbirea.h"
       REAL(KIND=8):: WORK(LWORK)
@@ -523,11 +504,7 @@ C     JHS The following variables come from a common block and are thus kept in 
 #include "molinp.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "primit.h"
-#include "shells.h"
 #include "symmet.h"
-#include "aosotr.h"
-#include "orgcom.h"
 #include "infpar.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
@@ -727,7 +704,8 @@ C
      &               CLASS,TOL_SYMADD,IPREAD,.true.)
          IF (CLASS(3:4).EQ.'oo') LINEAR = .TRUE.
       END IF
-      IF (LINEAR) WRITE(LUPRI,'(/A)') ' The molecule is linear.'
+      IF (LINEAR .and. ipread .gt. 0)
+     &   WRITE(LUPRI,'(/A)') ' The molecule is linear.'
 
 C     Fix a problem with ADDSYM for some D(2) cases, also corrects for wrong user inputs (e.g. specifying X Y and XY as generators)
       CALL FIX_DUPLICATE_GENERATORS (NSYMOP,KASYM)
@@ -747,7 +725,8 @@ C
      &     DOOWN,blk)
 #ifdef BUILD_GEN1INT
 !     initialize basis sets (large and small components) used in Gen1Int interface
-      call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,
+      if (mytid .eq. 0) ! workers obtain gen1int info from gen1int's own mpi calls
+     &call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,
      &                       NBLCK, KANG, JCO, KBLOCK,
      &                       NUC, NRC, KPRIM, ALPHA, CPRIMU)
 #endif
@@ -824,17 +803,13 @@ C               NHKOFF(J) - offset for components in list of l-functions
 C               MAXOPR - maximum number of operations to loop over
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
-#include "cbirea.h"
 C
 #include "ccom.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "aosotr.h"
 C
 C     ***** Tabulate Incomplete Gamma Function *****
 C
@@ -886,7 +861,6 @@ C***********************************************************************
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (DSM = 1.0D-30)
@@ -904,14 +878,11 @@ C***********************************************************************
 #include "molinp.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "cbisol.h"
 #include "huckel.h"
-#include "aosotr.h"
 #include "gencon.h"
 #include "dcbgen.h"
 #include "dcbham.h"
-#include "argoscom.h"
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     Additional scratch arrays needed for MULTIBASIS option
@@ -1940,18 +1911,13 @@ C*****************************************************************************
 #include "codata.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "consts.h"
       PARAMETER (CORMAX = 1.D5)
       PARAMETER (LUERR = 0)
 #include "cbirea.h"
 C
 #include "molinp.h"
-#include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
-#include "dcbgen.h"
 #include "argoscom.h"
 C
       CHARACTER*(LEN_MLINE) TMP_LINE
@@ -1962,14 +1928,13 @@ C
       IF (GAUNUC .AND. NQ.GT.0) THEN
         IF(QEXP.EQ.D0) THEN
            CALL NUCSIZ(NQ,GEXP,XMASS)
-        WRITE(LUPRI,'(A,F8.3,A,1P,D20.10,A,F6.1,A)')
-     &       '  Nuclear Gaussian exponent for atom of charge',
-     &       Q,' :',GEXP,'   (using mass ',xmass/10,')'
-c.. I have no idea why xmass needs to be divided by 10 to print correctly.  kap
+        WRITE(LUPRI,'(A,F8.3,A,1PD20.10,A,0PF6.1,A)')
+     &       '  Nuclear Gaussian exponent for atom of charge ',
+     &       Q,' : ',GEXP,'   (using mass ',xmass,')'
         ELSE
            GEXP = QEXP
         WRITE(LUPRI,'(A,F8.3,A,1P,D20.10,A)')
-     &       '  Nuclear Gaussian exponent for atom of charge',
+     &       '  Nuclear Gaussian exponent for atom of charge ',
      &       Q,' :',GEXP,'  (specified through input)'
         ENDIF
 C
@@ -2089,9 +2054,7 @@ C
 #include "maxaqn.h"
 #include "cbirea.h"
 #include "dcbgen.h"
-#include "argoscom.h"
-#include "argoscomch.h"
-
+C
       DIMENSION WORK(LWORK)
       LOGICAL SEG,DOOWN
       DIMENSION IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
@@ -2101,13 +2064,11 @@ C
      &          CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS)
       integer blk
-#include "ccom.h"
 #include "nuclei.h"
 #include "shells.h"
 #include "symmet.h"
 #include "primit.h"
 #include "huckel.h"
-#include "aosotr.h"
 #include "gencon.h"
 #include "fitshells.h"
 #include "fitprimit.h"
@@ -2357,7 +2318,6 @@ C*****************************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 #include "cbirea.h"
 #include "dcbgen.h"
@@ -2378,8 +2338,6 @@ C*****************************************************************************
       integer blk
 #include "ccom.h"
 #include "nuclei.h"
-#include "shells.h"
-#include "primit.h"
 #include "symmet.h"
 #include "aosotr.h"
 C
@@ -2660,7 +2618,6 @@ C     Generate string : Uncontracted/contracted basis functions
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "mxcent.h"
 #include "maxaqn.h"
       CHARACTER TSTRING*(6*MXQN+3)
       CHARACTER SPDCAR*1 ! type declaration for external function
@@ -2754,7 +2711,6 @@ C  /* Deck gtoinp */
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "maxaqn.h"
       PARAMETER (DSM=1.0D-30)
       CHARACTER*1 FRMT
       CHARACTER*8 FMT1
@@ -2768,10 +2724,7 @@ C
 ! dcbham.h : ECPCALC
 #include "cbirea.h"
 #include "molinp.h"
-#include "ccom.h"
-#include "dcbgen.h"
 #include "dcbham.h"
-#include "gencon.h"
 C
       IF(DIRAC) THEN
 C
@@ -2961,9 +2914,7 @@ C  /* Deck gtoinp */
      &                  CPRIMU,ISGEN,NBLOCK,KAOVEC,KPRIM)
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "maxorb.h"
-#include "maxaqn.h"
       PARAMETER (DSM=1.0D-30)
       CHARACTER*1 FRMT
       CHARACTER*8 FMT1
@@ -2976,11 +2927,7 @@ C
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
 ! dcbham.h : ECPCALC
 #include "cbirea.h"
-#include "molinp.h"
-#include "ccom.h"
-#include "dcbgen.h"
 #include "dcbham.h"
-#include "gencon.h"
 C
       NBLOCK = 0
       DO 100 I = 1, IQM
@@ -3110,16 +3057,12 @@ C  /* Deck cmbas */
      &                  CPRIMU,NBLOCK,KAOVEC,KPRIM)
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
       LOGICAL SEG, FREE, SEGIJ
       DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
      &          ALPHA(KPRIM,KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC),
      &          BASA(0:4), BASB(0:4)
 #include "cbirea.h"
-#include "molinp.h"
-#include "ccom.h"
       DATA (BASA(I),I=0,4) /0.584342, 0.452615, 0.382362, 0.337027,
      &                      0.304679/
       DATA (BASB(I),I=0,4) /0.424483, 0.309805, 0.251333, 0.215013,
@@ -3290,7 +3233,6 @@ C  /* Deck acporb */
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "dummy.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER*1 FRMT
       CHARACTER*8 FMT1
@@ -3411,7 +3353,6 @@ C
 C  /* Deck segorb */
       SUBROUTINE SEGORB(SEGIJ,NUCIJ,NRCIJ,CPRIMU,KPRIM,DSM)
 #include "implicit.h"
-#include "priunit.h"
       LOGICAL SEGIJ
       DIMENSION CPRIMU(KPRIM,KPRIM)
 C
@@ -3527,10 +3468,8 @@ C******************************************************************************
 #include "aovec.h"
 #include "maxaqn.h"
 C
-#include "infpar.h"
       PARAMETER (D0 = 0.0D0)
 C
-#include "cbirea.h"
       LOGICAL SEG,SPHER,SEGAUX
       DIMENSION IQM(KATOM),NBLCK(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
@@ -3540,8 +3479,6 @@ C
 #include "nuclei.h"
 #include "primit.h"
 #include "shells.h"
-#include "symmet.h"
-#include "aosotr.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
@@ -3600,7 +3537,6 @@ C*****************************************************************************
                      NUMCF (ISHELL) = KK
                      NUMCFT(ISHELL) = KKK
                      NBCH  (ISHELL) = KBCH
-                     SHARE (ISHELL) = .FALSE.
                      ISTBAO(ISHELL) = ISTBNU(ICENT)
                      NHKT  (ISHELL) = J
                      KHKT  (ISHELL) = NCOMP
@@ -3675,7 +3611,6 @@ C******************************************************************************
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
 C
-#include "cbirea.h"
       LOGICAL SEG,SPHER
       DIMENSION IQM(KATOM),NBLCK(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
@@ -3685,10 +3620,7 @@ C
 #include "nuclei.h"
 #include "fitprimit.h"
 #include "fitshells.h"
-#include "symmet.h"
-#include "aosotr.h"
 #ifdef PRG_DIRAC
-#include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
@@ -3738,7 +3670,6 @@ C*****************************************************************************
                      NUMCF_FIT (ISHELL_FIT) = KK
                      NUMCFT_FIT(ISHELL_FIT) = KKK
                      NBCH_FIT  (ISHELL_FIT) = KBCH
-                     SHARE_FIT (ISHELL_FIT) = .FALSE.
                      ISTBAO_FIT(ISHELL_FIT) = ISTBNU(ICENT)
                      NHKT_FIT  (ISHELL_FIT) = J
                      KHKT_FIT  (ISHELL_FIT) = NCOMP
@@ -4029,20 +3960,14 @@ C******************************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 C
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
-#include "ccom.h"
 #include "nuclei.h"
 #include "frame.h"
-#include "primit.h"
-#include "shells.h"
 #include "symmet.h"
-#include "aosotr.h"
 #include "dgroup.h"
-#include "orgcom.h"
 C     
 C
 C
@@ -4112,8 +4037,9 @@ C             when total NUCDEP is known. /hjaaj Jan 2010
   100 CONTINUE
       NATOMS = NUCDEP - NFLOAT
       IF (LINEAR) THEN
-        IF((NATOMS .Eq. 1).OR.((NATOMS.EQ.0).AND.(NFLOAT.EQ.1))) 
-     &    ATOMIC = .TRUE.
+        IF((NATOMS .EQ. 1).OR.((NATOMS.EQ.0).AND.(NFLOAT.EQ.1))) THEN
+          IF ( .NOT. NONATM ) ATOMIC = .TRUE.
+        ENDIF   
       ENDIF
       IF (NUCDEP .GT. MXCENT) GOTO 5010
 C     
@@ -4212,7 +4138,6 @@ C
       DIMENSION LVALUE(MXAQN), MVALUE(MXAQN), NVALUE(MXAQN),
      &          IRREP(MXCORB)
       integer soef, blk
-#include "nuclei.h"
 #include "ccom.h"
 #include "shells.h"
 #include "symmet.h"
@@ -4221,8 +4146,6 @@ C
 #include "sphtrm.h"
 #include "cbirea.h"
 #include "huckel.h"
-#include "argoscom.h"
-#include "argoscomch.h"
 C
 C*****************************************************************************
 C Determine ISYMAO:
@@ -4451,7 +4374,6 @@ C
 #include "shells.h"
 #include "symmet.h"
 #include "pgroup.h"
-#include "pincom.h"
 #include "cbirea.h"
 #include "aosotr.h"
 #include "chrsgn.h"
@@ -4526,10 +4448,8 @@ C     ***** Calculate symmetry-adapted nuclear coordinates *****
 C     **********************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "maxorb.h"
 C
 #include "chrxyz.h"
@@ -4658,7 +4578,6 @@ C
       INTEGER NBASE(8), NSIGN(8)
       DIMENSION WORK(LWORK)
 C
-#include "infpar.h"
 #include "nuclei.h"
 #include "frame.h"
 #include "symmet.h"
@@ -4907,15 +4826,14 @@ C
   600      CONTINUE
   500   CONTINUE
       END IF
-
-!#define DEBUG_PRIMITIVES
+C
 #ifdef DEBUG_PRIMITIVES
       write(*, *) 'debug: primitives'
       do i = 1, npri
         write(*, '(e16.9)') alpha(i)
       end do
-#endif /* ifdef DEBUG_PRIMITIVES */
-
+#endif
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4954,7 +4872,6 @@ c.. the following for compatibility
 C  /* Deck sphlab */
       SUBROUTINE SPHLAB(IORDER,LABINT)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       CHARACTER LABINT(MXQN**2)*4
       CHARACTER SPDCAR*1, SIGNJ*1
@@ -5001,7 +4918,6 @@ C
 C  /* Deck carlab */
       SUBROUTINE CARLAB(IORDER,LABINT)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       DIMENSION IX(MXAQN), IY(MXAQN), IZ(MXAQN)
       CHARACTER LABINT(MXQN*(MXQN+1)*(MXQN+2)/6)*4
@@ -5112,7 +5028,6 @@ C
 #include "maxorb.h"
 C
 #include "symmet.h"
-#include "nuclei.h"
 #include "shells.h"
 C
 C
@@ -5454,7 +5369,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "molinp.h"
 #include "infpar.h"
 
@@ -5530,7 +5444,6 @@ C
 C     Write interface records
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "dummy.h"
 #include "maxorb.h"
@@ -5663,22 +5576,16 @@ C  /* Deck reapri */
       SUBROUTINE REAPRI
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
 C
-#include "abainf.h"
-#include "cbirea.h"
-C
-#include "molinp.h"
 #include "ccom.h"
 #include "nuclei.h"
 #include "primit.h"
 #include "shells.h"
 #include "symmet.h"
-#include "chrsgn.h"
 #include "aosotr.h"
 C
       CALL HEADER('Test output from REAPRI',-1)
@@ -5718,7 +5625,6 @@ C
       print *, ' jstrt ',(jstrt(i),i=1,kmax)
       print *, ' nstrt ',(nstrt(i),i=1,kmax)
       print *, ' ncent ',(ncent(i),i=1,kmax)
-      print *, ' share ',(share(i),i=1,kmax)
       print *, ' nrco ',(nrco(i),i=1,kmax)
       print *, ' numcf ',(numcf(i),i=1,kmax)
       print *, ' nbch ',(nbch(i),i=1,kmax)
@@ -6203,7 +6109,6 @@ C
 C  /* Deck V3vec */
       SUBROUTINE V3VEC(U,C,J,K)
 #include "implicit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION C(MXCENT,3),R(3),U(3)
 C
@@ -6740,11 +6645,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "aovec.h"
 #include "maxaqn.h"
 #include "ccom.h"
-#include "cbirea.h"
 #include "nuclei.h"
 #include "primit.h"
-#include "molinp.h"
-
 #include "infpar.h"
 
       LOGICAL SEG
@@ -6945,7 +6847,6 @@ C
 C     Written by Trond Saue Aug 19 2006
 C
 C***********************************************************************
-#include "priunit.h"
       IF(L.EQ.1) THEN
         GO TO (1,2,3), ICMP
  1      CONTINUE
@@ -7020,11 +6921,6 @@ C
       DIMENSION LPRIM(MAXPRD)
 #include "ccom.h"
 #include "nuclei.h"
-#include "primit.h"
-#include "shells.h"
-#include "symmet.h"
-#include "aosotr.h"
-#include "dcbgen.h"
 C#include "gnrinf.h"
 C
 C

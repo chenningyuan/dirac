@@ -2,8 +2,9 @@ module exacorr_global
 
 !This module controls storage and interaction with the global data used in ExaCorr
 
-        use exacorr_datatypes
+        use exacorr_ao
         use exacorr_mo
+        use exacorr_1el
         use, intrinsic:: ISO_C_BINDING
         use checkpoint
 
@@ -67,15 +68,14 @@ module exacorr_global
          subroutine initialize_global_data
 
              use exacorr_respect
-             use exacc_cfg
-             use exacorr_utils, only : print_date
+             use exacorr_cfg, only: exa_input
 
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
              use interface_to_mpi
              integer :: my_MPI_rank
 #endif
              integer :: ierr, scf_file, nmo_original
-             logical :: tobe, tobe_mp2no, tobe_dirac, tobe_respect
+             logical :: tobe, tobe_mp2no, tobe_dirac, tobe_respect, tobe_rose
 
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
              call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
@@ -90,6 +90,7 @@ module exacorr_global
              inquire (file='RSD_MOS',exist=tobe_respect)
              ierr = -1
              call checkpoint_query('/result/wavefunctions/scf/mobasis/nz',tobe_dirac)
+             call checkpoint_query('/result/wavefunctions/rose/mobasis/nz',tobe_rose)
              call checkpoint_query('/result/wavefunctions/mbpt/mobasis/nz',tobe_mp2no)
              if (tobe_mp2no) then
                scf_file = 2
@@ -99,6 +100,11 @@ module exacorr_global
                 scf_file = 1
                 call print_date ("Found ReSpect SCF orbitals file. Will read orbitals from this file.")
                 call read_from_respect (ao_basis,cspinor_all,ierr)
+             else if (tobe_rose) then
+             ! read MO coefficients and ao basis set information
+                scf_file = 0
+                call print_date ("Found ROSE orbitals on file.")
+                call read_from_dirac (ao_basis,cspinor_all,'rose',ierr)
              else if (tobe_dirac) then
              ! read MO coefficients and ao basis set information
                 scf_file = 0
@@ -422,6 +428,7 @@ module exacorr_global
 
       subroutine add_finitefield (h,exa_input,iff,mo1_list,nmo1,mo2_list,nmo2,min_occ)
 
+        use exacorr_cfg, only: exacc_input
         complex(8), intent(inout)     :: h(:,:)      ! one_body matrix to which the property field should be added
         type(exacc_input), intent(in) :: exa_input   ! field strength and label
         integer, intent(in)           :: iff
@@ -474,7 +481,7 @@ module exacorr_global
 
       end subroutine get_ff_ind
 
-      subroutine get_ff_mat (h,i_prop,mo1_list,nmo1,mo2_list,nmo2,min_occ)
+      subroutine get_ff_mat (h,i_prop,mo1_list,nmo1,mo2_list,nmo2,min_occ,p_label)
 
         complex(8), intent(inout)     :: h(:,:)      ! one_body matrix to which the property field should be added
         integer, intent(in)           :: i_prop
@@ -483,6 +490,7 @@ module exacorr_global
         integer, intent(in)           :: nmo2          ! the length of the mo basis
         integer, intent(in)           :: mo2_list(:)   ! and their indices
         integer, intent(in)           :: min_occ       ! smallest index, assumes same closed shell as MOLTRA
+        character*8, optional, intent(inout) :: p_label
 
         integer :: pmo, qmo
 
@@ -499,12 +507,16 @@ module exacorr_global
             h(pmo, qmo) = int_1el%h_prop(mo1_list(pmo)-min_occ+1,mo2_list(qmo)-min_occ+1,i_prop)
           end do
         end do
+        if (present(p_label)) then
+           p_label = int_1el%property_labels(i_prop)
+        end if
 
       end subroutine get_ff_mat
 
       subroutine string2mo ( inp_str, a_or_b, nmo, mo_list)
 
         use exacorr_utils, only : quicksort
+        use fermi_level
 
         implicit none
 
@@ -518,7 +530,7 @@ module exacorr_global
         integer :: infty_len
         integer :: mo1, mo2, i, j, k, i_mo, size_mo
         character(len=20) :: sav_str
-        character(len=10) :: num_str
+        character(len=14) :: allowed_str
         character(len=1)  :: infty_str
         character(len=1)  :: p_str, c_str, e_str
         real(8)                  :: e_min, e_max, e_dist
@@ -541,7 +553,7 @@ module exacorr_global
         end if
 
         str_len=len(inp_str)
-        num_str='0123456789'
+        allowed_str='0123456789+-HL'
         infty_str='o'
         p_str='.'
         c_str=','
@@ -578,7 +590,11 @@ module exacorr_global
           end do
           j=index(inp_str(i:),' ')
           j=i+j
-          read(inp_str(i:j-1) , *) e_min
+          if (to_upper(inp_str(i:j-1))=='FERMI') then
+             e_min = fermi_energy()
+          else
+             read(inp_str(i:j-1) , *) e_min
+          end if
           i=j
           do k=1,100
             if (inp_str(i:i).eq.' ') then
@@ -589,7 +605,11 @@ module exacorr_global
           end do
           j=index(inp_str(i:),' ')
           j=i+j
-          read(inp_str(i:j-1) , *) e_max
+          if (to_upper(inp_str(i:j-1))=='FERMI') then
+             e_max = fermi_energy()
+          else
+             read(inp_str(i:j-1) , *) e_max
+          end if
           i=index(inp_str(j+1:),' ')+j
           read(inp_str(j-1:i) , *) e_dist
           if (e_min.ge.e_max) stop 'string2mo use: energy e_min, e_max, e_dist'
@@ -642,7 +662,11 @@ module exacorr_global
             else if (inp_str(i:i)==p_str) then
               p_len=p_len+1
               if (p_len==1) then
-                read(sav_str(1:sl) , *) mo1
+                if (sav_str(1:1)=='H' .or. sav_str(1:1)=='L') then
+                    mo1 = mo_position(sav_str(1:sl))
+                else
+                    read(sav_str(1:sl) , *) mo1
+                endif
                 sl=0
               else if (p_len>2) then
                 stop 'wrong number of points in string2mo'
@@ -656,7 +680,11 @@ module exacorr_global
                end if
             else if (inp_str(i:i)==c_str) then
               if(p_len==0) then
-                read(sav_str(1:sl) , *) mo1
+                if (sav_str(1:1)=='H' .or. sav_str(1:1)=='L') then
+                    mo1 = mo_position(sav_str(1:sl))
+                else
+                    read(sav_str(1:sl) , *) mo1
+                endif
                 if (mo1.le.nmo_all) then
                   if (do_nmo) then
                     nmo=nmo+1
@@ -671,7 +699,11 @@ module exacorr_global
                 if (infty_len==2) then
                    mo2 = nmo_all
                 else
-                   read(sav_str(1:sl) , *) mo2
+                 if (sav_str(1:1)=='H' .or. sav_str(1:1)=='L') then
+                    mo2 = mo_position(sav_str(1:sl))
+                 else
+                    read(sav_str(1:sl) , *) mo2
+                 endif
                 end if
                 if (mo1>mo2) then
                   k=mo1
@@ -699,10 +731,10 @@ module exacorr_global
               end if
             else
               check=0
-              do j=1,10
-                if (inp_str(i:i).eq.num_str(j:j)) then
+              do j=1,14
+                if (to_upper(inp_str(i:i)).eq.allowed_str(j:j)) then
                   sl=sl+1
-                  sav_str(sl:sl)=inp_str(i:i)
+                  sav_str(sl:sl)=to_upper(inp_str(i:i))
                   check=check+1
                 end if
               end do
@@ -711,7 +743,11 @@ module exacorr_global
           end do
           if (sl>0) then
             if(p_len==0) then
-              read(sav_str(1:sl) , *) mo1
+              if (sav_str(1:1)=='H' .or. sav_str(1:1)=='L') then
+                 mo1 = mo_position(sav_str(1:sl))
+              else
+                 read(sav_str(1:sl) , *) mo1
+              endif
               if (mo1.le.nmo_all) then
                 if (do_nmo) then
                   nmo=nmo+1
@@ -726,7 +762,11 @@ module exacorr_global
               if (infty_len==2) then
                   mo2 = nmo_all
               else
-                  read(sav_str(1:sl) , *) mo2
+               if (sav_str(1:1)=='H' .or. sav_str(1:1)=='L') then
+                 mo2 = mo_position(sav_str(1:sl))
+               else
+                 read(sav_str(1:sl) , *) mo2
+               endif
               end if
               if (mo1>mo2) then
                 k=mo1
@@ -770,6 +810,7 @@ module exacorr_global
         string_occ_beta, string_virtual, string_vir_beta)
 
         use exacorr_datatypes
+        use exacorr_cfg, only: exacc_input
 
         implicit none
 
@@ -916,6 +957,7 @@ module exacorr_global
       subroutine print_orbitals ( exa_input )
 
         use exacorr_datatypes
+        use exacorr_cfg, only: exacc_input
 
         implicit none
 
@@ -940,5 +982,6 @@ module exacorr_global
         real(8), intent(out) :: scf_energy
         scf_energy=cspinor_all%total_energy
       end subroutine get_scf 
+
 
 end module exacorr_global

@@ -3,34 +3,40 @@
 # Read the Docs configuration file
 # See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
 #
-# For the DIRAC documentation buildup  adapted by Miro Ilias, Matej Bel University, Slovakia
+# For the DIRAC documentation buildup  adapted by Miro Ilias, JINR.ru, December 2024
 #
 
-# Required
 version: 2
 
-# Set the version of Python and other tools you might need
 build:
-  os: ubuntu-20.04
+  os: ubuntu-24.04
   tools:
-    python: "3.10"
-    # You can also specify other tool versions:
-    # nodejs: "19"
-    # rust: "1.64"
-    # golang: "1.19"
-
-# Build documentation in your doc/ directory with Sphinx
-sphinx:
-   configuration: doc/conf.py
-
-# If using Sphinx, optionally build your docs in additional formats such as PDF
-formats:
-   - pdf
-
-# Optionally declare the Python requirements required to build your docs
-python:
-   install:
-   - requirements: doc/requirements.txt
-   - method: pip
-     path: .
-
+    python: "3.12"
+  apt_packages:
+    - bash
+    - cmake
+    - gfortran
+    - gcc
+    - g++
+    - git
+  jobs:    
+    post_checkout: 
+      - git submodule update --init --recursive
+    install:
+      - echo "variable PATH=$PATH"
+      - which python; python -V
+      - which pip; pip -V
+      - set
+      - lsb_release -a
+      - python -m pip install "sphinx<9.0.0" sphinx_rtd_theme sphinxcontrib-bibtex    
+      - pip list
+      - pip show sphinx sphinx_rtd_theme sphinxcontrib-bibtex
+      - export PATH=$(python -c "import sys; print(sys.prefix)")/bin:$PATH; which sphinx-build; sphinx-build --help
+      - set  
+    pre_build:
+        - echo "variable READTHEDOCS_OUTPUT=$READTHEDOCS_OUTPUT"
+        - export PATH=$(python -c "import sys; print(sys.prefix)")/bin:$PATH; ./setup $READTHEDOCS_OUTPUT
+    build:
+      html:
+        - export PATH=$(python -c "import sys; print(sys.prefix)")/bin:$PATH; cd $READTHEDOCS_OUTPUT; pwd; make VERBOSE=1 html
+        - cd $READTHEDOCS_OUTPUT/html; pwd; echo "content of html:"; ls -lt; ls -lt _static; ls -lt _static/css; ls -lt _static/js; ls -lt _static/css/fonts 

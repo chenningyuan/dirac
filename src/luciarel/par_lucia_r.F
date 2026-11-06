@@ -53,19 +53,16 @@ C
 C**********************************************************************
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE), IT_TTPL(*), IGROUPLIST(*)
       INTEGER   NPARBLOCK(*), IBLOCKL_S(*), IBLOCKL_C(*)
       INTEGER   RCCTOS(*)
 #include "parluci.h"
-#include "typesz_mpi2.h"
 #include "ipoist8.inc"
 #include "krmc_shmem.h"
 #include "mxdim_mpi2.h"
 #include "ctcc.inc"
 #include "cands.inc"
 #include "mxpdim.inc"
-#include "integrals_off.inc"
       POINTER (MY_TCTR_PTR,   IT_CTONE(IDUMMY_BUFF_SZ))
       POINTER (MY_TRED_PTR,   IT_CTALL(IDUMMY_BUFF_SZ))
       POINTER (MY_RCCTOS_PTR, IRCCTOS_2(IDUMMY_BUFF_SZ))
@@ -231,8 +228,8 @@ C
         CALL MPIXMEM_ALLOC( MY_BPROC_PTR, 3, MY_BPROC_LEN,
      &                      df_MPI_INFO_NULL, .FALSE.)
 C
-        CALL IZERO8(I_BWEIGHT,MY_BWEIGHT_LEN)
-        CALL IZERO8(I_BPROC  ,MY_BPROC_LEN)
+        CALL IZERO8(I_BWEIGHT,I_NZERO_LEN_S)
+        CALL IZERO8(I_BPROC  ,NMPROC)
         CALL BLOCK_DISTR_2(NUM_BLOCKS,IBLOCKL_S,NPARBLOCK,
      &                     WORK(KCWEIGHTF),
      &                     GROUPCHECK,I_BWEIGHT,I_BPROC,
@@ -406,7 +403,6 @@ C**********************************************************************
       use interface_to_mpi
 #include "implicit.h"
 #include "parluci.h"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 C
 C     -----
@@ -716,7 +712,6 @@ C**********************************************************************
       use interface_to_mpi
 #include "implicit.h"
 #include "parluci.h"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 C
 C     -----
@@ -980,7 +975,6 @@ C**********************************************************************
       use interface_to_mpi
 #include "implicit.h"
 #include "parluci.h"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE), IBLOCKL(*), NPARBLOCK(*)
       INTEGER   ICWEIGHTF(*)
       CHARACTER BLKFILE*16
@@ -1101,11 +1095,9 @@ C
 C**********************************************************************
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "mxpdim.inc"
-#include "integrals_off.inc"
 #include "ctcc.inc"
 C
 C     -----
@@ -1460,9 +1452,8 @@ C
      &                             IBLOCKD,IVEC_IN)
 C
       use interface_to_mpi
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
 C
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C
@@ -1628,7 +1619,6 @@ C**********************************************************************
 C
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
 #include "parluci.h"
 #include "krciprop.h"
 C
@@ -1749,7 +1739,6 @@ C**********************************************************************
 C
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
       DIMENSION VEC1(*), IXBLK(*), IXSYMLIST(*)
       DIMENSION LU1LIST(*), NPARBLOCK_X(NUM_BLOCKS,*)
       DIMENSION IBLOCKL_X(NUM_BLOCKS,*)
@@ -1822,10 +1811,8 @@ C
 ************************************************************************
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "ipoist8.inc"
-#include "mxpdim.inc"
 #include "ctcc.inc"
 #include "parluci.h"
 *
@@ -1954,10 +1941,8 @@ C
 ************************************************************************
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "ipoist8.inc"
-#include "mxpdim.inc"
 #include "ctcc.inc"
 #include "parluci.h"
 #include "krmc_shmem.h"
@@ -2083,10 +2068,8 @@ C
 ************************************************************************
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "ipoist8.inc"
-#include "mxpdim.inc"
 #include "ctcc.inc"
 #include "parluci.h"
 *
@@ -2192,8 +2175,7 @@ C     ^ loop over real and imag part of density matrix elements
 *. Non vanishing block has a nonzero blocklength
 *
       use interface_to_mpi
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 *
@@ -2374,7 +2356,6 @@ C
 C***********************************************************************
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C     ==========
@@ -2432,9 +2413,8 @@ C
      &                                   IPROCLIST,NAMELENGTHLIST)
 C
       use interface_to_mpi
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
 C
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C
@@ -2543,9 +2523,8 @@ C
      &                                     IPROCLIST,NAMELENGTHLIST)
 C
       use interface_to_mpi
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
 C
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C
@@ -2654,7 +2633,6 @@ C
 *
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION ID_LIST(*), ID_LIST_ALL(*)
@@ -2690,7 +2668,7 @@ C
       SUBROUTINE GROUP_DESTRUCTOR_REL(JCOMM1,JCOMM2,JCOMM3,JCOMM4)
 C
       use interface_to_mpi
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
 C
       call interface_mpi_COMM_FREE(JCOMM1)
       call interface_mpi_COMM_FREE(JCOMM3)
@@ -2778,8 +2756,7 @@ C     Last revision:     S. Knecht       - May  2007
 C
 ************************************************************************
       use interface_to_mpi
-      IMPLICIT REAL*8 (A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       CHARACTER*6 CIRUN
@@ -2834,12 +2811,10 @@ C     Last revision:     S. Knecht       - May  2007
 C
 ************************************************************************
       use interface_to_mpi
-      IMPLICIT REAL*8 (A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "mxgas.h"
-#include "dcbkrmc.h"
       CHARACTER*6 PLU1BL,PLU2BL,PLU3BL,PLU4BL,PLU5BL,PLU6BL, PLUCBL
       CHARACTER*6 PLU7BL
       CHARACTER*10 PDIA, PLU1, PLU2, PLU3, PLU4, PLU5, PLU6, PLU7, PLUC
@@ -3034,8 +3009,7 @@ C     Last revision:     S. Knecht       - May    2007
 C
 ************************************************************************
       use interface_to_mpi
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C     input
@@ -3287,8 +3261,7 @@ C
 *
 * 2 : to be continued ...
 *
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
+#include "implicit.h"
 #include "parluci.h"
 *.Input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
@@ -3451,7 +3424,6 @@ C
 C**********************************************************************
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "krciprop.h"
@@ -3513,28 +3485,21 @@ C
 * =====
 #include "cands.inc"
 #include "cicisp.inc"
-#include "strbas.inc"
 #include "cstate.inc"
-#include "strinp.inc"
 #include "stinf.inc"
-#include "crun.inc"
 #include "gasstr.inc"
-#include "cgas.inc"
-#include "cprnt.inc"
-#include "ctcc.inc"
-#include "clunit.inc"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE), ICWEIGHTF(*), ISCLFAC_C(*)
       INTEGER   IAM_BLK_ACT_S(*),IAM_BLK_ACT_C(*),ISCLFAC_S(*)
       INTEGER   ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S) 
 #include "parluci.h"
 #include "krciprop.h"
-#include "dgroup.h"
 C     batches of sigma
       DIMENSION LBATS(*),LEBATS(*),I1BATS(*),IBATS(8,*)
 C     scratch
       INTEGER IONE, INT_IOFF1, INT_IOFF2, INT_IOFF1_C, INT_IOFF2_C
       LOGICAL CHECK_TSPLIT
+C
+      NTEST = 00000 ! no debug output
 C
       IONE = 1
       INT_IOFF1 = 0
@@ -3716,13 +3681,9 @@ C               keep track of correct offset
 #include "crun.inc"
 #include "gasstr.inc"
 #include "cgas.inc"
-#include "cprnt.inc"
-#include "oper.inc"
 #include "ctcc.inc"
       COMMON/CMXCJ/MXCJ
 *
-#include "cintfo.inc"
-#include "parluci.h"
       LOGICAL CHECK_TSPLIT
 *
 !               print *,'NUM_SBLK - 2 - is ...',NUM_SBLK
@@ -3732,7 +3693,7 @@ C               keep track of correct offset
       KDUM = 0
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'FNDSC2')
 *
-      L0BLOCK = MXSOOB_AS
+      L0BLOCK = MXSOOB
       LSCR1 = MAX(L0BLOCK,L2BLOCK)
 *. Offsets for alpha and beta supergroups
 *
@@ -3895,7 +3856,6 @@ C     release local memory
 #include "implicit.h"
 #include "ipoist8.inc"
 *
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE), ICWEIGHTF(*),ISCLFAC_C(*)
       INTEGER   ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S), ISCLFAC_S(*)
       INTEGER   IAM_BLK_ACT_S(*), IAM_BLK_ACT_C(*)
@@ -3904,8 +3864,6 @@ C     release local memory
 #include "mxpdim.inc"
 #include "gasstr.inc"
 #include "cgas.inc"
-#include "cstate.inc"
-#include "strbas.inc"
 *. Specific input
       INTEGER ISBLOCK(8,*)
       INTEGER LCBLOCK(*),I1CBLOCK(*),ICBLOCK(8,*),LECBLOCK(*)
@@ -3917,6 +3875,8 @@ C     release local memory
 *. T-coefficients
       DIMENSION ITSPOBEX_TP(4*NGAS,*)
       LOGICAL CHECK_TSPLIT
+*
+      NTEST = 00000 ! no debug print
 *
       ONEM = -1.0D0
       IZERO = 0
@@ -4104,7 +4064,6 @@ C
 #include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
-#include "gasstr.inc"
 #include "cgas.inc"
 #include "ctcc.inc"
 #include "parluci.h"
@@ -4401,7 +4360,6 @@ C**********************************************************************
 *ISCAT:  SCATTERING ARRAY, ISCAT(I) GIVES FULL ADRESS OF SORTED
 *        ELEMENT I
 *SUBVAL: VALUE OF SORTED ELEMENTS
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "ipoist8.inc"
@@ -4771,7 +4729,6 @@ C
 C**********************************************************************
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 *
@@ -4939,8 +4896,7 @@ C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
       use interface_to_mpi
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH_R(*), SUBSPH_I(*)
@@ -5313,8 +5269,7 @@ C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
       use interface_to_mpi
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH_R(*), SUBSPH_I(*)
@@ -5561,8 +5516,7 @@ C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
       use interface_to_mpi
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH_R(*), SUBSPH_I(*)
@@ -5821,8 +5775,7 @@ C     Last revision:     S. Knecht  - Oct 2008
 C
 ************************************************************************
       use interface_to_mpi
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), XR(*), XI(*)
@@ -6044,8 +5997,7 @@ C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
       use interface_to_mpi
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
@@ -6275,9 +6227,7 @@ C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
       use interface_to_mpi
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-#include "ipoist8.inc"
-#include "infpar.h"
+#include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION CTT(*), SCR(*)
@@ -6325,8 +6275,7 @@ C     Last revision:     S. Knecht       - July  2007
 C
 ************************************************************************
       use interface_to_mpi
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION CTT(*)
@@ -6374,8 +6323,7 @@ C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
       use interface_to_mpi
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
@@ -6586,8 +6534,7 @@ C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
       use interface_to_mpi
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*), SUBSPH_2(*)
@@ -7003,8 +6950,7 @@ C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
       use interface_to_mpi
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
@@ -7432,8 +7378,7 @@ C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
       use interface_to_mpi
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
@@ -7787,8 +7732,7 @@ C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
       use interface_to_mpi
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
@@ -8096,10 +8040,7 @@ C     Last revision:     S. Knecht       - March  2008
 C
 ************************************************************************
       use interface_to_mpi
-C      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
       Implicit none
-#include "infpar.h"
-#include "parluci.h"
       Real(Kind=8) VEC1(*), VEC2(*), XMAT(2*NVEC,NVEC2)
       Integer LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       Integer LUIN1LIST(*), LUOUTLIST(*)
@@ -8163,9 +8104,7 @@ C     Last revision:     S. Knecht       - March  2008
 C
 ************************************************************************
       use interface_to_mpi
-C      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
       Implicit none
-#include "infpar.h"
 #include "parluci.h"
       Real(Kind=8) VEC1(*), VEC2(*), FAC(2*NVEC)
       Integer LuIn1, NVec, IsVec, LuOut
@@ -8310,9 +8249,7 @@ C
 C
 ************************************************************************
       use interface_to_mpi
-C      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
       Implicit none
-#include "infpar.h"
       INTEGER ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       Real(kind=8) VEC1(*), VEC2(*), SUBSPH(*)
@@ -8886,9 +8823,7 @@ C      LUOUT3   LUOUT3                      LUOUT1
 C
 **********************************************************************
       use interface_to_mpi
-C#include "implicit.h"
       implicit none
-#include "infpar.h"
       INTEGER ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 *
@@ -9648,8 +9583,7 @@ C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
       use interface_to_mpi
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
@@ -9790,8 +9724,7 @@ C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
       use interface_to_mpi
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*), SUBSPH_2(*)
@@ -10029,19 +9962,16 @@ C
 C**********************************************************************
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "mxpdim.inc"
 #include "cicisp.inc"
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dcbham.h"
 #include "dgroup.h"
 #include "maxorb.h"
 #include "maxash.h"
 #include "dcbidx.h"
-#include "krmcluci_inf.h"
       CHARACTER*6 CIRUN
 !
 !     introduce CIRUN and JKRRUNTYPE for NODES
@@ -10119,10 +10049,8 @@ C
 C**********************************************************************
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
-#include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
       DIMENSION F1(*), F2(*)
@@ -10178,11 +10106,9 @@ C
 C**********************************************************************
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "dcborb.h"
-#include "dgroup.h"
 #include "krciprop.h"
 #include "dcbkrci.h"
 #include "dcbxpr.h"
@@ -10238,7 +10164,6 @@ C
 C**********************************************************************
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE), NPARBLOCK(*)
       INTEGER   RCCTOS(*)
 #include "parluci.h"
@@ -10298,7 +10223,6 @@ C
 C**********************************************************************
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "typesz_mpi2.h"
@@ -10405,7 +10329,6 @@ C     afternoon ...
 C
 C**********************************************************************
 #include "implicit.h"
-#include "infpar.h"
 #include "dcbgen.h"
       LOGICAL PARCAL_SAVE
 C
@@ -10439,7 +10362,6 @@ C
 C**********************************************************************
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "ipoist8.inc"
@@ -10559,7 +10481,7 @@ C
 *
 * For relativistic program
       use symmetry_setup_krci
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cicisp.inc"
@@ -10567,7 +10489,6 @@ C
 #include "strbas.inc"
 #include "crun.inc"
 #include "gasstr.inc"
-#include "strinp.inc"
 * new
 #include "parluci.h"
 *
@@ -10743,7 +10664,7 @@ C      S. Knecht - Nov 2008: modified for CI property runs
 C
 C**********************************************************************
       use symmetry_setup_krci
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cicisp.inc"
@@ -10751,7 +10672,6 @@ C**********************************************************************
 #include "strbas.inc"
 #include "crun.inc"
 #include "gasstr.inc"
-#include "strinp.inc"
 #include "parluci.h"
       DIMENSION NPARBLOCK_X(NUM_BLOCKS,*)
 C

@@ -37,7 +37,6 @@ C     REMARKS: -
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
 #include "dcbgen.h"
@@ -45,7 +44,6 @@ C
 #include "dcbxlr.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#include "dcbxrs.h"
 #include "dummy.h"
       dimension work(*)
       DIMENSION DMO(*)
@@ -297,8 +295,8 @@ C
      &                         work(kgpop),jopsy,
      &                         get_orbital_rotation_indices_pp(),
      &                         get_orbital_rotation_indices_pn(),
-     &                         nzconf,nzxope,
-     &                         nzxopp,XMO,work,kfree,lfree,iprxlr)
+     &                         nzxope,nzxopp,
+     &                         XMO,work,kfree,lfree,iprxlr)
 C
 C     Check norm of gradient
 C     ======================
@@ -428,7 +426,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamgrd_mpg */
       SUBROUTINE PAMGRD_MPG(INDXPR,GPOE,GPOP,JOPSY,JXOPE,
-     &                      JXOPP,NCONF,NXOPE,NXOPP,XMO,WORK,KFREE,
+     &                      JXOPP,NXOPE,NXOPP,XMO,WORK,KFREE,
      &                      LFREE,IPRINT)
 C***********************************************************************
 C

@@ -45,7 +45,7 @@ contractions     real      array     required    # contraction coefficients for 
 *end
 
 *mobasis
-mobasis_id       integer   single    required    # unique identifier of the mobasis (we may use multiple sets of MO coefficients)
+mobasis_id       integer   single    optional    # unique identifier of the mobasis (we may use multiple sets of MO coefficients)
 n_basis          integer   single    required    # size of the basis to which the MO coefficients refer (usually identical to n_ao in the aobasis definition)
 n_mo             integer   single    required    # dimension of the mo-basis (number of orbitals)
 n_po             integer   single    optional    # for 4-component calculation: number of "positronic" orbitals (n_po < n_mo)
@@ -80,6 +80,7 @@ mo_matrices      composite single    optional    # MO representations of operato
 *wavefunctions
 scf              composite single    optional    # results for Hartree-Fock and KS-DFT type wave functions
 mbpt             composite single    optional    # results for Many-Body Perturbation Theory
+rose             composite single    optional    # modified orbitals produced by the ROSE module
 *end
 
 *hamiltonian
@@ -101,11 +102,16 @@ mobasis_id       integer   single    optional    # pointer to the explicit defin
 *end
 
 *scf
-hamiltonian      string    single    optional    # Hamiltonian used to produce final SCF wave function
+hamiltonian      string    single    optional    # Hamiltonian used to produce final SCF wave function. Omitted implies Dirac-Coulomb (old "LVCORR")
 xc_functional    string    single    optional    # for DFT the XC-functional description. Omitted implies Hartree-Fock
 energy           real      single    required    # energy of the SCF wave function
 mobasis          composite single    required    # molecular orbitals obtained in this calculation
 convergence      real      array     optional    # convergence information for this wave function (energy and coefficient convergence)
+x2c_mobasis      composite single    optional    # x2c_transformed mobasis (only if x2cmmf is active)
+*end
+
+*x2c_mobasis
+mobasis          composite single    required    # x2c-transformed mobasis
 *end
 
 *mbpt
@@ -113,6 +119,12 @@ method           string    single    required    # Descriptive string of the met
 energy           real      single    required    # total MBPT energy
 e_corr           real      single    required    # correlation energy
 mobasis          composite single    optional    # recanonized natural orbitals
+*end
+
+*rose
+method           string    single    required    # How the orbitals were made: localization or projection
+energy           real      single    required    # Energy corresponding to this wave function
+mobasis          composite single    optional    # Molecular orbitals
 *end
 
 *x2c

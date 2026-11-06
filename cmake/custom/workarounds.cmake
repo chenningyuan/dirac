@@ -51,11 +51,11 @@ endif()
 
 # remove set MKL_FLAG, if none Intel compiler
 # NOTE: this MKL_FLAG maybe cleared already in the downloaded autocmake module
-if ( NOT (MKL_FLAG AND (CMAKE_Fortran_COMPILER_ID MATCHES Intel) ) )
+if ( MKL_FLAG AND NOT (CMAKE_Fortran_COMPILER_ID MATCHES Intel) )
     set(MKL_FLAG "")
-    message(STATUS "-mkl=... flag removed due to lacking Intel Fortran compiler. THEREFORE CHECK IF YOU HAVE SET MATH LIBRARIES !")
+    message(STATUS "-qmkl=... flag removed due to lacking Intel Fortran compiler. THEREFORE CHECK IF YOU HAVE SET MATH LIBRARIES !")
 elseif ( MKL_FLAG AND (CMAKE_Fortran_COMPILER_ID MATCHES Intel ) )
-    message(STATUS "-mkl=... flag for MKL libraries kept because Intel Fortran compiler is present")
+    message(STATUS "-qmkl=... flag for MKL libraries kept because Intel Fortran compiler is present")
 endif()
 
 #JVP workaround for lto wrapper

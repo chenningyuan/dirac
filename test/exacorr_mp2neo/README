@@ -1,0 +1,4 @@
+!Testing CIS(D) implementation in the talsh implementation
+!tests include NR and X2C hamiltonian. 
+!The NR results have been checked by Dalton cis(d) module for singlet excited states.
+!Need more tests for triplet states and X2C results.

@@ -16,13 +16,14 @@
 !dirac_copyright_end
 
 C
+C File: herpar.F
 C
 #ifdef UNDEF
 /* Comdeck notes */
-961125 - tec RELCAL: FIRST replaced by COMMON parfir remember to set FIRST1
+961125 - tec RELCAL: FIRST replaced by task-order validity state
 961003 - tsaue: DOINT is removed and replaced by I2TYP.
                 Some polishing av code:
-                  Note that NPOS enters PARDRV as argument
+                  Note that the task-order array is persistent state
                   and that Fock matrices are not initialized at master !
 950620-kr: Ported to MPI, based on previous efforts by Bjarne Herland at
            Para//ab
@@ -38,7 +39,7 @@ C
 C  /* Deck pardrv */
       SUBROUTINE HER_PARDRV(WORK,LWORK,FMAT,DMAT,NDMAT,IREPDM,IFCTYP,
      &                  ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,
-     &                  TKTIME,RETUR,FIRST,NPOS,NTOTTK,I2TYP,
+     &                  TKTIME,RETUR,FIRST,NTOTTK,I2TYP,
      &                  ICEDIF,SCREEN,GABRAO,DMRAO,DMRSO,DINTSKP)
 C
 C     Written by Henrik Koch and Paal Dahle Nov-1993 -> Okt-1994
@@ -83,15 +84,20 @@ C           RETUR  - Program will exit after spec. shells
 C           TKTIME - Take time in TWOINT
 C           TIMING - Take time for each integralbatch IJ
 C           DOREPS -
-C           DOSYM  -
 C           DOCOOR -
+C           DOSYM  -
 C           NMLINE - Number of lines in MOLECULE.INP
 C           MLINE  - MOLECULE.INP as internal file
 C           NDMAT  - Number of density-matrices
 C           DMAT   - Density-matrices.
+C           HFXFAC - HF exchange factor
+C
 C
 C
       use interface_to_mpi
+      use task_distribution_state, only: ensure_task_order_storage,
+     &   task_order, task_class_offset, reset_task_order,
+     &   task_order_is_valid, mark_task_order_valid
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -100,8 +106,6 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
-#include "blocks.h"
-#include "molinp.h"
 #include "twocom.h"
 #if defined (PRG_DIRAC)
 #include "dirac_partask.h"
@@ -114,7 +118,7 @@ C
 C
 !     DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), WORK(LWORK),
       DIMENSION FMAT(*), DMAT(*), WORK(LWORK),
-     &          NPOS(NTOTTK), IREPDM(*), IFCTYP(*),
+     &          IREPDM(*), IFCTYP(*),
      &          GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*)
       LOGICAL FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME
       real(8)  :: TIMSTR(2), TIMEND(2)
@@ -137,9 +141,12 @@ C
       TIMING = .TRUE.
 ! initialization
       KFREE=1
+      CALL ensure_task_order_storage(PARCAL)
 C
+      KPOS = task_class_offset(I2TYP)
+
 C     Determine total number of tasks - MTOTTK.
-      CALL HERPAR_DET_TASK (I2TYP,1,MTOTTK,NPOS,WORK(KFREE))
+      CALL HERPAR_DET_TASK (I2TYP,1,MTOTTK,task_order(KPOS),WORK(KFREE))
       IF(MTOTTK.GT.NTOTTK) THEN
         WRITE(LUPRI,'(A,I8)') 'HER_PARDRV: Inconsistent MTOTTK:',MTOTTK
         WRITE(LUPRI,'(3X,A,I8,A,I8)') ' - should be less or equal to',
@@ -211,7 +218,7 @@ C     Make the index array.
 C--------------------------
 C
       CALL HERPAR_INDEKS(FIRST,WORK(KINDEX),WORK(KTIMES),
-     &   ITYPE,MTOTTK,NBATCH,NPOS,I2TYP)
+     &   ITYPE,MTOTTK,NBATCH,task_order(KPOS),I2TYP)
 C
 C---------------------------------------
 C     Send initialization data to nodes.
@@ -266,7 +273,7 @@ C-----------------------------------------
 C     Sort the integral-calculation times.
 C-----------------------------------------
 C
-      IF(TIMING) CALL PARSR2(MTOTTK,NPOS,WORK(KTIMES),
+      IF(TIMING) CALL PARSR2(MTOTTK,task_order(KPOS),WORK(KTIMES),
      &                       WORK(KINDEX),IPRPAR)
 C
       IF (FIRST)  FIRST  = .FALSE.
@@ -278,6 +285,16 @@ C
       CALL QEXIT('HER_PARDRV')
       RETURN
       END
+C  /* Deck HERPAR_RESET_TASK_ORDER */
+      SUBROUTINE HERPAR_RESET_TASK_ORDER()
+C
+C     Invalidate all cached task-distribution orderings.
+C
+      use task_distribution_state, only: reset_task_order
+#include "implicit.h"
+
+      CALL reset_task_order()
+      END
 C  /* Deck herpar_indeks */
       SUBROUTINE HERPAR_INDEKS(FIRST,INDEX_IJ,TIMES,
      &   ITYPE,MTOTTK,NBATCH,NPOS,I2TYP)
@@ -285,6 +302,8 @@ C
 C     Written by Paal Dahle May 1994.
 C     Revised Oct 1996 by T.Saue
 C
+      use task_distribution_state, only: reset_task_order,
+     &   task_order_is_valid, mark_task_order_valid
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -295,8 +314,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "blocks.h"
-#include "dcbfir.h"
 C
       INTEGER INDEX_IJ(MTOTTK), NPOS(MTOTTK)
       REAL*8  TIMES(MTOTTK)
@@ -306,27 +323,17 @@ C     If new run, make initial guess as to run times
 C
       DOFIRST = .FALSE.
 C
-      IF (RELCAL) THEN
-         IF (I2TYP.EQ.1.AND.FIRST1) THEN
-            DOFIRST = .TRUE.
-            FIRST1 = .FALSE.
-         ELSEIF (I2TYP.EQ.2.AND.FIRST2) THEN
-            DOFIRST = .TRUE.
-            FIRST2 = .FALSE.
-         ELSEIF (I2TYP.EQ.3.AND.FIRST3) THEN
-            DOFIRST = .TRUE.
-            FIRST3 = .FALSE.
-         ELSEIF (I2TYP.EQ.4.AND.FIRST4) THEN
-            DOFIRST = .TRUE.
-            FIRST4 = .FALSE.
-         ENDIF
+      IF (RELCAL .AND. .NOT. task_order_is_valid(I2TYP)) THEN
+         DOFIRST = .TRUE.
       ENDIF
 C
       IF (NEWBAS .OR. DOFIRST) THEN
+         IF (NEWBAS) CALL reset_task_order()
          ! make a list of tasks in INDEX_IJ and a task weight for each in TIMES
          CALL HERPAR_DET_TASK(I2TYP,2,MTOTTK,INDEX_IJ,TIMES)
          ! make a sorted list of tasks in NPOS based on the weights in TIMES
          CALL PARSR2(MTOTTK,NPOS,TIMES,INDEX_IJ,IPRPAR)
+         CALL mark_task_order_valid(I2TYP)
       ENDIF
 C
 C     Distribute jobs on nodes
@@ -402,18 +409,18 @@ C
 #include "aovec.h"
 C
 #include "hrunit.h"
-#include "dorps.h"
-#include "abainf.h"
 #include "blocks.h"
 #include "symmet.h"
-#include "nuclei.h"
 #include "infpar.h"
 #include "parint.h"
 C
+#include "abainf.h"
 #include "inforb.h"
 #include "cbisol.h"
 #include "cbirea.h"
 #include "siripc.h"
+#include "dorps.h"
+#include "nuclei.h"
 C
       LOGICAL NODMAT,NOFMAT
       DIMENSION DMAT(*), IREPDM(NDMAT), IFCTYP(NDMAT),
@@ -448,8 +455,6 @@ C----------------------------
 C     Set common-block PARINT
 C----------------------------
 C
-      JCODE  = 0
-C     ... not used any more (was used for PVM)
       JATOM  = IATOM
       JLUDAS = LUDASP
       JLUINT = LUINTA
@@ -1133,11 +1138,8 @@ C
 #include "maxorb.h"
 #include "aovec.h"
 C
-#include "suscpt.h"
 #include "inforb.h"
 #include "infpar.h"
-#include "molinp.h"
-#include "blocks.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #include "dcbgrd.h"
@@ -1286,8 +1288,6 @@ C
 #include "maxorb.h"
 C
 #include "hrunit.h"
-#include "dorps.h"
-#include "abainf.h"
 #include "symmet.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
@@ -1305,6 +1305,8 @@ C
 #include "cbisol.h"
 #include "cbirea.h"
 C
+#include "dorps.h"
+#include "abainf.h"
       DIMENSION WORK(*), DSEND(2), ISEND(2)
       CHARACTER*6 NAVN
       LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH, LSEND(6)
@@ -1539,7 +1541,6 @@ C
       SUBROUTINE GET_PRIMITF()
       use interface_to_mpi
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "aovec.h"
 #include "primit.h"
@@ -2002,7 +2003,6 @@ C
 #endif
 #include "suscpt.h"
 #include "infpar.h"
-#include "inforb.h"
 C
       INTEGER   LFMAT, NUMGRA, MAXDIF, NUMHES, NUMSUS, ITYPE
       REAL*8    CPU1, WALL1
@@ -2103,7 +2103,6 @@ C  /* Deck prlinp */
       use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "maxorb.h"
       PARAMETER (NTABLE = 4)
 #include "infpar.h"
@@ -2268,7 +2267,6 @@ C*****************************************************************************
 #include "mxcent.h"
 #include "aovec.h"
 #include "maxorb.h"
-#include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbham.h"
 #endif

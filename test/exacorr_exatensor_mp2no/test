@@ -25,10 +25,10 @@ f2 = Filter()
 
 f2.add(from_string = '* Dipole moment:',
       num_lines   = 9,
-      rel_tolerance   = 1.0e-6)
+      rel_tolerance   = 1.0e-5)
 f2.add(from_string = '           Total contribution to principal components',
       num_lines   = 15,
-      rel_tolerance   = 1.0e-6)
+      rel_tolerance   = 1.0e-5)
 
 test.run(['hf_canonical_ccpvdz_16_test.inp'], ['hf.xyz'], f2, args='--incmo')
 

@@ -44,7 +44,6 @@ C***********************************************************************
 C
 #include "dcbopt.h"
 #include "dgroup.h"
-#include "dcborb.h"
 C
       CHARACTER SZTRA(2,4)*(*)
       DIMENSION CMO(*),WORK(*)
@@ -107,7 +106,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dcborb.h"
 #include "dcbopt.h"
 #include "dgroup.h"
 C
@@ -209,7 +207,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 #include "maxorb.h"
 #include "dummy.h"
@@ -441,7 +438,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 C
@@ -487,7 +483,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "maxorb.h"
@@ -652,7 +647,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       PARAMETER ( DM1 = -1.0D00 )
 C
@@ -736,7 +730,6 @@ C***********************************************************************
 #include "priunit.h"
 #include "dummy.h"
 C
-#include "maxorb.h"
 #include "../moltra/dcbtra.h"
 #include "../moltra/dcbtr3.h"
 #include "dcbbas.h"
@@ -744,7 +737,7 @@ C
 #include "dgroup.h"
 #include "dcbgen.h"
 #include "dcbopt.h"
-      CHARACTER*24 DAYTID
+      CHARACTER DAYTID*24, SECTID*12, CPUTID*12, WALLTID*12
       LOGICAL TRASAM
       DIMENSION CMO(*),WORK(*), IBEIG(*),
      &          NSTR(2,0:2,4),KVEC(2,4),KQ(2,4),KIBE(2,4),
@@ -754,7 +747,6 @@ C
       CALL QENTER('RTRACTL1')
 #include "memint.h"
       KFRSAV = KFREE
-      DUM = DUMMY
 C
       CALL GETTIM(CPU1,WALL1)
       WRITE(LUPRI,'(/A)')
@@ -792,7 +784,7 @@ C         ... -1 tells NUMLST to _not_ reorder orbital list
      &              NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
           NSTRT(I) = NSTRT(I) +  NSTR(IFRP,0,I)
-          CALL MEMREL('PAMTRA',WORK,KFRSAV,KVEC(IFRP,I),KFREE,LFREE)
+          CALL MEMREL('RTRACTL1a',WORK,KFRSAV,KVEC(IFRP,I),KFREE,LFREE)
           CALL MEMGET2('INTE','VEC',KVEC(IFRP,I),NSTR(IFRP,0,I),
      &                WORK,KFREE,LFREE)
         ENDDO
@@ -903,7 +895,7 @@ C
      &                   NSTR(IFRP,0,I),WORK(KVEC(IFRP,I)),
      &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
      &                   NFBAS(IFRP,0),NORB(IFRP))
-             CALL SELIBEIG(work(kibeig),IORB(IFRP),IFRP,
+             CALL SELIBEIG(work(kibeig),IORB(IFRP),NPSH(IFRP),
      &                     WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
      &                     NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           ENDIF
@@ -929,33 +921,22 @@ C     Call driver for 4-index transformation
 C     --------------------------------------
 C
       CALL PAMTR1(WORK,KFREE,LFREE,IPRTRA,KQ,KE,KIBE,
-     &            NDMOQR,ICMOQR,NSTR,.FALSE.,DUM,
+     &            NDMOQR,ICMOQR,NSTR,.FALSE.,DUMMY,
      &            TRA_ANTIS,ITRA_INTFL4)
 C
 C     Print timing information
 C
       CALL GETTIM(CPU2,WALL2)
-C
-      WALL    = WALL2 - WALL1
-      IWMINS  = INT(WALL)/60
-      IWHOURS = IWMINS/60
-      IWMINS  = IWMINS - 60*IWHOURS
-      IWSECS  = NINT(WALL) - 3600*IWHOURS - 60*IWMINS
-C
-      CPU     = CPU2 - CPU1
-      ICMINS  = INT(CPU)/60
-      ICHOURS = ICMINS/60
-      ICMINS  = ICMINS - 60*ICHOURS
-      ICSECS  = NINT(CPU) - 3600*ICHOURS - 60*ICMINS
-C
+
+      CPUTID  = SECTID(CPU2-CPU1)
+      WALLTID = SECTID(WALL2-WALL1)
       CALL GTINFO(DAYTID)
-      WRITE(LUPRI,'(/2(A,I5.2,A,I2.2,A,I2.2),A/A,A24)')
-     &     ' (RTRACTL1) Total CPU (wall) time used :',
-     &      ICHOURS,':',ICMINS,':',ICSECS,
-     & ' (',IWHOURS,':',IWMINS,':',IWSECS,')',
-     &     '            Transformation ended ',DAYTID
+      WRITE(LUPRI,9300) CPUTID,WALLTID,DAYTID
 C
-      CALL FLSHFO(LUPRI)
+ 9300 FORMAT(/'>>> Total CPU (wall) time in RTRACTL1: ',A,'(',A,')'/
+     &        '    Integral transformation ended    : ',A/)
+C
+      FLUSH(LUPRI)
       CALL QEXIT('RTRACTL1')
 C
       RETURN
@@ -985,9 +966,6 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dcbopt.h"
-#include "dcborb.h"
-#include "dcbgen.h"
-#include "dgroup.h"
 C
       DIMENSION FQ(*)
       DIMENSION H2AC(*)
@@ -1056,15 +1034,11 @@ C
 !
 !***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-#include "maxash.h"
 C
-#include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
 !-----------------------------------------------------------------------
-      integer luint
+      integer luint, LU_NOT_USED
       integer nfh12ij_offset(2), nfh12kl_offset(2), indxb34_offset(2)
       dimension nstr(2,0:2,4)
       character datex*8,timex*8
@@ -1074,7 +1048,7 @@ C
 !     set dimension for the temporary h12 integral arrays
       ndim_h12_tmp = n2orbx * nz * nz * nbsym / nfsym
 
-      luint = 1
+      luint = LU_NOT_USED(10)
       open(luint,file='4INDINFO',status='old',form='unformatted')
 !
 !     read time & date for creation
@@ -1136,26 +1110,25 @@ C***********************************************************************
 #include "infpar.h"  
 #include "maxash.h"
 C
-#include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "maxorb.h"
-#include "dcbidx.h"
 #include "dcbham.h"
 C
-      DIMENSION FQ(NORBT,NASHT,NZ)
-      DIMENSION PV(NASHT,NASHT,NNASHX,NZ,3)
-      DIMENSION H2AC(NASHT,NASHT,NNASHX,NZ,3)
-      dimension hmat(*),h2xy(*),h2yx(*), ibeig(*)
-      dimension idxkr12(2,*),indxb12(2,*),indxb34(2,*)
-      LOGICAL DOFQ, DOH2AC
+      real*8    FQ(NORBT,NASHT,NZ)
+      real*8    PV(NASHT,NASHT,NNASHX,NZ,3)
+      real*8    H2AC(NASHT,NASHT,NNASHX,NZ,3)
+      real*8    hmat(*),h2xy(*),h2yx(*)
+      integer   ibeig(*)
+      integer   idxkr12(2,*),indxb12(2,*),indxb34(2,*)
+      LOGICAL   DOFQ, DOH2AC
 !     controls whether or not we read only from the integral file
 !     associated with the master process.
       logical, intent(in) :: int_file_is_master_file
 C     index arrays
-      DIMENSION NFPCK12(2), NFPCK34(2)
-      DIMENSION NSTR(2,0:2,4)
-      DIMENSION IKLB(2)
+      integer   NFPCK12(2), NFPCK34(2)
+      integer   NSTR(2,0:2,4)
+      integer   IKLB(2)
 C     strings
       CHARACTER DATEX*8,TIMEX*8,FNAM*5,FNODE*10,LFNAM*10
       logical fopen
@@ -1165,14 +1138,15 @@ C     strings
       integer, allocatable :: indxb34_reod(:,:)
       integer, allocatable :: orb_info_array(:,:,:)
       logical              :: set_qphaseFAC
-      integer              :: mytid_save
+      integer              :: mytid_save, luint
+      integer :: LU_NOT_USED
 
       CALL QENTER('RGETH21')
 C
 C     Read information from integral file
 C     -----------------------------------
 C
-      LUINT = 1
+      luint = LU_NOT_USED(10)
       OPEN(LUINT, FILE = '4INDINFO', STATUS = 'OLD',
      &     FORM = 'UNFORMATTED' )
 C
@@ -1270,8 +1244,8 @@ C     LUINT = 56 + IREPIJ, IREPIJ = 1,NFSYM are actually used
          IIKLB = IIKLB + NFPCK34(IREPIJ)
       END DO
 C
-C     Read integrals (x>y)
-C     --------------------
+C     Read integrals (x.ge.y)
+C     -----------------------
 C
 C     initialize output arrays
       IF(DOFQ)   CALL DZERO(FQ,NASHT*NORBT*NZ)
@@ -1454,7 +1428,6 @@ C
  8000 CONTINUE
       WRITE(print_unit,'(/A)')
      &     '*** ERROR in RGETH21 *** Read error'
- 8100 CONTINUE
       WRITE(print_unit,'(1X,A,I4)')
      &     'IREPIJ = ',IREPIJ,
      &     'IREC   = ',IREC,
@@ -1499,7 +1472,6 @@ C
 C dcbham.h : spinfr, levyle
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbopt.h"
 #include "dcbham.h"
 C
       DIMENSION H2XY(NORBT,NASHT,NZ,3)
@@ -2267,12 +2239,7 @@ C     Last revision : S. Knecht - modifications for spinfree MCSCF
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
-#include "dcbxrs.h"
-#include "dcborb.h"
-#include "dcbgen.h"
-#include "dgroup.h"
 C
       DIMENSION FQX(*),FQT(*), H2ACX(*)
       DIMENSION PV(*),PVT(*)
@@ -2344,7 +2311,6 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "maxorb.h"
-#include "dcbidx.h"
 #include "dcbham.h"
 C
       DIMENSION FQX(NORBT,NASHT,NZ,*)
@@ -2361,8 +2327,8 @@ C     index arrays
       DIMENSION NFPCK12(2), NFPCK34(2)
       DIMENSION NSTR(2,0:2,4)
       DIMENSION IKLB(2)
-      dimension idxkr12(2,*), indxb12(2,*), indxb34(2,*)
-      dimension indxb34_offset(2)
+      integer   idxkr12(2,*), indxb12(2,*), indxb34(2,*)
+      integer   indxb34_offset(2)
 C     strings
       CHARACTER DATEX*8,TIMEX*8,FNAM*5,FNODE*10,LFNAM*10
 C     logicals
@@ -2490,9 +2456,9 @@ C     Allocate memory for integrals (H2XY) and initialize
       end if
 #endif
 C
-C     ****************************
-C     *** Read integrals (x>y) ***
-C     ****************************
+C     *******************************
+C     *** Read integrals (x.ge.y) ***
+C     *******************************
 C
 C     zero arrays
 C     -----------
@@ -2891,7 +2857,6 @@ C
  8000 CONTINUE
       WRITE(LUPRI,'(/A)')
      &     '*** ERROR in RGETH2TX1 *** Read error'
- 8100 CONTINUE
       WRITE(LUPRI,'(1X,A,I4)')
      &     'IREPIJ = ',IREPIJ,
      &     'IREC   = ',IREC,
@@ -2916,13 +2881,10 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "maxorb.h"
 #include "dcbidx.h"
-#include "dcbopt.h"
-#include "dcborb.h"
 C
       DIMENSION IDXKR12(2,*)
 C
@@ -2957,7 +2919,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -2990,9 +2951,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "consts.h"
 C
 C dcbham.h : spinfr, levyle
 #include "dcborb.h"
@@ -3541,7 +3499,6 @@ C
 C
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbopt.h"
 #include "maxorb.h"
 #include "dcbidx.h"
 C
@@ -3745,9 +3702,6 @@ C
       SUBROUTINE RADDFQX1(szPV,szQV,FAC,IZPV,I3PV,IZQV,I3QV,
      &     H2VPX,PV,NVQ,IQU,IVU,FQX)
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -3817,9 +3771,6 @@ C
 C
       SUBROUTINE RADDFQX4(szPVXY,szQVXY,FAC,H2VPX,PV,FQX)
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "consts.h"
 C
 #include "dcborb.h"
 C
@@ -3852,7 +3803,6 @@ C
 C
       SUBROUTINE RADDFQX3(sz,FAC,IZ,I3,szXY)
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "consts.h"
 C
@@ -3911,7 +3861,6 @@ C
 C
       SUBROUTINE RADDFQX2(sz,FAC,IZ,I3,szXY)
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "consts.h"
 C

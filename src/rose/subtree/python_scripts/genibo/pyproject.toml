@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "genibo_MOcoeff"
+version = "0.0.2"
+description = "Generate MO coefficient files by running a quantum chemistry code"
+readme = "README.md"
+authors = [
+    { name = "bsenjean", email = "bsenjean@gmail.com" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3"
+]
+
+dependencies = [
+    "h5py"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]

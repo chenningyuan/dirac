@@ -1,169 +1,975 @@
-!dirac_copyright_start
-!      Copyright (c) by the authors of DIRAC.
-!
-!      This program is free software; you can redistribute it and/or
-!      modify it under the terms of the GNU Lesser General Public
-!      License version 2.1 as published by the Free Software Foundation.
-!
-!      This program is distributed in the hope that it will be useful,
-!      but WITHOUT ANY WARRANTY; without even the implied warranty of
-!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-!      Lesser General Public License for more details.
-!
-!      If a copy of the GNU LGPL v2.1 was not distributed with this
-!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
-!dirac_copyright_end
-
 module visual_cfg
 
-   implicit none
+  use visual_datatypes, only : rs_input_t, rs_wf_t, grid_t, grid_function_t
+  use visual_utils
 
-   save
+  implicit none
 
-   integer,      public, parameter :: max_batch_length = 500
-   integer,      public, parameter :: max_para = 100
-   integer,      public            :: visual_cfg_nr_dmat = 0
-   character(6), public            :: visual_cfg_dmat_file(max_para)
-   integer,      public            :: visual_cfg_dmat_file_record(max_para)
-   integer,      public            :: visual_cfg_ref_nucleus(max_para)
-   integer,      public            :: visual_cfg_property(max_para)
-   logical,      public            :: visual_cfg_skip(max_para) = .false.
-   integer,      public            :: visual_cfg_property_to_matrix(max_para) = 0
-   integer,      public            :: visual_cfg_irep_xvector(max_para)
-   logical,      public            :: visual_cfg_out_file_custom = .false.
-   logical,      public            :: visual_cfg_out_scalar_file_custom = .false.
-   logical,      public            :: visual_cfg_out_vector_file_custom = .false.
-   logical,      public            :: visual_cfg_out_2ndtensor_file_custom = .false.
-   character(60), public           :: visual_cfg_out_scalar_file_name
-   character(60), public           :: visual_cfg_out_vector_file_name
-   character(60), public           :: visual_cfg_out_2ndtensor_file_name
-   logical,      public            :: visual_cfg_london_skip_cube = .false.
-   logical,      public            :: visual_cfg_london_skip_vtk  = .false.
+  type(rs_input_t), public:: rs_input
+  type(rs_wf_t), public:: rs_wf
 
-   integer, public :: iq_gamma5   =  1
-   integer, public :: iq_density  =  2
-   integer, public :: iq_elf      =  3
-   integer, public :: iq_j        =  4
-   integer, public :: iq_rotj     =  5
-   integer, public :: iq_divj     =  6
-   integer, public :: iq_s        =  7
-   integer, public :: iq_rots     =  8
-   integer, public :: iq_divs     =  9
-   integer, public :: iq_jdia     = 10
-   integer, public :: iq_edipx    = 11
-   integer, public :: iq_edipy    = 12
-   integer, public :: iq_edipz    = 13
-   integer, public :: iq_bdipx    = 14
-   integer, public :: iq_bdipy    = 15
-   integer, public :: iq_bdipz    = 16
-   integer, public :: iq_ndipx    = 17
-   integer, public :: iq_ndipy    = 18
-   integer, public :: iq_ndipz    = 19
-   integer, public :: iq_bdipxdia = 20
-   integer, public :: iq_bdipydia = 21
-   integer, public :: iq_bdipzdia = 22
-   integer, public :: iq_ndipxdia = 23
-   integer, public :: iq_ndipydia = 24
-   integer, public :: iq_ndipzdia = 25
-   integer, public :: iq_esp      = 26
-   integer, public :: iq_espe     = 27
-   integer, public :: iq_espn     = 28
-   integer, public :: iq_esprho   = 29
-   integer, public :: iq_esperho  = 30
-   integer, public :: iq_espnrho  = 31
-   integer, public :: iq_kin      = 32
-   integer, public :: iq_kin_ls   = 33
-   integer, public :: iq_kin_sl   = 34
-   integer, public :: iq_kin_tau  = 35
-   integer, public :: iq_kin_lap  = 36
-   integer, public :: iq_kin_nr   = 37
-   integer, public :: iq_jx       = 38
-   integer, public :: iq_jy       = 39
-   integer, public :: iq_jz       = 40
-   integer, public :: iq_tcos     = 41
-   integer, public :: iq_tsin     = 42   
-   integer, public :: iq_density_gradient     =  43
-   integer, public :: iq_density_hessian      =  44
-   integer, public :: iq_density_laplacian    =  45
-   integer, public :: iq_density_sign_lambda2 =  46
-   integer, public :: iq_rdg      = 47
-   integer, public :: iq_gradj    = 48
-   
-!                     visualization in 2d
-   logical, public :: visual_cfg_2d             = .false.
-   real(8), public :: visual_cfg_2d_p_origin(3) = 0.0d0
-   real(8), public :: visual_cfg_2d_p_right(3)  = 0.0d0
-   real(8), public :: visual_cfg_2d_p_top(3)    = 0.0d0
-   integer, public :: visual_cfg_2d_nr_right    = 0
-   integer, public :: visual_cfg_2d_nr_top      = 0
+  public grid_input_cfg
+  public grid_user_input_cfg
+  public grid_function_user_input_cfg
+  public grid_function_input_cfg
+  public verify_grid_input_cfg
+  public verify_grid_function_input_cfg
+  public verify_grid_and_grid_function_input_cfg
 
-!                     integration in 2d
-   logical, public :: visual_cfg_2d_integration             = .false.
-   real(8), public :: visual_cfg_2d_integration_p_origin(3) = 0.0d0
-   real(8), public :: visual_cfg_2d_integration_p_right(3)  = 0.0d0
-   real(8), public :: visual_cfg_2d_integration_p_top(3)    = 0.0d0
-   integer, public :: visual_cfg_2d_integration_nr_right    = 0
-   integer, public :: visual_cfg_2d_integration_nr_top      = 0
-   integer, public :: visual_cfg_2d_integration_order       = 0
-
-!                     visualization in 3d
-   logical, public :: visual_cfg_3d         = .false.
-   logical, public :: visual_cfg_3d_fast    = .false.
-   integer, public :: visual_cfg_ncube(1:3) = 0
-   real(8), public :: visual_cfg_add_3d     = 4.0d0
-   logical, public :: visual_cfg_3d_gridimp = .false.
-   logical, public :: visual_cfg_3d_readjb  = .false.
-   character(80), public :: visual_cfg_3d_gridfil
-   character(80), public :: visual_cfg_3d_grid_units
-   character(80), public :: visual_cfg_3d_jbfile
-
-!                     integration in 3d
-   logical, public :: visual_cfg_3d_integration = .false.
-
-!                     visualization along line
-   logical, public :: visual_cfg_line          = .false.
-   real(8), public :: visual_cfg_line_from(3)  = 0.0d0
-   real(8), public :: visual_cfg_line_to(3)    = 0.0d0
-   integer, public :: visual_cfg_line_nr_steps = 0
-
-!                                  densities for a list of points
-   logical, public              :: visual_cfg_list              = .false.
-   integer, public              :: visual_cfg_nr_points_in_list = 0
-   real(8), public, allocatable :: visual_cfg_xyz_list(:, :)
-
-!                     radial distributions
-   logical, public :: visual_cfg_radial          = .false.
-   real(8), public :: visual_cfg_radial_from(3)  = 0.0d0
-   integer, public :: visual_cfg_radial_nr_steps = 0
-   real(8), public :: visual_cfg_radial_length   = 0
-   
-   real(8),       public :: visual_cfg_scale              = 1.0d0
-   integer,       public :: visual_cfg_radial_power       = 0
-   real(8),       public :: visual_cfg_cartesian_power(3) = 0.0   
-   real(8),       public :: visual_cfg_gauge_origin(3)    = 0.0d0
-   real(8),       public :: visual_cfg_wave_vector(3)     = 0.0d0
-   real(8),       public :: visual_cfg_freq               = 0.0d0   
-   real(8),       public :: visual_cfg_pol_vector(3)      = 0.0d0   
-   logical,       public :: visual_cfg_force_small_ao     = .false.
-
-   logical,       public :: visual_cfg_nics              = .false.
-   real(8),       public :: visual_cfg_nics_origin(3)    = 0.0d0
-
-   logical,      public :: visual_cfg_london               = .false.
-   logical,      public :: visual_cfg_london_skip_kappa    = .false.
-   logical,      public :: visual_cfg_london_skip_direct   = .false.
-   logical,      public :: visual_cfg_london_skip_ro       = .false.
-   logical,      public :: visual_cfg_london_none          = .false.
-   character(1), public :: visual_cfg_london_component
-
-   integer,      public :: visual_cfg_irep_conmat = 0
-   integer,      public :: visual_cfg_itim_conmat = 0
-
-   logical, public              :: visual_cfg_use_orbital_string = .false.
-   real(8), public, allocatable :: visual_cfg_occupation(:, :)
-
-   logical,      public :: visual_cfg_tensor          = .false.
+#ifdef VAR_MPI
+  public sync_visual_cfg
+#endif
 
    private
+
+contains
+
+! ------------------------------------------------------------------------------
+  subroutine grid_input_cfg(key, val, grid, id_grid)
+    character(len=*), intent(in):: key, val
+    type(grid_t),intent(inout)::grid
+    integer, intent(in)::id_grid
+    character(len=len_trim(val))::temp
+    integer::stat, np
+    real(8)::s
+    integer::nr_words, ndim, i
+    character(len=10),allocatable::chvalues(:)
+    character*(:),allocatable:: errmsg
+
+    ndim = grid%get_ndim()
+
+    select case (key)
+      case ('id')
+        call str2int(val, grid%id, stat)
+      case ('npoints')
+        temp = val
+        call trim_ch(temp, val,  '[')
+        call trim_ch(temp, temp, ']')
+        if (index(val, ',') > 0) then
+          nr_words = word_count(temp, ',')
+          if (nr_words .ne. ndim) then
+            write(*,*) 'Input error in grid specification (expects: npoints=[Nx,Ny,Nz]).'
+            stop
+          end if
+          allocate(chvalues(nr_words))
+          call split_string(temp, nr_words, chvalues, separator=',')
+          do i = 1, nr_words
+            call str2int(trim(chvalues(i)), np, stat)
+            grid%nr_points(i) = np
+            grid%nr_points_known(i) = .true.
+          end do
+          deallocate(chvalues)
+        else
+          write(*,*) 'Input error in grid specification (expects: npoints=[Nx,Ny,Nz]).'
+          stop
+        end if
+      case ('spacing')
+        temp = val
+        call trim_ch(temp, val,  '[')
+        call trim_ch(temp, temp, ']')
+        if (index(val, ',') > 0) then
+          nr_words = word_count(temp, ',')
+          if (nr_words .ne. ndim) then
+            write(*,*) 'Input error in grid specification (expects: spacing=[Sx,Sy,Sz] or spacing=S).'
+            stop
+          end if
+          allocate(chvalues(nr_words))
+          call split_string(temp, nr_words, chvalues, separator=',')
+          do i = 1, nr_words
+!           units: a.u.
+            call str2flt(trim(chvalues(i)), s, stat)
+            grid%spacing(i) = s
+            grid%spacing_known(i) = .true.
+          end do
+          deallocate(chvalues)
+        else
+          call str2flt(val, s, stat)
+          grid%spacing(1:ndim) = s
+          grid%spacing_known(1:ndim) = .true.
+        end if
+      case ('input')
+        if (lowercase(val) == 'create') then
+          grid%input = 0
+        else if (lowercase(val) == 'import') then
+          grid%input = 1
+        else if (lowercase(val) == 'dft') then
+          grid%input = -1
+        else if (lowercase(val) == 'list') then
+          grid%input = 2
+        else if (lowercase(val) == 'line') then
+          grid%input = 3
+        else if (lowercase(val) == '2d') then
+          grid%input = 4
+        else if (lowercase(val) == '2d_int') then
+          grid%input = -4
+        else if (lowercase(val) == '3d') then
+          grid%input = 5
+        else if (lowercase(val) == '3d_int') then
+          grid%input = -5
+        else if (lowercase(val) == 'radial') then
+          grid%input = 6
+        else
+          write(*, *) 'Input error. Wrong argument to grid%input'
+          stop
+        end if
+      case ('typ')
+        call str2int(val, grid%typ, stat)
+        if (grid%typ==0) grid%typ=np
+      case ('margin')
+!       units: a.u.
+        call str2flt(val, grid%margin, stat)
+      case ('export')
+        grid%export = val
+      case ('file_inp')
+        grid%file_inp = val
+      case ('file_out')
+        grid%file_out = val
+      case default
+        print *, 'unknown key'
+        stop
+    end select
+
+    if (grid%id == 0) grid%id = id_grid
+
+  end subroutine grid_input_cfg
+
+! ------------------------------------------------------------------------------
+  subroutine grid_function_user_input_cfg(grid_function, key, user_input_lines)
+    type(grid_function_t),intent(inout)::grid_function
+    character(*), intent(in):: key
+    character(*), dimension(:), intent(in):: user_input_lines
+    integer::stat, np
+    real(8)::s, v(3), temp(4)
+    integer::nr_words, i,j
+    character(len=len_trim(user_input_lines(1))),allocatable::chvalues(:)
+    character*(:),allocatable:: errmsg
+
+    select case (key)
+      case ('bedfix')
+!
+!       on input:
+!       .BEDFIX
+!       theta, phi, chi, freq
+!
+        nr_words = 4
+        allocate(chvalues(nr_words))
+        call split_string(user_input_lines(1),nr_words,chvalues,separator=',')
+        do j = 1, nr_words
+          call str2flt(trim(chvalues(j)), temp(j), stat)
+        end do
+        deallocate(chvalues)
+        grid_function%bed_freq = temp(4)
+        call angles(temp(1),temp(2),temp(3),&
+             grid_function%bed_wave_vector,grid_function%bed_pol_vector)
+        grid_function%bedfix_known = .true.
+
+    end select
+
+  end subroutine grid_function_user_input_cfg
+
+! ------------------------------------------------------------------------------
+  subroutine grid_user_input_cfg(grid, domain, user_input_lines)
+    type(grid_t),intent(inout)::grid
+    character(*), intent(in):: domain
+    character(*), dimension(:), intent(in):: user_input_lines
+    integer::stat, np
+    real(8)::s, v(3), w(3)
+    integer::nr_words, ndim, i,j
+    character(200),allocatable::chvalues(:)
+    !character(len=len_trim(user_input_lines(1))),allocatable::chvalues(:)
+    character*(:),allocatable:: errmsg
+
+    ndim = grid%get_ndim()
+
+    select case (domain)
+      case ('list')
+!
+!       on input: a list of points in 3D
+!       .LIST
+!       x1, y1, z1
+!       x2, y2, z2
+!       ...
+!
+        grid%nr_points_total = size(user_input_lines)
+        allocate(grid%points(ndim, grid%nr_points_total))
+        grid%points = 0.0d0
+        do i = 1, grid%nr_points_total
+          allocate(chvalues(ndim))
+          call split_string(user_input_lines(i),ndim,chvalues,separator=',')
+          do j = 1, ndim
+            call str2flt(trim(chvalues(j)), s, stat)
+!           in this case, we fill grid%points array directly here;
+            grid%points(j,i) = s
+          end do
+          deallocate(chvalues)
+        end do
+        grid%nr_points_total_known = .true.
+!       grid ready to work on
+        grid%status = 0
+
+      case ('line')
+!
+!       on input:
+!       .LINE
+!       x1, y1, z1  <--- coordinates of line start (a point in 3D)
+!       x2, y2, z2  <--- coordinates of line end (a point in 3D)
+!       N           <--- number of points
+!
+        grid%typ = 1
+        call str2int(trim(user_input_lines(3)), np, stat)
+        grid%nr_points(1) = np     ! arbitrary assignment
+        grid%nr_points_total = np
+        allocate(chvalues(ndim))
+        ! line extents: arbitrary assignment to grid%extents(0:1,i)
+        ! line start
+        call split_string(user_input_lines(1),ndim,chvalues,separator=',')
+        do i = 1, ndim
+          call str2flt(trim(chvalues(i)), grid%extents(0,i), stat)
+          grid%origin(i) = grid%extents(0,i)
+        end do
+        ! line end
+        call split_string(user_input_lines(2),ndim,chvalues,separator=',')
+        do i = 1, ndim
+          call str2flt(trim(chvalues(i)), grid%extents(1,i), stat)
+        end do
+        deallocate(chvalues)
+        grid%nr_points_known(1) = .true.
+        grid%nr_points_total_known = .true.
+        grid%extents_known=.true.
+        grid%origin_known=.true.
+
+      case ('2d')
+!
+!       on input:
+!       .2D
+!       0.0, 0.0, 0.0  <--- coordinates of grid origin
+!       0.0, 0.0, 2.0  <--- coordinates of grid "right" point
+!       20             <--- nr of points origin-"right"
+!       0.0, 2.0, 0.0  <--- coordinates of grid "top" point
+!       20             <--- nr of points origin-"top"
+!
+        grid%typ = 1
+        call str2int(trim(user_input_lines(3)), np, stat)
+        grid%nr_points(1) = np     ! arbitrary assignment
+        grid%nr_points_known(1) = .true.
+        call str2int(trim(user_input_lines(5)), np, stat)
+        grid%nr_points(2) = np     ! arbitrary assignment
+        grid%nr_points_known(2) = .true.
+        ! this is a 2d plane in a 3d world:
+        grid%nr_points(3) = 1
+        grid%nr_points_known(3) = .true.
+        allocate(chvalues(ndim))
+        ! line extents: arbitrary assignment to grid%extents(0:1,i)
+        ! line start
+        call split_string(user_input_lines(1),ndim,chvalues,separator=',')
+        do i = 1, ndim
+          call str2flt(trim(chvalues(i)), grid%extents(0,i), stat)
+          grid%origin(i) = grid%extents(0,i)
+        end do
+        ! line end
+        call split_string(user_input_lines(2),ndim,chvalues,separator=',')
+        do i = 1, ndim
+          call str2flt(trim(chvalues(i)), grid%extents(1,i), stat)
+        end do
+        ! line extents: arbitrary assignment to grid%extents(2,i)
+        call split_string(user_input_lines(4),ndim,chvalues,separator=',')
+        do i = 1, ndim
+          call str2flt(trim(chvalues(i)), grid%extents(2,i), stat)
+        end do
+        deallocate(chvalues)
+        grid%nr_points_total = grid%nr_points(1)*grid%nr_points(2)
+        grid%nr_points_total_known = .true.
+        grid%extents_known=.true.
+        grid%origin_known=.true.
+!       grid ready to work on
+        grid%status = 0
+
+      case ('2d_int')
+!
+!       on input:
+!       .2D
+!       0.0, 0.0, 0.0  <--- coordinates of grid origin
+!       0.0, 0.0, 2.0  <--- coordinates of grid "right" point
+!       20             <--- nr of points origin-"right"
+!       0.0, 2.0, 0.0  <--- coordinates of grid "top" point
+!       20             <--- nr of points origin-"top"
+!       2              <--- integration order
+!
+        grid%typ = 1
+        call str2int(trim(user_input_lines(3)), np, stat)
+        grid%nr_points(1) = np     ! arbitrary assignment
+        grid%nr_points_known(1) = .true.
+        call str2int(trim(user_input_lines(5)), np, stat)
+        grid%nr_points(2) = np     ! arbitrary assignment
+        grid%nr_points_known(2) = .true.
+        ! this is a 2d plane in a 3d world:
+        grid%nr_points(3) = 1
+        grid%nr_points_known(3) = .true.
+        call str2int(trim(user_input_lines(6)), np, stat)
+        grid%integration_order_2d = np
+        allocate(chvalues(ndim))
+        ! line extents: arbitrary assignment to grid%extents(0:1,i)
+        ! line start
+        call split_string(user_input_lines(1),ndim,chvalues,separator=',')
+        do i = 1, ndim
+          call str2flt(trim(chvalues(i)), grid%extents(0,i), stat)
+          grid%origin(i) = grid%extents(0,i)
+        end do
+        ! line end
+        call split_string(user_input_lines(2),ndim,chvalues,separator=',')
+        do i = 1, ndim
+          call str2flt(trim(chvalues(i)), grid%extents(1,i), stat)
+        end do
+        ! line extents: arbitrary assignment to grid%extents(2,i)
+        call split_string(user_input_lines(4),ndim,chvalues,separator=',')
+        do i = 1, ndim
+          call str2flt(trim(chvalues(i)), grid%extents(2,i), stat)
+        end do
+        deallocate(chvalues)
+        grid%nr_points_total = grid%nr_points(1)*grid%nr_points(2) &
+                             * (grid%integration_order_2d)**2
+        grid%nr_points_total_known = .true.
+        grid%extents_known=.true.
+        grid%origin_known=.true.
+!       grid ready to work on
+        !grid%status = 0
+
+      case ('3d')
+!
+!       on input:
+!       .3D
+!       Nx, Ny, Nz  <--- number of points in x/y/z directions
+!
+        grid%typ = 1
+        allocate(chvalues(ndim))
+        call split_string(user_input_lines(1),ndim,chvalues,separator=',')
+        grid%nr_points_total = 1
+        do i = 1, ndim
+          call str2int(trim(chvalues(i)), np, stat)
+          grid%nr_points(i) = np
+          grid%nr_points_known(i) = .true.
+          grid%nr_points_total = grid%nr_points_total*grid%nr_points(i)
+        end do
+        deallocate(chvalues)
+        grid%nr_points_total_known = .true.
+
+
+      case ('radial')
+!
+!       on input:
+!       .RADIAL
+!       0.0, 0.0, 0.0  <--- coordinates of grid origin
+!       2.0            <--- radial length 
+!       10             <--- number of steps
+!
+        grid%typ = 2
+        allocate(chvalues(ndim))
+        call split_string(user_input_lines(1),ndim,chvalues,separator=',')
+        do i = 1, ndim
+          call str2flt(trim(chvalues(i)), grid%origin(i), stat)
+        end do
+        call str2flt(trim(user_input_lines(2)), grid%radial_length, stat)
+        call str2int(trim(user_input_lines(3)), grid%radial_nr_steps, stat)
+        deallocate(chvalues)
+        grid%origin_known=.true.
+
+      case default
+        print *, 'unknown key'
+        stop
+    end select
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine verify_grid_input_cfg(grid)
+    type(grid_t),intent(inout)::grid
+    integer::ndim, i
+    character*(:),allocatable:: errmsg
+
+    ! catch errors
+
+    ndim = grid%get_ndim()
+
+    if (grid%input == 1) then
+      write(*, *) 'VISUAL: Grid information will be read from grid file'
+      write(*, *) 'WARNING: These options will be ignored (if present):'//&
+                  ' npoints, spacing, margin.'
+
+    else if (grid%input == -1) then
+      write(*, *) 'VISUAL: Grid information will be read from numerical_grid file'
+      write(*, *) 'WARNING: These options will be ignored (if present):'//&
+                  ' npoints, spacing, margin, file_inp.'
+!     in this case, we are hardcoding to 'numerical_grid'
+      grid%file_inp = 'numerical_grid'
+
+    else if (grid%input == 0) then
+      write(*, *) 'VISUAL: 3d grid will be created according to .GRID options'
+      do i = 1, ndim
+        if (grid%nr_points(i) ==0 .and. grid%spacing(i) ==0) then
+          errmsg=errmsg//'Insufficient information for grid generation: specify "npoints" or "spacing".\n'
+        else if (grid%nr_points(i) /=0 .and. grid%spacing(i) /=0) then
+          errmsg=errmsg//'Grid specification: mutually exclusive options: "npoints" and "spacing".\n'
+        end if
+      end do
+
+    else
+      write(*, *) 'VISUAL: Grid will be created according to information '//&
+                  'in the separate input lines:'
+      write(*, *) ' .LINE/.LIST/.2D/.2D_INT/.3D/.3D_INT/.RADIAL'
+    end if
+
+    ! additional setup/check
+
+    if (allocated(grid%export)) then
+      if (.not. allocated(grid%file_out)) then
+        errmsg=errmsg//'Grid export requested, but file for export not specified.'
+      end if
+    end if
+
+    if (allocated(grid%import)) then
+      if (.not. allocated(grid%file_inp)) then
+        errmsg=errmsg//'Grid import requested, but file for import not specified.'
+      end if
+    end if
+
+    if (allocated(errmsg)) call visual_quit(errmsg)
+
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine verify_grid_function_input_cfg(grid_function)
+    use visual_mpi
+    type(grid_function_t),intent(in)::grid_function
+    character*(:),allocatable:: errmsg
+
+    ! catch errors
+
+    if (grid_function%id_assigned_grid == 0) then
+      errmsg='Input error: Missing information about the grid.\n'
+    end if
+
+    if (grid_function%input == 1) then
+      if (len_trim(grid_function%file_inp) == 0) then
+        errmsg=errmsg//'Missing file for grid_function import.\n'
+      end if
+    end if
+
+    if (grid_function%rspvec_id /= 0) then
+      if (len_trim(grid_function%rspvec_file) == 0) then
+        errmsg=errmsg//'Missing response file for grid_function.\n'
+      end if
+    end if
+
+    if (grid_function%lao /= 0) then
+      if (grid_function%wf_order /= 1) then
+        errmsg=errmsg//'LAOs can be used for linear response properties only.\n'
+      end if
+      if (len_trim(grid_function%rspvec_file) == 0) then
+        errmsg=errmsg//'Requested LAOs, but no information '// &
+                    'about response file for grid_function.\n'
+      end if
+    end if
+
+    if (any(grid_function%lao_skip /= 0)) then
+      if (grid_function%lao == 0) then
+        errmsg=errmsg//'"lao_skip" option presented, but LAOs are not requested.\n'
+      end if
+    end if
+
+    if (allocated(grid_function%export)) then
+      if (.not. allocated(grid_function%file_out)) then
+        errmsg=errmsg//'Grid function export requested, but file for export not specified.\n'
+      end if
+    end if
+
+!#ifdef VAR_MPI
+!    !fixme
+!    if (is_parallel().and.(grid_function%name == 'esp'&
+!                       .or.grid_function%name == 'espe'&
+!                       .or.grid_function%name == 'espn'&
+!                       .or.grid_function%name == 'esprho'&
+!                       .or.grid_function%name == 'esperho'&
+!                       .or.grid_function%name == 'espnrho')) then
+!      errmsg=errmsg//'ESP functions can only be calculated in serial mode'
+!    end if
+!#endif
+
+    ! additional setup/check
+
+    if (grid_function%name=='bedcos' .or. grid_function%name=='bedsin') then
+      if (.not.grid_function%bedfix_known) then
+        !errmsg=errmsg//'Missing data: check .BEDFIX keyword for bedcos/bedsin calculations.\n'
+        write(*, *) 'Additional data for bedcos/bedsin calculations will be read from .BEDFIX'
+      end if
+    end if
+
+    if (allocated(grid_function%name)) then
+     if (grid_function%name == 'spinor_components') then
+      if (grid_function%spinor_index <= 0) then
+       if (allocated(errmsg)) then
+        errmsg = errmsg//'Missing or invalid "spinor" index for spinor_components.\n'
+       else
+        errmsg = 'Missing or invalid "spinor" index for spinor_components.\n'
+       end if
+      end if
+     end if
+    end if
+
+    if (allocated(errmsg)) call visual_quit(errmsg)
+
+  end subroutine verify_grid_function_input_cfg
+
+
+! ------------------------------------------------------------------------------
+  subroutine verify_grid_and_grid_function_input_cfg()
+    integer::ig,igf
+
+    do igf = 1, rs_input%nr_grid_functions
+
+      do ig = 1, rs_input%nr_grids
+        if (rs_input%grid_functions(igf)%id_assigned_grid == rs_input%grids(ig)%id) then 
+          if (rs_input%grid_functions(igf)%purpose == 1) then
+            if (rs_input%grids(ig)%typ == 2) then
+                write(*,*) 'integration on 3d radial grid'
+            else
+              if (rs_input%grids(ig)%input == -1) then 
+                write(*,*) 'integration on DFT grid on "numerical_grid" file'
+              else if (rs_input%grids(ig)%input == -4) then 
+                write(*,*) 'integration on 2d lobatto grid'
+              else
+                write(*,*) 'integration not possible for this grid. stop'
+                stop
+              end if
+            end if
+          end if
+        end if
+      end do
+
+      if (rs_input%grid_functions(igf)%purpose == 1) then
+        ! always print integrated values to DIRAC output
+        rs_input%grid_functions(igf)%outpri = .true.
+      end if
+
+    end do
+  end subroutine
+
+! ------------------------------------------------------------------------------
+  subroutine grid_function_input_cfg(key, val, grid_function, id_grid_function)
+    character(len=*), intent(in):: key, val
+    type(grid_function_t),intent(inout)::grid_function
+    integer, intent(in)::id_grid_function
+    character(len=len_trim(val))::temp
+    integer::stat, np
+    real(8)::s,fac
+    integer::nr_words, i
+    character(len=10),allocatable::chvalues(:)
+
+    select case (key)
+      case ('name')
+        grid_function%name = lowercase(val)
+        call verify_grid_function_predefined(grid_function)
+      case ('id_grid')
+        call str2int(val, grid_function%id_assigned_grid, stat)
+      case ('input')
+        if (lowercase(val) == 'calculate') then
+          grid_function%input = 0
+        else if (lowercase(val) == 'import') then
+          grid_function%input = 1
+        else
+          write(*, *) 'Input error. Wrong argument: '// &
+                      'argument to "input" must be one of "calculate"/"import"'
+          stop
+        end if
+      case ('rspvec_file')
+!       fixme: expected 'RESPONSE.h5' file; linear response only
+        grid_function%rspvec_file = val
+        grid_function%wf_order = 1
+      case ('rspvec_id')
+          call str2int(val, grid_function%rspvec_id, stat)
+      case ('nuc')
+          call str2int(val, grid_function%nuc, stat)
+      case ('spinor')
+          call str2int(val, grid_function%spinor_index, stat)
+      case ('phase')
+        grid_function%spinor_phase = lowercase(val)
+      case ('lao')
+        call str2int(val, grid_function%lao, stat)
+      case ('lao_skip')
+        temp = val
+        call trim_ch(temp, val,  '[')
+        call trim_ch(temp, temp, ']')
+        if (index(val, ',') > 0) then
+          nr_words = word_count(temp, ',')
+          if (nr_words .ne. 3) then
+            write(*,*) 'Input error. More than three values are in the "lao_skip".'
+            stop
+          end if
+          allocate(chvalues(nr_words))
+          call split_string(temp, nr_words, chvalues, separator=',')
+          do i = 1, nr_words
+            call str2int(trim(chvalues(i)), np, stat)
+            grid_function%lao_skip(i) = np
+          end do
+          deallocate(chvalues)
+        else
+          write(*,*) 'Input error. "lao_skip" expects an array of integer values.'
+          stop
+        end if
+      case ('nics')
+        temp = val
+        call trim_ch(temp, val,  '[')
+        call trim_ch(temp, temp, ']')
+        if (index(val, ',') > 0) then
+          nr_words = word_count(temp, ',')
+          if (nr_words .ne. 3) then
+            write(*,*) 'Input error in grid function specification (expects: nics=[x,y,z]).'
+            stop
+          end if
+          allocate(chvalues(nr_words))
+          call split_string(temp, nr_words, chvalues, separator=',')
+          do i = 1, nr_words
+            call str2flt(trim(chvalues(i)), s, stat)
+            grid_function%nics_origin(i) = s
+          end do
+          grid_function%nics = .true.
+          deallocate(chvalues)
+        else
+          write(*,*) 'Input error in grid function specification (expects: nics=[x,y,z]).'
+          stop
+        end if
+      case ('purpose')
+        if (lowercase(val) == 'visualization') then
+          grid_function%purpose = 0
+        else if (lowercase(val) == 'integration') then
+          grid_function%purpose = 1
+        else
+          write(*, *) 'Input error. Wrong argument: '// &
+                      'argument to "purpose" must be one of '//&
+                      '"visualization"/"integration".'
+          stop
+        end if
+      case ('outpri')
+        if (lowercase(val) == 'no') then
+          grid_function%outpri = .false.
+        else if (lowercase(val) == 'yes') then
+          grid_function%outpri = .true.
+        end if
+      case ('export')
+        grid_function%export = val
+      case ('file_inp')
+        grid_function%file_inp = val
+      case ('file_out')
+        grid_function%file_out = val
+      case ('uscale')
+        grid_function%modify = 1
+        call str2flt(val, grid_function%up_scale, stat)
+      case ('dscale')
+        grid_function%modify = 1
+        call str2flt(val, grid_function%down_scale, stat)
+      case ('radpow')
+        grid_function%modify = 1
+        call str2int(val, grid_function%radial_power, stat)
+      case ('carpow')
+        grid_function%modify = 1
+        temp = val
+        call trim_ch(temp, val,  '[')
+        call trim_ch(temp, temp, ']')
+        if (index(val, ',') > 0) then
+          nr_words = word_count(temp, ',')
+          if (nr_words .ne. 3) then
+            write(*,*) 'Input error. Three values are expected for "carpow".'
+            stop
+          end if
+          allocate(chvalues(nr_words))
+          call split_string(temp, nr_words, chvalues, separator=',')
+          do i = 1, nr_words
+            call str2int(trim(chvalues(i)), np, stat)
+            grid_function%cartesian_power(i) = np
+          end do
+          deallocate(chvalues)
+        else
+          write(*,*) 'Input error. "carpow" expects an array of three floats.'
+          stop
+        end if
+      case default
+        print *, 'Input error. Unknown key.'
+        stop
+    end select
+
+    !call modify_grid_function_due_to_method(grid_function)
+
+    if (grid_function%id == 0) grid_function%id = id_grid_function
+
+  end subroutine
+
+! ------------------------------------------------------------------------------
+  subroutine verify_grid_function_predefined(grid_function)
+    class(grid_function_t), intent(inout):: grid_function
+!
+!   note: grid_function%name also defines a label on HDF5
+!
+    select case (grid_function%name)
+      case ('ed',      &
+            'gamma5',  &
+            'esp',     &
+            'espe',    &
+            'espn',    &
+            'esprho',  &
+            'esperho', &
+            'espnrho', & 
+            'bedcos',  & 
+            'bedsin')
+        grid_function%tensor_order = 0
+        grid_function%max_ao_g_order = 0
+        grid_function%max_ao_m_order = 0
+      case ('rdg', &
+            'elf', &
+            'kin', &
+            'kinls', &
+            'kinsl', &
+            'kintau', &
+            'divj', &
+            'divs') 
+        grid_function%tensor_order = 0
+        grid_function%max_ao_g_order = 1
+        grid_function%max_ao_m_order = 0
+      case ('s', &
+            'jdiaBz', &
+            'j', &
+            'bdip',   &
+            'ndip',   &
+            'edip')
+        grid_function%tensor_order = 1
+        grid_function%max_ao_g_order = 0
+        grid_function%max_ao_m_order = 0
+      case ('ed_gradient',&
+            'rots', &
+            'rotj')
+        grid_function%tensor_order = 1
+        grid_function%max_ao_g_order = 1
+        grid_function%max_ao_m_order = 0
+      case ('gradj')
+        grid_function%tensor_order = 2
+        grid_function%max_ao_g_order = 1
+        grid_function%max_ao_m_order = 0
+      case ('ed_hessian')
+        grid_function%tensor_order = 2
+        grid_function%max_ao_g_order = 2
+        grid_function%max_ao_m_order = 0
+      case ('ed_laplacian',&
+            'ed_sign_lambda2',&
+            'kinlap',&
+            'kinnr') 
+        grid_function%tensor_order = 0
+        grid_function%max_ao_g_order = 2
+        grid_function%max_ao_m_order = 0
+      case ('spinor_components')
+        grid_function%tensor_order = 0
+        grid_function%max_ao_g_order = 0
+        grid_function%max_ao_m_order = 0
+      case default
+        write(*, *) 'Input error. Unknown grid function name.'
+        stop
+    end select
+
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine should_depend_on_rsp_data(grid_function)
+    class(grid_function_t), intent(inout):: grid_function
+
+    if (grid_function%wf_order == 1) then
+      !
+    end if
+
+  end subroutine
+
+
+! strings
+
+  subroutine trim_ch(s_out, s_inp, ch)
+
+!     --------------------------------------------------------------------------
+      character(*), intent(out) :: s_out
+      character(*), intent(in) :: s_inp
+      character(1), intent(in) :: ch
+!     --------------------------------------------------------------------------
+      integer                  :: i,j,k
+!     --------------------------------------------------------------------------
+
+      if (len(s_inp) <= 0) return
+
+      k = 0
+      do i = 1, len(s_inp)
+        if (s_inp(i:i) .ne. ch) then
+          k = k + 1
+          s_out(k:k) = s_inp(i:i)
+        end if
+      end do
+      s_out = s_out(1:k)
+
+   end subroutine
+
+
+
+#ifdef VAR_MPI
+  subroutine sync_visual_cfg()
+    !
+    ! this subroutine syncs data stored in rs_input
+    ! if any new variable has been added to this dt, please also add it here
+    !
+    use visual_mpi
+    use interface_to_mpi
+    use integer_kind_mpilib
+
+    call interface_mpi_bcast(rs_input%print_level,1,irank_master,global_communicator)
+    call interface_mpi_bcast(rs_input%print_unit,1,irank_master,global_communicator)
+    call interface_mpi_bcast(rs_input%cvalue,1,irank_master,global_communicator)
+    call interface_mpi_bcast(rs_input%gauge_origin,3,irank_master,global_communicator)
+    call interface_mpi_bcast(rs_input%nr_grids,1,irank_master,global_communicator)
+    call interface_mpi_bcast(rs_input%nr_grid_functions,1,irank_master,global_communicator)
+    if (.not.mpi_is_master()) then
+      ! the allocation on master happens during DIRAC input reading (input/input_reader_sections.F90)
+      allocate(rs_input%grids(rs_input%nr_grids))
+      allocate(rs_input%grid_functions(rs_input%nr_grid_functions))
+    end if
+
+    ! legacy and variables from DIRAC's common blocks
+
+    if (rs_input%print_level > 1) call logprint
+  end subroutine sync_visual_cfg
+
+  subroutine logprint
+    use visual_mpi
+    write(*, *) 'Data on node ', get_my_rank(), 'print_level =       ', rs_input%print_level
+    write(*, *) 'Data on node ', get_my_rank(), 'nr_grids            ', rs_input%nr_grids
+    write(*, *) 'Data on node ', get_my_rank(), 'nr_grid_functions   ', rs_input%nr_grid_functions
+    !write(*, *) 'Data on node ', get_my_rank(), 'allocated_grids:    ', rs_input%allocated_grids()
+  end subroutine logprint
+
+#endif
+
+! ------------------------------------------------------------------------------
+! string mangling subroutines
+! probably deserve a separate module and a better interface
+
+   function lowercase(s)
+
+!     copied from input/input_reader.F90
+!     --------------------------------------------------------------------------
+      character(*), intent(in) :: s
+      character(len(s))        :: lowercase
+!     --------------------------------------------------------------------------
+      integer                  :: off, i, ia
+!     --------------------------------------------------------------------------
+
+      lowercase = s
+
+      off = iachar('a') - iachar('A')
+
+      do i = 1, len(s)
+         ia = iachar(s(i:i))
+         if (ia >= iachar('A') .and. ia <= iachar('Z')) then
+            lowercase(i:i) = achar(ia + off)
+         end if
+      enddo
+
+   end function
+
+
+! ------------------------------------------------------------------------------
+  elemental subroutine str2int(str,int1,stat)
+    implicit none
+    character(len=*),intent(in) :: str
+    integer,intent(out)         :: int1
+    integer,intent(out)         :: stat
+
+    read(str,*,iostat=stat)  int1
+  end subroutine str2int
+
+! ------------------------------------------------------------------------------
+  elemental subroutine str2flt(str,flt,stat)
+    implicit none
+    character(len=*),intent(in) :: str
+    real(8),intent(out)         :: flt
+    integer,intent(out)         :: stat
+
+    read(str,*,iostat=stat)  flt
+  end subroutine str2flt
+
+
+   function word_count(s,sep)
+
+!     --------------------------------------------------------------------------
+      character(*), intent(in) :: s
+      character(len=1), intent(in) :: sep
+      integer                  :: word_count
+!     --------------------------------------------------------------------------
+      integer                  :: i
+      logical                  :: is_blank
+!     --------------------------------------------------------------------------
+
+      word_count = 0
+
+      if (len(s) <= 0) return
+
+      is_blank = .true.
+
+      do i = 1, len(s)
+         if (s(i:i) == sep) then
+            is_blank = .true.
+         else if (is_blank) then
+            word_count = word_count + 1
+            is_blank = .false.
+         end if
+      end do
+
+   end function
+
+   subroutine split_string(str, nr_words, word_array, separator)
+
+!     --------------------------------------------------------------------------
+      integer, intent(in)   :: nr_words
+      character(len=*), intent(in) :: str
+      character(len=*), intent(inout):: word_array(nr_words)
+      character(len=1), optional, intent(in) :: separator
+!     --------------------------------------------------------------------------
+      integer                  :: i,j
+      integer,allocatable::pos(:)
+      integer                  :: len_str
+      character(len=1):: sep
+!     --------------------------------------------------------------------------
+
+      len_str = len_trim(str)
+      if (len_str <= 0) return
+
+      if (present(separator)) then
+        sep=separator
+      else
+        sep=' '
+      end if
+
+      allocate(pos(nr_words-1))
+      pos = 0
+
+      j = 0
+      do i = 1, len_str
+         if (str(i:i) == sep) then
+            j = j + 1
+            pos(j) = i
+         end if
+      end do
+
+      word_array(1)(1:) = str(1:pos(1)-1)
+      do i = 1, nr_words-2
+        word_array(i+1)(1:) = str(pos(i)+1:pos(i+1)-1)
+      end do
+      word_array(nr_words)(1:) = str(pos(nr_words-1)+1:)
+
+      deallocate(pos)
+
+   end subroutine
 
 end module

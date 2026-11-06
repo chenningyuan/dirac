@@ -1,1 +1,1 @@
-pam --inp=density.inp --mol=h2o.mol --put="DFCOEF PAMXVC" --get=plot.3d.cube
+pam --inp=density.inp --mol=h2o.mol --put="CHECKPOINT.h5 PAMXVC" --get=plot.3d.cube

@@ -615,9 +615,6 @@ contains
     type(matrix),  intent(in)    :: D
     type(matrix),  intent(inout) :: G
 !   ----------------------------------------------------------------------------
-    integer                      :: npos_nr
-    integer,       allocatable   :: npos(:)
-
     real(8), pointer   :: work(:)
     integer                      :: lwork
     integer                      :: iprint
@@ -625,9 +622,6 @@ contains
     if (.not. isdef(G)) call init_mat(G, ntbas(0), ntbas(0))
     G = 1.0d0*D !inherit symmetry information
     G%elms = 0.0d0
-
-    call get_npos(npos_nr)
-    call alloc(npos, npos_nr)
 
 !   fixme:
 !   call with proper limit
@@ -644,15 +638,12 @@ contains
                   G%elms,        &
                   D%elms,        &
                   1,             &
-                  npos,          &
                   integral_flag, &
                   iprint,        &
                   work,          &
                   lwork)
 
     call di_deselect_wrk(work, lwork)
-
-    call dealloc(npos)
 
   end subroutine
 
@@ -876,20 +867,4 @@ contains
     end if
 
   end subroutine
-      SUBROUTINE GET_NPOS(NPOS)
-#include "implicit.h"
-#include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
-#include "dcbgen.h"
-#include "dcbdhf.h"
-#include "dcbbas.h"
-#include "cbihr2.h"
-#include "blocks.h"
-#include "dcbfir.h"
-      integer npos
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-      end subroutine
-
 end module

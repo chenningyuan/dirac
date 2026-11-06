@@ -56,18 +56,12 @@ module london_direct_hb
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbnmr.h"
-#include "dcbxpr.h"
 #include "dgroup.h"
 #include "dcbprp.h"
 #include "aovec.h"
 #include "blocks.h"
-#include "dcbfir.h"
-#include "dcbham.h"
-#include "iratdef.h"
 #include "cbihr2.h"
 #include "dcbdhf.h"
-#include "shells.h"
-#include "infpar.h"
 
 contains
 
@@ -240,8 +234,6 @@ contains
   subroutine initialize_direct_lao()
 !   --------------------------------------------------------------------
     integer :: i
-
-#include "dcbfir.h"
 !   --------------------------------------------------------------------
 
 !     symmetry info for 2-el LAO integrals
@@ -277,8 +269,6 @@ contains
     real(8), pointer       :: work(:)
     integer                :: lwork
 
-    integer, allocatable   :: npos(:)
-
     integer :: i2typ
     integer :: itype, max_deriv, iatom
     logical :: nodv, nopv, nocont, retur, relcal, ddfock, fckddr, &
@@ -311,11 +301,7 @@ contains
       mtottk(1) = nlrgbl*(nlrgbl+1)/2
       mtottk(2) = nlrgbl*(nlrgbl+1)/2
       mtottk(3) = nsmlbl*(nsmlbl+1)/2
-! from dcbfir.h,
-! her_pardrv needs it and it is passed through common blocks
-      first1 = .true.
-      first2 = .true.
-      first3 = .true.
+      call HERPAR_RESET_TASK_ORDER()
 #endif
 
 
@@ -330,16 +316,12 @@ contains
         call di_select_wrk(work, lwork)
 #ifdef VAR_MPI
         if (parcal) then
-           call alloc(npos, mtottk(i2typ))
-           npos = 0
            call dirac_parctl( HERFCK_PAR )
 
            call her_pardrv(work,lwork,fmat,dmat,nr_mat,irepdm,                   &
                            ifock_type,itype,max_deriv,iatom,nodv,nopv,nocont,   &
-                           tktime,.false.,first, npos,mtottk(i2typ),          &
+                           tktime,.false.,first, mtottk(i2typ),               &
                            i2typ,(/0/),(/0.0d0/),(/0.0d0/),(/0.0d0/),(/0.0d0/),(/0.0d0/))
-
-           call dealloc(npos)
         else
 #endif 
           call twoint(work, lwork, fmat, dmat, nr_mat, irepdm, ifock_type, &

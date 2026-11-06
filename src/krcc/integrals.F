@@ -59,7 +59,7 @@ C Assuming this position (at least until a new one is taken)
      &                  WORK,KFREE,LFREE)
 *
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "symm.inc"
@@ -585,7 +585,7 @@ C    &               WORK(KFREE),LFREE,IPROPT)
 *
       SUBROUTINE AN_IDIOT(I)
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "crun.inc"
 *
@@ -629,7 +629,7 @@ C    &               WORK(KFREE),LFREE,IPROPT)
      &                            LABEL,IPRNT,
      &                            WORK,KFREE,LFREE)
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "ctcc.inc"
@@ -1250,7 +1250,7 @@ C     CALL MEMCHK_KRCC(WORK)
 C
 C Routine to see if there has been a change in the type of integral
 C
-#include "implicit.inc"
+#include "implicit.h"
 C from 1 to
       NTEST = 00
       ICHANGE = 0
@@ -1511,7 +1511,7 @@ C     CALL MEMCHK_KRCC(WORK)
 *
       subroutine kkr_set_KRCC(KR,IDIM,ISYDI,NIRR,INVSYM)
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       dimension KR(-IDIM:IDIM),ISYDI(NIRR)
 *
@@ -1551,7 +1551,7 @@ C     CALL MEMCHK_KRCC(WORK)
       subroutine getind_nz3_KRCC(YINT,INDEX,IRI,IDIM,INVREO,
      &                      KR,NASHT,NNASHX,DMFC,H2AC,IPRNT)
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "dgroup.h"
 *
 C     dimension DMFC(*),H2AC(*)
@@ -1861,8 +1861,8 @@ c
 #endif
 c
 C
-C     Read integrals (x>y)
-C     --------------------
+C     Read integrals (x.ge.y)
+C     -----------------------
 C
 C     zero arrays
 C
@@ -2111,7 +2111,7 @@ C         END DO
 *
       SUBROUTINE DIFFF(VEC1,VEC2,NDIM)
 *
-#include "implicit.inc"
+#include "implicit.h"
       DIMENSION VEC1(NDIM), VEC2(NDIM)
 *
       ITOOMUCH = 0

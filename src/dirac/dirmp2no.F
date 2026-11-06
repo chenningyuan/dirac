@@ -29,14 +29,10 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 C
 #include "dcbgen.h"
 #include "dcbpsi.h"
-#include "dcbbas.h"
-#include "dcborb.h"
 #include "dgroup.h"
-#include "../moltra/dcbtra.h"
 #include "dcbmp2no.h"
 C
       PARAMETER (NTABLE = 8)
@@ -46,9 +42,6 @@ C
 C
 C  .ACTIVE  - (string) Spinors to be included in the MP2 calculation
 C             Default: "energy -10.0 20.0 0.2"
-C  .MAX VS  - (integer) maximum number of virtuals in MP2
-C             if energy criterium gives more then max energy will be
-C             reduced
 C  .SCHEME  - transformation scheme used for MOLTRA (default taken from moltra)
 C  .SEL NO  - select min NO for active orbitals afterwards (relccsd,
 C             lucita, kr-mcscf, luciarel, ...)
@@ -62,7 +55,7 @@ C  .FOCKNO  - transform selected NO's to canonical Fock orbitals in
 C             subspace (?? for better convergence in CI?)
 C  
       SAVE SET
-      DATA TABLE /'.ACTIVE','.PRINT ','.INTFLG','.F2CONT','.MAX VS',
+      DATA TABLE /'.ACTIVE','.PRINT ','.INTFLG','.F2CONT','xxxxxxx',
      &            '.SCHEME','.SEL NO','.MULPOP'/
       DATA SET/.FALSE./
 C
@@ -82,7 +75,6 @@ C
 C     Initialize /CBIMP2NO/
 C     =====================
 C
-      DEF_EN   = .TRUE. ! VECMP2NO(I) is default with energy criterium
 #ifdef DEBUG_MP2_NO
       IPRMP2NO = MAX(10,IPRGEN)
 #else
@@ -104,7 +96,6 @@ C     step
         VECMP2NO(I) = 'energy -10.0 20.0 0.2 '
         VECNOSEL(I) = 'NO-occ 1.99999999 0.0001 0.1 '
       ENDDO
-      IMAXVSP     = JMAXVSP
 Caspg, default changed from scheme 4 to scheme 6
 cayaki_03_06_2022
 c     default changed from scheme 6 to scheme 4, because scheme 4 is faster
@@ -143,7 +134,6 @@ C
     1          CONTINUE
 C&&&& ACTIVE: Spinors to be included in the MP2 calculation
                   READ(LUCMD,'(A72)') (VECMP2NO(I),I=1,NFSYM)
-                  DEF_EN = .FALSE.
                GO TO 100
     2          CONTINUE
 C&&&& PRINT: General print level
@@ -162,8 +152,7 @@ C&&& F2CONT: Specify Coulomb/exchange contributions
                   READ(LUCMD,*) IFCMP2NO,IFEMP2NO
                GO TO 100
     5          CONTINUE
-C&&& MAX VS: Specify max. number of virtual. spinors in NO-MP2 calculation
-                  READ(LUCMD,*) IMAXVSP
+C&&& 
                GO TO 100
     6          CONTINUE
 C&&& SCHEME: Specify integral transformation scheme for MP2 (RELCCSD
@@ -216,8 +205,6 @@ C
       ENDDO
       WRITE(LUPRI,'(A,I3)') ' * Integral transformation scheme: ',
      &                          IAOMOSCHEME
-      WRITE(LUPRI,'(A,I3)') ' * Maximum number of virtual spinors: ',
-     &                          IMAXVSP    
       IF(ILLINT.EQ.0) WRITE(LUPRI,'(A)') ' * No LL contributions'
       IF(ISLINT.EQ.0) WRITE(LUPRI,'(A)') ' * No SL contributions'
       IF(ISSINT.EQ.0) WRITE(LUPRI,'(A)') ' * No SS contributions'
@@ -246,7 +233,6 @@ C
 !
 !     July 2015, Hans Joergen Aa. Jensen
 !
-#include "priunit.h"
       CHARACTER VECMP2NO_occ*(*)
       INTEGER   NSTR, VEC(NSTR), NOCC_I, I, J, MAX_occ
       VECMP2NO_occ = ' '
@@ -287,14 +273,9 @@ C
 #include "maxorb.h"
 #include "aovec.h"
 C
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
 C
-#include "dcbfir.h"
 #include "dcbgen.h"
 #include "dcbmp2no.h"
-#include "blocks.h"
 C
       LOGICAL SAVEFLAGS(4), TOBE, FNDLAB
 C
@@ -354,9 +335,7 @@ C***********************************************************************
 
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 C
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
@@ -711,6 +690,8 @@ C
 C
 C     NSTR(I): Number of Spinors to be Transformed for index I
 C
+      NSTR(:,:,:) = 0
+      NSTRT(:) = 0
       DO I = 1,4
         NSTRT(I) = 0
         DO IFRP = 1,NFSYM
@@ -869,9 +850,9 @@ C
      &                   NSTR(IFRP,0,I),WORK(KVEC(IFRP,I)),
      &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
      &                   NFBAS(IFRP,0),NORB(IFRP))
-             CALL SELEIG(EIG(1+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
+             CALL SELEIG(EIG(1+IORB(IFRP)),NPSH(IFRP),WORK(KE(IFRP,I)),
      &                 WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-             CALL SELIBEIG(IBEIG,IORB(IFRP),IFRP,
+             CALL SELIBEIG(IBEIG,IORB(IFRP),NPSH(IFRP),
      &                     WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
      &                     NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           ENDIF
@@ -886,10 +867,10 @@ C
 !    &                   NSTR(IFRP,0,I),WORK(KVEC(IFRP,I)),
 !    &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
 !    &                   NFBAS(IFRP,0),NORB(IFRP))
-             CALL SELEIG(EIG(1+IORB(IFRP)),IFRP,
+             CALL SELEIG(EIG(1+IORB(IFRP)),NPSH(IFRP),
      &                   WORK(KE_ONE(IFRP,I)),WORK(KVEC_ONE(IFRP,I)),
      &                   NSTR_ONE(IFRP,2,I),NSTR_ONE(IFRP,1,I))
-             CALL SELIBEIG(IBEIG,IORB(IFRP),IFRP,
+             CALL SELIBEIG(IBEIG,IORB(IFRP),NPSH(IFRP),
      &                   WORK(KIBE_ONE(IFRP,I)),WORK(KVEC_ONE(IFRP,I)),
      &                   NSTR_ONE(IFRP,2,I),NSTR_ONE(IFRP,1,I))
           ENDIF
@@ -903,8 +884,8 @@ C
       deallocate (ibeig)
 C
 C     If necessary recanonize (virtual) orbitals
-C     Assuming that all sets are equal, we use the first index !!!
-C     ============================================================
+C     Assuming that first index corresponds to the most general set
+C     =============================================================
 C
       IF (RCORBS) THEN
          WRITE(LUPRI,'(/A)') 'Info: RCORBS set, calling VIRCAN'
@@ -983,17 +964,6 @@ C
          NAVIR(IFRP) = NSTR(IFRP,0,1) - NAOCC(IFRP)
          NAVIRT = NAVIRT + NAVIR(IFRP)
       ENDDO
-C
-C     if selection criterion is set check for max. virt. 
-C
-      IF( DEF_EN )THEN
-        IF( NAVIRT .gt. IMAXVSP ) THEN
-          WRITE(LUPRI,'(/A,I5/A,I5/A)')
-     &       ' NOTE: number of active virt.:',NAVIRT,
-     &       ' Maximum number of act. virt.:',IMAXVSP,
-     &       ' You may reconsider your choice of active space'
-        END IF
-      END IF
 C     
 C     number of inactive virtuals
 C 
@@ -1089,8 +1059,10 @@ C     by making all the MO coefficients for these orbitals zero.
 
       IF (.NOT.NO2IND) THEN
          NSPC2=-1
+         KQ_ONE(1:2,1) = KQ(1:2,1) ! we know index 1 is the general index in (go|go)
+         KQ_ONE(1:2,2) = KQ(1:2,1)
          CALL TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR_ONE,NSTRT_ONE,NSPC,
-     &               KQ,KQC,KE_ONE,KIBE_ONE,NSPC2)
+     &               KQ_ONE,KQC,KE_ONE,KIBE_ONE,NSPC2)
       END IF
 
       CALL FLSHFO(LUPRI)
@@ -1179,12 +1151,9 @@ C     written by S.Knecht - July 2008
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
-#include "dcbmp2no.h"
       DIMENSION CMO(*), EIG(*), EIG_NAT(*),ibeig(*)
       character(len=8) :: label
 C
@@ -1291,7 +1260,7 @@ C
       end do
 C
       IF( IPRMP2NO .ge. 5 ) THEN 
-         CALL HEADER('final MP2 natural orbitals:',-1)
+         CALL HEADER('Final MP2 natural orbitals:',-1)
          DO I = 1,NFSYM
             CALL HEADER('Coefficients for irrep '//CHAR(I+48),-1)
             WRITE(LUPRI,*) ' printing offset ICMOQ(I)+1',ICMOQ(I)+1
@@ -1311,10 +1280,8 @@ C
       subroutine reorder_mp2no(cmo,occ,ibeig)
 
       implicit none
-#include "priunit.h"
 C
 #include "dcborb.h"
-#include "dcbgen.h"
 #include "dgroup.h"
        real(8), intent(inout) :: cmo(*), occ(*)
        integer, intent(inout) :: ibeig(*)
@@ -1334,6 +1301,11 @@ C
 
        reorder_fermion = -1
        reorder_list    =  0
+
+#ifdef DEBUG_MP2_NO
+       write(lupri,*) ' mp2 occupation numbers'
+       write(lupri,'(10F10.6)') occ(1:nesht)
+#endif
 
 !      create list for reordering in descending order according to occupation numbers
 !      ------------------------------------------------------------------------------

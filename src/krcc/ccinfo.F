@@ -3470,7 +3470,7 @@ C          CALL IWRTMA(IOCCLS,NGAS,NOCCLS,NGAS,NOCCLS)
 * be in a single orbital space,
 *
 * If IFLAG = 1, only the number of orbital excitation types is generated
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 *. Input
@@ -3680,7 +3680,7 @@ C             print*,'NCREA,NANNI',NCREA,NANNI
 *               Updated with Active-Active excitations, March 2000
 *               SOX<=>OX mapping added, Spring 2001
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cstate.inc"
@@ -3923,7 +3923,7 @@ C?    CALL IWRTMA(ISPOBEX_TP(1,1),4*NGAS,1,4*NGAS)
 *
 * Note : in input NSOX should be the extended number including
 *        the unit operator
-#include "implicit.inc"
+#include "implicit.h"
 *.  Input
       INTEGER IEXTP_TO_OCCLS(NOCCLS),ISOX_TO_OX(NSOX)
 *. Output
@@ -3978,7 +3978,7 @@ C?   &                 ISOX_TO_OX(ISOX)
 * A possiblility to add operator have been added but currently not in use!
 * Added by Lasse 2007
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 *. Input
 C      DIMENSION ISPOBEX_TP(4*NGAS,NSPOBEX_TP)
@@ -4048,7 +4048,7 @@ C        CALL IWRTMA(ISPOBEX_PAIRS,1,NSPOBEX_TP,1,NSPOBEX_TP)
 *
 * Jeppe Olsen, July 2000
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input
       INTEGER ISPOBEX_TP(4*NGAS,NSPOBEX_TP)
 *. Output
@@ -4161,7 +4161,7 @@ C     IBOBEX_TP(4,NBOBEX_TP) = 0
 *
 * Jeppe Olsen, July 2000 ( At summerschool, HNIE)
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 *
 *. Specific input
@@ -4250,7 +4250,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
 *
 * Jeppe Olsen, Summer of 99
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input/Output
       INTEGER IOPGAS(NGAS),IOP(MXNOP)
 *
@@ -4294,7 +4294,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
       END
 *
       SUBROUTINE STUPID_ROUTINE(ITSOSO_TP,NTSOSO_TP,NGAS)
-#include "implicit.inc"
+#include "implicit.h"
       INTEGER ITSOSO_TP(4*NGAS,NTSOSO_TP)
       DO J=1,4*NGAS
       DO I = 1,NTSOSO_TP
@@ -4319,7 +4319,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
 *
 * Double group version
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. General input
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -4483,7 +4483,7 @@ C     END IF
 *
 * Lasse 2010
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -5030,7 +5030,7 @@ C     IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
 *
 * Will find the actual intermediates depending on IH and IP
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 *
@@ -6539,7 +6539,7 @@ C       END IF
 *
 * Jeppe Olsen, March 1999
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. General input
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -6606,7 +6606,7 @@ C          WRITE(6,*) ' Group not included in list '
 *
 * Jeppe Olsen, March 1999
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. General input
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -6905,7 +6905,7 @@ C    &     MAXVAL(NGAS).LT.ISYM(NGAS)    )NONEW = 1
 * ================
 *. Driver routine
 * ================
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "lucinp.inc"
 *
@@ -6947,7 +6947,7 @@ C       CALL SYMCMDG_KRCC(ITASK,IOBJ,I1,I2,I12)
 *
 * Double group version, written for compatibility with general symmetry
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "symm.inc"
 *
@@ -6971,7 +6971,7 @@ C       CALL SYMCMDG_KRCC(ITASK,IOBJ,I1,I2,I12)
 * IDIAG = 1 : Diag in alpha, beta
 *
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input
       INTEGER NCA(NGAS),NCB(NGAS),NAA(NGAS),NAB(NGAS)
 *
@@ -7004,7 +7004,7 @@ C       CALL SYMCMDG_KRCC(ITASK,IOBJ,I1,I2,I12)
 *
 * Jeppe Olsen,  Summer of 99
 *
-#include "implicit.inc"
+#include "implicit.h"
       INTEGER ADD
 #include "mxpdim.inc"
 *. Output
@@ -7155,7 +7155,7 @@ C
 * If IFLAG = 1, then only the number of spinorbital excitation operators is
 *               returned, not the actual operators.
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 *. Local scratch
       INTEGER NCA(MXPNGAS),NCB(MXPNGAS),NAA(MXPNGAS),NAB(MXPNGAS)
@@ -7402,7 +7402,7 @@ C     Double group
 *
 * Find the possible MUB values for a given Kramers flip
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       INTEGER IVEC(0:IEXCITE,0:IKRFLIP,-IEXCITE:IEXCITE)
 *
@@ -7443,7 +7443,7 @@ C     Double group
 * operator along with position of and operator with given  N,Mk,Mub in
 * new sorting
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       INTEGER IVECS(0:IEXCITE,-IKRFLIP:IKRFLIP,-IMUB:IMUB)
       INTEGER IVECF(0:IEXCITE,-IKRFLIP:IKRFLIP,-IMUB:IMUB)
@@ -7543,7 +7543,7 @@ C     Double group
 *
 * Will give N,MK,MUB of any operator
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       INTEGER IOP(4*NGAS)
 *
@@ -7603,7 +7603,7 @@ C     Double group
 * Just a little routine to restore some mapping between SOX and OX after
 * the sorting of the cluster operator
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       INTEGER NEWORDER(NDIM),ISOX_TO_OX(NDIM)
 * local scratch

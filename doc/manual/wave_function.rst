@@ -115,13 +115,18 @@ Activates the  :ref:`**EXACC` module, the new coupled cluster implementation
 based on the ExaTensor library.
 
 
+keyword(CASPT2)
+Activates the :ref:`*CASPT2` module. complete active space second-order
+perturbation theory calculation.
+
+
 **Pre-SCF orbital manipulations**
 =================================
 
 keyword(REORDER MO)
 
 Interchange initial molecular orbitals prior to the SCF-calculation. The
-start orbitals from DFCOEF are read and reordered.
+start orbitals from CHECKPOINT.h5 are read and reordered.
 
 For each fermion irrep give the new order of orbitals.
 
@@ -148,7 +153,7 @@ rotate.
 
 keyword(POST SCF REORDER MO)
 
-Interchange converged molecular orbitals. The orbitals from DFCOEF are
+Interchange converged molecular orbitals. The orbitals from CHECKPOINT.h5 are
 read and reordered just before exiting the SCF subroutine.
 
 For each fermion irrep give the new order of orbitals.
@@ -163,7 +168,7 @@ For each fermion irrep give the new order of orbitals.
 
 keyword(PHCOEF)
 
-Phase adjustment of coefficients DFCOEF: make the largest element of a
+Phase adjustment of coefficients in CHECKPOINT.h5: make the largest element of a
 given orbital real and positive.
 
 

@@ -16,6 +16,25 @@
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
 #include "dirac_partask.h"
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C Variables related to indices in two- and four-electron integrals
+C  ifrp denotes fermion symmetry g/u (max 2)
+C
+C 4-electron integrals:
+C     KQ(ifrp,n)     - adresses of coefficient set for index n, fermion symmetry ifrp
+C     NQ(ifrp,n)     - number of MOs in coefficient set for index n, fermion symmetry ifrp
+C     NQT(n)         - number of MOs in coefficient set for index n, all fermion symmetries
+C     KIBE(ifrp,n)   - adresses of single group identification (for spinfree calculation)
+C     NSTR(ifrp,0,n) - total number of orbitals for index n
+C     NSTR(ifrp,1,n) - number of electronic orbitals for index n
+C     NSTR(ifrp,2,n) - number of positronic orbitals for index n
+C
+C 2-electron "core" integrals:
+C     KQC(ifrp,n)    - adresses of coefficient set for index n, fermion symmetry ifrp
+C
+C Other:
+C     KE(ifrp,2)     - adresses of eigenvalues (for MP2 calculation)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PAMTRA */
       SUBROUTINE PAMTRA()
@@ -40,7 +59,6 @@ C***********************************************************************
 #include "dummy.h"
 C
 #include "maxorb.h"
-#include "dcbpsi.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
@@ -50,8 +68,6 @@ C
 
 ! until the KRMCSCF/KRMCOLD issue with IBEIG has been fixed...
 #include "dcbham.h"
-
-#include "dcbmp2.h"
       CHARACTER*24 DAYTID
       LOGICAL TOBE,TOBEK,TOBEKK,TRASAM,ACTIVE
       DIMENSION NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
@@ -221,7 +237,7 @@ C
       CALL DZERO(EIG,NORBT)
 
       SELECT CASE ( MOFILE_TRAINP )
-         CASE ( "DFCOEF" )
+         CASE ( "CHECKPOINT", "DFCOEF" ) ! DFCOEF kept so copies of old input files will work
             TOBEK  = .FALSE.
             TOBEKK = .FALSE.
          CASE ( "KRMCSCF" )
@@ -297,9 +313,9 @@ C
      &                   NSTR(IFRP,0,I),WORK(KVEC(IFRP,I)),
      &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
      &                   NFBAS(IFRP,0),NORB(IFRP))
-             CALL SELEIG(EIG(1+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
+             CALL SELEIG(EIG(1+IORB(IFRP)),NPSH(IFRP),WORK(KE(IFRP,I)),
      &                 WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-             CALL SELIBEIG(IBEIG,IORB(IFRP),IFRP,
+             CALL SELIBEIG(IBEIG,IORB(IFRP),NPSH(IFRP),
      &                     WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
      &                     NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           ENDIF
@@ -786,9 +802,9 @@ C
      &         IFRP,WORK(KQ(IFRP,I)),NSTR(IFRP,0,I),
      &         WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I),
      &         NFBAS(IFRP,0),NORB(IFRP))
-          CALL SELEIG(EIG(1+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
+          CALL SELEIG(EIG(1+IORB(IFRP)),NPSH(IFRP),WORK(KE(IFRP,I)),
      &         WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-          CALL SELIBEIG(IBEIG,IORB(IFRP),IFRP,
+          CALL SELIBEIG(IBEIG,IORB(IFRP),NPSH(IFRP),
      &                  WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
      &                  NSTR(IFRP,2,I),NSTR(IFRP,1,I))
         ENDDO
@@ -895,9 +911,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 C
-#include "maxorb.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
@@ -1150,9 +1164,9 @@ C
      &                   NSTR(IFRP,0,I),WORK(KVEC(IFRP,I)),
      &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
      &                   NFBAS(IFRP,0),NORB(IFRP))
-             CALL SELEIG(EIG(1+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
+             CALL SELEIG(EIG(1+IORB(IFRP)),NPSH(IFRP),WORK(KE(IFRP,I)),
      &                 WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-             CALL SELIBEIG(IBEIG,IORB(IFRP),IFRP,
+             CALL SELIBEIG(IBEIG,IORB(IFRP),NPSH(IFRP),
      &                     WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
      &                     NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           ENDIF
@@ -1230,7 +1244,6 @@ C*****************************************************************************
 #include "priunit.h"
 C
 #include "dgroup.h"
-#include "dcborb.h"
       DIMENSION IOS1(*),IOS2(*),NSTR(2,0:2,4)
 C
       WRITE(LUPRI,'(1X,A,A3)') '* Fermion ircop ',FREP(I)
@@ -1274,7 +1287,6 @@ C*****************************************************************************
 #include "priunit.h"
 C
 #include "dgroup.h"
-#include "dcborb.h"
       DIMENSION IOS1(*),IOS2(*),IOS3(*),IOS4(*)
       DIMENSION NSTR(2,0:2,NINDEX)
 C
@@ -1348,23 +1360,18 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 C
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "symmet.h"
-#include "dcbgen.h"
-#include "dcborb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 C
       LOGICAL ANTIS,LMP2
       DIMENSION NSTR(2,0:2,4),NDMOQR(2,2,4),ICMOQR(2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),DINTSKP(4,2),WORK(*)
-C
-#include "dcbibt.h"
 C
       KFRSAV = KFREE
       call memchk('Start of PAMTR1',WORK,1)
@@ -1487,16 +1494,11 @@ C     Written by Joost van Stralen september 2003
 C     
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
 C
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "symmet.h"
-#include "dcbgen.h"
-#include "dcborb.h"
-#include "dcbtra.h"
+#include "comdis.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 C
@@ -1505,8 +1507,6 @@ C
       DIMENSION XMO(*)
       DIMENSION NSTR(2,0:2,4),NDMOQR(2,2,4),ICMOQR(2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),DINTSKP(4,2),WORK(*)
-C    
-#include "dcbibt.h"
 C
       KFRSAV = KFREE
 C
@@ -1552,11 +1552,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbgen.h"
 #include "dcbbas.h"
-#include "dcborb.h"
 #include "dgroup.h"
-#include "dcbmp2.h"
 C
 C     Now say hi and give orbital information
 C
@@ -1589,10 +1586,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
-#include "dcbtra.h"
       CHARACTER*24 DAYTID
       LOGICAL TOBE,TOBEK
 C
@@ -1677,7 +1671,6 @@ C
 C     - HMAT         Symmetry packed half-transformed integrals
 C
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
 C
       LOGICAL   TRIAN
@@ -1693,6 +1686,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbibt.h"
 C
       CALL QENTER('MS4IN1')
@@ -1885,7 +1879,6 @@ C               The distributions are stored as full squares with
 C               symmetry reduction.
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 C
 #include "comdis.h"
@@ -1895,7 +1888,6 @@ C
       DIMENSION WORK(LWORK),DINTSKP(*)
 #include "cbihr2.h"
 #include "dorps.h"
-#include "ccom.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -1954,7 +1946,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "maxorb.h"
 #include "aovec.h"
 #include "blocks.h"
-#include "dcbbas.h"
 C
       LOGICAL L2TYP(0:4),LBIT
 C
@@ -2211,9 +2202,7 @@ C
 #include "maxorb.h"
 #include "aovec.h"
 #include "blocks.h"
-#include "dcbtra.h"
 #include "dcbbas.h"
-#include "dgroup.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "symmet.h"
@@ -2353,12 +2342,11 @@ C
       DIMENSION IJPASS(0:7,*)
       DIMENSION IABIND(*)
       DIMENSION IND(2)
-#include "twocom.h"
 #include "dgroup.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "symmet.h"
-#include "dcbtra.h"
+#include "comdis.h"
 C
 #include "ibtfun.h"
 C
@@ -2519,10 +2507,8 @@ C
 C***********************************************************************
 ******
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
-#include "dcborb.h"
       DIMENSION IOS11(*),IOS12(*),IOS21(*),IOS22(*)
       DIMENSION NSTR1(2,0:2),NSTR2(2,0:2)
 C
@@ -2562,7 +2548,6 @@ C   Written by T.Saue Feb 1997
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION IOS1(*),IOS2(*),IBUF(*)
 C
@@ -2616,7 +2601,6 @@ C     Class 16 : Imaginary part of integrals (i    jbar |k    l   )
 C
 #include "implicit.h"
 #include "dcbtra.h"
-#include "dgroup.h"
 C
       IF (NCLASS.GT.16) CALL QUIT ('Only 16 integral classes defined')
 C
@@ -2759,7 +2743,6 @@ C
 #include "blocks.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "dcborb.h"
       LOGICAL SAME
       DIMENSION DRIJ(NSYMBL,NSYMBL,*),WORK(*),
      &          Q1(*),NDMOQ1(2,2),ICMOQ1(2),NSTR1(2,0:2),
@@ -2957,7 +2940,6 @@ C
 #include "aovec.h"
 C
 #include "dcbbas.h"
-#include "dcborb.h"
 #include "dgroup.h"
 #include "blocks.h"
       DIMENSION QB(*),Q(*),NDMOQR(2,2),ICMOQR(2),NSTR(2,0:2),
@@ -3024,7 +3006,6 @@ C     Written by T.Saue Sep 8 1998
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "aovec.h"
 C
@@ -3140,7 +3121,6 @@ C     Written by L.Visscher 2013
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "aovec.h"
 C
@@ -3349,7 +3329,6 @@ C     Written by T.Saue Sep 16 , based on existing code by Luuk
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbtra.h"
 #include "dgroup.h"
@@ -3402,8 +3381,6 @@ C
 C***********************************************************************
       use interface_to_mpi
 #include "implicit.h"
-#include "priunit.h"
-#include "infpar.h"
 #include "dummy.h"
 #include "aovec.h"
 #include "maxorb.h"
@@ -3411,10 +3388,8 @@ C
 #include "dcbgen.h"
 #include "dcbtra.h"
 #include "dgroup.h"
-#include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"
-#include "blocks.h"
       LOGICAL RECAN
       DIMENSION NDMOQR(2,2),ICMOQR(2),KQ(2),KE(2),KIBE(2),
      &          CMO(*),WORK(*)
@@ -3482,13 +3457,9 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
       PARAMETER(D0=0.0D0)
 C
-#include "dcbgen.h"
 #include "dgroup.h"
-#include "dcborb.h"
-#include "dcbbas.h"
 #include "dcbham.h"
       DIMENSION NDMOQR(2,2),ICMOQR(2),KQ(2),KE(2),KIBE(2),
      &          CMO(*),FAO(*),FMO(*),WORK(*)
@@ -3570,7 +3541,6 @@ C     Written by T.Saue Sep 29 1998
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       LOGICAL TESTOK
       DIMENSION EIG(*),IVEC(*)
@@ -3589,7 +3559,6 @@ C     Written by T.Saue Sep 29 1998
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION EIG(*),IVEC(*),IBUF(*)
 C
@@ -3658,22 +3627,17 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 #include "aovec.h"
 #include "maxorb.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C
 #include "dcbgen.h"
-#include "dcbfir.h"
 #include "dcbdhf.h"
-#include "blocks.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "dcborb.h"
 #include "dcbham.h"
-#include "cbihr2.h"
 CTOBS: Note the use of dcbdhf ! Should be generalized !!!
-      LOGICAL TOBE, SAVEFLAGS(4)
+      LOGICAL TOBE
       DIMENSION FMO(*),NFMO(2,2),IFMO(2),FAO(*),CMO(*),Q1(*),Q2(*),
      &          NCMO1(2,2),NCMO2(2,2),ICMO1(2),ICMO2(2),
      &          WORK(*)
@@ -3693,15 +3657,6 @@ C
       ELSE
         WRITE(LUPRI,'(A)')
      &    '*** WARNING *** GETFCK: No 2-Fock found. Regenerating.'
-
-        call SaveTaskDistribFlags(saveflags)
-       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
-        call SetIntTaskArrayDimension(NPOS,PARCAL)
-        if (NPOS.GT.0) THEN
-           CALL MEMGET2('INTE','IPOS',KPOS,NPOS,WORK,KFREE,LFREE)
-        else
-           KPOS = KFREE
-        endif
 
 C
 C       Closed shell Hartree - Fock
@@ -3723,9 +3678,7 @@ C       Hermitian operator
           CALL DENSTY(FAO,CMO,IPRINT)
         ENDIF
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,CMO,FAO,NFMAT,
-     &       WORK(KPOS),INTDHF,IPRINT,WORK(KFREE),LFREE)
-
-        IF(PARCAL) call SetTaskDistribFlags(saveflags)
+     &       INTDHF,IPRINT,WORK(KFREE),LFREE)
 
       ENDIF
 C
@@ -3810,9 +3763,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "infpar.h"
 C
-#include "maxorb.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
@@ -4001,9 +3952,9 @@ C
      &       IFRP,WORK(KQ(IFRP,1)),NSTR(IFRP,0,1),WORK(KVEC(IFRP,1)),
      &       NSTR(IFRP,2,1),NSTR(IFRP,1,1),
      &       NFBAS(IFRP,0),NORB(IFRP))
-        CALL SELEIG (WORK(KEIG+IORB(IFRP)),IFRP,WORK(KE(IFRP,1)),
+        CALL SELEIG (WORK(KEIG+IORB(IFRP)),NPSH(IFRP),WORK(KE(IFRP,1)),
      &               WORK(KVEC(IFRP,1)),NSTR(IFRP,2,1),NSTR(IFRP,1,1))
-        CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),IFRP,
+        CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),NPSH(IFRP),
      &                WORK(KIBE(IFRP,1)),WORK(KVEC(IFRP,1)),
      &                NSTR(IFRP,2,1),NSTR(IFRP,1,1))
       ENDDO
@@ -4036,9 +3987,9 @@ C       ---------------------------------------------
 C Miro/Aug 2016 - introduced DFT-COSCI, core-fock mtx contains xc contrib 
 
         CALL GTCFCK(WORK(KBUF),IPRRES,WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &            WORK(KQC(1)),WORK(KBUF1),NDMOQR,ICMOQR,NSTR(1,0,1),
-     &             NDMOQC,ICMOQC,NSPC(1,0),NSPC2,
-     &             INTRES,WORK,KFREE,LFREE)
+     &              WORK(KQC(1)),WORK(KBUF1),NDMOQR,ICMOQR,NSTR(1,0,1),
+     &              NDMOQC,ICMOQC,NSPC(1,0),NSPC2,
+     &              INTRES,WORK,KFREE,LFREE)
 C 
 C       Write MOLFDIR file MRCONEE
 C       --------------------------
@@ -4139,10 +4090,7 @@ C***********************************************************************
 
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
-#include "infpar.h"
 C
-#include "maxorb.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
@@ -4358,9 +4306,9 @@ C
 !@d  &       IFRP,WORK(KQ(IFRP,1)),NSTR(IFRP,0,1),WORK(KVEC(IFRP,1)),
 !@d  &       NSTR(IFRP,2,1),NSTR(IFRP,1,1),
 !@d  &       NFBAS(IFRP,0),NORB(IFRP))
-!@d     CALL SELEIG (WORK(KEIG+IORB(IFRP)),IFRP,WORK(KE(IFRP,1)),
+!@d     CALL SELEIG (WORK(KEIG+IORB(IFRP)),NPSH(IFRP),WORK(KE(IFRP,1)),
 !@d  &               WORK(KVEC(IFRP,1)),NSTR(IFRP,2,1),NSTR(IFRP,1,1))
-!@d     CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),IFRP,
+!@d     CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),NPSH(IFRP),
 !@d  &                WORK(KIBE(IFRP,1)),WORK(KVEC(IFRP,1)),
 !@d  &                NSTR(IFRP,2,1),NSTR(IFRP,1,1))
 !@d   ENDDO
@@ -4493,9 +4441,7 @@ C     Written by T.Saue Jan 18 1999
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
-#include "dcborb.h"
       DIMENSION IVEC(*)
       DO I = 1,NVEC
         IVEC(I) = IOFF + I
@@ -4514,8 +4460,6 @@ C     Written by L.Visscher may 1999
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
       PARAMETER(D0=0.0D0)
 C
       DIMENSION IBEIG(NBO),IBEIG2(NBO),VEC(NBO,NBO)
@@ -4567,10 +4511,7 @@ C
 C
 #include "infpar.h"
 C
-#include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "dcbgen.h"
 C
 #include "dorps.h"
 #include "dcborb.h"
@@ -4675,7 +4616,6 @@ C
 C
 #include "infpar.h"
 C
-#include "priunit.h"
 #include "maxorb.h"
 #include "aovec.h"
 #include "mxcent.h"
@@ -4684,13 +4624,13 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbmp2.h"
 #include "dcbmpt.h"
 #include "dcbbas.h"
 #include "symmet.h"
 #include "dgroup.h"
-#include "parint.h"
 #include "blocks.h"
 #include "twosta.h"
 C
@@ -4973,14 +4913,10 @@ C
 #include "infpar.h"
 C
 #include "dcbgen.h"
-#include "dcborb.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
-#include "dcbbas.h"
-#include "dgroup.h"
 #include "aovec.h"
 #include "maxorb.h"
-#include "blocks.h"
       LOGICAL   ANTIS,LMP2
       INTEGER   NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
       REAL(8)   DINTSKP(8),TIM1(7)
@@ -5082,13 +5018,9 @@ C
 C
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "dcbgen.h"
 C
 #include "dorps.h"
-#include "dcborb.h"
 #include "dcbtra.h"
-#include "dgroup.h"
 C
       LOGICAL LMP2
       DIMENSION DINTSKP(8),TIM1(7,*),WORK(*),IBUFMPI(5)
@@ -5252,7 +5184,6 @@ C     Trond Saue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       PARAMETER (NORDER=16)
       CHARACTER*4 REPA(4*NORDER)
