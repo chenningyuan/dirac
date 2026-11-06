@@ -23,7 +23,7 @@ coverage:
     - cd build-serial
     - make -j $N_PROC
     - ldd dirac.x    
-    - echo "Running ctest serially with $M jobs"
+    - echo "Running ctest serially with $N_PROC jobs"
     - ctest -j$N_PROC --output-on-failure -L "short|medium|long|verylong" -E "(${avoid_tests})" --timeout 3000
     - cd ..
 #   Parallel build for coverage
@@ -33,8 +33,8 @@ coverage:
     - cd build-mpi
     - make -j $N_PROC
     - ldd dirac.x    
-    - echo "Running ctest in parallel with $N_PROC jobs"
-    - ctest -j$N_PROC --output-on-failure -L "short|medium|long|verylong" -E "(${avoid_tests})" --timeout 3000
+    - echo "Running ctest in parallel with $M jobs"
+    - ctest -j$M --output-on-failure -L "short|medium|long|verylong" -E "(${avoid_tests})" --timeout 3000
     - cd ..
     - gcovr -r . build-serial build-mpi --merge-mode-functions=merge-use-line-min --gcov-ignore-errors=no_working_dir_found --filter '^src/.*' --filter '^utils/.*' --txt --print-summary -o coverage.txt
     - echo "Coverage report is available at coverage.txt"
