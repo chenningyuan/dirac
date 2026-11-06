@@ -50,6 +50,7 @@ C
       end module fitprimit_mod
 C
       SUBROUTINE REAINP(WORD,RELCAL,TSTINP)
+      use numder_mod, only: NOMOVE
       use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
       PARAMETER ( NTABLE = 12, D1 = 1.0D0)
@@ -59,7 +60,6 @@ C
 !     Parameter MAXPRD in cbirea.h is default for MAXPRI
 #include "cbirea.h"
 Caspg adding numder to set NOMOVE
-#include "numder.h"
 Caspg
 C
       DATA TABLE /'.PRINT ', '.OLDNOR', '.MAXPRI', '.BIGVEC',
@@ -232,6 +232,7 @@ C
 C
 C     Initialize /CBIREA/
 C
+      use numder_mod, only: NOMOVE
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
       LOGICAL RELCAL, TSTINP
@@ -239,7 +240,6 @@ C
 #include "ccom.h"
 #include "cbirea.h"
 Caspg adding numder to set NOMOVE
-#include "numder.h"
 Caspg
       THRS = 1.0D-15
 !     THRS   = 1.0D-12 ! default integral accuracy

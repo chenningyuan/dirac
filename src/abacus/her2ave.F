@@ -2487,7 +2487,7 @@ C      the same as is in the older brother dalton
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
 !      use codata_mod, only: DEBYE, XTANG
-!      use inirep_mod, only: NREPPI
+      use inirep_mod, only: IREPPI, NREPPI
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use chrxyz_mod, only: CHRXYZ
@@ -2502,7 +2502,6 @@ C      the same as is in the older brother dalton
       DIMENSION AMAT(3,3), IND(3)
       CHARACTER*(*) SPC
       CHARACTER LAB(3)*2, CHRABC(3)*1
-#include "inirep.h"
 #include "abainf.h"
 #include "dorps.h"
 C

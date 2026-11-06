@@ -483,12 +483,12 @@ C
 !      use blocks_mod, only: MAXSHL, NSYMBL
 !      use dorps_mod, only: DOCOOR, DOREPS
       use maxaqn_mod, only: MXAQN, MXQN
-!      use siripc_mod, only: NEWGEO
 !      use abainf_mod, only: DOSYM
 !      use cbisol_mod, only: SOLVNT
       use parint_mod, only: parint_t
 #if defined (VAR_MPI)
       use parint_mod, only: parint_bcast
+      use siripc_mod, only: NEWGEO
 #endif
       use interface_to_mpi
 #include "implicit.h"
@@ -511,7 +511,6 @@ C
 #include "inforb.h"
 #include "cbisol.h"
 #include "cbirea.h"
-#include "siripc.h"
 #include "dorps.h"
 C
       LOGICAL NODMAT,NOFMAT

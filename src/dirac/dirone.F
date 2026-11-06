@@ -4351,7 +4351,6 @@ C
 C*****************************************************************************
 !      use dcbcls_mod, only: CLSCAL, NPRPCLS
 !      use dcbham_mod, only: BSS, FREEPJ, ICTLV1C, IF, INTV1C, IPRHAM, LEVYLE, MC, MDIRAC, ONECAP, ONESYS, PROJEC, SPINFR, SSMTRC, SUB_BL, URKBAL, VEXTPJ, X2C
-!      use siripc_mod, only: NEWGEO
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NESH, NESHT, NFORB, NFRO, NORB, NORBT, NPSH
 !      use dcbdhf_mod, only: AOC, DF, I2TMOT, N2TMOTQ, NFMAT
 !      use dgroup_mod, only: ATOMIC, IPQTOQ, LINEAR, NFSYM, NZ
@@ -4397,6 +4396,7 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: CHARGE, NUCDEP, NUCIND
+      use siripc_mod, only: NEWGEO
 #include "implicit.h"
 #ifndef MOD_XAMFI
       logical :: aoomod   = .false.
@@ -4418,7 +4418,6 @@ C   PAMIOU: LUTMAT
 ! needed for restart from X2CMAT
 #include "dgroup.h"
 !x2cmmf
-#include "siripc.h"
       real(8), allocatable :: WORK(:)
       logical, intent(in)  :: GOFAST
 !     local scratch

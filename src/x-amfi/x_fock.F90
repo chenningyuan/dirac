@@ -313,11 +313,10 @@ contains
 ! !> in : density matrix (inactive + active ones) in AO basis
 !> out: 2e-Fock matrix in AO-basis
 !**********************************************************************
-!      use siripc_mod, only: NEWGEO
 #ifdef VAR_MPI
+      use siripc_mod, only: NEWGEO
 #include "mpif.h"
 #include "dirac_partask.h"
-#include "siripc.h"
 #endif
 real(8), intent(inout)             :: dmat(nrows,ncols,nz,nr_2e_fock_matrices)
 real(8), intent(out)               :: fmat(nrows,ncols,nz,nr_2e_fock_matrices)

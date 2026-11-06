@@ -338,6 +338,7 @@ C  /* Deck dipadd */
       END
 C  /* Deck polpri */
       SUBROUTINE POLPRI(AMAT,SPC,ITYPE1)
+      use inirep_mod, only: IREPPI, NREPPI
       use chrxyz_mod, only: CHRXYZ
       use symmet_mod, only: IPTAX, ISYMAX
       use mxcent_mod, only: MXCENT
@@ -351,7 +352,6 @@ C  /* Deck polpri */
       DIMENSION AMAT(3,3), IND(3)
       CHARACTER*(*) SPC
       CHARACTER LAB(3)*2, CHRABC(3)*1
-#include "inirep.h"
 #include "abainf.h"
 #include "inftap.h"
 #include "dorps.h"

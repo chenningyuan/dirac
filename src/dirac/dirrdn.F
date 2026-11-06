@@ -5278,14 +5278,13 @@ C***********************************************************************
 !      use cbirea_mod, only: CNTMAT
       use maxorb_mod, only: MXSHEL
 !      use dcbprl_mod, only: NPRPLBL
-!      use siripc_mod, only: INPPRC, NEWGEO
+      use siripc_mod, only: INPPRC, NEWGEO
       use consts_mod, only: D0
 !      use dcbxpr_mod, only: NPRPS
 !      use huckel_mod, only: HUCCNT, IHUCPT, IPRHUC, NHUCAO
 !      use dcbcls_mod, only: NPRPCLS
 #include "implicit.h"
 C
-#include "siripc.h"
 #include "huckel.h"
 #include "dcbgen.h"
 #include "cbirea.h"

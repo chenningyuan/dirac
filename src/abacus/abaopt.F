@@ -2266,7 +2266,6 @@ C
 !      use dcbmp2_mod, only: EMP2
 !      use dcbdhf_mod, only: DHFERG, EVCCNV, FCKCNV, SCFCNV
 !      use optinf_mod, only: CHGRDT, ENERGY, GRDTHR, NENECALCS, THRERG, THRSTP, THRSYM
-!      use siripc_mod, only: NEWGEO
       use dirac_cfg
       use dft_cfg
       use num_grid_gen
@@ -2281,9 +2280,9 @@ C
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
+      use siripc_mod, only: NEWGEO
 #include "implicit.h"
 #include "optinf.h"
-#include "siripc.h"
 #ifndef PRG_DIRAC
 #include "infinp.h"
 #include "gnrinf.h"
@@ -7472,6 +7471,7 @@ C
      &  PT
       use dummy_mod, only: IDUMMY
       use nuclei_mod, only: ISTBNU, NAMN, NUCDEP, NUCIND
+      use numder_mod, only: NOMOVE
 #include "implicit.h"
 C
       PARAMETER (DP5 = 0.50D0, D100=100.0D0)
@@ -7483,7 +7483,6 @@ C
 #include "molinp.h"
 #include "taymol.h"
 #include "optinf.h"
-#include "numder.h"
 #include "codata.h"
 #ifdef PRG_DIRAC
 #include "dcbdhf.h"

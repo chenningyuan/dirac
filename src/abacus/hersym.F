@@ -102,7 +102,7 @@ C  /* Deck FIND_SYMMETRY */
      &            KATOM,KASYM,LENTMP,POINT_GROUP,VRML_SYM,
      &            internal_file,WORK,KFREE,LFREE)
 C
-!      use numder_mod, only: NOMOVE
+      use numder_mod, only: NOMOVE
       use nuclei_mod, only: CHARGE, CORD, GNUEXP, IATOMTYP, ISOTOP,
      &  IZATOM, NAMEX, NAMN, NONT, NONTYP, NOORBT, NUCIND
       use priunit_mod, only: LUPRI
@@ -114,7 +114,6 @@ C
 #include "implicit.h"
       INTEGER :: I,J,K
 #include "molinp.h"
-#include "numder.h"
 ! infpar.h: MPARID, MYTID
 #include "infpar.h"
 C ***********************************************************

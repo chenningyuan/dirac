@@ -39,6 +39,7 @@ set(MODULE_SOURCES
     primit.F90
     priunit.F90
     shells.F90
+    siripc.F90
     sotabs.F90
     subdir.F90
     symmet.F90

@@ -709,7 +709,7 @@ C  /* Deck rotana */
       use maxaqn_mod, only: MXAQN, MXQN
 !      use cbisol_mod, only: L, SOLVNT
       use priunit_mod, only: LUPRI
-!      use inirep_mod, only: NREPPI
+      use inirep_mod, only: IREPPI, NREPPI
 !      use codata_mod, only: CCM, XFAMU, XTANG, XTHZ
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -725,7 +725,6 @@ C
 C
       LOGICAL  LINEAR, PLANAR
 #include "cbisol.h"
-#include "inirep.h"
 C
       ROTMHZ = (XTHZ*1.0D-6*(XTANG**2))/(D2*XFAMU)
       CINVRS = 1.0D4/CCM
