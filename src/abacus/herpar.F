@@ -36,6 +36,81 @@ C
 950428-kr+hjaaj;
  Merged with Odense version. Implemented DOINT in PARLOP.
 #endif
+C
+C     Settings the master sends to the slaves at the start of a
+C     parallel HERMIT run (formerly COMMON /PARINT/ in parint.h, which
+C     was sent as one block of integers). SDINIT fills a parint_t and
+C     RVINIT reads it; both call PARINT_BCAST, so master and slaves
+C     always send and receive the fields in the same order.
+C
+      module parint_mod
+      use mxcent_mod, only: MXCENT
+      implicit none
+      private
+      public :: parint_t
+#if defined (VAR_MPI)
+      public :: parint_bcast
+#endif
+      type :: parint_t
+         integer :: IATOM, ITYPE, MAXDIF, MAXREP, I2TYP, ICEDIF,
+     &              IPRPAR, NODES, NTASK,
+     &              LUDASP, LUINTA, LUONEL, LUSOL, LUSUPM
+         logical :: NODV, NOPV, NOCONT, RETUR, TKTIME, TIMING,
+     &              SOLVNT, RELCAL, LEVYLE, NONREL, TWOCOMP, ECPCALC
+         logical :: DOREPS(0:7), DOSYM(8), DOCOOR(3,MXCENT)
+      end type parint_t
+#if defined (VAR_MPI)
+      contains
+      subroutine parint_bcast(P, ROOT)
+      use interface_to_mpi, only: interface_mpi_bcast,
+     &                            global_communicator
+      type(parint_t), intent(inout) :: P
+      integer, intent(in) :: ROOT
+      call bcast_i(P%IATOM)
+      call bcast_i(P%ITYPE)
+      call bcast_i(P%MAXDIF)
+      call bcast_i(P%MAXREP)
+      call bcast_i(P%I2TYP)
+      call bcast_i(P%ICEDIF)
+      call bcast_i(P%IPRPAR)
+      call bcast_i(P%NODES)
+      call bcast_i(P%NTASK)
+      call bcast_i(P%LUDASP)
+      call bcast_i(P%LUINTA)
+      call bcast_i(P%LUONEL)
+      call bcast_i(P%LUSOL)
+      call bcast_i(P%LUSUPM)
+      call bcast_l(P%NODV)
+      call bcast_l(P%NOPV)
+      call bcast_l(P%NOCONT)
+      call bcast_l(P%RETUR)
+      call bcast_l(P%TKTIME)
+      call bcast_l(P%TIMING)
+      call bcast_l(P%SOLVNT)
+      call bcast_l(P%RELCAL)
+      call bcast_l(P%LEVYLE)
+      call bcast_l(P%NONREL)
+      call bcast_l(P%TWOCOMP)
+      call bcast_l(P%ECPCALC)
+      call interface_mpi_bcast_l1(P%DOREPS, size(P%DOREPS), ROOT,
+     &                            global_communicator)
+      call interface_mpi_bcast_l1(P%DOSYM, size(P%DOSYM), ROOT,
+     &                            global_communicator)
+      call interface_mpi_bcast_l1(P%DOCOOR, size(P%DOCOOR), ROOT,
+     &                            global_communicator)
+      contains
+      subroutine bcast_i(X)
+      integer, intent(inout) :: X
+      call interface_mpi_bcast(X, 1, ROOT, global_communicator)
+      end subroutine bcast_i
+      subroutine bcast_l(X)
+      logical, intent(inout) :: X
+      call interface_mpi_bcast_l0(X, 1, ROOT, global_communicator)
+      end subroutine bcast_l
+      end subroutine parint_bcast
+#endif
+      end module parint_mod
+C
 C  /* Deck pardrv */
       SUBROUTINE HER_PARDRV(WORK,LWORK,FMAT,DMAT,NDMAT,IREPDM,IFCTYP,
      &                  ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,
@@ -395,7 +470,6 @@ C
 !      use dcbgen_mod, only: PANAS, RELCAL, TWOCOMP
       use aovec_mod, only: MXAOVC
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use parint_mod, only: I1_PARINT, I2_PARINT, J2TYP, JATOM, JCEDIF, JDOCOR, JDOREP, JDOSYM, JECPCALC, JLEVYL, JLUDAS, JLUINT, JLUONE, JLUSOL, JLUSUP, JMXDIF, JMXREP, JNOCNT, JNODES, JNODV, JNONREL, JNOPV, JPRINT, JRELCL, JRETUR, JSOLVN, JTASK, JTIMIN, JTKTIM, JTWOCOMP, JTYPE
 !      use inforb_mod, only: I1_INFORB, I2_INFORB, N2BASX
 !      use dcbham_mod, only: ECPCALC, HFXATT, HFXFAC, HFXMU, INTV1C, LEVYLE, NONREL, ONECAP, SMLV1C, SPINFR
       use priunit_mod, only: LUPRI
@@ -412,10 +486,14 @@ C
 !      use siripc_mod, only: NEWGEO
 !      use abainf_mod, only: DOSYM
 !      use cbisol_mod, only: SOLVNT
+      use parint_mod, only: parint_t
+#if defined (VAR_MPI)
+      use parint_mod, only: parint_bcast
+#endif
       use interface_to_mpi
 #include "implicit.h"
 C
-      INTEGER :: I,J
+      INTEGER :: I
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #include "dcbham.h"
@@ -428,7 +506,6 @@ C
 #include "hrunit.h"
 #include "blocks.h"
 #include "infpar.h"
-#include "parint.h"
 C
 #include "abainf.h"
 #include "inforb.h"
@@ -442,6 +519,7 @@ C
      &          DMRAO(NSYMBL,NSYMBL,*),GABRAO(NSYMBL,NSYMBL,*),
      &          DMRSO(MAXSHL,MAXSHL,*), DSEND(2), ISEND(2)
       LOGICAL NODV,NOPV,NOCONT,TKTIME,RETUR, LSEND(6), PRIMUPD_NODES
+      TYPE(parint_t) :: P
 C
 C--------------------------------------
 C     Calculate number of Fock matrices
@@ -466,76 +544,45 @@ C
          CALL QUIT('Specified ITYPE for TWOINT not defined in SDINIT.')
       END IF
 C
-C----------------------------
-C     Set common-block PARINT
-C----------------------------
+C---------------------------------------------------
+C     Settings for the slaves (sent by PARINT_BCAST)
+C---------------------------------------------------
 C
-      JATOM  = IATOM
-      JLUDAS = LUDASP
-      JLUINT = LUINTA
-      JLUONE = LUONEL
-      JLUSOL = LUSOL
-      JLUSUP = LUSUPM
-      JMXDIF = MAXDIF
-      JMXREP = MAXREP
-      JNODES = NODES
-      JPRINT = IPRPAR
-      JTASK  = NTASK
-      JTYPE  = ITYPE
-
-      JNODV  = 0
-      IF (NODV)   JNODV  = 1
-
-      JNOPV  = 0
-      IF (NOPV)   JNOPV  = 1
-
-      JNOCNT = 0
-      IF (NOCONT) JNOCNT = 1
-
-      JRETUR = 0
-      IF (RETUR)  JRETUR = 1
-
-      JTKTIM = 0
-      IF (TKTIME) JTKTIM = 1
-
-      JTIMIN = 0
-      IF (TIMING) JTIMIN = 1
-
-      JSOLVN = 0
-      IF (SOLVNT) JSOLVN = 1
-
-      JRELCL = 0
-      IF (RELCAL) JRELCL = 1
-
-      JLEVYL = 0
-      IF (LEVYLE) JLEVYL = 1
-
-      JNONREL = 0
-      IF (NONREL) JNONREL = 1
-
-      JTWOCOMP = 0
-      IF (TWOCOMP) JTWOCOMP = 1
-
-      JECPCALC = 0
-      IF (ECPCALC) JECPCALC = 1
-
-      J2TYP  = I2TYP
-      JCEDIF = ICEDIF
+      P%IATOM  = IATOM
+      P%LUDASP = LUDASP
+      P%LUINTA = LUINTA
+      P%LUONEL = LUONEL
+      P%LUSOL  = LUSOL
+      P%LUSUPM = LUSUPM
+      P%MAXDIF = MAXDIF
+      P%MAXREP = MAXREP
+      P%NODES  = NODES
+      P%IPRPAR = IPRPAR
+      P%NTASK  = NTASK
+      P%ITYPE  = ITYPE
+      P%I2TYP  = I2TYP
+      P%ICEDIF = ICEDIF
 C
-      CALL IZERO(JDOSYM,8)
-      CALL IZERO(JDOREP,8)
-      CALL IZERO(JDOCOR,MXCOOR)
+      P%NODV    = NODV
+      P%NOPV    = NOPV
+      P%NOCONT  = NOCONT
+      P%RETUR   = RETUR
+      P%TKTIME  = TKTIME
+      P%TIMING  = TIMING
+      P%SOLVNT  = SOLVNT
+      P%RELCAL  = RELCAL
+      P%LEVYLE  = LEVYLE
+      P%NONREL  = NONREL
+      P%TWOCOMP = TWOCOMP
+      P%ECPCALC = ECPCALC
 C
+      P%DOREPS = .FALSE.
+      P%DOSYM  = .FALSE.
       DO 100 I = 0, MAXREP
-         IF (DOREPS(I))  JDOREP(I+1) = 1
-         IF (DOSYM(I+1)) JDOSYM(I+1) = 1
+         P%DOREPS(I)  = DOREPS(I)
+         P%DOSYM(I+1) = DOSYM(I+1)
  100  CONTINUE
-C
-      DO 110 J = 1, MXCENT
-         DO 120 I = 1, 3
-            IF (DOCOOR(I,J)) JDOCOR(I,J) = 1
- 120     CONTINUE
- 110  CONTINUE
+      P%DOCOOR = DOCOOR
 C
 #if defined (VAR_MPI)
       PRIMUPD_NODES = .FALSE.
@@ -579,13 +626,8 @@ C     Send SMLV1C and ONECAP,INTV1C
      &               global_communicator)
 #endif
 C
-C     Send parint.h
-      NUMELM = ICOMMSIZE(I1_PARINT,I2_PARINT)
-      CAll interface_mpi_BCAST(NUMELM,1,MPARID,
-     &               global_communicator)
-C........note that with icommsize COMMON blocks must be sent as integers...
-      CAll interface_mpi_BCAST(I1_PARINT,NUMELM,MPARID,
-     &               global_communicator)
+C     Send the settings in P
+      CALL PARINT_BCAST(P,MPARID)
 C
 C     ... otherwise xyz reader fails in parallel mode
 C
@@ -1308,7 +1350,6 @@ C
 !      use dorps_mod, only: DOCOOR, DOREPS
 !      use infpar_mod, only: IPRPAR, MPARID, NODES, NTASK, TIMING
       use symmet_mod, only: MAXREP
-!      use parint_mod, only: I1_PARINT, J2TYP, JATOM, JCEDIF, JDOCOR, JDOREP, JDOSYM, JECPCALC, JLEVYL, JLUDAS, JLUINT, JLUONE, JLUSOL, JLUSUP, JMXDIF, JMXREP, JNOCNT, JNODES, JNODV, JNONREL, JNOPV, JPRINT, JRELCL, JRETUR, JSOLVN, JTASK, JTIMIN, JTKTIM, JTWOCOMP, JTYPE
       use maxorb_mod, only: MXCORB
 !      use hrunit_mod, only: LUDASP, LUINTA, LUONEL, LUSOL, LUSUPM
 !      use inforb_mod, only: I1_INFORB, N2BASX
@@ -1322,12 +1363,16 @@ C
 !      use molinp_mod, only: NCLINE, NMLINE
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
+      use parint_mod, only: parint_t
+#if defined (VAR_MPI)
+      use parint_mod, only: parint_bcast
+#endif
       use interface_to_mpi
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
-      INTEGER :: I,J
+      INTEGER :: I
 C
 #include "hrunit.h"
 #if defined (PRG_DIRAC)
@@ -1339,7 +1384,6 @@ C
 #endif
 #include "molinp.h"
 #include "infpar.h"
-#include "parint.h"
 C
 #include "inforb.h"
 #include "cbisol.h"
@@ -1350,6 +1394,7 @@ C
       DIMENSION WORK(*), DSEND(2), ISEND(2)
       CHARACTER*6 NAVN
       LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH, LSEND(6)
+      TYPE(parint_t) :: P
 
 C
 C-----------------------------------------
@@ -1395,53 +1440,46 @@ C     Receive SMLV1C and ONECAP,INTV1C
       CAll interface_mpi_BCAST(INTV1C,1,MPARID,
      &               global_communicator)
 #endif
-C.....receive parint.h
-      CAll interface_mpi_BCAST(NUMELM,1,MPARID,
-     &               global_communicator)
-      CAll interface_mpi_BCAST(I1_PARINT,NUMELM,MPARID,
-     &               global_communicator)
+C.....receive the settings in P (see SDINIT)
+      CALL PARINT_BCAST(P,MPARID)
 #endif
 C
-C------------------------------------
-C     Retain information from PARINT.
-C------------------------------------
+C-----------------------------------------
+C     Retain the settings from the master.
+C-----------------------------------------
 C
-      IATOM  = JATOM
-      ITYPE  = JTYPE
-      IPRPAR = JPRINT
-      LUDASP = JLUDAS
-      LUINTA = JLUINT
-      LUONEL = JLUONE
-      LUSOL  = JLUSOL
-      LUSUPM = JLUSUP
-      MAXDIF = JMXDIF
-      MAXREP = JMXREP
-      NODES  = JNODES
-      NTASK  = JTASK
-      NOCONT = JNOCNT .EQ. 1
-      NODV   = JNODV  .EQ. 1
-      NOPV   = JNOPV  .EQ. 1
-      RETUR  = JRETUR .EQ. 1
-      TIMING = JTIMIN .EQ. 1
-      TKTIME = JTKTIM .EQ. 1
-      SOLVNT = JSOLVN .EQ. 1
-      I2TYP  = J2TYP
-      RELCAL = JRELCL .EQ. 1
-      TWOCOMP = JTWOCOMP .EQ. 1
-      LEVYLE  = JLEVYL .EQ. 1
-      NONREL  = JNONREL .EQ. 1
-      ECPCALC = JECPCALC .EQ. 1
-      ICEDIF  = JCEDIF
+      IATOM  = P%IATOM
+      ITYPE  = P%ITYPE
+      IPRPAR = P%IPRPAR
+      LUDASP = P%LUDASP
+      LUINTA = P%LUINTA
+      LUONEL = P%LUONEL
+      LUSOL  = P%LUSOL
+      LUSUPM = P%LUSUPM
+      MAXDIF = P%MAXDIF
+      MAXREP = P%MAXREP
+      NODES  = P%NODES
+      NTASK  = P%NTASK
+      NOCONT = P%NOCONT
+      NODV   = P%NODV
+      NOPV   = P%NOPV
+      RETUR  = P%RETUR
+      TIMING = P%TIMING
+      TKTIME = P%TKTIME
+      SOLVNT = P%SOLVNT
+      I2TYP  = P%I2TYP
+      RELCAL = P%RELCAL
+      TWOCOMP = P%TWOCOMP
+      LEVYLE  = P%LEVYLE
+      NONREL  = P%NONREL
+      ECPCALC = P%ECPCALC
+      ICEDIF  = P%ICEDIF
 C
       DO 200 I = 0, MAXREP
-         DOREPS(I)  = JDOREP(I+1) .EQ. 1
-         DOSYM(I+1) = JDOSYM(I+1) .EQ. 1
+         DOREPS(I)  = P%DOREPS(I)
+         DOSYM(I+1) = P%DOSYM(I+1)
  200  CONTINUE
-      DO 210 J = 1, MXCENT
-         DO 220 I = 1, 3
-            DOCOOR(I,J) = JDOCOR(I,J) .EQ. 1
- 220     CONTINUE
- 210  CONTINUE
+      DOCOOR = P%DOCOOR
 C
 C     Set hermit.
 C

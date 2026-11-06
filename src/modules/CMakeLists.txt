@@ -53,7 +53,6 @@ set(MODULE_SOURCES
     #dorps.F90
     #infdim.F90
     #nqcc.F90
-    #parint.F90
     #pincom.F90
     #rotg.F90
     #symind.F90
