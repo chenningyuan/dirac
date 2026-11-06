@@ -281,6 +281,8 @@ C     ***** General Case: (xy|zw) *****
 C     *********************************
 C
       ELSE
+         IF (NOCNT .AND. NCCPP .NE. NU1234)
+     &      CALL QUIT('C10INT: NOCNT but NCCPP .ne. NU1234')
          INCRMT = I120X + 1
          INCRMU = I120Y + 1
          INCRMV = I120Z + 1
@@ -317,42 +319,31 @@ C
                   WRITE (LUPRI,'(A,3I5)')'Loop parameters V:',
      &                                    MINV,MAXV,INCRMV
                END IF
-               CALL DZERO(HCPRIM,NTUV34*NU1234)
+               JODD12 = IODD12(ICMP12,1)
 C
-               DO 300 V = MINV, MAXV, INCRMV
-               DO 300 U = MINU, MAXU, INCRMU
-               DO 300 T = MINT, MAXT, INCRMT
+C              No contraction: HCPRIM has the same layout as the
+C              final HCCONT/HCINT block, so accumulate there directly
+C              and skip C1CONT
 C
-                  DO 400 I = 1, NUC12
-                     ECOEFI = COEF12(I,T,L1,L2,1,1)
-     &                      * COEF12(I,U,M1,M2,2,1)
-     &                      * COEF12(I,V,N1,N2,3,1)
-                     IJ = (I - 1)*NUC34
-                     DO 410 J = 1, NUC34
-                        ETUV(IJ + J) = ECOEFI
-  410                CONTINUE
-  400             CONTINUE
-C
-                  ITUV = INDHER(T,U,V)
-                  IODD = IODDHR(ITUV)
-                  INDS = INDHSQ(ITUV)
-                  DO 500 TUV = 1, NTUV34
-                  IF (IODD .EQ. IODDHR(TUV)) THEN
-                     INDT = INDS + INDHSQ(TUV)
-                     INDT = INDHVC(INDT)
-                     DO 510 I = 1, NU1234
-                        HCPRIM(I,TUV) = HCPRIM(I,TUV)
-     &                        + ETUV(I)*HERINT(I,INDT)
-  510                CONTINUE
+               IF (NOCNT) THEN
+                  IF (SPHR12) THEN
+                     CALL C10ACC(HCCONT(1,1,ICMP12),HERINT,INDHER,
+     &                           INDHVC,IODDHR,INDHSQ,COEF12,ETUV,
+     &                           L1,M1,N1,L2,M2,N2,JODD12)
+                  ELSE
+                     CALL C10ACC(HCINT(1,1,ICMP12),HERINT,INDHER,
+     &                           INDHVC,IODDHR,INDHSQ,COEF12,ETUV,
+     &                           L1,M1,N1,L2,M2,N2,JODD12)
                   END IF
+                  GO TO 200
+               END IF
 C
-  500             CONTINUE
-  300          CONTINUE
+               CALL C10ACC(HCPRIM,HERINT,INDHER,INDHVC,IODDHR,INDHSQ,
+     &                     COEF12,ETUV,L1,M1,N1,L2,M2,N2,JODD12)
 C
 C              Contracted integrals
 C              ====================
 C
-               JODD12 = IODD12(ICMP12,1)
                IF (SPHR12) THEN
                   CALL C1CONT(HCPRIM,HCCONT(1,1,ICMP12),CONT1,CONT2,
      &                        SCR1,SCR2,IODDHR,JODD12,NTUV34,
@@ -373,6 +364,80 @@ C
      &                  CSP(ISPADR(NHKT2)),IODDHR,IODD12,NTUV34,IPRINT)
          END IF
       END IF
+      RETURN
+      END
+C  /* Deck c10acc */
+      SUBROUTINE C10ACC(HCOUT,HERINT,INDHER,INDHVC,IODDHR,INDHSQ,
+     &                  COEF12,ETUV,L1,M1,N1,L2,M2,N2,JODD12)
+C
+C     Hermite-Cartesian integrals for one Cartesian component pair:
+C
+C        HCOUT(I,TUV) = sum_tuv E(t,u,v) * R(t+T,u+U,v+V)
+C
+C     Only TUV with IODDHR(TUV) = JODD12 are set.  All (t,u,v) in the
+C     sum have this parity (in directions where IODDHR is not masked
+C     t steps by 2 from the parity of L1+L2), so the first term is
+C     assigned rather than added and HCOUT need not be zeroed.
+C
+      use twoao_mod, only: I120X, I120Y, I120Z, JMAX1, JMAX2, MXUC12,
+     &  NTUV34, NU1234, NUC12, NUC34
+      use hertop_mod, only: JTOP
+#include "implicit.h"
+      INTEGER T, U, V, TUV
+      LOGICAL FIRST
+      DIMENSION HCOUT(NU1234,NTUV34), HERINT(NU1234,*),
+     &          INDHER(0:JTOP,0:JTOP,0:JTOP),
+     &          INDHVC(0:*), IODDHR(*), INDHSQ(*),
+     &          COEF12(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
+     &          ETUV(NU1234)
+C
+      INCRMT = I120X + 1
+      INCRMU = I120Y + 1
+      INCRMV = I120Z + 1
+      MAXT = L1 + L2
+      MAXU = M1 + M2
+      MAXV = N1 + N2
+      MINT = IAND(MAXT,INCRMT - 1)
+      MINU = IAND(MAXU,INCRMU - 1)
+      MINV = IAND(MAXV,INCRMV - 1)
+      FIRST = .TRUE.
+C
+      DO 300 V = MINV, MAXV, INCRMV
+      DO 300 U = MINU, MAXU, INCRMU
+      DO 300 T = MINT, MAXT, INCRMT
+C
+         DO 400 I = 1, NUC12
+            ECOEFI = COEF12(I,T,L1,L2,1,1)
+     &             * COEF12(I,U,M1,M2,2,1)
+     &             * COEF12(I,V,N1,N2,3,1)
+            IJ = (I - 1)*NUC34
+            DO 410 J = 1, NUC34
+               ETUV(IJ + J) = ECOEFI
+  410       CONTINUE
+  400    CONTINUE
+C
+         ITUV = INDHER(T,U,V)
+         IODD = IODDHR(ITUV)
+         IF (IODD .NE. JODD12)
+     &      CALL QUIT('C10ACC: unexpected parity of Hermite index')
+         INDS = INDHSQ(ITUV)
+         DO 500 TUV = 1, NTUV34
+         IF (IODD .EQ. IODDHR(TUV)) THEN
+            INDT = INDS + INDHSQ(TUV)
+            INDT = INDHVC(INDT)
+            IF (FIRST) THEN
+               DO 510 I = 1, NU1234
+                  HCOUT(I,TUV) = ETUV(I)*HERINT(I,INDT)
+  510          CONTINUE
+            ELSE
+               DO 520 I = 1, NU1234
+                  HCOUT(I,TUV) = HCOUT(I,TUV) + ETUV(I)*HERINT(I,INDT)
+  520          CONTINUE
+            END IF
+         END IF
+  500    CONTINUE
+         FIRST = .FALSE.
+  300 CONTINUE
       RETURN
       END
 C  /* Deck c1eint */

@@ -3256,6 +3256,7 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
       use quaternion_algebra
       use kinds_mod, only: dp
+      use gab_screening, only: qorb_ok, qorb_igtyp, qorb_use
 #include "implicit.h"
       INTEGER :: I,J
 C
@@ -3302,6 +3303,8 @@ C        IGTYP 2 will add also the SL (Gaunt) type integrals
          MAXDIF = 0
          CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
      &        IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
+C        ... orbital-pair Schwarz factors for pruning (gab_screening)
+         QORB_USE = QORB_OK .AND. QORB_IGTYP.EQ.IGTYP
       ENDIF
 C
       IF(NBSYM.GT.1) THEN
@@ -3379,6 +3382,7 @@ C
       ENDIF
       CALL MEMREL('DIRAOF.DIRAOF_1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
+      QORB_USE = .FALSE.
       CALL QEXIT('DIRAOF')
       RETURN
 C
@@ -3967,6 +3971,7 @@ C*****************************************************************************
       use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: MAXSHL, NSYMBL
       use kinds_mod, only: dp
+      use gab_screening, only: qorb_ok, qorb_igtyp, qorb_use
 #include "implicit.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D0
@@ -4011,6 +4016,8 @@ C        IGTYP 2 will add also the SL (Gaunt) type integrals
          IF(LBIT(INTFLG,4)) IGTYP = 2
          CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
      &        IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
+C        ... orbital-pair Schwarz factors for pruning (gab_screening)
+         QORB_USE = QORB_OK .AND. QORB_IGTYP.EQ.IGTYP
 C
       END IF
 C
@@ -4020,6 +4027,7 @@ C
      &            INTFLG,IPRINT,WORK(KFREE),LFREE)
       CALL MEMREL('DIRSOF.DIRSO1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
+      QORB_USE = .FALSE.
       CALL QEXIT('DIRSOF')
       RETURN
 C

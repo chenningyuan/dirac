@@ -504,14 +504,17 @@ C
       use pi_mod, only: R2PI52
       use priunit_mod, only: LUPRI
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-      use aovec_mod, only: MXCONT
-      use maxorb_mod, only: MXCORB, MXPRIM
+      use aovec_mod, only: MXAOVC, MXCONT
+      use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
+      use gab_screening, only: prune_thr, qorb, ao2orb
+      use twocom_mod, only: ISHELA, ISHELB, ISHELC, ISHELD
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0
       LOGICAL TCON12, TPR12, DIAG12, ALLSYM, EXPECT, DIRFCK, DOTHIS
+#include "blocks.h"
       COMMON /MAXOLD/ OLDMAX
       DIMENSION NPCO1(NSET1,2), NPCO2(NSET2,2), JSTR1(*), JSTR2(*),
      &          COOR12(NUC1*NUC2,3,3,NODC12),
@@ -540,6 +543,18 @@ C
          THRSH  = THRESH/OLDMAX
       END IF
 C
+C     Pruning of orbital pairs (direct Fock matrices, see PRNSET):
+C     sets are contracted orbitals, skip pairs with small QORB
+C
+      THRPRN = PRUNE_THR(IELCTR)
+      IF (IELCTR .EQ. 1) THEN
+         ISHL1 = ISHELA
+         ISHL2 = ISHELB
+      ELSE
+         ISHL1 = ISHELC
+         ISHL2 = ISHELD
+      END IF
+C
 C     Run over contracted orbitals
 C     ============================
 C
@@ -560,6 +575,11 @@ C
             ISTR2 = JSTR2(ISET2) + 1
             IEND2 = JSTR2(ISET2) + NPCO2(ISET2,1)
             IORB2 = - NPCO2(ISET2,2)
+            IF (THRPRN .GT. D0) THEN
+               IA1 = AO2ORB(IORBSH(ISHL1,ISET1) + 1)
+               IA2 = AO2ORB(IORBSH(ISHL2,ISET2) + 1)
+               IF (QORB(IA1,IA2) .LT. THRPRN) GO TO 200
+            END IF
 C
 C           Run over primitives
 C           ===================
