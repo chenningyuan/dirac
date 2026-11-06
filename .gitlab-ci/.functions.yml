@@ -6,7 +6,7 @@
     - |
       if [ "$N_PROC" -lt 4 ]; then
         M=$((N_PROC / 2))
-        export NEW_DIRAC_MPI_COMMAND="mpiexec -n 4"
+        export NEW_DIRAC_MPI_COMMAND="mpiexec -n 2"
       else
         M=$((N_PROC / 4))
         export NEW_DIRAC_MPI_COMMAND="mpiexec -n 4"
