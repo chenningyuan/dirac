@@ -1842,13 +1842,12 @@ C***********************************************************************
 !      use dcbdhf_mod, only: LUFCK1
 !      use dcbbas_mod, only: NTBAS
 !      use dgroup_mod, only: IPQTOQ, NZ
-!      use cbihr1_mod, only: IPRONE
+      use cbihr1_mod, only: IPRONE
 #include "implicit.h"
 C
 #include "dcbdhf.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "cbihr1.h"
 C
       DIMENSION H1AO(*), WORK(*)
       LOGICAL   EX

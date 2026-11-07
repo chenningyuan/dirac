@@ -1613,7 +1613,7 @@ C***********************************************************************
 !      use dcbkrci_mod, only: MAX_NKRCI_MAX_SYM, NKRCI_CIROOTS, NKRCI_MAX_SYM
 !      use dcbxpr_mod, only: PRPNAM
       use mxcent_mod, only: MXCOOR
-!      use dipole_mod, only: DIPMN
+      use dipole_mod, only: DIPMN
       use memory_allocator
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1631,7 +1631,6 @@ C
 #include "dcbkrci.h"
 #include "dcbxpr.h"
 !#include "dcbprl.h"
-#include "dipole.h"
       DOUBLE COMPLEX XMOM
       REAL*8 OSCL, OSCLABS
       DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,

@@ -3,6 +3,7 @@
 
 module dirac_interface
 
+      use dipole_mod, only: DDIPN, DIPMN
       use dirac_partask_mod, only: XCINT_PAR
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMDEP, NATOMS, NUCDEP, NUCIND
       use symmet_mod, only: IPTAX, MAXOPR
@@ -83,7 +84,6 @@ module dirac_interface
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dipole.h"
 
   real(8), pointer   :: f77_work(:)       ! Fortran 77 work array pointer
   integer, public    :: len_f77_work  = 0 ! Length of the work array
@@ -101,9 +101,8 @@ contains
   subroutine DPGNUC_ifc( na, DGN )
     ! uses MXCOOR
       use mxcent_mod, only: MXCOOR
-!      use dipole_mod, only: DDIPN
+      use dipole_mod, only: DDIPN
     ! uses DDIPN
-#include "dipole.h"
     integer, intent(in) :: na
     real(8), intent(out) :: DGN( 3*na, 3 )
     real(8), parameter :: zero = 0.0D+00

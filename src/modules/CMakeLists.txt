@@ -5,6 +5,7 @@ set(MODULE_SOURCES
     aovec.F90
     argoscomch.F90
     cbiher.F90
+    cbihr1.F90
     cbione.F90
     chrnos.F90
     chrsgn.F90
@@ -17,6 +18,7 @@ set(MODULE_SOURCES
     dcbibt.F90
     dcbwav.F90
     derzer.F90
+    dipole.F90
     dirac_partask.F90
     dirprt.F90
     disbuf.F90
@@ -29,6 +31,7 @@ set(MODULE_SOURCES
     gencon.F90
     hertop.F90
     hrunit.F90
+    huckel.F90
     ibtpar.F90
     iratdef.F90
     lmns.F90
@@ -62,7 +65,6 @@ set(MODULE_SOURCES
     #ccom.F90
     #dcbesr.F90
     #dcbnmr.F90
-    #dipole.F90
     #dorps.F90
     #infdim.F90
     #nqcc.F90

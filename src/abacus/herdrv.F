@@ -22,8 +22,8 @@ C
 C --- General Input for HERMIT ---
 C
 !      use dcbgen_mod, only: DIRCAL, HRINPC, IPRUSR, RELCAL
-!      use cbihr1_mod, only: CAVUSR, DORLM
 !      use orgcom_mod, only: CAVORG
+      use cbihr1_mod, only: CAVUSR, DORLM
       use cbiher_mod
       use gen1int_mod, only: TEST_GEN1INT
       use nuclei_mod, only: GAUNUC, NATOMS
@@ -48,10 +48,8 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "cbihr1.h"
 #include "cbisol.h"
 #include "orgcom.h"
-!#include "huckel.h"
 C
 C
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
@@ -973,16 +971,15 @@ C  /* Deck hr1inp */
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUCMD, LUPRI
       use cbiher_mod, only: IPRDEF
+      use cbihr1_mod, only: ALLRLM, CAVUSR, DORLM, IPRONE, LMAX, RUNONE
 #include "implicit.h"
 !      use orgcom_mod, only: CAVORG
-!      use cbihr1_mod, only: ALLRLM, CAVUSR, DORLM, IPRONE, LMAX, RUNONE
       PARAMETER (NTABLE = 10)
 C
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
 #include "orgcom.h"
-#include "cbihr1.h"
 C
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.SOLVEN', '.ALLRLM', '.CAVORG',

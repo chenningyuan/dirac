@@ -676,7 +676,6 @@
 !#include "ccom.h"
 !#include "pincom.h"
 !#include "sphtrm.h"
-!#include "huckel.h"
 !#include "cbirea.h"
 #include "argoscom.h"
       INTEGER blk

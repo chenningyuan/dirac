@@ -6292,7 +6292,6 @@ C
 C     This procedure does the actual breaking of symmetry.
 C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use huckel_mod, only: I, J
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
@@ -6314,7 +6313,6 @@ C
 #include "optinf.h"
 #include "cbiwlk.h"
 #include "trkoor.h"
-#include "huckel.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS
       CHARACTER FILENM*10, TMPLN*80
       DIMENSION GEINFO(0:ITRMAX,6)

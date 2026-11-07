@@ -1175,7 +1175,7 @@ C*****************************************************************************
 
       use dummy_mod, only: DUMMY
 !      use dcbdhf_mod, only: DHFCONV, I2TMOT, LUFCK1, NACSH, NESHMF, NOCCMF, NTMO, OPEN_FAC
-!      use cbihr1_mod, only: IPRONE
+      use cbihr1_mod, only: IPRONE
 !      use dcbham_mod, only: IF, ONESYS
       use interface_ao_specific
 
@@ -1183,7 +1183,6 @@ C*****************************************************************************
 C
 #include "dcbham.h"
 #include "dcbdhf.h"
-#include "cbihr1.h"
 
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
      &          WORK(LWORK)

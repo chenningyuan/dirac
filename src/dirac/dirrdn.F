@@ -1059,7 +1059,6 @@ C***********************************************************************
 !      use dcbdhf_mod, only: AOC, ATHUCK, ATOMST, AUTOCC, BMCOND, CACC, CNVINT, CONVRG, DA, DALPHA, DAMPFC, DF, DHFCONV, DHFERG, DHFEXIT, DHF_INTTYP, DHF_SKIPEE, DHF_SKIPEP, DIISAO, DIISMO, DIISON, DIISTH, DLSHIF, DOBOSSEL, DOCCNV, DODAMP, DODIIS, DODSCF, DOLEVEL, DOMOFREEZE, DYNSEL, E1PART, E2PART, ELERGY, ERGBUF, ERGCNV, ERGCNV2, ERGVAL, EVCCNV, EVCCNV2, EVCVAL, FCKCNV, FCKCNV2, FCKVAL, FIXDIF, IMOFREEZE, INIOCC, INTBUF, INTDEF, INTFLG, IPREIG, IPRSCF, ITDIIS, ITRINT, ITRSCF, MAXBCK, MAX_BOS_BL, MAXITR, MAXITR2, MFRAG, MXDIIS, MXMACRO, MXMICRO, MXMOFREEZE, MXOPEN, NACSH, NACSH_BOS, NAELEC_DHF, NASH_DHF, NASHMFT, NELEC_DHF, NELECT_DHF, NEWOCC, NFRAG, NFRO_DHF, NISH_BOS, NISH_DHF, NMOFREEZE, NOPEN, NOQCDHF, NOSWIT, NPRJNUC, OLEV, OPEN_FAC, OVLSEL, PRJFIL, PRJTHR, SCFCNV, SCFCNV2, SCFPOP, SCFTID, SIRIFC, TDDG, TDF2, TRIFCK, TRIVEC, VCFROZ, VCPROJ, WRITE_FMO_MATRIX
 !      use ccom_mod, only: NHTYP
 !      use dcborb_mod, only: MAX_SUB_BL
-!      use huckel_mod, only: EWMO, HUCPROJCMO
 !      use dcbatom_mod, only: ATOMFIL, NVECATOM, OCCATOM, VECATOM
 !      use dcbhoc_mod, only: HOCFIL, HUCPAR, MAXHOC, VECHOC
        use dirac_cfg
@@ -1082,6 +1081,7 @@ C***********************************************************************
       use dummy_mod, only: DUMMY, IDUMMY
       use nuclei_mod, only: IZATOM, NAMN, NATOMS, NFLOAT, NONT, NONTYP,
      &  NUCDEP
+      use huckel_mod, only: EWMO, HUCPROJCMO
 #include "implicit.h"
       INTEGER :: I,J,K
       PARAMETER (NTABLE = 65)
@@ -1103,7 +1103,6 @@ C
       INTEGER ATOM_NOPEN, ATOM_NKAPPA
 C
 #include "dcbgen.h"
-#include "huckel.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -5281,11 +5280,10 @@ C***********************************************************************
       use siripc_mod, only: INPPRC, NEWGEO
       use consts_mod, only: D0
 !      use dcbxpr_mod, only: NPRPS
-!      use huckel_mod, only: HUCCNT, IHUCPT, IPRHUC, NHUCAO
+      use huckel_mod, only: HUCCNT, IHUCPT, IPRHUC, NHUCAO
 !      use dcbcls_mod, only: NPRPCLS
 #include "implicit.h"
 C
-#include "huckel.h"
 #include "dcbgen.h"
 #include "cbirea.h"
 #include "dcbxpr.h"

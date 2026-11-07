@@ -37,7 +37,7 @@ C*****************************************************************************
       use nuclei_mod, only: CHARGE, NUCIND
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use cbihr1_mod, only: IPRONE
+      use cbihr1_mod, only: IPRONE
       use cbiher_mod, only: ALLATM, IPATOM, NPATOM
 !      use dcbcls_mod, only: CLSCAL, CLSCMB, CLSINT, IORDCL, NPRPCLS
 !      use dcbham_mod, only: MDIRAC, NOSMLV
@@ -55,7 +55,6 @@ C
 C
 #include "dcbham.h"
 #include "dcbcls.h"
-#include "cbihr1.h"
 
       CHARACTER CPUTID*12, WALLTID*12, SECTID*12
 
@@ -4354,7 +4353,6 @@ C*****************************************************************************
 !      use dgroup_mod, only: ATOMIC, IPQTOQ, LINEAR, NFSYM, NZ
 !      use dcbgen_mod, only: IPRGEN, KCHARG, LUTMAT, LUX2C, NEWPRP, OPTIMI, RDINPC, TWOCOMP, TWOCOMPBSS
 !      use cbirea_mod, only: IPREAD
-!      use cbihr1_mod, only: IPRONE
 !      use dcbbas_mod, only: I2TMT, N2BBASXQ, N2TMT, NFBAS, NTBAS, NZT
       use memory_allocator
       use checkpoint
@@ -4395,6 +4393,7 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: CHARGE, NUCDEP, NUCIND
       use siripc_mod, only: NEWGEO
+      use cbihr1_mod, only: IPRONE
 #include "implicit.h"
 #ifndef MOD_XAMFI
       logical :: aoomod   = .false.
@@ -4408,7 +4407,6 @@ C   PAMIOU: LUTMAT
 #include "dcbgen.h"
 #include "dcbcls.h"
 #include "dcbham.h"
-#include "cbihr1.h"
 #include "cbirea.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
@@ -5284,7 +5282,7 @@ C            S. Knecht, 2010, to include is_defining_h1mat
 C
 C*****************************************************************************
 !      use dcborb_mod, only: NFORB, NFRO, NORB
-!      use cbihr1_mod, only: IPRONE
+      use cbihr1_mod, only: IPRONE
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: FREEPJ, IF, IPRHAM, LEVYLE, MDIRAC, SPINFR, SUB_BL, VEXTPJ
 !      use dgroup_mod, only: ATOMIC, NFSYM, NZ
@@ -5306,7 +5304,6 @@ C  DGROUP:
 #include "dcborb.h"
 #include "dgroup.h"
 !#include "pgroup.h"
-#include "cbihr1.h"
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
       LOGICAL, intent(in) :: SLGROUP,LSYMAD
@@ -5683,8 +5680,8 @@ C
 C*****************************************************************************
 !      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NNBBASX, NTBAS
 !      use dgroup_mod, only: NFSYM
-!      use cbihr1_mod, only: IPRONE
 !      use dcbgen_mod, only: LU1INT
+      use cbihr1_mod, only: IPRONE
       use memory_allocator
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -5693,7 +5690,6 @@ C
       INTEGER :: I,J,JJ
 #include "dcbham.h"
 #include "dcbgen.h"
-#include "cbihr1.h"
 #include "dcbbas.h"
 #include "dgroup.h"
       DIMENSION SMAT(N2BBASX)
@@ -5764,7 +5760,7 @@ C*****************************************************************************
 !      use dgroup_mod, only: JFSYM, NFSYM, NZ
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
-!      use cbihr1_mod, only: IPRONE
+      use cbihr1_mod, only: IPRONE
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbbas_mod, only: IBAS, IBBAS, N2BAS, N2BAST, N2BBASX, NFBAS, NNBBASX, NTBAS
 !      use dcbgen_mod, only: LU1INT, TWOCOMP
@@ -5775,7 +5771,6 @@ C*****************************************************************************
 C
 #include "dcbgen.h"
 #include "dcbham.h"
-#include "cbihr1.h"
 #include "dcbbas.h"
 #include "dgroup.h"
       DIMENSION SMAT(*)
@@ -6461,7 +6456,7 @@ C*****************************************************************************
       use dummy_mod, only: DUMMY
 !      use dcbham_mod, only: BSS, IF, IPRHAM, MDIRAC, NOSMLV, X2C
 !      use dgroup_mod, only: IPQTOQ, NZ
-!      use cbihr1_mod, only: IPRONE
+      use cbihr1_mod, only: IPRONE
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBASX, NTBAS
       use nuclei_mod, only: CHARGE, NAMN, NOORBT, NUCDEP, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -6481,7 +6476,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "cbihr1.h"
 !#include "cbisol.h"
 
       real(8)  :: TIMSTR(2), TIMEND(2)
@@ -10266,7 +10260,7 @@ C***********************************************************************
 !      use dcborb_mod, only: N2ORBT, NBORB, NESH, NFORB, NFRO, NORB, NORBT, NPSH
 !      use dcbbas_mod, only: MXBBAS, N2TMT, NFBAS, NTBAS, NZT
 !      use dcbdhf_mod, only: N2TMOTQ, NTMO
-!      use cbihr1_mod, only: IPRONE
+      use cbihr1_mod, only: IPRONE
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: FREEPJ, IPRHAM, VEXTPJ
 !      use pgroup_mod, only: REP
@@ -10282,7 +10276,6 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
-#include "cbihr1.h"
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(*)
       KWORK = 1
       KFREE = KWORK
@@ -10943,7 +10936,7 @@ C*****************************************************************************
 !      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
 !      use dcbham_mod, only: BSS, IF, MDIRAC, NOSMLV, X2C
       use maxaqn_mod, only: MXAQN, MXQN
-!      use cbihr1_mod, only: IPRONE
+      use cbihr1_mod, only: IPRONE
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NOORBT, NUCDEP, NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -10959,7 +10952,6 @@ C
 !#include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "cbihr1.h"
 !#include "cbisol.h"
 C
 c

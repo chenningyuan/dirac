@@ -1144,7 +1144,7 @@ C
       use onecom_mod, only: KCKTAB, KHKTAB, NCENTA, NCENTB, ONECEN,
      &  SIGNBX, SIGNBY, SIGNBZ
       use symmet_mod, only: IPTAX, IPTCNT, ISYMAX, MAXREP, PT
-!      use dipole_mod, only: DDIPE
+      use dipole_mod, only: DDIPE
 !      use dorps_mod, only: DOREPS
       use mxcent_mod, only: MXCENT, MXCOOR
       use kinds_mod, only: dp
@@ -1154,7 +1154,6 @@ C
       LOGICAL DIFDIP
       DIMENSION DSHELL(KHKTAB), SINT0(KCKTAB), DINT1(KCKTAB,3,3)
 #include "dorps.h"
-#include "dipole.h"
 C
 C
       IF (DIFDIP) THEN

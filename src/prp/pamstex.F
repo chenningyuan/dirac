@@ -1606,13 +1606,12 @@ C     XPRPGRAD - the property gradient
       use mxcent_mod, only: MXCOOR
 !      use dcborb_mod, only: ICMOQ, N2ORBXQ, NCMOTQ, NISH, NOCCT, NORB, NORBT, NPSH
 !      use dgroup_mod, only: NZ
-!      use dipole_mod, only: DIPMN
+      use dipole_mod, only: DIPMN
 !      use dcbstex_mod, only: STEX_HOLES, STEX_NHOLES, STEX_NR_OP, STEX_NVIRT, STEX_OP_IND
 #include "implicit.h"
       INTEGER :: II, JJ
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dipole.h"
 #include "dcbstex.h"
       LOGICAL LOPEN
       DOUBLE COMPLEX XPRPGRAD,DETS,MOM,REFGSOVL

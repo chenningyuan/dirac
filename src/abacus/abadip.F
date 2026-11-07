@@ -170,6 +170,7 @@ C  /* Deck dipct1 */
 C
 C     December 1989, tuh
 C
+      use dipole_mod, only: DDIPE, DDIPN, DDIPS, DIPME
       use nuclei_mod, only: NUCDEP
       use iratdef_mod, only: IRAT
       use chrxyz_mod, only: CHRXYZ
@@ -186,7 +187,6 @@ C
      *          SOPACK(NNBASX,3), DIPRHS(NVARMA), DIPREO(3*NUCDEP),
      *          WORK(LWORK), SOINT(NBAST,NBAST)
 C
-#include "dipole.h"
 #include "moldip.h"
 #include "cbidip.h"
 C
@@ -523,13 +523,13 @@ C
       END
 C  /* Deck dp0sum */
       SUBROUTINE DP0SUM
+      use dipole_mod, only: DIPME, DIPMN
       use symmet_mod, only: ISYMAX
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0)
-#include "dipole.h"
 #include "moldip.h"
       DO 100 I = 1, 3
          IF (ISYMAX(I,1) .EQ. 0) THEN

@@ -96,7 +96,6 @@ C
 #endif
 #include "orgcom.h"
 #include "ccom.h"
-!#include "huckel.h"
 C
 C
       TOLS   = THRS*THRS
@@ -782,9 +781,9 @@ C  /* Deck pr1so1 */
       use shells_mod, only: LCLASS
       use onecom_mod
       use nuclei_mod, only: CHARGE, CORD, GNUEXP, ISTBNU, NUCIND, NUCNUM
+      use huckel_mod, only: HUCCNT, HUCEXC, IHUCPT
 #include "implicit.h"
 C
-!      use huckel_mod, only: HUCCNT
       LOGICAL FULMAT, ANTI, DOATOM(NUCIND), TRIANG, SQUARE, DONUC1,
      &        MULCHA, DOMOM1, HUCORB
       CHARACTER LABINT(NOPTYP)*8
@@ -800,7 +799,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "huckel.h"
 C
       XYZ(I,J) = PT(IAND(ISYMAX(I,1),J))
 C

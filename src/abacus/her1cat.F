@@ -315,7 +315,6 @@ C
 #else
 #include "energy.h"
 #endif
-!#include "dipole.h"
 #include "ccom.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from CATDR1','*',103)

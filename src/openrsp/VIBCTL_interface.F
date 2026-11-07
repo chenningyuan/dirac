@@ -100,8 +100,8 @@ C      DIPDER = .true.
 
       subroutine DIPNUC_ifc(n,F,FG)
       !ajt Used in prop_contribs.f90
+      use dipole_mod, only: DDIPN, DIPMN
       use mxcent_mod, only: MXCOOR
-#include "dipole.h"
       integer :: n
       real(8) :: F(3),FG(3,3*n)
       call DIPNUC((/0d0/),(/0d0/),0,.true.)

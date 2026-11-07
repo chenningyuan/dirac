@@ -1706,12 +1706,11 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use codata_mod, only: DEBYE
       use mxcent_mod, only: MXCENT, MXCOOR
-!      use dipole_mod, only: DIPME, DIPMN
+      use dipole_mod, only: DIPME, DIPMN
 !      use dcbexp_mod, only: IPDIPOLE
 #include "implicit.h"
       INTEGER :: I
 #include "codata.h"
-#include "dipole.h"
 #include "dcbexp.h"
 C
       DIMENSION EXPVAL(*),EXP_CORR(*),WORK(*)
@@ -9715,7 +9714,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use ccom_mod, only: DOSPHE
 #include "implicit.h"
       INTEGER :: I
-!#include "cbihr1.h"
 #include "dgroup.h"
 !#include "dcborb.h"
 #include "dcbbas.h"

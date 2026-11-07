@@ -915,7 +915,6 @@ C***********************************************************************
 #include "molinp.h"
 #include "ccom.h"
 #include "cbisol.h"
-#include "huckel.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -2082,6 +2081,7 @@ C       Process orbital and geometry input data
 C
 C*****************************************************************************
 C
+      use huckel_mod, only: NHUCBA
       use fitprimit_mod, only: NPLSH_FIT, NPSHEL_FIT, NPSSH_FIT
       use fitshells_mod, only: KMAX_FIT, NLRGSH_FIT, NSMLSH_FIT
       use nuclei_mod
@@ -2107,7 +2107,6 @@ C
      &          CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS)
       integer blk
-#include "huckel.h"
 
 ! local arrays:
       REAL*8    CORD_DEP(3,4) ! (xyz,1:nsymop+1)
@@ -4147,6 +4146,7 @@ C     tuh 120988
 C
 C     Polished and annotated - tsaue March 10 1993
 C*************************************************************************
+      use huckel_mod, only: HUCEXC, IHUCPT
       use aosotr_mod, only: CTRAN, IPCEN, IPTYP, ITRAN, JTRAN
       use shells_mod, only: ISTBAO, KHKT, KMAX, LCLASS, NCENT, NHKT,
      &  NUMCF
@@ -4168,7 +4168,6 @@ C
 #include "pincom.h"
 #include "sphtrm.h"
 #include "cbirea.h"
-#include "huckel.h"
 C
 C*****************************************************************************
 C Determine ISYMAO:

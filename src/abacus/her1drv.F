@@ -276,7 +276,7 @@ C
       use nuclei_mod, only: CHARGE, CORD, GNUEXP, ISTBNU, NUCDEP,
      &  NUCIND, NUCNUM
       use symind_mod, only: INDFA, INDFB, ISOFRA, ISOFRB
-!      use dipole_mod, only: DDIPE, DDIPS
+      use dipole_mod, only: DDIPE, DDIPS
 !      use cbisol_mod, only: LMNTOT, SOLVNT
       use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
       use maxaqn_mod, only: MXAQN, MXQN
@@ -299,7 +299,6 @@ C
 #else
 #include "energy.h"
 #endif
-#include "dipole.h"
 #include "ccom.h"
 #include "dorps.h"
 #include "cbisol.h"
@@ -985,7 +984,7 @@ C
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEP, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
-!      use dipole_mod, only: DDIPN, DIPMN
+      use dipole_mod, only: DDIPN, DIPMN
 !      use dorps_mod, only: DOREPS
 !      use orgcom_mod, only DIPORG
       use kinds_mod, only: dp
@@ -993,7 +992,6 @@ C
       REAL(dp), PARAMETER :: D0 = 0.0D0, D100 = 100.0D0
       LOGICAL DIFDIP
 #include "orgcom.h"
-#include "dipole.h"
 #include "dorps.h"
 C
 C     Dipole moment

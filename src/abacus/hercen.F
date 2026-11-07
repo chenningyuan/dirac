@@ -76,7 +76,6 @@
       LOGICAL GENERATE
       DIMENSION IBLCK(MXBSETS)
 #include "molinp.h"
-#include "huckel.h"
 #include "dcbgen.h"
 !
 !     Initialize variables that regard the whole basis set
@@ -224,7 +223,6 @@
 
 ! cbirea.h : UNCONT
 #include "molinp.h"
-#include "huckel.h"
 #include "dcbgen.h"
 #include "cbirea.h"
 
@@ -532,7 +530,6 @@
       CHARACTER*20 BSFIL(NFILES)
       LOGICAL GENERATE
 #include "molinp.h"
-#include "huckel.h"
 #include "dcbgen.h"
 !     Scratch arrays needed for MULTIBASIS option
 !     Should changed into allocatable arrays (either using fortran 90 allocate or

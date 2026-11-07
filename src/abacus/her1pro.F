@@ -26,10 +26,9 @@ C  /* Deck pr1int */
       use shells_mod, only: KMAX, NLRGSH, NSMLSH
       use nuclei_mod, only: NBASIS, NLARGE, NPBAS, NPLRG, NPSML, NSMALL,
      &  NUCIND
+      use huckel_mod, only: NHUCAO, NHUCBA
 #include "implicit.h"
 C
-!      use huckel_mod, only: NHUCAO, NHUCBA
-#include "huckel.h"
 C
       LOGICAL TRIANG, PROPRI, TOFILE, DOINT(2,2)
       CHARACTER WORD*7, LABINT(3*MXCOOR)*8
@@ -2335,7 +2334,6 @@ C
       DIMENSION WORK(LWORK), SOINT(NELMNT,NOPTYP), INTREP(*), INTADR(*)
 C
 #include "pgroup.h"
-!#include "huckel.h"
 #include "dcbbas.h"
       KLAST = 1
 C
