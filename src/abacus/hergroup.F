@@ -181,7 +181,7 @@ C*****************************************************************************
       use argoscomch_mod, only: ITYPAG
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
-!      use argoscom_mod, only: IGRPAG, NDPTAG, NDPTAGS
+      use argoscom_mod, only: IGRPAG, NDPTAG, NDPTAGS
 !      use cbirea_mod, only: IPREAD
       use symmet_mod, only: IPAR, IXVAL, JSOP, MAXREP, NINVC, NREFL,
      &  NROTS, PT
@@ -198,7 +198,6 @@ C
       DATA IROTS/3,5,6/
       DATA IREFL/4,2,1/
       DATA JPAR/ 1,-1,-1, 1,-1, 1, 1,-1/
-#include "argoscom.h"
       DO 5 I = 0,7
         LSYMOP(I) = .FALSE.
     5 CONTINUE

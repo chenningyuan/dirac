@@ -182,7 +182,7 @@ C     REMARKS:
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use cbihr2_mod, only: IPRTWO
+      use cbihr2_mod, only: IPRTWO
 !      use dcborb_mod, only: NORBT
 !      use dcbbas_mod, only: N2BBASXQ
 !      use dgroup_mod, only: NZ
@@ -191,7 +191,6 @@ C***********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
-#include "cbihr2.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"

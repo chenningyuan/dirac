@@ -164,7 +164,7 @@ C
 !      use abainf_mod, only: GDALL
 !      use infvar_mod, only: NVAR
 !      use exeinf_mod, only: FTRONV, GTRONV, HTRONV, RTRONV
-!      use trkoor_mod, only: NCOOR
+      use trkoor_mod, only: NCOOR
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP
@@ -186,7 +186,6 @@ C
 #include "dorps.h"
 #include "infvar.h"
 #include "exeinf.h"
-#include "trkoor.h"
 C
 C     The variable FIRST has been replaced with FTRONV in /EXEINF/,
 C     which can be controlled from outside. This is necessary because
@@ -555,7 +554,7 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use cbitro_mod, only: COMPAR, IPRINT
-!      use trkoor_mod, only: NCOOR
+      use trkoor_mod, only: DEPEND, NCOOR
       use symmet_mod, only: IPTCNT, IPTCOR, MAXREP, NCRREP
 !      use dorps_mod, only: WORK
       use maxorb_mod, only: MXCORB
@@ -566,7 +565,6 @@ C
 C
 #include "cbitro.h"
 #include "dorps.h"
-#include "trkoor.h"
 C
 C     *************************************************
 C     ***** Determine trarot coordinates and TMAT *****
@@ -642,7 +640,7 @@ C
 !      use cbitro_mod, only: IPRINT, THRESH
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
-!      use trkoor_mod, only: DEPEND, NCDEP, NCOOR
+      use trkoor_mod, only: DEPEND, NCDEP, NCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -652,7 +650,6 @@ C
      *          ITBDEP(NCOOR)
 C
 #include "cbitro.h"
-#include "trkoor.h"
 C
       IF (IPRINT .GE. 5) THEN
          CALL TITLER('Output from SETDEP','*',103)
@@ -896,7 +893,7 @@ C
 C     This subroutine determines the full molecular gradient and
 C     Hessian using translational and rotational symmetry.
 C
-!      use taymol_mod, only: HESMOL
+      use taymol_mod, only: GRDMOL, HESMOL
       use nuclei_mod, only: NUCDEP
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
@@ -906,16 +903,14 @@ C
       use maxorb_mod, only: MXCORB
 !      use abainf_mod, only: WORK
 !      use cbitro_mod, only: COMPAR, HESTRO, IPRINT, TRODIP, TROGRD, TROHES
-!      use trkoor_mod, only: DEPEND, NCOOR, NTRREP
+      use trkoor_mod, only: DEPEND, NCOOR, NTRREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I,J
       DIMENSION WORK(LWORK), HESTR(MXCOOR,MXCOOR), DIPTR(3,MXCOOR)
 #include "abainf.h"
 #include "cbitro.h"
-#include "taymol.h"
 #include "moldip.h"
-#include "trkoor.h"
       IF (HESTRO) THEN
          CALL DZERO(HESTR,MXCOOR*MXCOOR)
          DO 50 I = 1, NCOOR
@@ -1306,19 +1301,17 @@ C
       use nuclei_mod, only: NAMEX
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use trkoor_mod, only: WORK
+      use trkoor_mod, only: DEPEND
       use symmet_mod, only: IPTCOR, NCRREP
 !      use abainf_mod, only: NWNABA
       use maxorb_mod, only: MXCORB
-!      use taymol_mod, only: GRDMOL
+      use taymol_mod, only: GRDMOL
       use maxaqn_mod, only: MXAQN, MXQN
       use kinds_mod, only: dp
 #include "implicit.h"
       DIMENSION FD(NDEP)
       LOGICAL   LPRINT
 #include "abainf.h"
-#include "taymol.h"
-#include "trkoor.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
       IF (IPRINT .GT. 0) THEN
          LPRINT = .TRUE.
@@ -1378,17 +1371,15 @@ C
 C     tuh 071288
 C
       use priunit_mod, only: LUPRI
-!      use taymol_mod, only: HESMOL
+      use taymol_mod, only: HESMOL
       use mxcent_mod, only: MXCOOR
 !      use abainf_mod, only: NWNABA
-!      use trkoor_mod, only: NCOOR
+      use trkoor_mod, only: NCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       DIMENSION HESTR(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
 #include "abainf.h"
-#include "taymol.h"
-#include "trkoor.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
       DIFMAX = D0
       DO 100 I = 1, NCOOR
@@ -1432,7 +1423,7 @@ C
 !      use abainf_mod, only: NWNABA
       use mxcent_mod, only: MXCOOR
       use priunit_mod, only: LUPRI
-!      use trkoor_mod, only: NCOOR
+      use trkoor_mod, only: NCOOR
 !      use moldip_mod, only: DIP1
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1441,7 +1432,6 @@ C
       DIMENSION DIPTR(3,MXCOOR), CSTRA(*), SCTRA(*)
 #include "abainf.h"
 #include "moldip.h"
-#include "trkoor.h"
       DIFMAX = D0
       DO 100 I = 1, 3
          DO 200 J = 1, NCOOR
@@ -1487,14 +1477,14 @@ C     tuh 071288
 C     tuh 171289 - modified to include dipole moment derivatives
 C
       use maxorb_mod, only: MXCORB
-!      use taymol_mod, only: WORK
+      use taymol_mod, only: GRDMOL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use nuclei_mod, only: CORD, ISTBNU, NUCIND
       use priunit_mod, only: LUPRI
 !      use moldip_mod, only: WORK
       use symmet_mod, only: FMULT, IPTAX, IPTCNT, ISYMAX
-!      use trkoor_mod, only: IPTTRO, NCOOR
+      use trkoor_mod, only: DEPEND, IPTTRO, NCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -1504,9 +1494,7 @@ C
       CHARACTER*(*) KEY1, KEY2, KEY3
       DIMENSION AMAT(NROW,NCOL), IPTCOL(NCOOR)
 C
-#include "taymol.h"
 #include "moldip.h"
-#include "trkoor.h"
 C
       IF (IPRINT.GE.5) THEN
          CALL TITLER('Output from GETTRO','*',103)
@@ -1851,7 +1839,7 @@ C
       use nuclei_mod, only: CORD, NUCIND
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use trkoor_mod, only: IPTTRO, NCDEP, NCOOR
+      use trkoor_mod, only: IPTTRO, NCDEP, NCOOR, NTRREP
 !      use cbitro_mod, only: IPRINT, THRESH
       use maxorb_mod, only: MXCORB
       use chrxyz_mod, only: CHRXYZ
@@ -1863,7 +1851,6 @@ C
       DIMENSION TMAT(6,NCOOR), TVEC(NCOOR), AMAT(NCOOR,6)
 C
 #include "cbitro.h"
-#include "trkoor.h"
 C
 C     (I) Set up TMAT for 6 trarot coordinates
 C
@@ -2067,7 +2054,7 @@ C
       use priunit_mod, only: LUPRI
 !      use abainf_mod, only: DIPDER, MOLGRD, MOLHES, POLAR
 !      use cbitro_mod, only: COMPAR, IPRINT
-!      use trkoor_mod, only: NTRREP
+      use trkoor_mod, only: NTRREP
 #include "implicit.h"
       INTEGER :: I
 C
@@ -2076,7 +2063,6 @@ C
 #include "abainf.h"
 #include "cbitro.h"
 #include "dorps.h"
-#include "trkoor.h"
 C
       IF (KEY .EQ. 'HERMIT') THEN
          DO 100 IREP = 0, MAXREP

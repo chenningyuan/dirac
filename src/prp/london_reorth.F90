@@ -57,7 +57,6 @@ module london_reorth_hb
 #include "dcbprp.h"
 #include "blocks.h"
 #include "dcbham.h"
-#include "cbihr2.h"
 #include "dcbdhf.h"
 #include "dcbxlr.h"
 

@@ -369,7 +369,7 @@ C
 C***********************************************************************
 !      use dcbxlr_mod, only: CNVXLR, INTXLR, IPRXLR, ITRILR, ITRXLR, JLRBP, LLBPSU, LLRBPU, MAXRM, NBFREQ, NLRBP, NLRBPT, RESXLR, THCLR, XLRDIH, XLRNRM, XLR_LSFG, XSTERN
 !      use dcbxrs_mod, only: CNVINT, DIAGHE, INTDEF, IPRXRS, ITRINT, LINEQ, LOFFTY, LSVCFG, LUXVC, MAXITR, N2REDM, NEXCNV, NEXSIM, NEXSTV, NFREQ, NREDM, RESFAC, STATIC, STERNH, THCXRS, TKNORM
-!      use cbihr2_mod, only: IPRTWO
+      use cbihr2_mod, only: IPRTWO
 #include "implicit.h"
 
 !#include "dgroup.h"
@@ -378,7 +378,6 @@ C***********************************************************************
 !#include "dcbbas.h"
 !#include "dcborb.h"
 #include "dcbxrs.h"
-#include "cbihr2.h"
 
       logical tobe
       dimension work(*)

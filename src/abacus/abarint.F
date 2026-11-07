@@ -2640,12 +2640,11 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: FMULT, IPTCNT, MAXREP, NCRREP
-!      use taymol_mod, only: GRDMOL, HESMOL
+      use taymol_mod, only: GRDMOL, HESMOL
       use maxorb_mod, only: MXCORB
       use nuclei_mod, only: ISTBNU, NUCDEP, NUCIND
 #include "implicit.h"
 #include "optinf.h"
-#include "taymol.h"
       DIMENSION SCLVEC(MXCOOR), HESTMP(MXCOOR,MXCOOR)
       DIMENSION TMPMAT(MX2CRD,MX2CRD), TMPMT2(MX2CRD,MX2CRD)
       DIMENSION TMPMT3(MX2CRD,MX2CRD), TMPMT4(MX2CRD,MX2CRD)

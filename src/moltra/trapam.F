@@ -1925,7 +1925,8 @@ C
       use dummy_mod, only: DUMMY, IDUMMY
 !      use comdis_mod, only: IRECG, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NPASS
       use mxcent_mod, only: MXCENT
-!      use cbihr2_mod, only: IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO, RTNTWO, TKTIME
+      use cbihr2_mod, only: IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO,
+     &  RTNTWO, TKTIME
 !      use dorps_mod, only: DOCOOR, DOREPS
 !      use dcborb_mod, only: NASHT
 !      use dgroup_mod, only: NFSYM
@@ -1935,7 +1936,6 @@ C
 #include "comdis.h"
       DIMENSION GMAT(*),INDX(3,*),INDXAB(*),GABRAO(*),DRIJ(*)
       DIMENSION WORK(LWORK),DINTSKP(*)
-#include "cbihr2.h"
 #include "dorps.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -4642,7 +4642,7 @@ C
 !      use dcborb_mod, only: NASHT
 !      use dcbtra_mod, only: SCRTRA
 !      use dgroup_mod, only: NFSYM
-!      use cbihr2_mod, only: ICEDIF, RTNTWO, TKTIME
+      use cbihr2_mod, only: ICEDIF, RTNTWO, TKTIME
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
@@ -4654,7 +4654,6 @@ C
 #include "dcborb.h"
 #include "dcbtra.h"
 #include "dgroup.h"
-#include "cbihr2.h"
 C
       LOGICAL ANTIS,LMP2
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4),

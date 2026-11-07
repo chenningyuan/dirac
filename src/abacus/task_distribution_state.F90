@@ -18,7 +18,6 @@ contains
 !#include "dcbgen.h"
 !#include "dcbdhf.h"
 !#include "dcbbas.h"
-!#include "cbihr2.h"
 !      use blocks_mod, only: NLRGBL, NSMLBL
 #include "blocks.h"
     logical, intent(in) :: is_parallel
@@ -77,7 +76,6 @@ contains
 !#include "dcbgen.h"
 !#include "dcbdhf.h"
 !#include "dcbbas.h"
-!#include "cbihr2.h"
 !      use blocks_mod, only: NLRGBL, NSMLBL
 #include "blocks.h"
     integer, intent(in) :: i2typ

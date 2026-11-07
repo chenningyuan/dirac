@@ -21,13 +21,12 @@
 !      use molinp_mod, only: MLINE, NMLINE
       use nuclei_mod, only: CHARGE
 !      use inc_mxvalue_mod, only: MSUP
-!      use argoscom_mod, only: ECPNONT, ECPNUC
+      use argoscom_mod, only: ECPNONT, ECPNUC
       USE RECP_NTR
       IMPLICIT NONE
 #include "molinp.h"
 !#include "recpval.h"
 #include "inc_mxvalue.h"
-#include "argoscom.h"
 !     global variables
       INTEGER LUINFO,NUC1,NONT0,IPREAD
       REAL*8  Q,Q1
@@ -271,12 +270,11 @@
       END
 
       SUBROUTINE RECP_LNK_IRREP(MAXREP)
-!      use argoscom_mod, only: IGRPAG, NDPTAG
 !      use inc_geninp_mod, only: IRTAB
+      use argoscom_mod, only: IGRPAG, NDPTAG
       use argoscomch_mod, only: ITYPAG
       USE RECP_NTR
       IMPLICIT NONE
-#include "argoscom.h"
 !#include "pgroup.h"
 #include "inc_geninp.h"
       INTEGER I,J,RECPIN1,MAXREP,ND(8)
@@ -670,12 +668,11 @@
       use maxorb_mod, only: MXSHEL
       use nuclei_mod, only: NUCDEG, NUCIND
       use shells_mod, only: KHKT, KMAX, NCENT, NHKT
-!      use argoscom_mod, only: IROWMAX
+      use argoscom_mod, only: IROWMAX
       USE RECP_NTR
 #include "implicit.h"
 !#include "ccom.h"
 !#include "cbirea.h"
-#include "argoscom.h"
       INTEGER blk
 !     Skip if RECP is not set
       IF (.NOT.ALLOCATED(RECP_SET)) GOTO 9000
@@ -711,10 +708,9 @@
       use maxorb_mod, only: MXCORB, MXSHEL
       use shells_mod, only: ISTBAO, KHKT, NHKT
       use symmet_mod, only: ISYMAO, MAXREP, PT
-!      use argoscom_mod, only: IREPARG, MAXANG
+      use argoscom_mod, only: IREPARG, MAXANG
       USE RECP_NTR
 #include "implicit.h"
-#include "argoscom.h"
       INTEGER ICENT,IA,blk,ila,NA,LA,IVARB,JKB,KB,irow,icol
       blk = blk +1
       DO NA = 1, KHKT(IA)   ! run over components
@@ -747,10 +743,9 @@
 !     Set AO to SO transformation matrices
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCIND
-!      use argoscom_mod, only: IREPARG, IROWMAX, MAXANG
+      use argoscom_mod, only: IREPARG, IROWMAX, MAXANG
       USE RECP_NTR
       IMPLICIT NONE
-#include "argoscom.h"
       INTEGER I,J,K,L,AORDS1,IRREP1
       CALL RECP_NTRA_AOTOSO(NUCIND,MAXANG,irowmax)
       AORDS1 = 0
@@ -1032,10 +1027,9 @@ C
       SUBROUTINE RECP_LNK_RDMENU(WORD0)
 ! Read menu file
       use priunit_mod, only: LUCMD, LUPRI
-!      use argoscom_mod, only: ECPINT_DEBUG, ECPINT_PRINT
+      use argoscom_mod, only: ECPINT_DEBUG, ECPINT_PRINT
       USE RECP_OUTPUT
       IMPLICIT NONE
-#include "argoscom.h"
       INTEGER I,IOS,NTABLE
       PARAMETER (NTABLE=3)
       CHARACTER WORD0*7,WORD*7,PROMPT*1,TABLE(NTABLE)*7

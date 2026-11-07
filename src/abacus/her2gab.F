@@ -1750,11 +1750,10 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use cbihr2_mod, only: IPRTWO
+      use cbihr2_mod, only: IPRTWO
       use nuclei_mod, only: NBASIS
 #include "implicit.h"
 C
-#include "cbihr2.h"
       LOGICAL NOCONT
       DIMENSION GABM(NBASIS,NBASIS,*),WORK(LWORK)
 C

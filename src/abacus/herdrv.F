@@ -1098,7 +1098,8 @@ C
 C  /* Deck hr2inp */
       SUBROUTINE HR2INP(WORD)
       use priunit_mod, only: LUCMD, LUPRI
-!      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO, RTNTWO, RUNTWO, SCRFCK, SOFOCK, THRFAC, TKTIME, USRSCR
+      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
+     &  IPRTWO, RTNTWO, RUNTWO, SCRFCK, SOFOCK, THRFAC, TKTIME, USRSCR
       use mxcent_mod, only: MXCENT
 !      use infpar_mod, only: NUMNOD
       use cbiher_mod, only: IPRDEF, NOTWO
@@ -1110,7 +1111,6 @@ C
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
-#include "cbihr2.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else

@@ -26,13 +26,12 @@
       SUBROUTINE RECP
 
       use priunit_mod, only: LUPRI
-!      use argoscom_mod, only: ECPINT_DEBUG, ECPINT_PRINT
+      use argoscom_mod, only: ECPINT_DEBUG, ECPINT_PRINT
 !      use inc_print_mod, only: PRINT_LEVEL, RECP_DBG, RECP_OUT
       USE RECP_OUTPUT
       USE RECP_CHK
       USE RECP_INP_READ
       IMPLICIT NONE
-#include "argoscom.h"
 #include "inc_print.h"
 
 !     Enter RECP

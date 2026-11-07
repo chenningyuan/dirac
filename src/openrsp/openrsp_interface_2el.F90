@@ -1,5 +1,6 @@
 module openrsp_interface_2el
 
+      use cbihr2_mod, only: ICEDIF, TKTIME
       use mxcent_mod, only: MXCENT, MXCOOR
    use dirac_interface
 
@@ -9,7 +10,6 @@ module openrsp_interface_2el
 
    private
 
-#include "cbihr2.h"
 #include "dcbbas.h"
 #include "dcbgen.h"
 #include "dcbgrd.h"

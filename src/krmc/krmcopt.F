@@ -1357,7 +1357,7 @@ C***********************************************************************
 !      use dcbopt_mod, only: IOPT_IFCKOP, IOPT_IHRMOP, IOPT_INTFLG, IOPT_ISYMOP, IPROPT
 !      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
-!      use cbihr2_mod, only: IPRTWO
+      use cbihr2_mod, only: IPRTWO
       use dirac_cfg ! for MCSCF-srDFT calculations
 #include "implicit.h"
       INTEGER :: I
@@ -1368,7 +1368,6 @@ C
 !#include "dcbgen.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "cbihr2.h"
       DIMENSION DV(*),CMO(*),FC(*),FV(*)
       DIMENSION WORK(LWORK)
       LOGICAL NOFV
@@ -1664,7 +1663,7 @@ C***********************************************************************
 !      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use frame_mod, only: POTNUC
-!      use cbihr2_mod, only: IPRTWO
+      use cbihr2_mod, only: IPRTWO
 #include "implicit.h"
       INTEGER :: I
 C
@@ -1675,7 +1674,6 @@ C
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "cbihr2.h"
       LOGICAL   TOFILE
       DIMENSION CMO(*),FC(*), WORK(LWORK)
       DIMENSION IQBF(4)

@@ -279,12 +279,11 @@ C     Written by T.Saue Sep 30 1996
 C
 C*****************************************************************************
 !      use dcbind_mod, only: IBIT1, IBIT2, NBIT1, NBIT2, NBITS, NIBUF
-!      use cbihr2_mod, only: IPRTWO
 !      use dcbbas_mod, only: NTBAS
+      use cbihr2_mod, only: IPRTWO
       use hrunit_mod, only: LUDASP, LUINTA, LUSOL, LUSUPM
 #include "implicit.h"
 C
-#include "cbihr2.h"
 #include "dcbind.h"
 #include "dcbbas.h"
       DIMENSION WORK(LWORK)
@@ -1546,7 +1545,7 @@ C*****************************************************************************
 !      use dcbgen_mod, only: IDFLAG, INTGEN, OPTIMI
 !      use dcbham_mod, only: INTV1C, ONECAP
       use priunit_mod, only: LUPRI
-!      use cbihr2_mod, only: IPRTWO
+      use cbihr2_mod, only: IPRTWO
       use maxaqn_mod, only: MXQN
       use hrunit_mod, only: LUINTA
       use dummy_mod, only: IDUMMY
@@ -1558,7 +1557,6 @@ C
 #include "ccom.h"
 #include "dcbgen.h"
 #include "dcbham.h"
-#include "cbihr2.h"
       LOGICAL LBIT,TOBE,REGO
       real(8) :: TIMSTR(2), TIMEND(2)
 
@@ -3247,7 +3245,7 @@ C*****************************************************************************
       use aovec_mod, only: MXAOVC
 !      use dcbbas_mod, only: N2BBASX
 !      use blocks_mod, only: NSYMBL
-!      use cbihr2_mod, only: IPRTWO, SCRFCK
+      use cbihr2_mod, only: IPRTWO, SCRFCK
 !      use dcbham_mod, only: MDIRAC
 !      use dgroup_mod, only: IQTOPQ, IRQMAT, JBTOF, JQBAS, NBSYM, NZ, NZC1
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -3267,7 +3265,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "blocks.h"
-#include "cbihr2.h"
 C
       CALL QENTER('DIRAOF')
       KWORK = 1
@@ -3412,7 +3409,8 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZC1
       use aovec_mod, only: MXAOVC
-!      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO, RTNTWO, SCRFCK, THRFAC, TKTIME
+      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
+     &  IPRTWO, RTNTWO, SCRFCK, THRFAC, TKTIME
 !      use blocks_mod, only: NLRGBL, NSMLBL
 !      use ccom_mod, only: KHK, NHTYP, THRS
       use shells_mod, only: KMAX
@@ -3431,7 +3429,6 @@ C   SHELLS: KMAX
 C   symmet.h : MAXREP
 C
 #include "dcbgen.h"
-#include "cbihr2.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "ccom.h"
@@ -3963,7 +3960,7 @@ C
 C     Written by T.Saue August 28 1996
 C*****************************************************************************
 !      use dcbbas_mod, only: N2BBASX
-!      use cbihr2_mod, only: SCRFCK
+      use cbihr2_mod, only: SCRFCK
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use dgroup_mod, only: NZ
       use aovec_mod, only: MXAOVC
@@ -3979,7 +3976,6 @@ C
      &          IFCKOP(NFMAT),
      &          IHRMOP(NFMAT),ISYMOP(NFMAT),WORK(LWORK)
 #include "dgroup.h"
-#include "cbihr2.h"
 #include "dcbbas.h"
 #include "blocks.h"
 C
@@ -4041,8 +4037,9 @@ C
 C     Driver for direct SCF calculations in SO-basis
 C
 C*****************************************************************************
-!      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO, RTNTWO, SCRFCK, THRFAC, TKTIME
 !      use blocks_mod, only: NLRGBL, NSMLBL
+      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
+     &  IPRTWO, RTNTWO, SCRFCK, THRFAC, TKTIME
       use dirac_partask_mod, only: HERFCK_PAR
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -4060,7 +4057,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D2 = 2.0D0, D4 = 4.0D0, D8 = 8.0D0,
      &                       D0=0.0D0
 C
-#include "cbihr2.h"
 #include "dgroup.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
@@ -4325,9 +4321,9 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXQN
 !      use ccom_mod, only: THRS
-!      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD, RTNTWO, THRFAC, TKTIME
+      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
+     &  RTNTWO, THRFAC, TKTIME
 #include "implicit.h"
-#include "cbihr2.h"
 #include "ccom.h"
 !#include "dgroup.h"
 C
@@ -4380,9 +4376,9 @@ C
 C     Written by T. Saue Sep 5 2006
 C
 C***********************************************************************
-!      use cbihr2_mod, only: SOFOCK
 !      use dcbham_mod, only: GAUNT, HFXFAC
 !      use dcbgen_mod, only: IDFLAG
+      use cbihr2_mod, only: SOFOCK
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER   NFMAT, LWORK, INTFLG
@@ -4392,7 +4388,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
 #include "dcbgen.h"
-#include "cbihr2.h"
 #include "dcbham.h"
 C
       real(8) :: TIMSTR(2), TIMEND(2)

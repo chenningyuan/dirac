@@ -1663,7 +1663,7 @@ CMI changes from TEC for LAO
 !      use infpar_mod, only: ICOUNT, MPARID, MYTID, NTASK, TIMING
 !      use inforb_mod, only: NBAST
       use aovec_mod, only: MXAOVC
-!      use taymol_mod, only: GRDMOL, HESMOL
+      use taymol_mod, only: GRDMOL, HESMOL
       use taysol_mod, only: GSOLNN, GSOLTT
 !      use blocks_mod, only: BIGVEC, CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, LCLASH, MAXSHL, NCNTSH, NHKTSH, NLRGBL, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
 !      use cbisol_mod, only: SOLVNT
@@ -1693,7 +1693,6 @@ C
 #else
 #include "energy.h"
 #endif
-#include "taymol.h"
 #include "suscpt.h"
 #include "blocks.h"
 #include "infpar.h"

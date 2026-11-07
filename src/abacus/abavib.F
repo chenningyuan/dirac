@@ -851,7 +851,7 @@ C  /* Deck vibana */
 !      use pgroup_mod, only: I
 !      use cbiwlk_mod, only: IMODE, NMODIF, V3CAL
 !      use gnrinf_mod, only: OPTNEW
-!      use taymol_mod, only: ERGMOL
+      use taymol_mod, only: ERGMOL
       use symmet_mod, only: MAXREP
 !      use abainf_mod, only: LINCPL, RAMAN, VROA
 !      use molde_mod, only: MOLDEN
@@ -883,7 +883,6 @@ C
 #include "molde.h"
 #include "abainf.h"
 #include "pgroup.h"
-#include "taymol.h"
 #include "cbiwlk.h"
 #include "gnrinf.h"
 #include "hotfccom.h"
@@ -2151,16 +2150,15 @@ C  /* Deck getnos */
       use priunit_mod, only: LUPRI
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use nuclei_mod, only: CORD, ISTBNU, IZATOM, NUCIND
+      use taymol_mod, only: GRDMOL, HESMOL
 #include "implicit.h"
 !      use aatens_mod, only: AATTOT
 !      use moldip_mod, only: DIPFLT
 !      use energy_mod, only: GRAD, GRADNN
-!      use taymol_mod, only: GRDMOL, HESMOL
       LOGICAL DIPDER, DOVCD,HESPUN
       DIMENSION ICHRG(NOATOM), GEOM(NCORD), GRAD(NCORD), GRDN(NCORD),
      &          HESS(NCORD,NCORD), WRK(LWRK),
      &          DGRAD(3,NCORD), CAAT(3,NCORD)
-#include "taymol.h"
 #include "energy.h"
 #include "moldip.h"
 #include "aatens.h"

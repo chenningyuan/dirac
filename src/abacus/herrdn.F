@@ -1941,6 +1941,7 @@ C
 C     Read and process data about symmetry independent centers
 C
 C*****************************************************************************
+      use argoscom_mod, only: ECPNUC
       use nuclei_mod, only: CHARGE, CORD, GAUNUC, GNUEXP, ISOTOP,
      &  IZATOM, NAMEX, NAMN, NUCIND
       use consts_mod, only: D0, D8
@@ -1953,7 +1954,6 @@ C*****************************************************************************
 #include "cbirea.h"
 C
 #include "molinp.h"
-#include "argoscom.h"
 C
       CHARACTER*(LEN_MLINE) TMP_LINE
       LOGICAL ANG

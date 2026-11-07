@@ -2389,7 +2389,6 @@ C     Retreives the energy and gradient of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
 C
 !      use dcbgrd_mod, only: DONGRD
-!      use taymol_mod, only: GRDMOL
 #ifdef PRG_DIRAC
       use memory_allocator
       use dirac_cfg
@@ -2399,8 +2398,8 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: NCRREP
       use nuclei_mod, only: NUCDEP
+      use taymol_mod, only: GRDMOL
 #include "implicit.h"
-#include "taymol.h"
 
 #ifndef PRG_DIRAC
 #include "gnrinf.h"
@@ -2475,13 +2474,12 @@ C
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use taymol_mod, only: GRDMOL, HESMOL
+      use taymol_mod, only: GRDMOL, HESMOL
       use nuclei_mod, only: ISTBNU, NUCDEP, NUCIND
       use maxorb_mod, only: MXCORB
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "optinf.h"
-#include "taymol.h"
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
       DIMENSION HESOLD(MXRCRD,MXRCRD), TMPMAT(MX2CRD,MX2CRD)
       DIMENSION TMPMT2(MX2CRD,MX2CRD), TMPMT3(MX2CRD,MX2CRD)
@@ -2796,7 +2794,7 @@ C  /* Deck updhes */
 C
 C     Controls Hessian updates
 C
-!      use taymol_mod, only: GRDMOL
+      use taymol_mod, only: GRDMOL, HESMOL
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use nuclei_mod, only: NUCDEP
@@ -2805,7 +2803,6 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 #include "optinf.h"
-#include "taymol.h"
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
       DIMENSION GRDMAT(25,MXRCRD), STPMAT(25,MXRCRD)
       DIMENSION HESOLD(MXRCRD,MXRCRD), GAMMA(MXRCRD)
@@ -3026,12 +3023,11 @@ C     Some common output for the updating subroutines.
 C
 !      use optinf_mod, only: DELINT, GRDINT, IINTCR, IPRINT, NCART, REDINT, STPINT, STPSYM
       use mxcent_mod, only: MXCENT, MXCOOR
-!      use taymol_mod, only: GRDMOL
+      use taymol_mod, only: GRDMOL
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "optinf.h"
-#include "taymol.h"
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
@@ -3099,11 +3095,10 @@ C
       use mxcent_mod, only: MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use optinf_mod, only: DELINT, IINTCR, IPRINT, KEEPHE, NCART, NCRTOT, REDINT
-!      use taymol_mod, only: HESMOL
+      use taymol_mod, only: GRDMOL, HESMOL
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "optinf.h"
-#include "taymol.h"
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
@@ -4811,6 +4806,7 @@ C
 C     Counts the coordinates of all symmetries.
 C
       SUBROUTINE CNTCRD
+      use trkoor_mod, only: NTRREP
       use symmet_mod, only: MAXREP, NCRREP
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -4819,12 +4815,10 @@ C
 #include "implicit.h"
 #include "optinf.h"
 #include "prkoor.h"
-#include "trkoor.h"
 #include "cbiwlk.h"
 !      use cbiwlk_mod, only: DOREPW
 !      use optinf_mod, only: IPRINT, NCART, NCRTOT, NPROJ, NTMAT
 !      use prkoor_mod, only: NPRREP
-!      use trkoor_mod, only: NTRREP
       NCRTOT = 0
       NTMAT = 0
       NCART = NCRREP(0,1)
@@ -4906,7 +4900,6 @@ C  /* Deck projgh */
 #include "implicit.h"
 #include "optinf.h"
 #include "cbiwlk.h"
-!#include "trkoor.h"
 #include "prkoor.h"
 !      use optinf_mod, only: IPRINT, NCART, NCRTOT, NTMAT
 !      use cbiwlk_mod, only: THRLDP
@@ -5802,7 +5795,7 @@ C
 C     This routine calculates the step that should be taken to obtain
 C     the next geometry.
 C
-!      use trkoor_mod, only: NTRREP
+      use trkoor_mod, only: NTRREP
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use cbiwlk_mod, only: IMODE, ZERGRD
 !      use optinf_mod, only: ENERGY, ERGPRD, GDIIS, GRADNM, GRDDIA, INDTOT, INITHS, IPRINT, ITRNMR, KEPTIT, LNSRCH, NCART, NEWTON, NOTRST, NPROJ, NSPMOD, RATFUN, SADDLE, STPDIA, STPNRM, STPSYM, TRSTRA, TRSTRG
@@ -5811,7 +5804,6 @@ C
 #include "implicit.h"
 #include "optinf.h"
 #include "cbiwlk.h"
-#include "trkoor.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D0
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
@@ -6302,7 +6294,7 @@ C
       use nuclei_mod, only: CORD, ISTBNU, NONT, NONTYP, NUCIND, NUCNUM
 !      use molinp_mod, only: NMLAU, NMLINE
 !      use dcbgen_mod, only: DOHUCKEL, HRINPC, NEWSYM, RDINPC, RDMLIN
-!      use trkoor_mod, only: NTRREP
+      use trkoor_mod, only: NTRREP
 #include "implicit.h"
 #include "molinp.h"
 #ifdef PRG_DIRAC
@@ -6312,7 +6304,6 @@ C
 #endif
 #include "optinf.h"
 #include "cbiwlk.h"
-#include "trkoor.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS
       CHARACTER FILENM*10, TMPLN*80
       DIMENSION GEINFO(0:ITRMAX,6)
@@ -6758,11 +6749,10 @@ C
 C     Determines if the end of the optimization has been reached.
 C
 !      use optinf_mod, only: BAKER, BRKSYM, CONOPT, DELINT, ENERGY, ERGOLD, GRADNM, GRDINT, GRDTHR, ICONDI, IINTCR, INDHES, INDTOT, IREDIC, ITRBRK, ITRNMR, NCART, NEWTON, NOBRKS, NWSYMM, QUADSD, REDINT, RSTARR, SADDLE, STPINT, STPNRM, STPSYM, THRERG, THRSTP, THRSYM
-!      use taymol_mod, only: GRDMOL
+      use taymol_mod, only: GRDMOL
       use mxcent_mod, only: MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "taymol.h"
 #if defined (PRG_DIRAC)
 #else
 #include "gnrinf.h"
@@ -7234,7 +7224,7 @@ C     used to obtain initial Hessian (1st order methods) for restarts
 C     or other runs.
 C
       use symmet_mod, only: MAXREP
-!      use taymol_mod, only: HESMOL
+      use taymol_mod, only: HESMOL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use optinf_mod, only: DELINT, GRDINT, NCART, REDINT
       use maxorb_mod, only: MXCORB
@@ -7246,7 +7236,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "taymol.h"
       DIMENSION HESINT(MXRCRD,MXRCRD)
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION TMPMT1(MX2CRD,MX2CRD), TMPMT2(MX2CRD,MX2CRD)
@@ -7312,7 +7301,7 @@ C
       use dummy_mod, only: IDUMMY
       use symmet_mod, only: MAXREP
       use maxaqn_mod, only: MXAQN, MXQN
-!      use taymol_mod, only: HESMOL
+      use taymol_mod, only: HESMOL
       use nuclei_mod, only: NUCDEP
 #include "implicit.h"
 #include "optinf.h"
@@ -7320,7 +7309,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "taymol.h"
       LOGICAL HESEXS
       DIMENSION HESINT(MXRCRD,MXRCRD), ATMARR(MXCENT,8)
       DIMENSION TMPMT1(MX2CRD,MX2CRD), TMPMT2(MX2CRD,MX2CRD)
@@ -7469,6 +7457,7 @@ C
       use dummy_mod, only: IDUMMY
       use nuclei_mod, only: ISTBNU, NAMN, NUCDEP, NUCIND
       use numder_mod, only: NOMOVE
+      use taymol_mod, only: GRDMOL
 #include "implicit.h"
 C
       PARAMETER (DP5 = 0.50D0, D100=100.0D0)
@@ -7478,7 +7467,6 @@ C
 C numder.h : NOMOVE
 C
 #include "molinp.h"
-#include "taymol.h"
 #include "optinf.h"
 #include "codata.h"
 #ifdef PRG_DIRAC

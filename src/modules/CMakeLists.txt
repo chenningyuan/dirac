@@ -3,9 +3,11 @@ set(MODULE_SOURCES
     ader.F90
     aosotr.F90
     aovec.F90
+    argoscom.F90
     argoscomch.F90
     cbiher.F90
     cbihr1.F90
+    cbihr2.F90
     cbione.F90
     chrnos.F90
     chrsgn.F90
@@ -59,7 +61,9 @@ set(MODULE_SOURCES
     subdir.F90
     symind.F90
     symmet.F90
+    taymol.F90
     taysol.F90
+    trkoor.F90
     twoao.F90
     twocom.F90
     twosta.F90

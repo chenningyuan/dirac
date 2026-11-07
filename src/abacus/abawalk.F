@@ -553,6 +553,7 @@ C
       END
 C  /* Deck wlkdrv */
       SUBROUTINE WLKDRV(POLDD,POLDQ,POLDL,POLDA,SPNTOT,WORK,LWORK)
+      use trkoor_mod, only: NTRREP
       use nuclei_mod, only: NUCDEP, NUCIND
       use symmet_mod, only: MAXREP, NAXREP, NCRREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -567,7 +568,6 @@ C
 #include "cbiwlk.h"
 #include "cbisol.h"
 #include "cbilnr.h"
-#include "trkoor.h"
 #include "prkoor.h"
 C
       CALL QENTER('WLKDRV')
@@ -737,6 +737,7 @@ C  /* Deck wlkdr1 */
      &                  CSTRA,SCTRA,SRC0,SRCF,POLAR0,POLARF,
      &                  EFG0,EFGF,SPNTOT,SSJ0,SSJF,WORK,LWORK,NCRIND,
      &                  NCRTOT,N2CRT,NTMAT,NCART)
+      use taymol_mod, only: ERGMOL
       use nuclei_mod, only: CORD, NUCDEP
       use iratdef_mod, only: IRAT
       use symmet_mod, only: ISYMAX, NCRREP
@@ -771,9 +772,7 @@ C
 C
 #include "cbiwlk.h"
 #include "abainf.h"
-#include "trkoor.h"
 #include "prkoor.h"
-#include "taymol.h"
 C
 C
       IF (IPRWLK .GT. 5) CALL TITLER('Output from WLKDR1','*',103)
@@ -1182,7 +1181,7 @@ C  /* Deck wlkcgh */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use moldip_mod, only: DIP0
       use maxorb_mod, only: MXCORB
-!      use taymol_mod, only: GRDMOL
+      use taymol_mod, only: GRDMOL, HESMOL
       use nuclei_mod, only: ISTBNU, NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1193,9 +1192,7 @@ C
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), DIPG0(3,NCART),
      *          DIPM(3), WORK(LWORK)
 C
-#include "taymol.h"
 #include "moldip.h"
-!#include "trkoor.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from WLKCGH','*',103)
 C
@@ -1306,7 +1303,6 @@ C
       DIMENSION SCAL(NCRTOT), GRDCAR(NCRTOT), HESCAR(N2CRT),
      &          ISOTPS(NUCIND)
 C
-#include "trkoor.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from WLKSCL','*',103)
 C
@@ -1418,6 +1414,7 @@ C
 C  /* Deck wlkprj */
       SUBROUTINE WLKPRJ(GRDCAR,HESCAR,SCAL,TMAT,WORK,THRLDP,
      *                  LWORK,DOREPW,NCRTOT,N2CRT,NTMAT,ISOTPS,IPRINT)
+      use trkoor_mod, only: NCOOR, NTRREP
       use iratdef_mod, only: IRAT
       use symmet_mod, only: MAXREP, NCRREP
       use mxcent_mod, only: MXCENT, MXCOOR
@@ -1430,7 +1427,6 @@ C
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), SCAL(NCRTOT),
      *          TMAT(NTMAT), WORK(LWORK), ISOTPS(*)
 C
-#include "trkoor.h"
 #include "prkoor.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from WLKPRJ','*',103)
@@ -1587,7 +1583,6 @@ C  /* Deck wlkeig */
      *          CNDHES(0:7), INDHES(0:7), GRDDIA(NCRTOT),
      *          IZEROG(NZEROG)
 C
-!#include "trkoor.h"
 #include "prkoor.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from WLKEIG','*',103)
@@ -2400,6 +2395,7 @@ C  /* Deck wlkirw */
 C  /* Deck wlkir1 */
       SUBROUTINE WLKIR1(IPOINT,AACCUM,STPNRM,COOR,CGRAD,CHESS,ISOTPS,
      &                  DMASS,CSTRA,SCTRA,IPRINT)
+      use taymol_mod, only: ERGMOL, GRDMOL, HESMOL
       use nuclei_mod, only: CORD, ISTBNU, IZATOM, NUCDEP, NUCIND
       use dummy_mod, only: DUMMY
       use symmet_mod, only: ISYMAX, MAXOPR, NCRREP, PT
@@ -2408,7 +2404,6 @@ C  /* Deck wlkir1 */
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 #include "inftap.h"
-#include "taymol.h"
       DIMENSION COOR(MXCOOR), CGRAD(MXCOOR), CHESS(MXCOOR,MXCOOR),
      &          ISOTPS(NUCIND), DMASS(NUCDEP), CSTRA(*), SCTRA(*)
 C
@@ -2481,7 +2476,6 @@ C
      &          ANHARM(NCART), TRSDIA(NCART), GRDCAR(NCART),
      &          ISOTPS(NUCIND), ERGDIA(NCRTOT), WORK(LWORK)
 C
-#include "trkoor.h"
 #include "prkoor.h"
 C
       CHARACTER*1 STARM, STARE, STARG, STARS, STARH
@@ -5695,7 +5689,6 @@ C  /* Deck wlkirm */
       PARAMETER (D0 = 0.0D0, SMALL = 1.0D-03, SMALL2 = 1.0D-10)
       LOGICAL DONWTN, INDXOK
       DIMENSION GRDDIA(NCART), EVAL(NCART), Q(NCART)
-#include "trkoor.h"
 #include "prkoor.h"
 C
       DONWTN = .FALSE.
@@ -6171,7 +6164,6 @@ C
 #include "abainf.h"
 #include "inflin.h"
 #include "cbiwlk.h"
-#include "taymol.h"
 #include "inftap.h"
 #include "dorps.h"
 #include "anrinf.h"

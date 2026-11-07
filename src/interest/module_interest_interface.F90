@@ -119,10 +119,9 @@ CONTAINS
       use aovec_mod, only: MXCONT
       use primit_mod, only: PRICCF, PRIEXP
 !      use dcbgen_mod, only: CVAL
-!      use cbihr2_mod, only: SCRFCK
+      use cbihr2_mod, only: SCRFCK
 !#include "dcbdhf.h"
 #include "dcbgen.h"
-#include "cbihr2.h"
 
     !local variables
        integer :: i

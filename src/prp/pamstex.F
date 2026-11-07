@@ -445,8 +445,8 @@ C     on disk in DFFCK1
 !      use dgroup_mod, only: NZ
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dcbdhf_mod, only: DHFERG, IFCKOP, IHRMOP, INTFLG, ISYMOP, LUFCK1
-!      use cbihr2_mod, only: SCRFCK
 !      use dcbstex_mod, only: STEX_SCRFCK
+      use cbihr2_mod, only: SCRFCK
 #include "implicit.h"
       INTEGER :: II
 #include "dcborb.h"
@@ -454,7 +454,6 @@ C     on disk in DFFCK1
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"
-#include "cbihr2.h"
 #include "dcbstex.h"
       DIMENSION WORK(LWORK),FMAT(N2BBASXQ),CMO(NCMOTQ)
       real*8 , allocatable :: aoo2esssoc(:)

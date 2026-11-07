@@ -18,6 +18,7 @@
 
 module london_direct_hb
 
+      use cbihr2_mod, only: IPRNTA, IPRNTB, IPRNTC, IPRNTD, TKTIME
       use dirac_partask_mod, only: FDE_PAR, HERFCK_PAR, XCINT_PAR
       use symmet_mod, only: ISYMAX, MAXREP
       use aovec_mod, only: MXAOVC
@@ -60,7 +61,6 @@ module london_direct_hb
 #include "dgroup.h"
 #include "dcbprp.h"
 #include "blocks.h"
-#include "cbihr2.h"
 #include "dcbdhf.h"
 
 contains

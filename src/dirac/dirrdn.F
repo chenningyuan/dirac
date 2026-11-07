@@ -7646,12 +7646,11 @@ C                 integrals over small comp. basis functions
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use cbihr2_mod, only: IPRTWO
+      use cbihr2_mod, only: IPRTWO
 !      use dcbgen_mod, only: INTGEN, TWOCOMP
 #include "implicit.h"
 C
 #include "dcbgen.h"
-#include "cbihr2.h"
 C
       DIMENSION WORK(LWORK)
       LOGICAL LBIT,DIRFCK
@@ -8095,7 +8094,7 @@ C***********************************************************************
 !      use dcbham_mod, only: BSS, DKH1, DKH2, GAUNT, LEVYLE, SPINFR, URKBAL, X2C, ZORA, ZORA4
 !      use dcbpsi_mod, only: DOCCM, DOCIM, DOMP2, DORES
 !      use dgroup_mod, only: NBSYM
-!      use cbihr2_mod, only: SOFOCK
+      use cbihr2_mod, only: SOFOCK
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: DOLVC, DOPRP, DOTRA, DOTSC, INTGEN, TWOCOMP
 !      use dcbana_mod, only: DOLOC
@@ -8110,7 +8109,6 @@ C
 #include "dcbpsi.h"
 #include "dcbham.h"
 #include "dcbana.h"
-#include "cbihr2.h"
 #include "dcbprp.h"
 #include "dgroup.h"
       LOGICAL SS_COR, SS_COR_NEEDED

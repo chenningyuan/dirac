@@ -4057,7 +4057,6 @@ C
 C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
-!      use cbihr2_mod, only: IPRTWO
 !      use dcbxrs_mod, only: INTFLG, IPRXRS, JSYMOP, JTIMOP, NCSIM, NESIM, NPSIM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NISHT, NORBT
@@ -4088,10 +4087,10 @@ C***********************************************************************
 
       use priunit_mod, only: LUPRI
       use dirac_partask_mod, only: FDE_PAR, XCINT_PAR
+      use cbihr2_mod, only: IPRTWO
 #include "implicit.h"
       INTEGER :: I
 C
-#include "cbihr2.h"
 #include "dcbxrs.h"
 #include "dcbbas.h"
 #include "dcborb.h"

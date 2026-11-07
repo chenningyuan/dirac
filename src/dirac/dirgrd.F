@@ -843,7 +843,8 @@ C*****************************************************************************
       use aovec_mod, only: MXAOVC
 !      use dcbgen_mod, only: DOLVC, NEWBAS, PARCAL, RELCAL
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBAST, NNBBASX
-!      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO, RTNTWO, TKTIME
+      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
+     &  IPRTWO, RTNTWO, TKTIME
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use dcbdhf_mod, only: NFMAT
@@ -881,7 +882,6 @@ C
 #include "dcbham.h"
 #include "dorps.h"
 C two el. part
-#include "cbihr2.h"
 #include "blocks.h"
 #include "dcbgrd.h"
 C
@@ -1874,7 +1874,7 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP
 !      use dcbgen_mod, only: DOLVC
-!      use taymol_mod, only: GRDMOL
+      use taymol_mod, only: GRDMOL
 !      use dcbham_mod, only: INTV1C, ONECAP
       use priunit_mod, only: LUPRI
 !      use dcbgrd_mod, only: GRADER, GRADKN, GRADLV, GRADNN, GRADNU, GRADRO, GRADXC, IGRD_INTBUF, IGRD_INTFLG
@@ -1883,7 +1883,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "taymol.h"
 C
 #include "dcbgen.h"
 #include "dcbgrd.h"

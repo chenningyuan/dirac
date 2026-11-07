@@ -382,7 +382,8 @@ C
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcbham_mod, only: BSS, LEVYLE, NOSMLV
 !      use dcbbas_mod, only: NTBAS
-!      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO, RTNTWO, TKTIME
+      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
+     &  IPRTWO, RTNTWO, TKTIME
       use maxorb_mod, only: MXSHEL
       use priunit_mod, only: LUPRI
       use huckel_mod, only: IPRHUC
@@ -390,7 +391,6 @@ C
 C
       DIMENSION F2MAT(*),DENHUC(*),WORK(LWORK)
       DIMENSION DNTSKP(8)
-#include "cbihr2.h"
 ! dcbham.h : NOSMLV and BSS
 #include "dcbham.h"
 #include "dcbbas.h"

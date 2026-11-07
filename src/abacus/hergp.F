@@ -46,36 +46,30 @@ C  /* Deck writda */
       END
 C  /* Deck zergrd */
       SUBROUTINE ZERGRD
+      use taymol_mod, only: GRDMOL
+      use trkoor_mod, only: NCOOR
       use mxcent_mod, only: MXCOOR
 #include "implicit.h"
-#include "trkoor.h"
-#include "taymol.h"
-!      use trkoor_mod, only: NCOOR
-!      use taymol_mod, only: GRDMOL
       GRDMOL(1:NCOOR) = 0.0D0
       RETURN
       END
 C  /* Deck zerhes */
       SUBROUTINE ZERHES
+      use taymol_mod, only: HESMOL
+      use trkoor_mod, only: NCOOR
       use mxcent_mod, only: MXCOOR
 #include "implicit.h"
-#include "trkoor.h"
-#include "taymol.h"
-!      use trkoor_mod, only: NCOOR
-!      use taymol_mod, only: HESMOL
       HESMOL(1:NCOOR,1:NCOOR) = 0.0D0
       RETURN
       END
 C  /* Deck addgrd */
       SUBROUTINE ADDGRD(GRAD)
       use mxcent_mod, only: MXCOOR
+      use trkoor_mod, only: NCOOR
+      use taymol_mod, only: GRDMOL
 #include "implicit.h"
-!      use trkoor_mod, only: NCOOR
-!      use taymol_mod, only: GRDMOL
       INTEGER :: I
-#include "trkoor.h"
       REAL*8 GRAD(NCOOR)
-#include "taymol.h"
       DO I = 1, NCOOR
          GRDMOL(I) = GRDMOL(I) + GRAD(I)
       END DO
@@ -84,13 +78,11 @@ C  /* Deck addgrd */
 C  /* Deck addhes */
       SUBROUTINE ADDHES(HESS)
       use mxcent_mod, only: MXCOOR
+      use trkoor_mod, only: NCOOR
+      use taymol_mod, only: HESMOL
 #include "implicit.h"
-!      use taymol_mod, only: HESMOL
-!      use trkoor_mod, only: NCOOR
       INTEGER :: I,J
-#include "trkoor.h"
       DIMENSION HESS(MXCOOR,MXCOOR)
-#include "taymol.h"
 C
       DO 100 I = 1, NCOOR
          DO 200 J = 1, NCOOR

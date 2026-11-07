@@ -353,7 +353,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: IDFLAG, LUKRM4
 !      use dcbxrs_mod, only: BVTYP, E2CHEK, FKRMC, GPTNRM, ICRED, IERED, INTBUF, INTDEF, INTFLG, IPRED, IPRXRS, ITMIC, IZRED, JSYMOP, JTIMOP, KBCI, KBOE, KBOP, KCONV, LINEQ, LOFFTY, LUBCI, LUBOE, LUBOP, LUCYCL, LURSP, LUSCI, LUSOE, LUSOP, MAXITR, MAXSIM, NCRED, NCSIM, NDAMP, NERED, NESIM, NEVEC, NFREQ, NOSIM, NPRED, NPSIM, NREDM, NTSIM, NVPAR, NZCONF, NZCONFQ, NZRED, NZVARQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, THCXRS, TKNORM, UNCOUP, XRS_INTTYP
-!      use cbihr2_mod, only: SCRFCK, USRSCR
+      use cbihr2_mod, only: SCRFCK, USRSCR
 !      use dcbbas_mod, only: N2BBAST, N2BBASXQ
 !      use dcbkrmc_itinfo_mod, only: DINFO, IINFO
       use kinds_mod, only: dp
@@ -366,7 +366,6 @@ C
 #include "dcbxrs.h"
 !#include "pgroup.h"
 !#include "dgroup.h"
-#include "cbihr2.h"
 #include "dcbbas.h"
 #include "dcbkrmc_itinfo.h"
 C

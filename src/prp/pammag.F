@@ -1957,7 +1957,7 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbbas_mod, only: N2BBASX, NTBAS
-!      use cbihr2_mod, only: IPRNTA, IPRNTB, IPRNTC, IPRNTD, TKTIME
+      use cbihr2_mod, only: IPRNTA, IPRNTB, IPRNTC, IPRNTD, TKTIME
 !      use dgroup_mod, only: NZ
       use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: NLRGBL, NSMLBL
@@ -1981,7 +1981,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I, J
 #include "dcbbas.h"
-#include "cbihr2.h"
 #include "dgroup.h"
 C
 #include "blocks.h"
