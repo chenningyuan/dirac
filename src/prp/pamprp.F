@@ -1257,6 +1257,7 @@ C***********************************************************************
 #endif
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
+      use cbiher_mod, only: DSO, QUADRU
 #include "implicit.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3), INDDIP(3)
@@ -1525,6 +1526,7 @@ C***********************************************************************
 #endif
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
+      use cbiher_mod, only: DSO, QUADRU
 #include "implicit.h"
       DIMENSION EXPVAL(*),ABLRF(*),ABCNV(*),WORK(*)
 #include "dcbexp.h"
@@ -3668,6 +3670,7 @@ C     Define diamagnetic spin-orbit operator
 C     Written by T.Saue - Feb 21 1997
 C
 C***********************************************************************
+      use cbiher_mod, only: NPQUAD, TRIANG
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -5639,6 +5642,7 @@ C
 C  MI&HJJ/2002,2003 - extended for LAO
 C
 C***********************************************************************
+      use cbiher_mod, only: TRIANG
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN

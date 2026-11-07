@@ -675,7 +675,6 @@
 #include "implicit.h"
 !#include "ccom.h"
 !#include "pincom.h"
-!#include "aosotr.h"
 !#include "sphtrm.h"
 !#include "huckel.h"
 !#include "cbirea.h"

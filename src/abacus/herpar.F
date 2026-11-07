@@ -472,7 +472,6 @@ C
 !      use inforb_mod, only: I1_INFORB, I2_INFORB, N2BASX
 !      use dcbham_mod, only: ECPCALC, HFXATT, HFXFAC, HFXMU, INTV1C, LEVYLE, NONREL, ONECAP, SMLV1C, SPINFR
       use priunit_mod, only: LUPRI
-!      use hrunit_mod, only: LUDASP, LUINTA, LUONEL, LUSOL, LUSUPM
 !      use infpar_mod, only: IPRPAR, MPARID, NODES, NTASK, TIMING
 !      use cbirea_mod, only: MAXPRI, UNCONT
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -490,6 +489,7 @@ C
       use siripc_mod, only: NEWGEO
 #endif
       use interface_to_mpi
+      use hrunit_mod, only: LUDASP, LUINTA, LUONEL, LUSOL, LUSUPM
 #include "implicit.h"
 C
       INTEGER :: I
@@ -502,7 +502,6 @@ C
 #endif
 #include "molinp.h"
 C
-#include "hrunit.h"
 #include "blocks.h"
 #include "infpar.h"
 C
@@ -1349,7 +1348,6 @@ C
 !      use infpar_mod, only: IPRPAR, MPARID, NODES, NTASK, TIMING
       use symmet_mod, only: MAXREP
       use maxorb_mod, only: MXCORB
-!      use hrunit_mod, only: LUDASP, LUINTA, LUONEL, LUSOL, LUSUPM
 !      use inforb_mod, only: I1_INFORB, N2BASX
 !      use cbisol_mod, only: NCNTCV, SOLVNT
 !      use dcbgen_mod, only: PANAS, RDINPC, RELCAL, TWOCOMP
@@ -1367,12 +1365,12 @@ C
 #endif
       use interface_to_mpi
       use kinds_mod, only: dp
+      use hrunit_mod, only: LUDASP, LUINTA, LUONEL, LUSOL, LUSUPM
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
       INTEGER :: I
 C
-#include "hrunit.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #include "dcbham.h"

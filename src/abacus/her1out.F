@@ -30,11 +30,10 @@ C     Hamiltonian, and kinetic energy integrals on sequential file.
 C
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXQN
-!      use hrunit_mod, only: LUONEL
+      use hrunit_mod, only: LUONEL
 !      use ccom_mod, only: THRS
 #include "implicit.h"
       INTEGER :: I,J
-#include "hrunit.h"
 C
 #include "ccom.h"
 C

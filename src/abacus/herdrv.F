@@ -22,9 +22,9 @@ C
 C --- General Input for HERMIT ---
 C
 !      use dcbgen_mod, only: DIRCAL, HRINPC, IPRUSR, RELCAL
-!      use cbiher_mod, only: ALLATM, ANGLON, ANGMOM, CARMOM, CM1, CM2, DARWIN, DIASUS, DIPLEN, DIPVEL, DIRAC, DSO, DSUSLH, DSUSLL, DSUSNL, DSUTST, EFGCAR, EFGSPH, EXPIKR, FERMI, GFACDI, HAMILT, HBDO, HDO, HDOBR, HDOBRT, IORCAR, IORSPH, IPATOM, IPRDEF, KINENE, LONMOM, MAGMOM, MASSVL, MGCOOR, MGMO2T, MGMOMT, NELFLD, NMRISS, NOTWO, NPATOM, NPOTST, NPQUAD, NSLTST, NSNLTS, NSTCGO, NSTTST, NUCPOT, NUCSHI, NUCSLO, NUCSNL, OCTUPO, ONEELD, ONEPRP, PROPRI, PRTHRS, PSO, QUADRU, S1ELB, S1ELE, S1MAG, S1MAGL, S1MAGR, S1MAGT, S1MLT, S1MRT, S2MAG, S2MAGT, SDFC, SECMOM, SKIP, SOTEST, SPHMOM, SPIDIP, SPNORB, SQHDOL, SQHDOR, SUPMAT, SUSCGO, THETA, TRIANG, TSTINP
 !      use cbihr1_mod, only: CAVUSR, DORLM
 !      use orgcom_mod, only: CAVORG
+      use cbiher_mod
       use gen1int_mod, only: TEST_GEN1INT
       use nuclei_mod, only: GAUNUC, NATOMS
       use priunit_mod, only: LUCMD, LUPRI
@@ -48,7 +48,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "cbiher.h"
 #include "cbihr1.h"
 #include "cbisol.h"
 #include "orgcom.h"
@@ -973,9 +972,9 @@ C  /* Deck hr1inp */
       SUBROUTINE HR1INP(WORD)
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUCMD, LUPRI
+      use cbiher_mod, only: IPRDEF
 #include "implicit.h"
 !      use orgcom_mod, only: CAVORG
-!      use cbiher_mod, only: IPRDEF
 !      use cbihr1_mod, only: ALLRLM, CAVUSR, DORLM, IPRONE, LMAX, RUNONE
       PARAMETER (NTABLE = 10)
 C
@@ -983,7 +982,6 @@ C
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
 #include "orgcom.h"
-#include "cbiher.h"
 #include "cbihr1.h"
 C
       SAVE SET
@@ -1106,7 +1104,7 @@ C  /* Deck hr2inp */
 !      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO, RTNTWO, RUNTWO, SCRFCK, SOFOCK, THRFAC, TKTIME, USRSCR
       use mxcent_mod, only: MXCENT
 !      use infpar_mod, only: NUMNOD
-!      use cbiher_mod, only: IPRDEF, NOTWO
+      use cbiher_mod, only: IPRDEF, NOTWO
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
@@ -1115,7 +1113,6 @@ C
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
-#include "cbiher.h"
 #include "cbihr2.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
@@ -1310,6 +1307,7 @@ CTROND      IF (ICHANG .EQ. 0) RETURN
 #ifndef PRG_DIRAC
 C  /* Deck hrsinp */
       SUBROUTINE HRSINP(WORD)
+      use cbiher_mod, only: IPRDEF, SUPMAT
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
@@ -1318,7 +1316,6 @@ C
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
-#include "cbiher.h"
 #include "cbihrs.h"
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.NOSYMM', '.OLDSUP', '.THRESH',

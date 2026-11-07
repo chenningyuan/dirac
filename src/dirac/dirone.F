@@ -38,7 +38,7 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use cbihr1_mod, only: IPRONE
-!      use cbiher_mod, only: ALLATM, IPATOM, NPATOM
+      use cbiher_mod, only: ALLATM, IPATOM, NPATOM
 !      use dcbcls_mod, only: CLSCAL, CLSCMB, CLSINT, IORDCL, NPRPCLS
 !      use dcbham_mod, only: MDIRAC, NOSMLV
       use interface_ao_specific
@@ -56,7 +56,6 @@ C
 #include "dcbham.h"
 #include "dcbcls.h"
 #include "cbihr1.h"
-#include "cbiher.h"
 
       CHARACTER CPUTID*12, WALLTID*12, SECTID*12
 
@@ -2497,7 +2496,7 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dummy_mod, only: DUMMY
       use nuclei_mod, only: NUCDEP, NUCIND
-!      use cbiher_mod, only: NPQUAD, PROPRI, TRIANG
+      use cbiher_mod, only: NPQUAD, PROPRI, TRIANG
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: MAXREP
       use priunit_mod, only: LUPRI
@@ -2505,7 +2504,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "cbiher.h"
       LOGICAL DOINT(4),TOFILE
       CHARACTER WORD*7,COMB*4,LABINT(5*MXCOOR)*8,MTFORM*6
       DIMENSION WORK(LWORK)

@@ -1252,8 +1252,8 @@ C  /* Deck optmin */
 !     Driver for geometry optimization (including minimization)
 !
 
-!      use cbiher_mod, only: TSTINP
 !      use optinf_mod, only: DELINT, FINDRE, ICRTCR, IINTCR, INMDHS, INRDHS, IPRINT, NENECALCS, NEWTON, REDINT, VISUAL
+      use cbiher_mod, only: TSTINP
       use mxcent_mod, only: MXCENT
 !      use dcbgen_mod, only: HRINPC, IPRUSR
       use memory_allocator
@@ -1266,7 +1266,6 @@ C  /* Deck optmin */
 #include "gnrinf.h"
 #endif
 #include "optinf.h"
-#include "cbiher.h"
       LOGICAL TSTIN
 
       real(8), parameter   :: WRKDLM = -123456789.0D0

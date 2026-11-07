@@ -53,6 +53,7 @@
       use priunit_mod, only: LUCMD, LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NATOMS, NUCDEP
+      use cbiher_mod, only: DSO, QUADRU
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
@@ -719,6 +720,7 @@
 !     Last revision: May 26  - 1996
 !
 !***********************************************************************
+      use cbiher_mod, only: QUADRU
       use priunit_mod, only: LUCMD, LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: DIPOLE, DOEXP, EFG, EFN, EFT, EFTNTL, NQCC, PVC, QUADRU
@@ -2287,13 +2289,12 @@
       use nuclei_mod, only: NUCIND
       use symmet_mod, only: ISYMAX, MAXREP
 !      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
-!      use cbiher_mod, only: TRIANG
+      use cbiher_mod, only: TRIANG
       use memory_allocator
 #include "implicit.h"
       INTEGER :: I
 !
 #include "dcbprl.h"
-#include "cbiher.h"
       CHARACTER PLABEL*8,CLASLB*7,PCOMB*4
       LOGICAL ANTI, TRASPH, SOLVNT, SQUARE, LABERR
       integer, allocatable :: INTREP(:)

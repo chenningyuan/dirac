@@ -44,7 +44,7 @@ C
 C  SYMTOT true: only totally-symmetric integrals written to LUSOL.
 C
       use priunit_mod, only: LUPRI
-!      use hrunit_mod, only: LUSOL
+      use hrunit_mod, only: LUSOL
 #include "implicit.h"
       DIMENSION RLMINT(NNBASX,NOPTYP), INTREP(NOPTYP)
       LOGICAL SYMTOT
@@ -53,7 +53,6 @@ C
 C Used from common blocks:
 C  HRUNIT : LUSOL
 C
-#include "hrunit.h"
 C
       IF (NOPTYP .NE. 2*L + 1) THEN
          WRITE (LUPRI,*) 'WRTSOL ERROR: NOPTYP .ne. 2*L+1'
@@ -103,7 +102,7 @@ C interface to SOLNUC for Hermit
 C
 !      use cbisol_mod, only: LCAVMX, LMNTOT, LMTOT
       use maxorb_mod, only: MXCORB
-!      use hrunit_mod, only: LUSOL
+      use hrunit_mod, only: LUSOL
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
 !      use orgcom_mod, only: CAVORG
@@ -124,7 +123,6 @@ C  HRUNIT : LUSOL
 C
 #include "cbisol.h"
 #include "orgcom.h"
-#include "hrunit.h"
 C
       CHARACTER*8 LABSOL(4)
       DIMENSION   FILL4(4)

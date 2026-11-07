@@ -46,6 +46,7 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: MAXREP
       use nuclei_mod, only: NATOMS
+      use cbiher_mod, only: IPRDEF
 #include "implicit.h"
       INTEGER :: I
 #include "orgcom.h"

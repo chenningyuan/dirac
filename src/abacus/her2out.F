@@ -243,11 +243,10 @@ C  /* Deck un2wrt */
       use iratdef_mod, only: IRAT
       use twosta_mod, only: N2WRIT
       use nuclei_mod, only: NBASIS
+      use hrunit_mod, only: LUINTA
 #include "implicit.h"
-!      use hrunit_mod, only: LUINTA
       INTEGER :: I,J,K
       DIMENSION BUF(LBUF), IBUF(LBUF,NIBUF)
-#include "hrunit.h"
       SAVE NBUF
 C
       IF (ITYPE .EQ. -1) THEN

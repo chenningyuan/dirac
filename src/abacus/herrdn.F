@@ -2328,6 +2328,7 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
+      use aosotr_mod, only: IAOAO
       use nuclei_mod
       use symmet_mod, only: MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -2353,7 +2354,6 @@ C*****************************************************************************
       DIMENSION IBLOCK(MXBSETS)
       integer blk
 #include "ccom.h"
-#include "aosotr.h"
 C
 
 
@@ -4147,6 +4147,7 @@ C     tuh 120988
 C
 C     Polished and annotated - tsaue March 10 1993
 C*************************************************************************
+      use aosotr_mod, only: CTRAN, IPCEN, IPTYP, ITRAN, JTRAN
       use shells_mod, only: ISTBAO, KHKT, KMAX, LCLASS, NCENT, NHKT,
      &  NUMCF
       use symmet_mod, only: I2COSX, ICLASS, ICOS, IPTSYM, ISYMAO,
@@ -4165,7 +4166,6 @@ C
       integer soef, blk
 #include "ccom.h"
 #include "pincom.h"
-#include "aosotr.h"
 #include "sphtrm.h"
 #include "cbirea.h"
 #include "huckel.h"
@@ -4389,6 +4389,7 @@ C
 C     Print routine for symmetry
 C
 C*****************************************************************************
+      use aosotr_mod, only: CTRAN, IPCEN, IPTYP, ITRAN
       use chrsgn_mod, only: CHRSGN
       use nuclei_mod, only: NAMN, NFLOAT, NUCDEG
       use shells_mod, only: NORBS
@@ -4402,7 +4403,6 @@ C
 #include "ccom.h"
 #include "pgroup.h"
 #include "cbirea.h"
-#include "aosotr.h"
       CHARACTER COMP(2)*1
 C
 C*****************************************************************************
@@ -5081,6 +5081,7 @@ C     Printing of symmetrized nuclear magnetic moments
 C
 C     tuh March 1991
 C
+      use cbiher_mod, only: NMRISS
       use chrsgn_mod, only: CHRSGN
       use nuclei_mod, only: ISTBNU, NAMEX, NUCIND, NUCNUM
       use chrxyz_mod, only: CHRXYZ
@@ -5093,7 +5094,6 @@ C
 C
       INTEGER NBASE(8), NSIGN(8), NRTREP(0:7)
 C
-#include "cbiher.h"
 #include "pgroup.h"
 C
 C
@@ -5465,6 +5465,8 @@ C  /* Deck wronel */
 C
 C     Write interface records
 C
+      use hrunit_mod, only: LUONEL
+      use aosotr_mod, only: CTRAN, IPCEN, IPTYP, ITRAN, JTRAN
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMN, NBASIS, NONT,
      &  NONTYP, NUCDEP, NUCIND
       use dummy_mod, only: DUMMY, IDUMMY
@@ -5488,8 +5490,6 @@ C
      &     TABLE4 /'********','        ','        ','TESTDATA'/,
      &     TABLE5 /'********','        ','        ','SPHERICA'/
 #include "ccom.h"
-#include "aosotr.h"
-#include "hrunit.h"
 #include "frame.h"
 #include "sphtrm.h"
 C
@@ -5597,6 +5597,7 @@ C
       END
 C  /* Deck reapri */
       SUBROUTINE REAPRI
+      use aosotr_mod, only: CTRAN, IAOAO, ITRAN
       use nuclei_mod
       use shells_mod
       use symmet_mod
@@ -5608,7 +5609,6 @@ C  /* Deck reapri */
 #include "implicit.h"
 C
 #include "ccom.h"
-#include "aosotr.h"
 C
       CALL HEADER('Test output from REAPRI',-1)
       WRITE (LUPRI,'(A,1P,D15.6)') ' THRS  ', THRS

@@ -1193,6 +1193,7 @@ C
 C     Written by L. Visscher - Dec 1996 (adapted EXPINP)
 C
 C*****************************************************************************
+      use cbiher_mod, only: QUADRU
       use priunit_mod, only: LUCMD, LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: DIPOLE, DONMQM, EFG, NQCC, QUADRU

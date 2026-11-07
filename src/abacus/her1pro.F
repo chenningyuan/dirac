@@ -2481,14 +2481,13 @@ C  MI,HJ(TEC) - minor modification for LAO integral types
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use cbiher_mod, only: ALLATM, NPATOM
+      use cbiher_mod, only: ALLATM, IPATOM, NPATOM
       use nuclei_mod, only: ISTBNU, NUCDEP, NUCIND
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: MULT
 #include "implicit.h"
 C
       LOGICAL DOATOM(NUCIND), SPIN
-#include "cbiher.h"
 C
 #ifdef PRG_DIRAC
       IF (INTTYP.GT.0 .OR. ALLATM) THEN

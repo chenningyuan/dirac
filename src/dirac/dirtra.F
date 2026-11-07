@@ -33,7 +33,7 @@ C***********************************************************************
       use symmet_mod, only: ICOS, MAXREP
       use dcbibt_mod, only: IPACK
 !      use dcblab_mod, only: IPLAB, MAXLAB, NPLAB, PLABEL
-!      use aosotr_mod, only: WORK
+      use aosotr_mod, only: IPCEN, IPTYP
 !      use dgroup_mod, only: NBSYM
 !      use ccom_mod, only: KHK, NHKOFF
       use priunit_mod, only: LUPRI
@@ -45,7 +45,6 @@ C***********************************************************************
       INTEGER :: I
 C
 #include "dcblab.h"
-#include "aosotr.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbbas.h"
@@ -1211,7 +1210,7 @@ C     Last revision: Sept 10 1995
 C
 C***********************************************************************
       use symmet_mod, only: FMULT, ISYMAX, MAXREP, NCOS
-!      use aosotr_mod, only: CTRAN, ITRAN, JTRAN
+      use aosotr_mod, only: CTRAN, ITRAN, JTRAN
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
       use shells_mod, only: ISTBAO
@@ -1225,7 +1224,6 @@ C***********************************************************************
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
 #include "pincom.h"
-#include "aosotr.h"
 !#include "pgroup.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine MTAOSO',-1)
 C
@@ -3751,7 +3749,7 @@ C***********************************************************************
       use nuclei_mod, only: NBASIS, NUCDEG
       use dcbibt_mod, only: IGET, JGET, KGET
 !      use pgroup_mod, only: WORK
-!      use aosotr_mod, only: CTRAN
+      use aosotr_mod, only: CTRAN
       use symmet_mod, only: ICOS, MAXREP, NAOS, NCOS
       use chrsgn_mod, only: CHRSGN
       use maxorb_mod, only: MXCORB
@@ -3761,7 +3759,6 @@ C***********************************************************************
 C
 #include "dcbbas.h"
 #include "dcblab.h"
-#include "aosotr.h"
 #include "pgroup.h"
       DIMENSION ILAB(2,*)
 C

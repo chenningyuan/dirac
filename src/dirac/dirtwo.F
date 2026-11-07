@@ -279,15 +279,14 @@ C     Written by T.Saue Sep 30 1996
 C
 C*****************************************************************************
 !      use dcbind_mod, only: IBIT1, IBIT2, NBIT1, NBIT2, NBITS, NIBUF
-!      use hrunit_mod, only: LUDASP, LUINTA, LUSOL, LUSUPM
 !      use cbihr2_mod, only: IPRTWO
 !      use dcbbas_mod, only: NTBAS
+      use hrunit_mod, only: LUDASP, LUINTA, LUSOL, LUSUPM
 #include "implicit.h"
 C
 #include "cbihr2.h"
 #include "dcbind.h"
 #include "dcbbas.h"
-#include "hrunit.h"
       DIMENSION WORK(LWORK)
       LUINTA = 11
         LUSUPM = 17
@@ -1549,7 +1548,7 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use cbihr2_mod, only: IPRTWO
       use maxaqn_mod, only: MXQN
-!      use hrunit_mod, only: LUINTA
+      use hrunit_mod, only: LUINTA
       use dummy_mod, only: IDUMMY
 !      use ccom_mod, only: THRS
 #include "implicit.h"
@@ -1560,7 +1559,6 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "cbihr2.h"
-#include "hrunit.h"
       LOGICAL LBIT,TOBE,REGO
       real(8) :: TIMSTR(2), TIMEND(2)
 

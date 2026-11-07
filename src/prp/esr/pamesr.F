@@ -30,6 +30,7 @@ C     Written by A.Noerager - Mar 2000
 C     Last revision: hjaaj Oct 2022
 C
 C*****************************************************************************
+      use cbiher_mod, only: ALLATM, IPATOM, NPATOM
       use priunit_mod, only: LUCMD, LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: ALLATM, IPATOM, NPATOM

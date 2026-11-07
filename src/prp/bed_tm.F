@@ -1026,7 +1026,6 @@ C
 #include "mpif.h"
 #include "infpar.h"
 #endif
-C#include "cbiher.h"
 C     ************************************************************
 C     * Most variables have been moved to shared_bedled_var_module
 C     * for sharing with MPI slave processes

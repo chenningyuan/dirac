@@ -2325,7 +2325,7 @@ C
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXSHEL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use hrunit_mod, only: LUINTA
+      use hrunit_mod, only: LUINTA
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
@@ -2340,7 +2340,6 @@ C
      &          TWOEL(ICOUNT,ICOUNT,ICOUNT,ICOUNT),WORK(LWORK),
      &          IY(6,3)
 C
-#include "hrunit.h"
       DATA COOR /'X','Y','Z'/
       DATA ((IY(I,J), J = 1, 3), I = 1, 6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                      0,3,4,0,3,4/

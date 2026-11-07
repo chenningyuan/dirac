@@ -36,6 +36,7 @@ END SUBROUTINE RECP_CHK_MAIN
 
 SUBROUTINE RECP_CHK_PRP
 ! check inconsistency in property options 
+      use cbiher_mod, only: DSO
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbgen_mod, only: DOPRP
 !      use dcbprp_mod, only: DSO, MGRAD, PVC, SHIELD
