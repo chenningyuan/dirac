@@ -453,6 +453,7 @@ C Population Analysis based on Atomic Polar Tensors
 C
 C according to J. Cioslowski, J.Am.Chem.Soc. 111 (1989) 8333-8336
 C
+      use cbisol_mod, only: SOLVNT
       use nuclei_mod, only: NAMDEP, NUCDEP
       use symmet_mod, only: ISYMAX
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -467,7 +468,6 @@ C
       DIMENSION CSTRA(*), SCTRA(*)
       LOGICAL ALL
 #include "abainf.h"
-#include "cbisol.h"
       ALL = DOSYM(ISYMAX(1,1)+1) .AND. DOSYM(ISYMAX(2,1)+1)
      &                           .AND. DOSYM(ISYMAX(3,1)+1)
       IF (ALL) THEN

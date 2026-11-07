@@ -1391,13 +1391,12 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: ISAME, ISTRAT, SCRTRA
-!      use comdis_mod, only: ISPCK, NSPCK
+      use comdis_mod, only: ISPCK, NSPCK
 !      use dcbbas_mod, only: NTBAS
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 C
@@ -1525,12 +1524,11 @@ C
 C     Written by Joost van Stralen september 2003
 C     
 C***********************************************************************
-!      use comdis_mod, only: ISPCK, NSPCK
 !      use dcbbas_mod, only: NTBAS
 !      use dgroup_mod, only: NZ
+      use comdis_mod, only: ISPCK, NSPCK
 #include "implicit.h"
 C
-#include "comdis.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 C
@@ -1717,7 +1715,7 @@ C
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 !      use dcbtra_mod, only: IFPCK12, NFPCK12
-!      use comdis_mod, only: NSPCK
+      use comdis_mod, only: NSPCK
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
@@ -1731,7 +1729,6 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
-#include "comdis.h"
 C
       CALL QENTER('MS4IN1')
 C
@@ -1923,7 +1920,8 @@ C               The distributions are stored as full squares with
 C               symmetry reduction.
 C
       use dummy_mod, only: DUMMY, IDUMMY
-!      use comdis_mod, only: IRECG, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NPASS
+      use comdis_mod, only: IRECG, KIGBUF, KLGBUF, KLGREC, KRGBUF,
+     &  LGFIL, NGBFSZ, NPASS
       use mxcent_mod, only: MXCENT
       use cbihr2_mod, only: IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO,
      &  RTNTWO, TKTIME
@@ -1933,7 +1931,6 @@ C
 #include "implicit.h"
       INTEGER :: I
 C
-#include "comdis.h"
       DIMENSION GMAT(*),INDX(3,*),INDXAB(*),GABRAO(*),DRIJ(*)
       DIMENSION WORK(LWORK),DINTSKP(*)
 #include "dorps.h"
@@ -2394,7 +2391,7 @@ C
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTSYM, ISYMAO, MAXREP
-!      use comdis_mod, only: ISHLA, ISHLB, NINSHA, NINSHB, NPASS, NSPCK
+      use comdis_mod, only: ISHLA, ISHLB, NINSHA, NINSHB, NPASS, NSPCK
 #include "implicit.h"
 #include "blocks.h"
       LOGICAL SHAEQB1,DCMPAB,MKINAB,MKIJPA,MKIAB,DIAGAB1,ABSPOI
@@ -2403,7 +2400,6 @@ C
       DIMENSION IABIND(*)
       DIMENSION IND(2)
 #include "dgroup.h"
-#include "comdis.h"
 C
 C
 !     hjaaj: disabled print of header
@@ -4755,7 +4751,7 @@ C
 !      use dcborb_mod, only: I1_DCBORB, I2_DCBORB
 !      use dcbham_mod, only: I1_DCLHAM, I2_DCLHAM, QED
 !      use dcbtra_mod, only: IPRTRA, ISAME, NDCBTRI, NDCBTRL, NDCBTRR, SCRTRA, THROUT, TRA_ANTIS
-!      use comdis_mod, only: NCOMDIS, NSPCK
+      use comdis_mod, only: ISPCK, NSPCK
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
 !      use dcbmp2_mod, only: CMMNFO, TPRI34, TPRI44
 !      use dcbmpt_mod, only: TESTLS, TESTSL
@@ -4776,7 +4772,6 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbmp2.h"
 #include "dcbmpt.h"
@@ -4855,11 +4850,14 @@ C
       call interface_mpi_bcast_l0(TRA_ANTIS,NUMELM,MPARID,
      &                                global_communicator)
 C
-C     comdis.h
-C     --------
+C     comdis_mod: NSPCK and ISPCK are sent separately (module
+C     variables are not contiguous like the old COMMON /COMDIS/)
+C     ----------
 C
-      NUMELM = NCOMDIS
-      call interface_MPI_BCAST(NSPCK,NUMELM,MPARID,global_communicator)
+      call interface_MPI_BCAST(NSPCK,SIZE(NSPCK),MPARID,
+     &                         global_communicator)
+      call interface_MPI_BCAST(ISPCK,SIZE(ISPCK),MPARID,
+     &                         global_communicator)
 C
 C     symmet.h
 C     --------

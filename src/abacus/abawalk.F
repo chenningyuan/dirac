@@ -553,6 +553,7 @@ C
       END
 C  /* Deck wlkdrv */
       SUBROUTINE WLKDRV(POLDD,POLDQ,POLDL,POLDA,SPNTOT,WORK,LWORK)
+      use cbisol_mod, only: SOLVNT
       use trkoor_mod, only: NTRREP
       use nuclei_mod, only: NUCDEP, NUCIND
       use symmet_mod, only: MAXREP, NAXREP, NCRREP
@@ -566,7 +567,6 @@ C
      &          WORK(LWORK)
 C
 #include "cbiwlk.h"
-#include "cbisol.h"
 #include "cbilnr.h"
 #include "prkoor.h"
 C
@@ -1463,6 +1463,7 @@ C
 C  /* Deck wlkpr1 */
       SUBROUTINE WLKPR1(GRDCAR,HESCAR,SCAL,TMAT,PROJCT,PRJHES,THRLDP,
      *                  IPTCOL,NCR,NPR,NTR,NCOOR,IREP,ISOTPS,IPRINT)
+      use cbisol_mod, only: SOLVNT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER (D1 = 1.0D0)
@@ -1470,7 +1471,6 @@ C
       DIMENSION TMAT(NCR,NPR), PROJCT(NCR,NCR), HESCAR(NCR,NCR),
      *          SCAL(NCR), PRJHES(NCR,NCR), IPTCOL(NCOOR), GRDCAR(NCR),
      *          LINDEP(9), ISOTPS(*)
-#include "cbisol.h"
 C
       IF (IPRINT .GT. 5) THEN
          CALL TITLER('Output from WLKPR1','*',103)
@@ -2001,8 +2001,8 @@ C
       use nuclei_mod, only: CHARGE, ISTBNU, NUCIND
       use symmet_mod, only: ISYMAX, MAXREP, PT
       use maxorb_mod, only: MXCORB
-!      use molinp_mod, only: MLINE, NCLINE, NMLINE
-!      use cbisol_mod, only: NCNTCV, SOLVNT
+      use molinp_mod, only: MLINE, NCLINE, NMLAU, NMLINE
+      use cbisol_mod, only: NCNTCV, SOLVNT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -2017,10 +2017,8 @@ C  /MOLINP/: everything
 C  /NUCLEI/: NUCIND
 C  /CBISOL/: SOLVNT,NCNTCV
 C
-#include "molinp.h"
 !#include "inftap.h"
 !#include "infinp.h"
-#include "cbisol.h"
 C
 C
 C Write new coordinates into MOLECULE input
@@ -7597,6 +7595,7 @@ C
       END
 C  /* Deck wlkcvt */
       SUBROUTINE WLKCVT(TMAT,IPTCOL,NCR,NPR,NTR,IREP,ISOTPS,IPRINT)
+      use cbisol_mod, only: NCNTCV
       use nuclei_mod, only: ISTBNU, IZATOM, NUCIND
       use symmet_mod, only: FMULT, IPTCNT, IPTXYZ, NAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -7605,7 +7604,6 @@ C  /* Deck wlkcvt */
 #include "implicit.h"
       PARAMETER (D0 = 0.00D0, D1 = 1.00D0)
       DIMENSION TMAT(NCR,NPR), IPTCOL(*), ISOTPS(MXCENT)
-#include "cbisol.h"
       AMASS(I) = DISOTP(IZATOM(I),ISOTPS(I),'MASS')
 C
 C     Total mass

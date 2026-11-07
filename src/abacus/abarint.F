@@ -3835,7 +3835,7 @@ C
       use nuclei_mod, only: CORD, ISTBNU, NONTYP, NUCIND, NUCNUM
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
-!      use molinp_mod, only: MLINE, NCLINE, NMLINE
+      use molinp_mod, only: MLINE, NCLINE, NMLINE
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, NAXREP,
      &  NCRREP, PT
@@ -3845,7 +3845,6 @@ C
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
       INTEGER :: I,II,J
-#include "molinp.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else

@@ -57,6 +57,7 @@
 !       BASREF : Lines of documentation for the basis set
 !
 !*****************************************************************************
+      use molinp_mod, only: MLINE, NMLINE
       use nuclei_mod, only: NONT, NONTYP, NUCIND
       use gencon_mod, only: DIRCON
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -75,7 +76,6 @@
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       LOGICAL GENERATE
       DIMENSION IBLCK(MXBSETS)
-#include "molinp.h"
 #include "dcbgen.h"
 !
 !     Initialize variables that regard the whole basis set
@@ -202,6 +202,7 @@
 !       and should be generated (e.g. the small component by the kinetic balance relation)
 !
 !*****************************************************************************
+      use molinp_mod, only: MLINE, NMLINE
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXSHEL
       use maxaqn_mod, only: MXQN
@@ -222,7 +223,6 @@
       PARAMETER (DSM = 1.0D-30)
 
 ! cbirea.h : UNCONT
-#include "molinp.h"
 #include "dcbgen.h"
 #include "cbirea.h"
 
@@ -529,7 +529,6 @@
       CHARACTER*80 BASREF(10)
       CHARACTER*20 BSFIL(NFILES)
       LOGICAL GENERATE
-#include "molinp.h"
 #include "dcbgen.h"
 !     Scratch arrays needed for MULTIBASIS option
 !     Should changed into allocatable arrays (either using fortran 90 allocate or

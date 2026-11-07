@@ -58,7 +58,10 @@ C***********************************************************************
 !      use infpar_mod, only: NODES
 !      use dcbgen_mod, only: PARCAL
 !      use dcbtra_mod, only: IPAR4BS, ISAME, LUMLF2, NFPCK12, NFPCK12T, NFPCK34, NFPCK34T, NOMDCINT, SCRTRA
-!      use comdis_mod, only: ISHLA, ISHLB
+      use comdis_mod, only: ISHLA
+#if defined (VAR_MPI)
+      use comdis_mod, only: ISHLB
+#endif
 !      use dgroup_mod, only: NFSYM
       use interface_to_mpi
       use kinds_mod, only: dp
@@ -71,7 +74,6 @@ C***********************************************************************
 #include "infpar.h"
 #include "dcbgen.h"
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dgroup.h"
       LOGICAL ANTIS,LMP2,TRIAN(2),LBIT
       DIMENSION NSTR(2,0:2,4),
@@ -393,7 +395,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use aovec_mod, only: MXAOVC
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbtra_mod, only: LUTRA2, NFPCK12, NFPCK12T, NFPCK34T, SCRTRA
-!      use comdis_mod, only: ISHLA, ISHLB, ISPCK, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS, NSPCK
+      use comdis_mod, only: ISHLA, ISHLB, ISPCK, KIGBUF, KLGBUF, KLGREC,
+     &  KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS, NSPCK
 !      use dcbtr3_mod, only: IBAS1, IBAS2, IBAS3, IBAS4, IBBAS1, IBBAS2, IBBAS3, IBBAS4, ICMOQR, ICMOQS, ICMOQT, ISPCK12, ISPCK34, NBBAS1, NBBAS2, NBBAS3, NBBAS4, NDMOQR, NDMOQS, NDMOQT, NSPCK12, NSPCK34
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dcborb_mod, only: NASHT
@@ -403,7 +406,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 C
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -1125,14 +1127,13 @@ C
 C***********************************************************************
 !      use infpar_mod, only: MPARID
 !      use dcbtra_mod, only: ISAME, MDCSCAT, NFPCK12, NFPCK12T, NFPCK34, NFPCK34T
-!      use comdis_mod, only: ISHLA
 !      use dgroup_mod, only: NFSYM
+      use comdis_mod, only: ISHLA
       use interface_to_mpi
 #include "implicit.h"
 C
 #include "infpar.h"
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dgroup.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4),NSTR(2,0:2,4)

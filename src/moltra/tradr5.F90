@@ -85,7 +85,7 @@
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NAOCCT, NAVIRT, NCMOTQ, NORBT
 !      use dcbtra_mod, only: ISAME, SCRTRA
-!      use comdis_mod, only: ISHLA
+      use comdis_mod, only: ISHLA
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
 !      use dgroup_mod, only: NZ
       use interface_to_mpi
@@ -97,7 +97,6 @@
 #endif
 #include "dcborb.h"
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dcbtr3.h"
 #include "dgroup.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
@@ -225,14 +224,13 @@
       use priunit_mod, only: LUPRI
       use iratdef_mod, only: IRAT
 !      use dcbtra_mod, only: LUTRA2, NFPCK12, SCRTRA
-!      use comdis_mod, only: ISHLA, ISHLB, ISPCK, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS, NSPCK
+      use comdis_mod, only: ISHLA, ISHLB, ISPCK, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS, NSPCK
 !      use dcbtr3_mod, only: IBAS1, IBAS2, IBBAS1, IBBAS2, ISPCK12, NBBAS1, NBBAS2, NSPCK12
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NTBAS
 !      use dcborb_mod, only: NASHT
 !      use dgroup_mod, only: JBTOF, NBSYM, NZ
 #include "implicit.h"
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -517,8 +515,8 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dgroup_mod, only: JBTOF, NBSYM, NZ
 !      use dcbtra_mod, only: NFPCK12
-!      use comdis_mod, only: LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
+      use comdis_mod, only: LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
@@ -537,7 +535,6 @@
 !
 #include "dgroup.h"
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dcbtr3.h"
 !
       CALL QENTER('MS3IN1')
@@ -629,7 +626,7 @@
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbtra_mod, only: NFPCK12
-!      use comdis_mod, only: NINSHA, NINSHB
+      use comdis_mod, only: NINSHA, NINSHB
 !      use dcborb_mod, only: NAOCC, NAVIR, NCMOTQ
 !      use dcbbas_mod, only: IBAS, IBBAS
       use symmet_mod, only: ICOS, ISYMAX
@@ -640,7 +637,6 @@
       INTEGER :: I, K
 #include "dgroup.h"
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbtr3.h"

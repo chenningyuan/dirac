@@ -6292,11 +6292,10 @@ C
 !      use cbiwlk_mod, only: START, ZERGRD
 !      use optinf_mod, only: BRKSYM, ENERGY, ERGOLD, GECONV, INDHES, INDTOT, IPRINT, ITRBRK, ITRMAX, ITRNMR, KEEPHE, NCRTOT, RSTARR, STPDIA, STPNRM, THRERG
       use nuclei_mod, only: CORD, ISTBNU, NONT, NONTYP, NUCIND, NUCNUM
-!      use molinp_mod, only: NMLAU, NMLINE
+      use molinp_mod, only: MLINE, NCLINE, NMLAU, NMLINE
 !      use dcbgen_mod, only: DOHUCKEL, HRINPC, NEWSYM, RDINPC, RDMLIN
       use trkoor_mod, only: NTRREP
 #include "implicit.h"
-#include "molinp.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
@@ -6570,7 +6569,7 @@ C  /* Deck inipre */
       use priunit_mod, only: LUPRI
 !      use cbirea_mod, only: BASIS
 !      use optinf_mod, only: DOPRE, IPRE, ITRNMR, PREBTX, VRML
-!      use molinp_mod, only: MLINE
+      use molinp_mod, only: MLINE
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbgen_mod, only: RDINPC, RDMLIN
 !      use inftap_mod, only: LUONEL
@@ -6578,7 +6577,6 @@ C  /* Deck inipre */
 #include "implicit.h"
 #include "optinf.h"
 #include "cbirea.h"
-#include "molinp.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
@@ -6643,7 +6641,7 @@ C
 C     This procedure ends preoptimization and starts optimization with
 C     the "main" basis set.
 C
-!      use molinp_mod, only: MLINE, NMLAU
+      use molinp_mod, only: MLINE, NMLAU
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: IPTCNT, MAXOPR, NAXREP, NCRREP
 !      use dcbgen_mod, only: HRINPC, NEWSYM, RDINPC, RDMLIN
@@ -6652,7 +6650,6 @@ C
 !      use optinf_mod, only: ENERGY, ERGOLD, FINPRE, GECONV, INDHES, IPRE, ITRBRK, KEEPHE, NUMPRE, NWSYMM
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-#include "molinp.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
@@ -6886,12 +6883,11 @@ C  /* Deck spnrgy */
 C
 C     Calculates single point energy with another basis if requested.
 C
-!      use molinp_mod, only: MLINE
 !      use optinf_mod, only: ENERGY, ITRMAX, ITRNMR, SPBSTX
 !      use dcbgen_mod, only: HRINPC, NEWSYM, RDINPC, RDMLIN
+      use molinp_mod, only: MLINE
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
-#include "molinp.h"
 #include "optinf.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
@@ -7168,12 +7164,11 @@ C
 C     Punch MOLECULE input with updated coordinates to MOLECULE.INP
 C     and XXXX_mol.inp + optional VRML-file
 C
-!      use molinp_mod, only: NMLINE
+      use molinp_mod, only: MLINE, NMLINE
       use dummy_mod, only: IDUMMY
 !      use optinf_mod, only: ITRNMR
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
-#include "molinp.h"
 #include "optinf.h"
 #if defined (PRG_DIRAC)
 #else
@@ -7458,6 +7453,7 @@ C
       use nuclei_mod, only: ISTBNU, NAMN, NUCDEP, NUCIND
       use numder_mod, only: NOMOVE
       use taymol_mod, only: GRDMOL
+      use molinp_mod, only: MLINE, NCLINE, NMLAU, NMLINE
 #include "implicit.h"
 C
       PARAMETER (DP5 = 0.50D0, D100=100.0D0)
@@ -7466,7 +7462,6 @@ C
 C
 C numder.h : NOMOVE
 C
-#include "molinp.h"
 #include "optinf.h"
 #include "codata.h"
 #ifdef PRG_DIRAC

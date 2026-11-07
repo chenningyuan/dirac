@@ -31,7 +31,7 @@ C
       use efield_mod, only: FIELD1, FIELD2
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use iratdef_mod, only: IRAT
-!      use cbisol_mod, only: SOLVNT
+      use cbisol_mod, only: SOLVNT
       use kinds_mod, only: dp
 #include "implicit.h"
 C
@@ -48,7 +48,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "cbisol.h"
 #include "orgcom.h"
 C
 C

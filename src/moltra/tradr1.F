@@ -93,7 +93,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: ISAME, NFPCK12, NFPCK12T, NFPCK34, NFPCK34T, SCRTRA
-!      use comdis_mod, only: ISHLA, ISHLB, NINSHA, NINSHB, NSPCK
+      use comdis_mod, only: ISHLA, ISHLB, NINSHA, NINSHB, NSPCK
 !      use dcborb_mod, only: NASHT
 !      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
       use kinds_mod, only: dp
@@ -101,7 +101,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       REAL(dp), PARAMETER :: D0=0.0D0
 C
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dcborb.h"
 #include "dgroup.h"
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
@@ -370,12 +369,11 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ICOS
 !      use dcbtra_mod, only: NFPCK12
-!      use comdis_mod, only: ISPCK, NINSHA, NINSHB, NSPCK
+      use comdis_mod, only: ISPCK, NINSHA, NINSHB, NSPCK
 !      use dcbbas_mod, only: NBBAS
 #include "implicit.h"
 #include "dgroup.h"
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dcbbas.h"
 C
       DIMENSION INDX(3,*),INDXAB(NINSHA,NINSHB,4)
@@ -478,7 +476,7 @@ C
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 !      use dcbtra_mod, only: IFPCK34, NFPCK34
-!      use comdis_mod, only: NSPCK
+      use comdis_mod, only: NSPCK
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
@@ -491,7 +489,6 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
-#include "comdis.h"
 C
       CALL QENTER('MS4IN2')
 C

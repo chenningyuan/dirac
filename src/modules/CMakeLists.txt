@@ -9,9 +9,11 @@ set(MODULE_SOURCES
     cbihr1.F90
     cbihr2.F90
     cbione.F90
+    cbisol.F90
     chrnos.F90
     chrsgn.F90
     chrxyz.F90
+    comdis.F90
     consts.F90
     cotabs.F90
     crossd.F90
@@ -41,6 +43,7 @@ set(MODULE_SOURCES
     maxaqn.F90
     maxmom.F90
     maxorb.F90
+    molinp.F90
     mxcent.F90
     mxsymm.F90
     nodint.F90

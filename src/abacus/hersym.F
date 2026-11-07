@@ -107,13 +107,12 @@ C
      &  IZATOM, NAMEX, NAMN, NONT, NONTYP, NOORBT, NUCIND
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use molinp_mod, only: MLINE, NCLINE, NMLAU
+      use molinp_mod, only: MLINE, NCLINE, NMLAU
 !      use infpar_mod, only: IF, MPARID, MYTID
       use mxsymm_mod, only: IPRSYM, MAXAXS, MAXMIR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "molinp.h"
 ! infpar.h: MPARID, MYTID
 #include "infpar.h"
 C ***********************************************************
@@ -2426,10 +2425,9 @@ C ::                                             ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::
       use mxsymm_mod, only: TOLLRN, TOLLRN_2
       use mxcent_mod, only: MXCENT
-!      use molinp_mod, only: MLINE, NCLINE, NMLINE
+      use molinp_mod, only: MLINE, NCLINE, NMLINE
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "molinp.h"
          DIMENSION ATMARR(6, 0:MXM), EXTARR(7, 0:MXM)
          DIMENSION TMPARR(6, 0:MXM), V1(3), V2(3), V3(3)
          CHARACTER STRING*9, SYMELM*9

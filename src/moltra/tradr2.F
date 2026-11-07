@@ -317,14 +317,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
       use iratdef_mod, only: IRAT
 !      use dcbtra_mod, only: IFPCK34, ISAME, LUTRA2, NFPCK12, NFPCK34, SCRTRA
-!      use comdis_mod, only: ISHLA, ISHLB, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS
+      use comdis_mod, only: ISHLA, ISHLB, KIGBUF, KLGBUF, KLGREC,
+     &  KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS
 !      use dcborb_mod, only: NASHT
 !      use dcbmpt_mod, only: MAXSCL, TESTLS, TESTSL
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 #include "implicit.h"
       INTEGER :: I, K
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dcborb.h"
 #include "dcbmpt.h"
 #include "dgroup.h"
@@ -1077,11 +1077,10 @@ C     Vebjorn Bakken, Summer 2003
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use comdis_mod, only: ISHLA, ISHLB, NINSHA, NINSHB
+      use comdis_mod, only: ISHLA, ISHLB, NINSHA, NINSHB
 !      use dcbmpt_mod, only: MAXSCL, TESTLS, TESTSL
 #include "implicit.h"
       INTEGER :: I, J
-#include "comdis.h"
 #include "dcbmpt.h"
       DIMENSION IDSLST(6,NDSLST), INDX(3,*), IJP12(0:7)
       LOGICAL SORTDS, DONE
@@ -1187,13 +1186,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
       use iratdef_mod, only: IRAT
 !      use dcbtra_mod, only: LUTRA2, NFPCK12, SCRTRA
-!      use comdis_mod, only: ISHLA, ISHLB, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS
+      use comdis_mod, only: ISHLA, ISHLB, KIGBUF, KLGBUF, KLGREC,
+     &  KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS
 !      use dcborb_mod, only: NASHT
 !      use dcbmpt_mod, only: MAXSCL
 !      use dgroup_mod, only: JBTOF, NBSYM, NZ
 #include "implicit.h"
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dcborb.h"
 #include "dcbmpt.h"
 #include "dgroup.h"
@@ -1562,7 +1561,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbtra_mod, only: NFPCK12
-!      use comdis_mod, only: NINSHA, NINSHB
+      use comdis_mod, only: NINSHA, NINSHB
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
       use symmet_mod, only: ICOS, ISYMAX
       use kinds_mod, only: dp
@@ -1570,7 +1569,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INTEGER :: I, K
 #include "dgroup.h"
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dcbbas.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D00, D1=1.0D00
@@ -2026,7 +2024,7 @@ C     -              Updated values of buffer blocks
 C
 !      use dgroup_mod, only: JBTOF, NBSYM, NZ
 !      use dcbtra_mod, only: NFPCK12
-!      use comdis_mod, only: LGFIL, NGBFSZ, NPASS
+      use comdis_mod, only: LGFIL, NGBFSZ, NPASS
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
@@ -2048,7 +2046,6 @@ C
 C
 #include "dgroup.h"
 #include "dcbtra.h"
-#include "comdis.h"
 C
       CALL QENTER('MS4IN1E')
       KFRSAV = KFREE
@@ -2610,7 +2607,6 @@ C
 !#include "dcbgen.h"
 !#include "dcborb.h"
 !#include "dcbtra.h"
-!#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbmp2.h"
 !#include "dcbbas.h"
@@ -2955,7 +2951,6 @@ C
 !#include "dcbgen.h"
 !#include "dcborb.h"
 #include "dcbtra.h"
-!#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbmp2.h"
 !#include "dcbbas.h"
@@ -3192,7 +3187,6 @@ C
 !#include "dcbgen.h"
 !#include "dcborb.h"
 !#include "dcbtra.h"
-!#include "comdis.h"
 #include "dcbtr3.h"
 !#include "dcbbas.h"
 #include "dgroup.h"

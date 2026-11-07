@@ -2212,7 +2212,7 @@ C  /* Deck vibmas */
       SUBROUTINE VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,NNATOM,
      &                  GEOM,ORIGIN,IPRINT)
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use cbisol_mod, only: SOLVNT
+      use cbisol_mod, only: SOLVNT
       use priunit_mod, only: LUPRI
 !      use codata_mod, only: XTANG
       use nuclei_mod, only: NAMDEP
@@ -2229,7 +2229,6 @@ C
 C
       DIMENSION NUMIS(*), NATTYP(*), AMASS(*), GEOM(3,NNATOM), ORIGIN(3)
 C
-#include "cbisol.h"
 C
       IF (IPRINT .GT. 0) CALL HEADER('Isotopic Masses',-1)
       TOTMAS = D0

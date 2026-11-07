@@ -100,7 +100,7 @@ C  9-Feb-1993 hjaaj
 C
 C interface to SOLNUC for Hermit
 C
-!      use cbisol_mod, only: LCAVMX, LMNTOT, LMTOT
+      use cbisol_mod, only: LCAVMX, LMNTOT, LMTOT
       use maxorb_mod, only: MXCORB
       use hrunit_mod, only: LUSOL
       use priunit_mod, only: LUPRI
@@ -121,7 +121,6 @@ C  CBISOL : LCAVMX,LMTOT,LMNTOT
 C  ORGCOM : CAVORG
 C  HRUNIT : LUSOL
 C
-#include "cbisol.h"
 #include "orgcom.h"
 C
       CHARACTER*8 LABSOL(4)
@@ -173,7 +172,7 @@ C  /* Deck solnuc */
 C
 C 12-Jan-1993 hjaaj+kvm
 C
-!      use cbisol_mod, only: LCAVMX, LMNTOT
+      use cbisol_mod, only: LCAVMX, LMNTOT
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCOOR
       use kinds_mod, only: dp
@@ -188,7 +187,6 @@ C Used from common blocks:
 C  CBISOL : LCAVMX,LMNTOT
 C  NUCLEI : NUCDEP
 C
-#include "cbisol.h"
 C
       IF (IPRINT .GT. 4) THEN
          CALL HEADER('Output from SOLNUC',-1)
@@ -241,7 +239,7 @@ C
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
-!      use cbisol_mod, only: LCAVMX, LMNTOT, NCNTCV
+      use cbisol_mod, only: LCAVMX, LMNTOT, NCNTCV
       use taysol_mod, only: GSOLNN
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -260,7 +258,6 @@ C  CBISOL : LCAVMX,NCNTCV
 C  TAYSOL : GSOLNN()
 C  ORGCOM : CAVORG(3)
 C
-#include "cbisol.h"
 #include "orgcom.h"
 C
 C     Local arrays
@@ -478,7 +475,7 @@ C
       use mxcent_mod, only: MXCOOR
       use priunit_mod, only: LUPRI
       use taysol_mod, only: ESOLNN, GSOLNN
-!      use cbisol_mod, only: LCAVMX, LMNTOT
+      use cbisol_mod, only: LCAVMX, LMNTOT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -494,7 +491,6 @@ C  CBISOL : LCAVMX,LMNTOT,?
 C  LMNS   : [LMN]VALU[AB](MXAQN)
 C  TAYSOL : GSOLNN(), HSOLNN()
 C
-#include "cbisol.h"
 C
 C     Statement functions
 C     -------------------
@@ -614,7 +610,7 @@ C 27-May-1992 kvm+hjaaj
 C
       use onecom_mod, only: NHKTA, NHKTB
       use priunit_mod, only: LUPRI
-!      use cbisol_mod, only: LCAVMX, LMNTOT
+      use cbisol_mod, only: LCAVMX, LMNTOT
 #include "implicit.h"
       INTEGER :: I,J
 C
@@ -625,7 +621,6 @@ C Used from common blocks:
 C  ONECOM : NHKT[AB]
 C  CBISOL : LCAVMX,LMNTOT
 C
-#include "cbisol.h"
 C
       ITMAX = NHKTA-1 + NHKTB-1 + MAXDIF
       ITMAX = MIN(LCAVMX,ITMAX)
@@ -694,7 +689,7 @@ C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
-!      use cbisol_mod, only: LCAVMX, LMNTOT
+      use cbisol_mod, only: LCAVMX, LMNTOT
 !      use orgcom_mod, only: CAVORG
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -714,7 +709,6 @@ C  ONECOM : KCKTA, KCKTB, KCKTAB,
 C           (KCKTAB = KCKTA*KCKTB)
 C  LMNS   : [LMN]VALU[AB](MXAQN)
 C
-#include "cbisol.h"
 #include "orgcom.h"
 C
       INTEGER T,U,V
@@ -1010,7 +1004,7 @@ C     MAY 92
 C     Corrections(counters are being stepped)kvm+hjaaj
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
-!      use cbisol_mod, only: LCAVMX, LMNTOT, NCNTCV
+      use cbisol_mod, only: LCAVMX, LMNTOT, NCNTCV
       use priunit_mod, only: LUPRI
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1027,7 +1021,6 @@ C Used from common blocks:
 C  ONECOM : ONECEN, ?
 C  CBISOL : NCNTCV
 C
-#include "cbisol.h"
 C
       LOGICAL DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ,
      *        DOCX, DOCY, DOCZ, DIFDIP
@@ -1533,13 +1526,13 @@ C
 #ifndef PRG_DIRAC
 C  /* Deck magsol */
       SUBROUTINE MAGSOL(DERMAT,NCOMP,IPRINT,INTPRI,WORK,LWORK)
+      use cbisol_mod, only: LCAVMX, LMTOT
       use iratdef_mod, only: IRAT
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
       DIMENSION DERMAT(*), WORK(LWORK)
-#include "cbisol.h"
 #include "inforb.h"
 C
 C
@@ -1581,6 +1574,7 @@ C  /* Deck magso1 */
 C
 C     kr and kvm, Dec.-94
 C
+      use cbisol_mod, only: EPDIEL, LCAVMX, LMTOT, RCAV
       use dummy_mod, only: IDUMMY
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
@@ -1593,7 +1587,6 @@ C
      &          DERMAT(*), TEMPMA(NNBASX,NCOMP,-LCAVMX:LCAVMX),
      &          TRAMAT((LCAVMX + 1)*(LCAVMX + 2)*(2*LCAVMX + 1)/2),
      &          WORK(LWORK)
-#include "cbisol.h"
 #include "orgcom.h"
 #include "mgsolt.h"
 #include "inforb.h"
@@ -1776,6 +1769,7 @@ C     kr , Nov.-96
 C     Writes integrals to file in order to save memory
 C     Rewritten to save even more memory, May 4-97
 C
+      use cbisol_mod, only: EPDIEL, LCAVMX, LMTOT, RCAV
       use chrnos_mod, only: CHRNOS
       use dummy_mod, only: DUMMY, IDUMMY
       use mxcent_mod, only: MXCENT
@@ -1794,7 +1788,6 @@ C
       DIMENSION CAVCNT(3)
       LOGICAL   FOUND
 C
-#include "cbisol.h"
 #include "mgsolt.h"
 #include "orgcom.h"
 #include "inforb.h"

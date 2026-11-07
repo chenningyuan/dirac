@@ -182,7 +182,7 @@ C
       use symmet_mod, only: MAXREP
       use maxorb_mod, only: MXCORB, MXSHEL
       use shells_mod, only: ISTBAO, KHKT, KMAX
-!      use cbisol_mod, only: LMNTOT, SOLVNT
+      use cbisol_mod, only: LMNTOT, SOLVNT
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use iratdef_mod, only: IRAT
@@ -191,7 +191,6 @@ C
       LOGICAL DIFINT, NODC, NODV, DIFDIP, PROPTY, DOINT(2,2)
       CHARACTER*4 OMITVNUC(2)
       DIMENSION WORK(LWORK)
-#include "cbisol.h"
 C
 C
       DOINT(1,1) = .TRUE.
@@ -277,7 +276,7 @@ C
      &  NUCIND, NUCNUM
       use symind_mod, only: INDFA, INDFB, ISOFRA, ISOFRB
       use dipole_mod, only: DDIPE, DDIPS
-!      use cbisol_mod, only: LMNTOT, SOLVNT
+      use cbisol_mod, only: EPDIEL, LCAVMX, LMNTOT, LMTOT, RCAV, SOLVNT
       use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dorps_mod, only: DOREPS
@@ -301,7 +300,6 @@ C
 #endif
 #include "ccom.h"
 #include "dorps.h"
-#include "cbisol.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEDR1','*',103)
 C
@@ -1061,6 +1059,7 @@ C  /* Deck tlmwrt */
 C  /* Deck tlmwr1 */
       SUBROUTINE TLMWR1(TLMD,FCM,GRADE,GRADN,GDIFE,GDIFN,WORK,LWORK,
      &                  IPRINT)
+      use cbisol_mod, only: LMNTOT, LMTOT
       use nuctap_mod, only: ABATLM, LRTLM, LUTLM, NBTLM
       use taysol_mod, only: GSOLNN, GSOLTT
       use nuclei_mod, only: NUCDEP
@@ -1072,7 +1071,6 @@ C  /* Deck tlmwr1 */
       LOGICAL ERRORE, ERRORN
       DIMENSION TLMD(LMNTOT,3*NUCDEP,2), FCM(LMNTOT), GRADE(*),
      &          GRADN(*), GDIFE(*), GDIFN(*), WORK(LWORK)
-#include "cbisol.h"
 C
 C     Test TLMD
 C
@@ -1150,9 +1148,9 @@ C
       END
 C  /* Deck tlmtra */
       SUBROUTINE TLMTRA(NMAT,CARMAT,SPHMAT,WORK,LWORK,IPRINT)
+      use cbisol_mod, only: LCAVMX
 #include "implicit.h"
       DIMENSION CARMAT(*), SPHMAT(*), WORK(LWORK)
-#include "cbisol.h"
 C
       MXLM  = 2*LCAVMX + 1
       MXXYZ = (LCAVMX+1)*(LCAVMX+2)/2
@@ -1167,12 +1165,12 @@ C
 C  /* Deck tlmtr1 */
       SUBROUTINE TLMTR1(NMAT,CARMAT,SPHMAT,TRAMAT,MXXYZ,MXLM,
      &                  WORK,LWORK,IPRINT)
+      use cbisol_mod, only: LCAVMX, LMNTOT
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (MORDER = 1, MINTEG = 0)
       DIMENSION CARMAT(LMNTOT,*), SPHMAT(LMNTOT,*), TRAMAT(MXXYZ,MXLM),
      &          WORK(LWORK)
-#include "cbisol.h"
 C
       JLM  = 0
       JXYZ = 0

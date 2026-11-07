@@ -238,7 +238,6 @@ contains
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#include "cbisol.h"
 
         ! Passed variables
         integer(c_size_t), intent(in) :: nr_points
@@ -408,7 +407,6 @@ contains
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif
-#include "cbisol.h"
 
         ! Passed variables
         integer(c_size_t), intent(in) :: nr_points

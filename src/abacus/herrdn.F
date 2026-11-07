@@ -304,6 +304,7 @@ C               - common block MOLINP: deleted !!!
 C               - common block MOLINC: deleted !!!
 C               - common block HRUNIT: deleted !!!
 C******************************************************************************
+      use molinp_mod, only: MLINE, NMLINE
       use nuclei_mod, only: NUCDEP
       use dummy_mod, only: IDUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -330,7 +331,6 @@ C     JHS
       INTEGER :: i
       REAL :: time1,time2
 
-#include "molinp.h"
 C
       integer, parameter   :: LWORK = 15000000 ! do not use WORK_memsize because WORK may be allocated in calling routine
       real(8), allocatable :: WORK(:)          ! and we do not need that much memory in READIN
@@ -496,6 +496,7 @@ C       ISHELL - runs over all shells
 C       IPRIM  - runs over all primitives
 C       NUCIND - runs over all symmetry independent centers
 C******************************************************************************
+      use molinp_mod, only: MLINE, NMLAU, NMLINE
       use nuclei_mod, only: NONT, NONTYP
       use symmet_mod, only: MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -535,7 +536,6 @@ C     JHS The following variables come from a common block and are thus kept in 
       INTEGER   IFXYZ(3), blk
       LOGICAL   ANG, ADDSYM
 
-#include "molinp.h"
 #include "ccom.h"
 #include "infpar.h"
 #ifdef PRG_DIRAC
@@ -890,6 +890,7 @@ C
 C       Read orbital and geometry input data
 C
 C***********************************************************************
+      use molinp_mod, only: MLINE, NMLINE
       use nuclei_mod, only: CHARGE, GNUEXP, IATOMTYP, ISOTOP, IZATOM,
      &  NONT, NONTYP, NOORBT, NUCIND
       use gencon_mod, only: DIRCON
@@ -912,9 +913,7 @@ C***********************************************************************
       CHARACTER SPDCAR*1,BSET*5,ZMATL*1,BASFIL*20,AUXFIL*20,BSKEYWORD*14
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       DIMENSION IBLOCK(MXBSETS)
-#include "molinp.h"
 #include "ccom.h"
-#include "cbisol.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -1941,6 +1940,7 @@ C
 C     Read and process data about symmetry independent centers
 C
 C*****************************************************************************
+      use molinp_mod, only: LEN_MLINE, MLINE, NCLINE, NMLINE
       use argoscom_mod, only: ECPNUC
       use nuclei_mod, only: CHARGE, CORD, GAUNUC, GNUEXP, ISOTOP,
      &  IZATOM, NAMEX, NAMN, NUCIND
@@ -1953,7 +1953,6 @@ C*****************************************************************************
       PARAMETER (LUERR = 0)
 #include "cbirea.h"
 C
-#include "molinp.h"
 C
       CHARACTER*(LEN_MLINE) TMP_LINE
       LOGICAL ANG
@@ -2719,6 +2718,7 @@ C*****************************************************************************
 C  /* Deck gtoinp */
       SUBROUTINE GTOINP(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,ISGEN,NBLOCK,KAOVEC,KPRIM)
+      use molinp_mod, only: MLINE, NMLINE
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
@@ -2734,7 +2734,6 @@ C
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
 ! dcbham.h : ECPCALC
 #include "cbirea.h"
-#include "molinp.h"
 #include "dcbham.h"
 C
       IF(DIRAC) THEN
@@ -3018,6 +3017,7 @@ C
       END
 C  /* Deck famcopy */
       SUBROUTINE FAMCOPY(LUINFO,NUCIJ,NRCIJ,ALPHA,CPRIMU,KPRIM,IC)
+      use molinp_mod, only: MLINE, NMLINE
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
@@ -3025,7 +3025,6 @@ C  /* Deck famcopy */
       DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)
 #include "cbirea.h"
       DIMENSION ILIST(MXFAMEXP),TMP(MXFAMEXP+2)
-#include "molinp.h"
 C
 C     Card 9:
 C
@@ -3139,6 +3138,7 @@ C old version of GTOINP ??? -hjaaj July 2000
 C  /* Deck orbinx */
       SUBROUTINE ORBINX(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,NBLOCK,KAOVEC,KPRIM)
+      use molinp_mod, only: MLINE, NMLINE
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
@@ -3154,7 +3154,6 @@ C  /* Deck orbinx */
      &          ALPHA(KPRIM,KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
 #include "cbirea.h"
-#include "molinp.h"
 #include "ccom.h"
 C
       NBLOCK = 0
@@ -3240,6 +3239,7 @@ C
 #endif /* NOT_USED */
 C  /* Deck acporb */
       SUBROUTINE ACPORB(LUINFO,FRMT,NUCIJ,NRCIJ,ALPHA,CPRIMU,KPRIM)
+      use molinp_mod, only: MLINE, NMLINE
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
@@ -3251,7 +3251,6 @@ C  /* Deck acporb */
       LOGICAL FREE
       DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)
 #include "cbirea.h"
-#include "molinp.h"
 C
 C     Card 9:
 C
@@ -5242,13 +5241,13 @@ C     Miro,Sept.2017 - parallel job was setting LUINFO value to 0 for GNU compil
 C     upon fixing I also made routine "implicit none" style
 C
 C=======================================================================
+      use molinp_mod, only: MLINE, NMLINE
       use sphtrm_mod, only: CSP, ISPADR, NCSP
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
       implicit none
       real*8, parameter :: D1 = 1.0D0
-#include "molinp.h"
 #include "ccom.h"
 #include "cbirea.h"
       integer, intent(in) :: LUINFO
@@ -5356,10 +5355,10 @@ C
       END
 C  /* Deck rdcsp */
       SUBROUTINE RDCSP(LUINFO,CSP,GTOTYP,KHKI,KCKI)
+      use molinp_mod, only: MLINE, NMLINE
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "molinp.h"
       integer, intent(in) :: LUINFO
       CHARACTER*4 GTOTYP(*)
       DIMENSION CSP(KHKI,KCKI)
@@ -5387,10 +5386,10 @@ C     Note that we only allow decrements of one /jth-20000621.
 C     (This is used to check if SMALL basis keyword has been specified,
 C     or if default - kinetic balance - should be used.)
 C
+      use molinp_mod, only: KMLINE, MLINE, NMLINE
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "molinp.h"
 #include "infpar.h"
 
       PARAMETER (len_NEXT_INPUT_LINE = 120)
@@ -5686,13 +5685,13 @@ C**********************************************************
 C   THIS PROGRAM CALCULATES CARTESIAN COORDINATES OF A SYSTEM
 C   SPECIFIED BY INTERNAL COORDINATES.
 C
+      use molinp_mod, only: MLINE, NCLINE, NMLINE
       use nuclei_mod, only: CHARGE, NAMEX, NAMN, NONT, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0)
       LOGICAL FIRST
-#include "molinp.h"
       COMMON/CBZMAT/IZ(MXCENT,4),BL(MXCENT),ALP(MXCENT),BET(MXCENT)
       DATA FIRST /.TRUE./
       SAVE FIRST
@@ -5810,6 +5809,8 @@ C  /* Deck buildz */
 C
 C     Modified for HERMIT/SIRIUS/ABACUS -> K.Ruud, May-95
 C
+      use cbisol_mod, only: SOLVNT
+      use molinp_mod, only: MLINE, NCLINE, NMLINE
       use nuclei_mod, only: CHARGE, CORD, IZATOM, NAMN, NONT, NONTYP,
      &  NOORBT, NUCIND
       use pi_mod, only: PI
@@ -5839,8 +5840,6 @@ C
 #include "gnrinf.h"
 #endif
 #include "ccom.h"
-#include "molinp.h"
-#include "cbisol.h"
     1 FORMAT(/'   Internal coordinates (Z matrix)'/)
     2 FORMAT(I5,62X,F15.5)
     3 FORMAT(I5,I5,F14.7,43X,F15.5)
@@ -6437,6 +6436,7 @@ C
 C     Written by J. Thyssen - Jun 4 1998
 C
 C***********************************************************************
+      use molinp_mod, only: MLINE, NMLINE
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
@@ -6445,7 +6445,6 @@ C
       CHARACTER KEYWRD*6
 C
 #include "cbirea.h"
-#include "molinp.h"
 C
 C
 C

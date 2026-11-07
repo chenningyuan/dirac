@@ -6476,7 +6476,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-!#include "cbisol.h"
 
       real(8)  :: TIMSTR(2), TIMEND(2)
 C
@@ -10952,7 +10951,6 @@ C
 !#include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-!#include "cbisol.h"
 C
 c
       KWORK = 1

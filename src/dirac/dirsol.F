@@ -325,10 +325,10 @@ C/* Deck solvin */
       use maxmom_mod, only: MXQNM
       use dummy_mod, only: DUMMY
       use nuclei_mod, only: ISOTOP, NATOMS
+      use cbisol_mod, only: EPDIEL, LCAVMX, LMNTOT, LMTOT, RCAV, SOLVNT
 #include "implicit.h"
 !      use dcbham_mod, only: EPSOL, EPSTAT, INERSF, INERSI, IPRHAM, IPRSOL, LSOLMX, RSOLAV
 !      use orgcom_mod, only: CAVORG, CMXYZ
-!      use cbisol_mod, only: EPDIEL, LCAVMX, LMNTOT, LMTOT, RCAV, SOLVNT
       INTEGER :: I,II
 C
 C -- local variables and constants
@@ -340,7 +340,6 @@ C
       DIMENSION WORK(*)
 #include "dcbham.h"
 #include "orgcom.h"
-#include "cbisol.h"
 C
       SAVE SET
 

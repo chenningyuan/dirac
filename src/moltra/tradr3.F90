@@ -54,13 +54,12 @@
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ICOS
 !      use dcbtra_mod, only: LUTRA1, NFPCK12
-!      use comdis_mod, only: NINSHA, NINSHB
+      use comdis_mod, only: NINSHA, NINSHB
 !      use dcbtr3_mod, only: ISPCK34, NBBAS3, NSPCK34
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dgroup.h"
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dcbtr3.h"
 !
       REAL(dp), PARAMETER :: HALF=0.5D0
@@ -759,8 +758,8 @@
 !
 !      use dgroup_mod, only: JBTOF, NBSYM, NZ
 !      use dcbtra_mod, only: NFPCK12
-!      use comdis_mod, only: LGFIL, NGBFSZ, NPASS
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
+      use comdis_mod, only: LGFIL, NGBFSZ, NPASS
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
@@ -785,7 +784,6 @@
 !
 #include "dgroup.h"
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dcbtr3.h"
 !
       CALL QENTER('MS4IN1D')

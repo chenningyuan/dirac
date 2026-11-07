@@ -1724,11 +1724,11 @@ C
 C     Two options : we write directly to gmat if npass = 1
 C                   we write to a direct access file if npass > 1
 C
-!      use comdis_mod, only: KIGBUF, KLGBUF, KLGREC, KRGBUF, NINSHA, NINSHB, NPASS
+      use comdis_mod, only: KIGBUF, KLGBUF, KLGREC, KRGBUF, NINSHA,
+     &  NINSHB, NPASS
       use twocom_mod, only: NORBA, NORBB, NORBC, NORBD
 #include "implicit.h"
 C
-#include "comdis.h"
       LOGICAL FIRST, LAST, IPNTLG(3,*)
       LOGICAL DRALTB,DCMPAB,NOTEST
       DIMENSION SO(*),GMAT(*),
@@ -1770,7 +1770,7 @@ C     GMAT   - sorted batch of SO-integrals
 C     INDXAB - pointers from given p and q (relative in shell)
 C
 C*****************************************************************************
-!      use comdis_mod, only: ISPCK, NINSHA, NINSHB
+      use comdis_mod, only: ISPCK, NINSHA, NINSHB
       use twocom_mod
       use symmet_mod, only: ICOS, IPTSYM, NCOS
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -1782,7 +1782,6 @@ C*****************************************************************************
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I
-#include "comdis.h"
       LOGICAL FIRST, LAST, IPNTLG(3,*)
       LOGICAL DRALTB,DCMPAB,NOTEST
       DIMENSION SO(*),GMAT(*),
@@ -1946,14 +1945,14 @@ C*****************************************************************************
       use twocom_mod
       use maxaqn_mod, only: MXAQN, MXQN
       use aovec_mod, only: MXAOVC
-!      use comdis_mod, only: IRECG, ISPCK, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS
+      use comdis_mod, only: IRECG, ISPCK, LGFIL, NGBFSZ, NINSHA, NINSHB,
+     &  NPASS
       use symmet_mod, only: ICOS, IPTSYM, NCOS
       use twosta_mod, only: N2WRIT
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I
-#include "comdis.h"
       LOGICAL FIRST, LAST, IPNTLG(3,*)
       LOGICAL DRALTB,DCMPAB,NOTEST
       DIMENSION SO(*),

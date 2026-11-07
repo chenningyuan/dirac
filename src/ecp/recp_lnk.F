@@ -18,13 +18,12 @@
 !     Read ECP parameters
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use molinp_mod, only: MLINE, NMLINE
+      use molinp_mod, only: MLINE, NMLINE
       use nuclei_mod, only: CHARGE
 !      use inc_mxvalue_mod, only: MSUP
       use argoscom_mod, only: ECPNONT, ECPNUC
       USE RECP_NTR
       IMPLICIT NONE
-#include "molinp.h"
 !#include "recpval.h"
 #include "inc_mxvalue.h"
 !     global variables

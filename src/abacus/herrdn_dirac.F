@@ -32,9 +32,9 @@ C      ICP = 2 : Read small component
 C
 C***********************************************************************
 !      use cbirea_mod, only: INPTST
-!      use molinp_mod, only: MLINE, NMLINE
 !      use dcbham_mod, only: ECPCALC, IF
 !      use ccom_mod, only: KHK
+      use molinp_mod, only: MLINE, NMLINE
       use maxaqn_mod, only: MXQN
 !      use dcbgen_mod, only: BASDIR
       use priunit_mod, only: LUPRI
@@ -43,7 +43,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "molinp.h"
 C
       REAL(dp), PARAMETER :: DSM=1.0D-30
 C

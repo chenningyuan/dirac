@@ -1000,7 +1000,7 @@ C  /* Deck twodis */
 C
 !      use dcbham_mod, only: IF, ONECAP
 !      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, LCLASH, NCNTSH, NHKTSH, NORBSH, NSETSH, NSYMBL, NUCOSH, SEGMSH, SPHRSH
-!      use comdis_mod, only: ISHLA, ISHLB
+      use comdis_mod, only: ISHLA, ISHLB
       use twocom_mod
       use symmet_mod, only: MULT
       use mxcent_mod, only: MXCENT
@@ -1019,7 +1019,6 @@ C
 #ifdef PRG_DIRAC
 #include "dcbham.h"
 #endif
-#include "comdis.h"
 C
       CALL QENTER('TWODIS')
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWODIS','*',103)

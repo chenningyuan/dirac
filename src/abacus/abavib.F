@@ -456,7 +456,7 @@ C      3) partition functions  (PRTFUN)
 C      4) vibrational polarizabilities (VIBPOL)
 C
       use maxorb_mod, only: MXCORB
-!      use cbisol_mod, only: SOLVNT
+      use cbisol_mod, only: SOLVNT
 !      use codata_mod, only: XFAMU, XTANG, XTKAYS, XTKMML
       use mxcent_mod, only: MXCENT, MXCOOR
       use iratdef_mod, only: IRAT
@@ -480,7 +480,6 @@ C
 #include "cbivib.h"
 #include "dorps.h"
 #include "cbilnr.h"
-#include "cbisol.h"
 #include "codata.h"
 C
       DIMENSION NMASS(36)
@@ -707,7 +706,7 @@ C  /* Deck rotana */
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use cbisol_mod, only: L, SOLVNT
+      use cbisol_mod, only: SOLVNT
       use priunit_mod, only: LUPRI
       use inirep_mod, only: IREPPI, NREPPI
 !      use codata_mod, only: CCM, XFAMU, XTANG, XTHZ
@@ -724,7 +723,6 @@ C
       DOUBLE PRECISION ROTMHZ,CINVRS
 C
       LOGICAL  LINEAR, PLANAR
-#include "cbisol.h"
 C
       ROTMHZ = (XTHZ*1.0D-6*(XTANG**2))/(D2*XFAMU)
       CINVRS = 1.0D4/CCM
@@ -1490,8 +1488,8 @@ C      Project out translational and rotational coordinates from the
 C      molecular Hessian
 C
 C
-!      use cbisol_mod, only: SOLVNT
 !      use hotfccom_mod, only: IHOTFF
+      use cbisol_mod, only: SOLVNT
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1501,7 +1499,6 @@ C
      &          NATTYP(*), WRK(*)
       LOGICAL   LINDEP(6)
 C
-#include "cbisol.h"
 #include "hotfccom.h"
       AMASS(I) = DISOTP(NATTYP(I),ISOTOP(I),'MASS')
 C

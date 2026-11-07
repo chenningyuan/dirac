@@ -72,7 +72,7 @@ C
       use maxorb_mod, only: MXPRIM
       use ader_mod
       use mxcent_mod, only: MXCOOR
-!      use cbisol_mod, only: LMNTOT, SOLVNT
+      use cbisol_mod, only: LMNTOT, SOLVNT
       use primit_mod, only: PRICCF, PRIEXP
       use pi_mod, only: PI
       use aovec_mod, only: MXCONT
@@ -105,7 +105,6 @@ C
      &          GEXP(*), JCENTC(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 C
-#include "cbisol.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEPR1','*',103)
 C

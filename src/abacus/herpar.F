@@ -477,19 +477,19 @@ C
       use maxorb_mod, only: MXCORB, MXSHEL
       use nuclei_mod, only: NUCDEG
       use symmet_mod, only: MAXREP
-!      use molinp_mod, only: NMLINE
 !      use blocks_mod, only: MAXSHL, NSYMBL
 !      use dorps_mod, only: DOCOOR, DOREPS
       use maxaqn_mod, only: MXAQN, MXQN
 !      use abainf_mod, only: DOSYM
-!      use cbisol_mod, only: SOLVNT
       use parint_mod, only: parint_t
 #if defined (VAR_MPI)
       use parint_mod, only: parint_bcast
+      use molinp_mod, only: NMLINE
       use siripc_mod, only: NEWGEO
 #endif
       use interface_to_mpi
       use hrunit_mod, only: LUDASP, LUINTA, LUONEL, LUSOL, LUSUPM
+      use cbisol_mod, only: SOLVNT
 #include "implicit.h"
 C
       INTEGER :: I
@@ -500,14 +500,12 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "molinp.h"
 C
 #include "blocks.h"
 #include "infpar.h"
 C
 #include "abainf.h"
 #include "inforb.h"
-#include "cbisol.h"
 #include "cbirea.h"
 #include "dorps.h"
 C
@@ -1349,23 +1347,24 @@ C
       use symmet_mod, only: MAXREP
       use maxorb_mod, only: MXCORB
 !      use inforb_mod, only: I1_INFORB, N2BASX
-!      use cbisol_mod, only: NCNTCV, SOLVNT
 !      use dcbgen_mod, only: PANAS, RDINPC, RELCAL, TWOCOMP
 !      use cbirea_mod, only: MAXPRI, UNCONT
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMDEP, NAMDPX, NAMEX,
      &  NAMN, NATOMS, NUCDEP, NUCIND
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbham_mod, only: ECPCALC, HFXATT, HFXFAC, HFXMU, INTV1C, LEVYLE, NONREL, ONECAP, SMLV1C, SPINFR
-!      use molinp_mod, only: NCLINE, NMLINE
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use parint_mod, only: parint_t
 #if defined (VAR_MPI)
       use parint_mod, only: parint_bcast
+      use molinp_mod, only: NMLINE
 #endif
       use interface_to_mpi
       use kinds_mod, only: dp
       use hrunit_mod, only: LUDASP, LUINTA, LUONEL, LUSOL, LUSUPM
+      use molinp_mod, only: NCLINE
+      use cbisol_mod, only: NCNTCV, SOLVNT
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
@@ -1378,11 +1377,9 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "molinp.h"
 #include "infpar.h"
 C
 #include "inforb.h"
-#include "cbisol.h"
 #include "cbirea.h"
 C
 #include "dorps.h"
@@ -1666,7 +1663,7 @@ CMI changes from TEC for LAO
       use taymol_mod, only: GRDMOL, HESMOL
       use taysol_mod, only: GSOLNN, GSOLTT
 !      use blocks_mod, only: BIGVEC, CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, LCLASH, MAXSHL, NCNTSH, NHKTSH, NLRGBL, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
-!      use cbisol_mod, only: SOLVNT
+      use cbisol_mod, only: SOLVNT
 !      use suscpt_mod, only: SUSCEP, SUSCEP
       use interface_to_mpi
       use kinds_mod, only: dp
@@ -1686,7 +1683,6 @@ CMI changes from TEC for LAO
      &          GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*),
      &          IJSHEL(2),INDEX_IJ(*),TIMES(*)
 C
-#include "cbisol.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #include "dcbham.h"

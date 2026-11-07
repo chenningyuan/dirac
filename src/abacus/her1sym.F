@@ -24,9 +24,9 @@ C  /* Deck onesop */
      &                  LOMITVNUC)
       use iratdef_mod, only: IRAT
       use onecom_mod, only: KCKTAB, KHKTAB
+      use cbisol_mod, only: LMNTOT, SOLVNT
 #include "implicit.h"
 C
-!      use cbisol_mod, only: LMNTOT, SOLVNT
 #ifdef PRG_DIRAC
 C     jth - length of STDER1 is now KCKTAB*6*2
       PARAMETER(NDER1=6,NDER2=6)
@@ -41,7 +41,6 @@ C
      &          FACINT(*), COORC(3,*), JSYMC(*),
      &          JCENTC(*), NCENTC(*), SIGNC(3,*),GEXP(*),
      &          FCM(*), TLMD(*)
-#include "cbisol.h"
 C
       IF (PROPTY) THEN
          NADER = 28*NATOMC*KCKTAB
@@ -113,7 +112,7 @@ C  /* Deck oneso1 */
       use onecom_mod
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dgroup_mod, only: IPQTOQ, NZ
-!      use cbisol_mod, only: LMNTOT, SOLVNT
+      use cbisol_mod, only: LMNTOT, SOLVNT
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -137,7 +136,6 @@ C     only DSHELL(*,1) used for Dalton
      &          FACINT(NUCDEP,*), COORC(3,*), JSYMC(*),
      &          JCENTC(*), NCENTC(*), SIGNC(3,*),GEXP(*),
      &          RLMINT(*), RLMTAB(*), FCM(*), TLMD(*), LMNO(*)
-#include "cbisol.h"
 C
 #ifdef PRG_DIRAC
 #include "dgroup.h"
@@ -559,12 +557,11 @@ C  /* Deck wd1sy1 */
       use onecom_mod, only: HKAB, KCKTAB, KHKTA, KHKTAB, KHKTB, LDIAG,
      &  MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB, ONECEN
       use ader_mod, only: IA000X, IA000Y, IA000Z, IA0X00, IA0Y00, IA0Z00
+      use cbisol_mod, only: LMNTOT, NCNTCV, SOLVNT
 #include "implicit.h"
-!      use cbisol_mod, only: NCNTCV, SOLVNT
       DIMENSION STDER1(KCKTAB,3,2), ADER(KCKTAB,NATOMC,*), JSYMC(*),
      &          JCENTC(*), OMAT(KCKTAB,3,2), RLMINT(KCKTAB,LMNTOT,7),
      &          FCM(*)
-#include "cbisol.h"
 C
 C     Write differentiated integrals on file
 C

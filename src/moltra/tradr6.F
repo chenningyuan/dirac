@@ -299,13 +299,12 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: NFPCK12T
-!      use comdis_mod, only: ISHLA
+      use comdis_mod, only: ISHLA
 !      use dgroup_mod, only: NBSYM
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dgroup.h"
 
       DIMENSION LSORT(3,NFPCK12T,0:7)
@@ -402,7 +401,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use infpar_mod, only: MPARID, MYTID, NODES
 !      use dcbtra_mod, only: IPAR4BS, NFPCK12T
-!      use comdis_mod, only: ISHLA, ISHLB
+      use comdis_mod, only: ISHLA, ISHLB
 !      use dgroup_mod, only: NBSYM
       use interface_to_mpi
       use kinds_mod, only: dp
@@ -411,7 +410,6 @@ C***********************************************************************
 #include "infpar.h"
       INTEGER ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dgroup.h"
       DIMENSION LSORT(3,NFPCK12T,0:7)
       Real(8), Allocatable :: RGBUF(:)
@@ -751,13 +749,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
       use iratdef_mod, only: IRAT
 !      use dcbtra_mod, only: LUTRA2, NFPCK12T, SCRTRA
-!      use comdis_mod, only: ISHLA, ISHLB, ISPCK, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS, NSPCK
+      use comdis_mod, only: ISHLA, ISHLB, ISPCK, KIGBUF, KLGBUF, KLGREC,
+     &  KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS, NSPCK
 !      use dcbtr3_mod, only: IBAS1, IBAS2, IBBAS1, IBBAS2, ISPCK12, NBBAS1, NBBAS2, NSPCK12
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dcborb_mod, only: NASHT
 #include "implicit.h"
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -1003,7 +1001,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ICOS, ISYMAX
 !      use dcbtra_mod, only: IFPCK12, NFPCK12, NFPCK12T
-!      use comdis_mod, only: ISPCK, LGFIL, NGBFSZ, NPASS, NSPCK
+      use comdis_mod, only: ISPCK, LGFIL, NGBFSZ, NPASS, NSPCK
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
       use kinds_mod, only: dp
@@ -1027,7 +1025,6 @@ C
 C
 #include "dgroup.h"
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 C
@@ -1243,7 +1240,7 @@ C
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 !      use dcbtra_mod, only: DO_FINESORT, IFPCK34, NFPCK12, NFPCK12T, NFPCK34
-!      use comdis_mod, only: NSPCK
+      use comdis_mod, only: NSPCK
 !      use infpar_mod, only: MYTID
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1261,7 +1258,6 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
-#include "comdis.h"
 #include "infpar.h"
 C
       CALL QENTER('MS6IN2')
@@ -1412,11 +1408,10 @@ C     PURPOSE : Make G = G + G(Transposed)
 C
 !      use dcbbas_mod, only: NBBAS
 !      use dgroup_mod, only: NBSYM, NZ
-!      use comdis_mod, only: ISPCK
+      use comdis_mod, only: ISPCK
 #include "implicit.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "comdis.h"
       DIMENSION GMAT(NDG,NZ)
 C
       DO IZ = 1, NZ
