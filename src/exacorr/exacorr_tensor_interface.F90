@@ -35,7 +35,11 @@ module exacorr_tensor_interface
          !library_tensor_instance_pointer
          type(tapp_tensor_t) :: tens_tapp     ! executor 1       !Do not access in your code directly outside this file (and tapp_top)!
          type(talsh_tens_t) :: tens_talsh     ! executor 2       !Do not access in your code directly outside this file. Will be deprecated soon.
-#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
+#if defined(EXATENSOR)
+         ! Same guard as the executor 3 code below (EXATENSOR is currently never defined).
+         ! Do not include this component otherwise: finalizing a tens_rcrsv_t component
+         ! (e.g. when a local tensor_t goes out of scope) crashes with gfortran 13, which
+         ! finalizes an uninitialised temporary in the generated finalization wrapper.
          type(tens_rcrsv_t) :: tens_exatensor ! executor 3       !Do not access in your code directly outside this file. Will be deprecated soon.
 #endif
 
