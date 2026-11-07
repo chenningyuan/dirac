@@ -240,12 +240,11 @@ C     TUH
 C
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
-!      use sphtrm_mod, only: CSP, ISPADR
+      use sphtrm_mod, only: CSP, ISPADR
       use hertop_mod, only: JTOP
       use twoao_mod
 #include "implicit.h"
       INTEGER T, U, V, TUV
-#include "sphtrm.h"
       COMMON /DHCINF/ IHCADR(10), IHCSYM(10)
       DIMENSION HERINT(NU1234,*), INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          INDHVC(0:*), IODDHR(*), INDHSQ(*),
@@ -454,10 +453,9 @@ C
       use hertop_mod, only: JTOP
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXQN
-!      use sphtrm_mod, only: CSP, ISPADR
+      use sphtrm_mod, only: CSP, ISPADR
 #include "implicit.h"
       INTEGER T, U, V, TUV
-#include "sphtrm.h"
       COMMON /DHCINF/ IHCADR(10), IHCSYM(10)
       DIMENSION JOFFEX(7), JOFFEY(7), JOFFEZ(7),
      &          INCMXT(3), INCMXU(3), INCMXV(3),

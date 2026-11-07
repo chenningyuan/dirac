@@ -674,8 +674,6 @@
       USE RECP_NTR
 #include "implicit.h"
 !#include "ccom.h"
-!#include "pincom.h"
-!#include "sphtrm.h"
 !#include "cbirea.h"
 #include "argoscom.h"
       INTEGER blk

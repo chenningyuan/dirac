@@ -571,11 +571,10 @@ C
       use symmet_mod, only: ISYMAO, MAXOPR, MAXREP, NAOS, PT
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use pincom_mod, only: IPIND
+      use pincom_mod, only: IPIND
 #include "implicit.h"
       INTEGER :: I,J
       DIMENSION DSO(NBAST,NBAST), DAO(NBAST,NBAST)
-#include "pincom.h"
       IF (IPRINT .GT. 10) CALL HEADER('Subroutine DSOTAO',-1)
 C
 C     Loop over all irreps in molecule
@@ -1335,9 +1334,9 @@ C
       RETURN
       END
 C  /* Deck sklond */
-!      use pincom_mod, only: IPIND
       SUBROUTINE SKLOND(FMAT,SKLTON,FACTOR,INDEX,IPOINT,IPRINT)
 C
+      use pincom_mod, only: IPIND
       use nuclei_mod, only: NBASIS
       use shells_mod, only: ISTBAO, KHKT, KMAX, KSTRT, NHKT
       use symmet_mod, only: ISYMAO, ISYMAX, MAXOPR, MAXREP, NAOS, PT
@@ -1353,7 +1352,6 @@ C
       DIMENSION FMAT(NBASIS,NBASIS,3), SKLTON(NBASIS,NBASIS,3),
      &          INDEX(KMAX,0:MAXREP,*), FACTOR(NBASIS,0:MAXREP),
      &          IPOINT(NBASIS,0:MAXREP)
-#include "pincom.h"
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLOND',-1)
 C

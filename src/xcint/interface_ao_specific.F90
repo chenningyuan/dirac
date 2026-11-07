@@ -41,9 +41,7 @@ contains
       character(1), parameter :: ls(2) = (/'L', 'S'/)
 !     --------------------------------------------------------------------------
 
-!#include "sphtrm.h"
 #include "dcbbas.h"
-!#include "pincom.h"
 #include "dgroup.h"
 #include "dcbham.h"
 !#include "orgcom.h"

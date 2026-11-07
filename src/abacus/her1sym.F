@@ -626,7 +626,7 @@ C
 C                                          880418  PRT
 C
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use pincom_mod, only: IPIND
+      use pincom_mod, only: IPIND
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
       use symmet_mod, only: FMULT, ISYMAO, MAXOPR, MAXREP, NAOS, PT
@@ -635,7 +635,6 @@ C
 #include "implicit.h"
       INTEGER :: I,J
       DIMENSION DSO(*), FSO(*), DENMAT(*), FOCMAT(*)
-#include "pincom.h"
       IF (IPRINT .GT. 10) CALL HEADER('Subroutine DSYM1',-1)
 C
 C     Loop over all irreps in molecule
@@ -1156,12 +1155,11 @@ C
      &  SPHRA, SPHRB
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
-!      use sphtrm_mod, only: CSP, ISPADR
+      use sphtrm_mod, only: CSP, ISPADR
 #include "implicit.h"
       INTEGER :: I,J
       DIMENSION CI(*), SPI(*), HALF(*), TMPINT(*)
       LOGICAL PROPTY
-#include "sphtrm.h"
 C
       IF (IPRINT .GT. 10) THEN
          WRITE(LUPRI,'(A,2I6)') ' KCKT? ', KCKTA, KCKTB

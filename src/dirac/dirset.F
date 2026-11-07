@@ -813,13 +813,12 @@ C***********************************************************************
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ
       use nuclei_mod, only: NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use frame_mod, only: CORRLV
+      use frame_mod, only: CORRLV
 !      use dcbdhf_mod, only: AOC, NOPEN
 !      use dcbham_mod, only: LEVYLE
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
-#include "frame.h"
 C
 #include "dcbbas.h"
 #include "dcbdhf.h"     
@@ -944,7 +943,7 @@ C     Corrected for ONECAP March 2001 HJAaJ
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use frame_mod, only: CORRLV, POTNUC
+      use frame_mod, only: CORRLV, POTNUC
       use nuclei_mod, only: CHARGE, NUCIND
 !      use dcbham_mod, only: INTV1C, ONECAP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -952,7 +951,6 @@ C***********************************************************************
       INTEGER :: I
 C
 C
-#include "frame.h"
 #include "dcbham.h"
       DIMENSION SCQ(*)
 C

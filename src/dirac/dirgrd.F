@@ -1773,7 +1773,7 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C*****************************************************************************
-!      use pincom_mod, only: IPIND
+      use pincom_mod, only: IPIND
       use maxorb_mod, only: MXCORB, MXSHEL
       use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS,
      &  PT
@@ -1787,7 +1787,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "pincom.h"
 !#include "pgroup.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DSYM1R',-1)
 C

@@ -3975,6 +3975,7 @@ C
 C     Process molecular data
 C
 C******************************************************************************
+      use frame_mod, only: POTNUC
       use nuclei_mod
       use symmet_mod, only: MAXREP, MULT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -3985,7 +3986,6 @@ C******************************************************************************
 C
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
-#include "frame.h"
 #include "dgroup.h"
 C     
 C
@@ -4146,6 +4146,8 @@ C     tuh 120988
 C
 C     Polished and annotated - tsaue March 10 1993
 C*************************************************************************
+      use pincom_mod, only: INDGEN, IPIND
+      use sphtrm_mod, only: CSP
       use huckel_mod, only: HUCEXC, IHUCPT
       use aosotr_mod, only: CTRAN, IPCEN, IPTYP, ITRAN, JTRAN
       use shells_mod, only: ISTBAO, KHKT, KMAX, LCLASS, NCENT, NHKT,
@@ -4165,8 +4167,6 @@ C
      &          IRREP(MXCORB)
       integer soef, blk
 #include "ccom.h"
-#include "pincom.h"
-#include "sphtrm.h"
 #include "cbirea.h"
 C
 C*****************************************************************************
@@ -4590,6 +4590,7 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
+      use frame_mod, only: POTNUC
       use chrsgn_mod, only: CHRSGN
       use nuclei_mod, only: CORD, ISTBNU, NAMEX, NUCDEP, NUCIND
       use chrnos_mod, only: CHRNOS
@@ -4607,7 +4608,6 @@ C
       INTEGER NBASE(8), NSIGN(8)
       DIMENSION WORK(LWORK)
 C
-#include "frame.h"
 #include "pgroup.h"
 #include "cbirea.h"
 C
@@ -5242,12 +5242,12 @@ C     Miro,Sept.2017 - parallel job was setting LUINFO value to 0 for GNU compil
 C     upon fixing I also made routine "implicit none" style
 C
 C=======================================================================
+      use sphtrm_mod, only: CSP, ISPADR, NCSP
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
       implicit none
       real*8, parameter :: D1 = 1.0D0
-#include "sphtrm.h"
 #include "molinp.h"
 #include "ccom.h"
 #include "cbirea.h"
@@ -5464,6 +5464,8 @@ C  /* Deck wronel */
 C
 C     Write interface records
 C
+      use sphtrm_mod, only: CSP, ISPADR, NCSP
+      use frame_mod, only: POTNUC
       use hrunit_mod, only: LUONEL
       use aosotr_mod, only: CTRAN, IPCEN, IPTYP, ITRAN, JTRAN
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMN, NBASIS, NONT,
@@ -5489,8 +5491,6 @@ C
      &     TABLE4 /'********','        ','        ','TESTDATA'/,
      &     TABLE5 /'********','        ','        ','SPHERICA'/
 #include "ccom.h"
-#include "frame.h"
-#include "sphtrm.h"
 C
       CALL GETDAT(CDATE,CTIME)
       TABLE1(2) = CDATE
@@ -6792,12 +6792,12 @@ C!     Written by T.Saue May 1 1998
 C!     Rewrite by cut'n paste 2006 Trond Saue
 C!
 C***********************************************************************
+      use sphtrm_mod, only: CSP, ISPADR
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER(D1 = 1.0D0)
 #include "ccom.h"
-#include "sphtrm.h"
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
       KWORK = 1

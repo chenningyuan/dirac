@@ -37,7 +37,7 @@ C***********************************************************************
 !      use dcbopt_mod, only: E_LVCORR_MC, FOCKONLY, IKRMCCNO, IOPT_INTDEF, IPROPT, JCAS, JDHF, JGAS, JODHF, MCTYPE, MOPT_MXMACRO, NATONLY, NOPEN_MC, NZCONF, NZCONFQ, NZHOPEQ, NZXOPPQ, OPT_CIPROGRAM, SPINFR_KRMC, THQKVA
 !      use dcbgen_mod, only: DOLVC, LUITFO, LUKRM1, LUKRM2, LUKRM3, LUKRM4, LUKRM5, LUKRMC
 !      use dcbham_mod, only: INTV1C, LEVYLE, ONECAP, SPINFR
-!      use frame_mod, only: CORRLV
+      use frame_mod, only: CORRLV
       use memory_allocator
 
 #include "implicit.h"
@@ -52,7 +52,6 @@ C
 #include "dcbgen.h"
 !dcbgen.h needed for DOLVC for LVCORR
 #include "dcbham.h"
-#include "frame.h"
 !frame.h needed for CORRLV for LVCORR
 C
       LOGICAL EX
@@ -322,7 +321,7 @@ C***********************************************************************
 !      use dcbgen_mod, only: LUITFO, LUKRMC
 !      use dcbopt_mod, only: BETA, BETMAX, BETMIN, COMPROT, CPUOPT, DEPRED, DONR, EACTIV, EMCOLD, EMCSCF, EMY, E_LVCORR_MC, FLAG, FROZCI, GNORM, IDENSLR_STATE, IOPTST, IOPT_IFCKOP, IOPT_IHRMOP, IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ISYMOP, IOPT_ITRINT, IPROPT, ITABS, ITBCK, ITMAC, ITMACN, JKRRUNTYPE, JMCMIN, JTRLVL, KTRLVL, LDIRNR, MCTYPE, MOPT_MAXBCK, MOPT_MXMACRO, NATOLCR, NCIROOT, NO1PDENS_SAVE, NOPTTIM, OPT_CHCKJZ, OPT_CIPROGRAM, OPT_CNVINT, OPT_INTTYP, OPT_NOCI, OPT_THRGRD, RTRUST, SPINFR_KRMC, STPLCI, STPLEE, STPLEN, STPLEP, WLLOPT
 !      use dcborb_mod, only: N2ASHXQ, NCMOTQ, NORBT
-!      use frame_mod, only: POTNUC
+      use frame_mod, only: POTNUC
       use orbital_rotation_indices
       use symmetry_setup_krci, only: orbsymVEC
 
@@ -336,7 +335,6 @@ C
 #include "dcbgen.h"
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "frame.h"
 C
       LOGICAL   WFCONV, MOISNO
       DIMENSION WORK(*)
@@ -1665,7 +1663,7 @@ C***********************************************************************
 !      use dcbham_mod, only: X2CMMF
 !      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
-!      use frame_mod, only: POTNUC
+      use frame_mod, only: POTNUC
 !      use cbihr2_mod, only: IPRTWO
 #include "implicit.h"
       INTEGER :: I
@@ -1677,7 +1675,6 @@ C
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "frame.h"
 #include "cbihr2.h"
       LOGICAL   TOFILE
       DIMENSION CMO(*),FC(*), WORK(LWORK)

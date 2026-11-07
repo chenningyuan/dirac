@@ -61,7 +61,7 @@ C***********************************************************************
 !      use dcbgen_mod, only: LUITFO, LUKRMC
 !      use dcbopt_mod, only: CPUOPT, EMCSCF, E_LVCORR_MC, IOPT_STATE, IOPT_SYMMETRY, IPROPT, JMCMIN, KZCONF, MCTYPE, MOPT_MXMACRO, NZCONF, NZCONFQ, OPT_CIPROGRAM, THRPCI, WLLOPT
 !      use dcborb_mod, only: N2ASHXQ, NCMOTQ, NORBT
-!      use frame_mod, only: POTNUC
+      use frame_mod, only: POTNUC
 !      use dgroup_mod, only: IPQTOQ, NZ
       use mc_energies
 #include "implicit.h"
@@ -70,7 +70,6 @@ C
 #include "dcbgen.h"
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "frame.h"
 #include "dgroup.h"
 C
       DIMENSION WORK(*), DINFO(LDINFO,*), IINFO(LIINFO,*)

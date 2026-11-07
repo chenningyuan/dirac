@@ -1406,7 +1406,7 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NBASIS
-!      use pincom_mod, only: IPIND
+      use pincom_mod, only: IPIND
       use shells_mod, only: ISTBAO, KHKT, KMAX, KSTRT, NHKT, NLRGSH
       use symmet_mod, only: IPAR, ISYMAO, ISYMAX, MAXOPR, MAXREP, NAOS,
      &  PT
@@ -1418,7 +1418,6 @@ C*****************************************************************************
       DIMENSION FMAT(NBASIS,NBASIS,NDMAT,3), SKLTON(NBASIS,NBASIS),
      &          INDEX(KMAX,0:MAXREP,*), FACTOR(NBASIS,0:MAXREP),
      &          IPOINT(NBASIS,0:MAXREP),ISYMDM(NDMAT)
-#include "pincom.h"
 
       CALL QENTER('RSKLOND')
 C

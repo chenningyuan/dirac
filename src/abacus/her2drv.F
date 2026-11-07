@@ -4175,14 +4175,13 @@ C  /* Deck getlm1 */
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXQN
       use twocom_mod, only: KCKMAX
+      use sphtrm_mod, only: CSP, ISPADR
 #include "implicit.h"
-!      use sphtrm_mod, only: CSP, ISPADR
 !      use ccom_mod, only: DOCART
       INTEGER :: I,J
       CHARACTER*1 TYPE
       DIMENSION LMN(KCKMAX,5)
 #include "ccom.h"
-#include "sphtrm.h"
       CALL LMNVAL(NHKTX,KCKTX,LMN(1,1),LMN(1,2),LMN(1,3))
       DO 100 I = 1, KCKTX
          LMN(I,4) = MOD(LMN(I,1),2)+2*MOD(LMN(I,2),2)+4*MOD(LMN(I,3),2)

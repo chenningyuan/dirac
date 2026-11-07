@@ -1766,7 +1766,6 @@ C*****************************************************************************
 
 !      use dgroup_mod, only: NZ
 !      use dcbgen_mod, only: DOLVC
-!      use frame_mod, only: CORRLV, POTNUC
 !      use dcbham_mod, only: E_PE, IF, INTV1C, ONECAP, SOLVEN
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dcbdhf_mod, only: AOC, DA, DF, DHFERG, E1PART, E2PART, ELERGY, ERGBUF, ESOLVE, ESOLVN, I2TMOT, INTFLG, IPRSCF, MXOPEN, NACSH, NESHMF, NFMAT, NOCCMF, NOPEN, NTMO
@@ -1787,11 +1786,11 @@ C*****************************************************************************
 
       use kinds_mod, only: dp
       use priunit_mod, only: LUPRI
+      use frame_mod, only: CORRLV, POTNUC
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2=2.0D0, DP5 = 0.5D00,
      &                       DP25 = 0.25D00
 C
-#include "frame.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
@@ -2598,13 +2597,12 @@ C***********************************************************************
 !      use dcborb_mod, only: I2ORBT, IORB, NISH, NISHT, NPSH, NSSH
 !      use dgroup_mod, only: NFSYM
       use priunit_mod, only: LUPRI
-!      use frame_mod, only: POTNUC
+      use frame_mod, only: POTNUC
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2=2.0D0
 C
-#include "frame.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbdhf.h"

@@ -1410,13 +1410,12 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NBASIS
       use maxaqn_mod, only: MXAQN, MXQN
-!      use pincom_mod, only: IPIND
+      use pincom_mod, only: IPIND
       use shells_mod, only: IPTSHL
 #include "implicit.h"
 C
       INTEGER :: I
 C
-#include "pincom.h"
       DIMENSION INDRSO(NBASIS)
 C
       ISTRA = 1

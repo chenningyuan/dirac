@@ -368,7 +368,7 @@ C  /* Deck c2hin1 */
 C
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXQN
-!      use sphtrm_mod, only: ISPADR
+      use sphtrm_mod, only: CSP, ISPADR
       use hertop_mod, only: JTOP
       use twocom_mod, only: KHKTAB, KHKTCD, NOABCD
       use twoao_mod
@@ -386,7 +386,6 @@ C
      &          LMNV34(KCKMX,5,2), NHCC(KCKT34,2),
      &          CONT3(*), CONT4(*), NPCO3(*), NPCO4(*), NUCS34(*),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP), NPNT34(*), NRED34(*)
-#include "sphtrm.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C2HIN1','*',103)
 C
@@ -1193,7 +1192,7 @@ C
       use twocom_mod, only: KHKTAB, KHKTCD, NOABCD
       use twoao_mod
       use hertop_mod, only: JTOP
-!      use sphtrm_mod, only: ISPADR
+      use sphtrm_mod, only: CSP, ISPADR
 #include "implicit.h"
       INTEGER T, U, V
       COMMON /COMC2E/ JSTRHC(27,9), JENDHC(27,9),
@@ -1212,7 +1211,6 @@ C
      &          IODD12(KCKT12,2), IODD34(KCKT34,2), SCR1(*), SCR2(*),
      &          NPCO3(*), NPCO4(*), NUCS34(*), NRED34(*),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP), NPNT34(*)
-#include "sphtrm.h"
 C
 
 C

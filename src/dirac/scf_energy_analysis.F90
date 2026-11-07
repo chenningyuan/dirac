@@ -22,7 +22,7 @@ subroutine scf_energy_analysis(work, lwork)
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZ
 !      use dcbdhf_mod, only: AOC, DF, DHFERG, E1PART, E2PART, ELERGY, IFCKOP, IHRMOP, INTFLG, ISYMOP, LUDENS, LUFCK1, MFMAT, MXOPEN, NFMAT, NOPEN
-!      use frame_mod, only: POTNUC
+      use frame_mod, only: POTNUC
   use dirac_cfg
 
 #include "implicit.h"
@@ -30,7 +30,6 @@ subroutine scf_energy_analysis(work, lwork)
   real(8), parameter :: d0 = 0.0d0
   real(8), parameter :: d2 = 2.0d0
 
-#include "frame.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
@@ -241,7 +240,6 @@ subroutine scf_energy_extensions(dmat_buf, work, lwork, jprint, lvcon, fmt, basi
 !      use dcbham_mod, only: IPRSOL, SOLVEN
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dgroup_mod, only: NZ
-!      use frame_mod, only: CORRLV, POTNUC
 !      use dcbdhf_mod, only: DA, DF, ESOLVE, ESOLVN, NFMAT
   use dirac_cfg
   use fde_mod
@@ -257,13 +255,13 @@ subroutine scf_energy_extensions(dmat_buf, work, lwork, jprint, lvcon, fmt, basi
 #endif
 
       use priunit_mod, only: LUPRI
+      use frame_mod, only: CORRLV, POTNUC
 #include "implicit.h"
 
   real(8), parameter :: d0 = 0.0d0
   real(8), parameter :: d2 = 2.0d0
   real(8), parameter :: dp25 = 0.25d0
 
-#include "frame.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbdhf.h"

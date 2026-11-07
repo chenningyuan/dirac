@@ -1470,7 +1470,7 @@ C***********************************************************************
 !      use dcbkrci_mod, only: DKRCI_THRGCI, NKRCI_CIROOTS, NKRCI_MAX_SYM, XPSINTERFACE_KRCI
 !      use krciprop_mod, only: DOPROP_KRCI, RUNXPROP, XREPEIG
 !      use dcbham_mod, only: INTV1C, ONECAP
-!      use frame_mod, only: CORRLV
+      use frame_mod, only: CORRLV
       use memory_allocator
       use symmetry_setup_krci, only: orbsymVEC
 
@@ -1490,7 +1490,6 @@ C
 #include "dcbkrci.h"
 #include "krciprop.h"
 #include "dcbham.h"
-#include "frame.h"
 !frame.h needed for CORRLV for LVCORR
 C
       LOGICAL   EX, FILEOPEN

@@ -360,6 +360,7 @@ C  /* Deck getgao */
 C
 C     T. Helgaker Sep 99
 C
+      use sphtrm_mod, only: CSP, ISPADR
       use lmns_mod, only: LVALUA, MVALUA, NVALUA
       use onecom_mod, only: JSTA, KCKTA, KHKTA, NHKTA, NUCA, NUMCFA,
      &  SPHRA
@@ -371,7 +372,6 @@ C
 C
       DIMENSION GAO(KCKTA), CAO(MXAQN)
 C
-#include "sphtrm.h"
 C
       ISTR = JSTA + 1
       IEND = JSTA + NUCA
@@ -436,6 +436,7 @@ C  /* Deck getga1 */
 C
 C     T. Helgaker Sep 99
 C
+      use sphtrm_mod, only: CSP, ISPADR
       use lmns_mod, only: LVALUA, MVALUA, NVALUA
       use onecom_mod, only: JSTA, KCKTA, KHKTA, NHKTA, NUCA, NUMCFA,
      &  SPHRA
@@ -450,7 +451,6 @@ C
       DIMENSION GAO(KCKTA), GAOX(KCKTA), GAOY(KCKTA), GAOZ(KCKTA),
      &          CAO(MXAQN), CAOX(MXAQN), CAOY(MXAQN), CAOZ(MXAQN)
 C
-#include "sphtrm.h"
 C
 C
       PA2 = PAX**2 + PAY**2 + PAZ**2
@@ -574,6 +574,7 @@ C  /* Deck getga2 */
 C
 C     T. Helgaker Sep 99
 C
+      use sphtrm_mod, only: CSP, ISPADR
       use lmns_mod, only: LVALUA, MVALUA, NVALUA
       use onecom_mod, only: JSTA, KCKTA, KHKTA, NHKTA, NUCA, NUMCFA,
      &  SPHRA
@@ -590,7 +591,6 @@ C
      &          CAOXX(MXAQN), CAOXY(MXAQN), CAOXZ(MXAQN),
      &          CAOYY(MXAQN), CAOYZ(MXAQN), CAOZZ(MXAQN)
 C
-#include "sphtrm.h"
 C
 C
       PA2 = PAX**2 + PAY**2 + PAZ**2

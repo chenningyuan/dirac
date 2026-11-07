@@ -26,6 +26,7 @@ set(MODULE_SOURCES
     dummy.F90
     efield.F90
     expcom.F90
+    frame.F90
     gamcom.F90
     gen1int.F90
     gencon.F90
@@ -47,12 +48,14 @@ set(MODULE_SOURCES
     oneadr.F90
     onecom.F90
     pi.F90
+    pincom.F90
     precision.F90
     primit.F90
     priunit.F90
     shells.F90
     siripc.F90
     sotabs.F90
+    sphtrm.F90
     subdir.F90
     symind.F90
     symmet.F90
@@ -68,7 +71,6 @@ set(MODULE_SOURCES
     #dorps.F90
     #infdim.F90
     #nqcc.F90
-    #pincom.F90
     #rotg.F90
 )
 

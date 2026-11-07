@@ -26,7 +26,6 @@ C***********************************************************************
 !      use dcbgen_mod, only: DOLVC
 !      use dcbham_mod, only: E_PE, INTV1C, ONECAP, ONESYS, SOLVEN
 !      use dgroup_mod, only: NFSYM
-!      use frame_mod, only: CORRLV, POTNUC
 !      use dcborb_mod, only: NESH, NPSH
 !      use dcbdhf_mod, only: CACC, DHFCONV, DHFERG, DHF_INTTYP, ELERGY, ERGCNV, ERGVAL, ESOLVE, ESOLVN, EVCCNV, EVCVAL, FCKCNV, FCKVAL, INTFLG, IPREIG, ITRSCF, LUCYCL, NAELEC_DHF, NELECT_DHF, NITER, SCFCNV, SCFTID
       use dirac_cfg
@@ -45,10 +44,10 @@ C***********************************************************************
 #endif
 
       use priunit_mod, only: LUPRI
+      use frame_mod, only: CORRLV, POTNUC
 #include "implicit.h"
       INTEGER :: I
 C
-#include "frame.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbdhf.h"

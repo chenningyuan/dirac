@@ -13,6 +13,14 @@
 !      If a copy of the GNU LGPL v2.1 was not distributed with this
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
+C
+C     Cartesian->spherical transformation used only in this file
+C     (formerly COMMON /SPCTRM/ in dcbsph.h)
+      module dcbsph_mod
+      use sphtrm_mod, only: NCSP
+      implicit none
+      real*8 :: SPC(NCSP)
+      end module dcbsph_mod
 
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -688,7 +696,7 @@ C
 C***********************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
       use priunit_mod, only: LUPRI
-!      use pincom_mod, only: IPIND
+      use pincom_mod, only: IPIND
       use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS,
      &  PT
       use mxcent_mod, only: MXCENT
@@ -700,7 +708,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "pincom.h"
 !#include "pgroup.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine MTSOAO',-1)
 C
@@ -788,7 +795,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS,
      &  PT
-!      use pincom_mod, only: IPIND
+      use pincom_mod, only: IPIND
       use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -796,7 +803,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION ASO(NBAST1,NBAST2), AAO(NBAST1,NBAST2)
       DIMENSION IR(2)
-#include "pincom.h"
 !#include "pgroup.h"
       IF(IPRINT .GE. 10) 
      &  CALL HEADER('Subroutine MTSOAO_nonquadmatL',-1)
@@ -917,7 +923,7 @@ C***********************************************************************
      &  PT
       use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use pincom_mod, only: IPIND
+      use pincom_mod, only: IPIND
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -927,7 +933,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "pincom.h"
 !#include "pgroup.h"
 
       CALL QENTER('MTAOSO')
@@ -1023,7 +1028,7 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C***********************************************************************
-!      use pincom_mod, only: IPIND
+      use pincom_mod, only: IPIND
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
       use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
@@ -1036,7 +1041,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "pincom.h"
 !#include "pgroup.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DTSOAO',-1)
 C
@@ -1119,7 +1123,7 @@ C***********************************************************************
       use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS,
      &  PT
       use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
-!      use pincom_mod, only: IPIND
+      use pincom_mod, only: IPIND
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
       use kinds_mod, only: dp
@@ -1128,7 +1132,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "pincom.h"
 !#include "pgroup.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DTAOSO',-1)
 C
@@ -1216,14 +1219,13 @@ C***********************************************************************
       use shells_mod, only: ISTBAO
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXCENT
-!      use pincom_mod, only: IPIND
+      use pincom_mod, only: IPIND
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,JJ
       REAL(dp), PARAMETER :: D1 = 1.0D0
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "pincom.h"
 !#include "pgroup.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine MTAOSO',-1)
 C
@@ -1297,13 +1299,12 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
       use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use mxcent_mod, only: MXCENT
-!      use pincom_mod, only: IPIND
+      use pincom_mod, only: IPIND
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
       DIMENSION IR(2)
-#include "pincom.h"
 !#include "pgroup.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine VTSOAO',-1)
 C
@@ -1356,7 +1357,7 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use dcbbas_mod, only: IBAS, IBBAS
 !      use dgroup_mod, only: WORK
-!      use pincom_mod, only: IPIND
+      use pincom_mod, only: IPIND
       use symmet_mod, only: ICOS, ISYMAO, MAXOPR, MAXREP, NCOS, PT
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
@@ -1366,7 +1367,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "pincom.h"
 !#include "pgroup.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -1433,12 +1433,11 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
 !      use dgroup_mod, only: WORK
-!      use pincom_mod, only: IPIND
+      use pincom_mod, only: IPIND
 !      use dcbbas_mod, only: IBAS, IBBAS
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "pincom.h"
 !#include "pgroup.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -1503,7 +1502,7 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sept 10 1995
 C
 C***********************************************************************
-!      use pincom_mod, only: IPIND
+      use pincom_mod, only: IPIND
       use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1515,7 +1514,6 @@ C***********************************************************************
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D1 = 1.0D0
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
-#include "pincom.h"
 !#include "pgroup.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine WTAOSO',-1)
 C
@@ -1568,7 +1566,7 @@ C
 C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use pincom_mod, only: IPIND
+      use pincom_mod, only: IPIND
       use priunit_mod, only: LUPRI
       use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use mxcent_mod, only: MXCENT
@@ -1578,7 +1576,6 @@ C***********************************************************************
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D1 = 1.0D0
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
-#include "pincom.h"
 !#include "pgroup.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine VTAOSO',-1)
 C
@@ -2130,7 +2127,8 @@ CMI   MORDER=1, MINTEG=2 ... previous settings
 CMI   CSCADAPT ... if true, adapt CSP matrix for C-S-C transformation
 C
 C***********************************************************************
-!      use dcbsph_mod, only: NCSP
+      use sphtrm_mod, only: CSP, ISPADR, NCSP
+      use dcbsph_mod, only: SPC
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
@@ -2140,7 +2138,6 @@ C
 C Used from COMMON blocks
 C  SPHCOM: CSP,ISPADR
 C
-#include "dcbsph.h"
 
       DIMENSION WORK(LWORK)
       LOGICAL CSCADAPT
@@ -2295,13 +2292,13 @@ C     Written by T.Saue Sep 19 1995
 C     Last revision Sep 19 1995
 C
 C***********************************************************************
+      use sphtrm_mod, only: CSP, ISPADR
       use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: NUCDEG
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXSHEL
-!      use dcbsph_mod, only: CSP
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
@@ -2310,7 +2307,6 @@ C Used from COMMON blocks:
 C    SHELLS: KMAX
 C    SPHCOM:
 C    NUCLEI: NLARGE,NSMALL,NBASIS
-#include "dcbsph.h"
       DIMENSION AOV(LDA,NVEC),CSV(LDC,NVEC)
 
       IF(IPRINT.GE.5) THEN
@@ -2633,13 +2629,13 @@ C     Written by T.Saue Sep 19 1995
 C     Last revision Sep 19 1995
 C
 C***********************************************************************
+      use sphtrm_mod, only: CSP, ISPADR
       use nuclei_mod, only: NUCDEG
       use maxaqn_mod, only: MXQN
       use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXSHEL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use dcbsph_mod, only: ISPADR
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
@@ -2648,7 +2644,6 @@ C Used from COMMON blocks:
 C    SHELLS: KMAX
 C    SPHCOM:
 C    NUCLEI: NLARGE,NSMALL,NBASIS
-#include "dcbsph.h"
       DIMENSION AOV(LDA,NVEC),CSV(LDC,NVEC)
 C
 C     Set limits
@@ -2762,14 +2757,13 @@ C
 C     Check normalization of tranformation matrix
 C
 C***********************************************************************
+      use sphtrm_mod, only: CSP, ISPADR
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXQN
 !      use dcbbas_mod, only: NTBAS
-!      use dcbsph_mod, only: CSP
 #include "implicit.h"
       INTEGER :: I,K
 C
-#include "dcbsph.h"
 #include "dcbbas.h"
       DIMENSION CSPSUM(((MXQN+1)*MXQN)/2),WORK(LWORK)
       KWORK = 1
@@ -2845,7 +2839,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use symmet_mod, only: FMULT, ISYMAO, MAXOPR, MAXREP, NCOS, PT
-!      use pincom_mod, only: IPIND
+      use pincom_mod, only: IPIND
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2853,7 +2847,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "pincom.h"
 !#include "pgroup.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine MMSOAO',-1)
 C
@@ -3114,14 +3107,13 @@ C     Written by T.Saue Aug 15 1996
 C
 C***********************************************************************
       use maxaqn_mod, only: MXQN
-!      use sphtrm_mod, only: CSP, NCSP
+      use sphtrm_mod, only: CSP, ISPADR, NCSP
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
       INTEGER :: K
 C
-#include "sphtrm.h"
       DIMENSION INADR(3,*),INIJK(0:MXQN-1,0:MXQN-1,0:MXQN-1),
      &          IX(*),JY(*),KZ(*),LOFF(*),DFAC(*),WORK(*)
 C

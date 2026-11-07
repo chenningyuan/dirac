@@ -434,7 +434,6 @@ C
 #include "dcbgen.h"
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "frame.h"
 #include "dgroup.h"
 C#include "inforb.h"
 #include "krciprop.h"

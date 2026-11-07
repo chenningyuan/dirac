@@ -2827,7 +2827,7 @@ C***********************************************************************
       use nuclei_mod, only: ISTBNU
 !      use ccom_mod, only: NHKOFF
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use sphtrm_mod, only: ISPADR
+      use sphtrm_mod, only: CSP, ISPADR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -2835,7 +2835,6 @@ C***********************************************************************
 C
 C
 #include "ccom.h"
-#include "sphtrm.h"
       LOGICAl DONRM
       DIMENSION IFUN(NFUN,3),IRED(3,LMAX),CRED(*)
 C
@@ -2995,7 +2994,7 @@ C***********************************************************************
       use aovec_mod, only: MXCONT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use pgroup_mod, only: REP
-!      use sphtrm_mod, only: ISPADR
+      use sphtrm_mod, only: CSP, ISPADR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
@@ -3003,7 +3002,6 @@ C***********************************************************************
 C
 C
 #include "ccom.h"
-#include "sphtrm.h"
 #include "pgroup.h"
 !#include "dgroup.h"
       LOGICAL DONRM,LRKB
