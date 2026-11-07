@@ -34,7 +34,6 @@
 !***********************************************************************
 !      use dcbham_mod, only: BSS, GAUNT, IBSS, X2C
 !      use dcbgen_mod, only: TWOCOMP
-!      use orgcom_mod, only: DIPORG, GAGORG, ORIGIN
 !      use dcbprp_mod, only: ABUND, BXLAO, BYLAO, BZLAO, DIPOLE, DOESR, DOEXCPRP, DOEXP, DOPCT, DOTPA, DOVDW, DOVER, DOXLR, DOXPP, DOXQR, DSO, EFFDE2, EFFDEN, EFG, EFN, EFT, EFTNTL, EPOLAR, ESRGTENS, ESR_HFCC, EXCPRPTYP, HDF5IO, IMAGOUT, IPRPRP, LONDON, MGRAD, MSUSCDIA, MSUSCP, MXPRP_WF, NOPCT, NPRP_WF, NQCC, NQCCCART, NSTDIA, OPTROT, PRP_WF, PVC, PVC_EFG, PVC_SHIELD, PVC_SPINRO, PVC_SPINSPIN, QUADRU, RHONUC, ROTG, SHIELD, SPINRO, SPNSPN
 !      use dcborb_mod, only: NASHT
 !      use dgroup_mod, only: NBSYM
@@ -54,6 +53,7 @@
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NATOMS, NUCDEP
       use cbiher_mod, only: DSO, QUADRU
+      use orgcom_mod, only: DIPORG, GAGORG, ORIGIN
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
@@ -68,7 +68,6 @@
       double precision, allocatable :: GEOM(:,:),MASS(:)
       integer, allocatable :: NAT(:),ISOT(:)
 !
-#include "orgcom.h"
 #include "dcbprp.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -2996,13 +2995,12 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use mxcent_mod, only: MXCOOR
-!      use dcbgrd_mod, only: DONGRD, DOTRCK, IGRD_INTFLG, IPRGRD, RELGRD, SCRGRD
+      use dcbgrd_mod, only: DONGRD, DOTRCK, IGRD_INTFLG, IPRGRD, RELGRD, SCRGRD
 !      use dcbgen_mod, only: INTGEN
 !      use dcbham_mod, only: LEVYLE
 #include "implicit.h"
 !
 !
-#include "dcbgrd.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 !
@@ -3036,7 +3034,7 @@
       use priunit_mod, only: LUCMD, LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbham_mod, only: BSS, GAUNT
-!      use dcbgrd_mod, only: DONGRD, DOTRCK, IGRD_INTFLG, IPRGRD, SCRGRD
+      use dcbgrd_mod, only: DONGRD, DOTRCK, IGRD_INTFLG, IPRGRD, SCRGRD
 !      use dcbprp_mod, only: IPRPRP, MGRAD
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3045,7 +3043,6 @@
       PARAMETER (NTABLE = 5)
 !
 #include "dcbham.h"
-#include "dcbgrd.h"
 #include "dcbprp.h"
 !
       LOGICAL SET, NEWDEF, RESET, LBIT

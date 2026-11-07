@@ -1925,7 +1925,7 @@ C
       use mxcent_mod, only: MXCENT
       use cbihr2_mod, only: IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO,
      &  RTNTWO, TKTIME
-!      use dorps_mod, only: DOCOOR, DOREPS
+      use dorps_mod, only: DOCOOR, DOREPS
 !      use dcborb_mod, only: NASHT
 !      use dgroup_mod, only: NFSYM
 #include "implicit.h"
@@ -1933,7 +1933,6 @@ C
 C
       DIMENSION GMAT(*),INDX(3,*),INDXAB(*),GABRAO(*),DRIJ(*)
       DIMENSION WORK(LWORK),DINTSKP(*)
-#include "dorps.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -4634,7 +4633,7 @@ C    *******************************************************************
 C
 !      use infpar_mod, only: MYTID
       use mxcent_mod, only: MXCENT
-!      use dorps_mod, only: DOCOOR, DOREPS
+      use dorps_mod, only: DOCOOR, DOREPS
 !      use dcborb_mod, only: NASHT
 !      use dcbtra_mod, only: SCRTRA
 !      use dgroup_mod, only: NFSYM
@@ -4646,7 +4645,6 @@ C
 #include "infpar.h"
 C
 C
-#include "dorps.h"
 #include "dcborb.h"
 #include "dcbtra.h"
 #include "dgroup.h"
@@ -5203,7 +5201,6 @@ C
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 C
 C
-!#include "dorps.h"
 #include "dcbtra.h"
 C
       LOGICAL LMP2

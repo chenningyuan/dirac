@@ -225,7 +225,6 @@ contains
 !   * happens when called from dirac; on master
 !
 !      use dcbgen_mod, only: CVAL
-!      use orgcom_mod, only: GAGORG
     use visual_mpi
 #ifdef VAR_MPI
     use interface_to_mpi
@@ -235,8 +234,8 @@ contains
 !#include "dcbbas.h"
 !#include "dgroup.h"
       use dirac_partask_mod, only: VISUAL_PAR
+      use orgcom_mod, only: GAGORG
 #include "dcbgen.h" ! cvalue
-#include "orgcom.h" ! gagorg
 
     logical, intent(in), optional :: hello
 

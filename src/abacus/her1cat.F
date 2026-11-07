@@ -25,7 +25,7 @@ C           (based on ONEDRV)
 C
 C
 C*****************************************************************************
-!      use dorps_mod, only: DOREPS
+      use dorps_mod, only: DOREPS
       use iratdef_mod, only: IRAT
       use symmet_mod, only: MAXREP
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -39,7 +39,6 @@ C
       LOGICAL DIFINT, NODC, NODV, PROPTY, DOINT(2,2), TOFILE
       CHARACTER*4 OMITVNUC
       DIMENSION WORK(LWORK)
-#include "dorps.h"
 C
 C
       DOINT(1,1) = .TRUE.
@@ -286,6 +285,9 @@ C     Saunders in "Methods in Computational Molecular Physics", Reidel
 C     1983.
 C
 C*****************************************************************************
+#ifdef PRG_DIRAC
+      use dcbgrd_mod, only: GRADNU, INTCLASS
+#endif
       use symmet_mod, only: FMULT, ISYMAO, MAXREP, MULT
       use symind_mod, only: INDFA, INDFB, ISOFRA, ISOFRB
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
@@ -310,9 +312,7 @@ C
      &          WORK(LWORK), COORC(3,NCENTC),
      &          SIGNC(3,NCENTC), JSYMC(NCENTC),
      &          JCENTC(NCENTC), GEXP(NCENTC)
-#ifdef PRG_DIRAC
-#include "dcbgrd.h"
-#else
+#ifndef PRG_DIRAC
 #include "energy.h"
 #endif
 #include "ccom.h"
@@ -625,6 +625,9 @@ C output: VCMAT with Coulomb attraction integrals
 C
 C*****************************************************************************
 
+#ifdef PRG_DIRAC
+      use dcbgrd_mod, only: GRADNU, GRD_NOSMLV, INTCLASS
+#endif
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbbas_mod, only: N2BBASX, NTBAS
       use symmet_mod, only: ISYMAX, MAXOPR, PT
@@ -650,7 +653,6 @@ C
 #ifdef PRG_DIRAC
 !#include "dgroup.h"
 #include "dcbbas.h"
-#include "dcbgrd.h"
 #else
 #include "energy.h"
 #endif 

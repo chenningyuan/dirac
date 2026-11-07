@@ -31,7 +31,7 @@ C*****************************************************************************
 !      use dcborb_mod, only: NASHT
 !      use dcbdhf_mod, only: DF, NOPEN
       use priunit_mod, only: LUPRI
-!      use dcbgrd_mod, only: IGRD_INTBUF, IGRD_INTFLG, IPRGRD, LUMGRD
+      use dcbgrd_mod, only: IGRD_INTBUF, IGRD_INTFLG, IPRGRD, LUMGRD
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: MAXREP
@@ -45,7 +45,6 @@ C
 #include "dcbham.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
-#include "dcbgrd.h"
 C
       CALL QENTER('RMOLGRD')
       KWORK = 1
@@ -192,8 +191,8 @@ C     J. Thyssen, 2000/8/27
 C
 C*****************************************************************************
 !      use dcbdhf_mod, only: ISYMOP, NFMAT
-!      use dcbgrd_mod, only: GRADXC, LUMGRD
 !      use dcborb_mod, only: I2ORBT, ICMOQ, N2ORBTQ, NASH, NASHT, NCMOTQ, NISH, NISHT, NORB, NPSH
+      use dcbgrd_mod, only: GRADXC, LUMGRD
       use dirac_partask_mod, only: XCINT_PAR
       use maxorb_mod, only: MXCORB
 !      use dgroup_mod, only: IPQTOQ, IQTOPQ, IRQMAT, JM4POS, NFSYM, NZ
@@ -222,7 +221,6 @@ C
 #include "dcbdhf.h"
 #include "dgroup.h"
 #include "dcbgen.h"
-#include "dcbgrd.h"
 C
       DIMENSION WORK(*)
       LOGICAL TOBE
@@ -838,7 +836,7 @@ C*****************************************************************************
       use dirac_partask_mod, only: HERFCK_PAR
       use symmet_mod, only: MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use dorps_mod, only: DOPERT
+      use dorps_mod, only: DOPERT
       use chrxyz_mod, only: CHRXYZ
       use aovec_mod, only: MXAOVC
 !      use dcbgen_mod, only: DOLVC, NEWBAS, PARCAL, RELCAL
@@ -851,7 +849,7 @@ C*****************************************************************************
       use nuclei_mod, only: CHARGE, NUCDEP, NUCIND
 !      use dcbham_mod, only: INTV1C, LEVYLE, N1OPER, NOSMLV, ONECAP
       use dummy_mod, only: DUMMY, IDUMMY
-!      use dcbgrd_mod, only: DMXCPT, DMXWLT, DOTRCK, GRADEE, GRADER, GRADLV, GRADNN, GRD_NOSMLS, GRD_NOSMLV, IGRD_INTBUF, IGRD_INTFLG, INTCLASS, IPRGRD, LUMGRD, RELGRD, SCRGRD
+      use dcbgrd_mod
 !      use exeinf_mod, only: FTRONV
       use maxaqn_mod, only: MXAQN, MXQN
 !      use blocks_mod, only: NLRGBL, NSMLBL, NSYMBL
@@ -880,10 +878,8 @@ C
 #include "dcbdhf.h"
 !#include "dgroup.h"
 #include "dcbham.h"
-#include "dorps.h"
 C two el. part
 #include "blocks.h"
-#include "dcbgrd.h"
 C
 #include "exeinf.h"
 C
@@ -1877,7 +1873,8 @@ C*****************************************************************************
       use taymol_mod, only: GRDMOL
 !      use dcbham_mod, only: INTV1C, ONECAP
       use priunit_mod, only: LUPRI
-!      use dcbgrd_mod, only: GRADER, GRADKN, GRADLV, GRADNN, GRADNU, GRADRO, GRADXC, IGRD_INTBUF, IGRD_INTFLG
+      use dcbgrd_mod, only: GRADER, GRADKN, GRADLV, GRADNN, GRADNU,
+     &  GRADRO, GRADXC, IGRD_INTBUF, IGRD_INTFLG
       use dirac_cfg
 
 #include "implicit.h"
@@ -1885,7 +1882,6 @@ C*****************************************************************************
 C
 C
 #include "dcbgen.h"
-#include "dcbgrd.h"
 #include "dcbham.h"
 C
       LOGICAL LBIT
@@ -2027,7 +2023,7 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: CVAL
 !      use codata_mod, only: CVEL
-!      use dcbgrd_mod, only: GRADER
+      use dcbgrd_mod, only: GRADER, GRADKN, GRADNN, GRADNU, GRADRO
       use nuclei_mod, only: NUCDEP
 #include "implicit.h"
       INTEGER :: I
@@ -2037,7 +2033,6 @@ C
       LOGICAL DOLS
       CHARACTER*3 STR
 #include "dcbgen.h"
-#include "dcbgrd.h"
 C
       CALL QENTER('ESTGLS')
 C
@@ -2105,7 +2100,7 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: NUCDEP
-!      use dcbgrd_mod, only: GRADER
+      use dcbgrd_mod, only: GRADER, GRADKN, GRADNN, GRADNU, GRADRO
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -2114,7 +2109,6 @@ C
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOSS
       CHARACTER*3 STR
-#include "dcbgrd.h"
 #include "optinf.h"
 C
       CALL QENTER('ESTGSS')
@@ -2244,22 +2238,20 @@ C     Last revision: 1997/09/23 jth
 C
 C*****************************************************************************
 !      use dcbham_mod, only: INTV1C, ONECAP
-!      use dorps_mod, only: DOREPS
+      use dorps_mod, only: DOREPS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEP, NUCIND, NUCNUM
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, PT
-!      use dcbgrd_mod, only: GRADLV
+      use dcbgrd_mod, only: GRADLV
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 C
       INTEGER :: I,J
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0,
      *           THREE = 3.0D0)
-#include "dorps.h"
 C
       DIMENSION SCQ(NUCIND),WORK(LWORK)
-#include "dcbgrd.h"
 #include "dcbham.h"
 C
 C

@@ -170,6 +170,7 @@ C  /* Deck dipct1 */
 C
 C     December 1989, tuh
 C
+      use dorps_mod, only: DOREPS
       use dipole_mod, only: DDIPE, DDIPN, DDIPS, DIPME
       use nuclei_mod, only: NUCDEP
       use iratdef_mod, only: IRAT
@@ -190,7 +191,6 @@ C
 #include "moldip.h"
 #include "cbidip.h"
 C
-#include "dorps.h"
 #include "abainf.h"
 #include "linaba.h"
 #include "inftap.h"
@@ -338,6 +338,7 @@ C  /* Deck dipadd */
       END
 C  /* Deck polpri */
       SUBROUTINE POLPRI(AMAT,SPC,ITYPE1)
+      use dorps_mod, only: DOREPS
       use inirep_mod, only: IREPPI, NREPPI
       use chrxyz_mod, only: CHRXYZ
       use symmet_mod, only: IPTAX, ISYMAX
@@ -354,7 +355,6 @@ C  /* Deck polpri */
       CHARACTER LAB(3)*2, CHRABC(3)*1
 #include "abainf.h"
 #include "inftap.h"
-#include "dorps.h"
 C
       DATA CHRABC /'A','B','C'/
 C
@@ -584,6 +584,7 @@ C  /* Deck diapol */
 C
 C     Principal values and axes of polarizability
 C
+      use dorps_mod, only: DOREPS
       use symmet_mod, only: IPTAX, MAXREP, NAXREP
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -592,7 +593,6 @@ C
 #include "implicit.h"
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0, D3 = 3.0D0)
       DIMENSION AXES(3,3), VALUES(6), WORK(3), IWORK(3)
-#include "dorps.h"
 #include "moldip.h"
       NAXES = 0
       DO 100 IREP = 0, MAXREP

@@ -94,7 +94,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use dummy_mod, only: IDUMMY
 !      use dgroup_mod, only: NZ
-!      use orgcom_mod, only: CAVORG, DIPORG
+      use orgcom_mod, only: CAVORG, DIPORG
 !      use dcbham_mod, only: EPSOL, LSOLMX, RSOLAV
       use symmet_mod, only: ISYMAX
       use priunit_mod, only: LUPRI
@@ -108,7 +108,6 @@ C
 C
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "orgcom.h"
 #include "dgroup.h"
 C
       LOGICAL DOINT(2,2),FIRST
@@ -326,9 +325,9 @@ C/* Deck solvin */
       use dummy_mod, only: DUMMY
       use nuclei_mod, only: ISOTOP, NATOMS
       use cbisol_mod, only: EPDIEL, LCAVMX, LMNTOT, LMTOT, RCAV, SOLVNT
+      use orgcom_mod, only: CAVORG, CMXYZ
 #include "implicit.h"
 !      use dcbham_mod, only: EPSOL, EPSTAT, INERSF, INERSI, IPRHAM, IPRSOL, LSOLMX, RSOLAV
-!      use orgcom_mod, only: CAVORG, CMXYZ
       INTEGER :: I,II
 C
 C -- local variables and constants
@@ -339,7 +338,6 @@ C
      &          MXFORM*6,FMT*6
       DIMENSION WORK(*)
 #include "dcbham.h"
-#include "orgcom.h"
 C
       SAVE SET
 

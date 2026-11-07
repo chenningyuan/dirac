@@ -10752,7 +10752,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SET_INTFLG(new_intflg)
 C***********************************************************************      
       use mxcent_mod, only: MXCOOR
-!      use dcbgrd_mod, only: IGRD_INTBUF, IGRD_INTFLG
+      use dcbgrd_mod, only: IGRD_INTBUF, IGRD_INTFLG
 !      use dcbkrci_mod, only: IKRCI_INTBUF, IKRCI_INTDEF, IKRCI_INTFLG
 !      use mxgas_mod, only: MXGAS
 !      use dcbmp2_mod, only: MP2_INTFLG
@@ -10764,7 +10764,6 @@ C***********************************************************************
 #include "mxgas.h"
 #include "dcbcosc.h"
 #include "dcbdhf.h"
-#include "dcbgrd.h"
 #include "dcbkrci.h"
 #include "dcbmp2.h"
 #include "dcbopt.h"

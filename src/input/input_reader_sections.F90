@@ -225,7 +225,6 @@
 
 !#include "dgroup.h"
 ! orgcom.h : GAGORG
-!#include "orgcom.h"
 
       call reset_available_kw_list()
 

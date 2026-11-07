@@ -71,11 +71,10 @@ SUBROUTINE RECP_CHK_OPT
 ! check inconsistency in optimize options
       use mxcent_mod, only: MXCOOR
 !      use dcbgen_mod, only: OPTIMI
-!      use dcbgrd_mod, only: DONGRD
+      use dcbgrd_mod, only: DONGRD
 !      use inc_print_mod, only: RECP_OUT
   IMPLICIT NONE
 #include "dcbgen.h"
-#include "dcbgrd.h"
 #include "inc_print.h"
 
   IF (OPTIMI) THEN

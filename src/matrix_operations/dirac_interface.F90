@@ -3,6 +3,7 @@
 
 module dirac_interface
 
+      use dcbgrd_mod, only: GRADNN
       use dipole_mod, only: DDIPN, DIPMN
       use dirac_partask_mod, only: XCINT_PAR
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMDEP, NATOMS, NUCDEP, NUCIND
@@ -80,7 +81,6 @@ module dirac_interface
 #include "../abacus/cbinuc.h"
 #include "dcbbas.h"
 #include "dcbgen.h"
-#include "dcbgrd.h"
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dgroup.h"

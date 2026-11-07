@@ -135,7 +135,6 @@ C      DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
      &          NCART(12), PINT(NCCINT,*), QINT(NCCINT,*),
      &          DIFAB(3), DIFCD(3), DINTSKP(*)
       DIMENSION DINTMAX(3)
-!#include "dcbgrd.h"
 Cjth
 C
 C     statement functions:
@@ -934,6 +933,9 @@ C
       END
 C  /* Deck derout */
       SUBROUTINE DEROUT(DERIV,NINTYP,IPRINT)
+#ifdef PRG_DIRAC
+      use dcbgrd_mod, only: GRADEE
+#endif
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use expcom_mod, only: DERONE, DERTWO, ICENT1, ICENT2, ICENT3,
@@ -944,9 +946,7 @@ C  /* Deck derout */
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
       DIMENSION DERIV(NINTYP)
 C
-#ifdef PRG_DIRAC
-#include "dcbgrd.h"
-#else
+#ifndef PRG_DIRAC
 #include "energy.h"
 #endif
 C
@@ -1447,9 +1447,7 @@ C
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
       DIMENSION DERIV(NINTYP), expval(*)
 C
-#ifdef PRG_DIRAC
-#include "dcbgrd.h"
-#else
+#ifndef PRG_DIRAC
 #include "energy.h"
 #endif
 C
@@ -2165,7 +2163,6 @@ C     DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
      &     FT(NBASIS,NBASIS,NDMAT,*), FV(NBASIS,NBASIS,NDMAT,*),
      &     DINT(12), NCART(12), PINT(NCCINT,*), QINT(NCCINT,*),
      &     DIFAB(3), DIFCD(3), DINTSKP(*)
-!#include "dcbgrd.h"
 #include "dcbham.h"
       logical :: allow=.false.
 C
@@ -2483,7 +2480,7 @@ CMI ... stolen from dalton(abacus/abadip.F)
 C      for making the dirac output of magnetizabilities 
 C      the same as is in the older brother dalton
 
-!      use dorps_mod, only: SUS2EL
+      use dorps_mod, only: DOREPS
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
 !      use codata_mod, only: DEBYE, XTANG
@@ -2503,7 +2500,6 @@ C      the same as is in the older brother dalton
       CHARACTER*(*) SPC
       CHARACTER LAB(3)*2, CHRABC(3)*1
 #include "abainf.h"
-#include "dorps.h"
 C
       DATA CHRABC /'A','B','C'/
 C

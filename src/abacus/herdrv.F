@@ -22,7 +22,7 @@ C
 C --- General Input for HERMIT ---
 C
 !      use dcbgen_mod, only: DIRCAL, HRINPC, IPRUSR, RELCAL
-!      use orgcom_mod, only: CAVORG
+      use orgcom_mod, only: CAVORG, CMXYZ
       use cbihr1_mod, only: CAVUSR, DORLM
       use cbiher_mod
       use gen1int_mod, only: TEST_GEN1INT
@@ -48,7 +48,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "orgcom.h"
 C
 C
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
@@ -971,14 +970,13 @@ C  /* Deck hr1inp */
       use priunit_mod, only: LUCMD, LUPRI
       use cbiher_mod, only: IPRDEF
       use cbihr1_mod, only: ALLRLM, CAVUSR, DORLM, IPRONE, LMAX, RUNONE
+      use orgcom_mod, only: CAVORG
 #include "implicit.h"
-!      use orgcom_mod, only: CAVORG
       PARAMETER (NTABLE = 10)
 C
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
-#include "orgcom.h"
 C
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.SOLVEN', '.ALLRLM', '.CAVORG',
@@ -1432,10 +1430,9 @@ C
       use mxcent_mod, only: MXCENT
       use symmet_mod, only: MAXREP
       use maxorb_mod, only: MXCORB
-!      use dorps_mod, only: DOREPS
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 C
-#include "dorps.h"
 C
       DO 100 IREP = 0, MAXREP
          DOREPS(IREP) = .TRUE.

@@ -697,13 +697,13 @@ C  /* Deck getgb1 */
 C
 C     T. Helgaker Oct 99
 C
+      use orgcom_mod, only: ORIGIN
       use onecom_mod, only: KCKTA
 #include "implicit.h"
 C
       PARAMETER (DP5 = 0.5D0)
       DIMENSION GAOX(KCKTA), GAOY(KCKTA), GAOZ(KCKTA), GAO(KCKTA)
 C
-#include "orgcom.h"
 C
       POX = PX - ORIGIN(1)
       POY = PY - ORIGIN(2)

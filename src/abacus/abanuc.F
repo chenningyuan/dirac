@@ -119,13 +119,15 @@ C     Revised Jan 9 1987 tuh - zero charges introduced
 C     Revised Jun 25 1988 tuh - symmetry introduced
 C
       use maxaqn_mod, only: MXAQN, MXQN
-!      use dorps_mod, only: DOREPS
+      use dorps_mod, only: DOREPS
 !      use past_mod, only: PASONE
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, MAXREP, PT
       use maxorb_mod, only: MXCORB
 !      use cbinuc_mod, only: CUT, IPRINT, MAXDIF, SKIP
-!      use dcbgrd_mod, only: GRADNN, I
+#ifdef PRG_DIRAC
+      use dcbgrd_mod, only: GRADNN
+#endif
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEP, NUCIND, NUCNUM
       use priunit_mod, only: LUPRI
 #include "implicit.h"
@@ -134,10 +136,7 @@ C
       LOGICAL SECOND
       DIMENSION HESSNN(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
 #include "cbinuc.h"
-#include "dorps.h"
-#ifdef PRG_DIRAC
-#include "dcbgrd.h"
-#else
+#ifndef PRG_DIRAC
 #include "energy.h"
 #endif
 #include "past.h"

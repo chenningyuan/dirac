@@ -6138,6 +6138,7 @@ C  a) calculate second order prediction for energy change.
 C  b) if WFPRED, calculate first order prediction for change
 C     in MC wave function.
 C
+      use dorps_mod, only: DCORD, DCORGD
       use nuclei_mod, only: NUCIND
       use iratdef_mod, only: IRAT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -6163,7 +6164,6 @@ C
 #include "inflin.h"
 #include "cbiwlk.h"
 #include "inftap.h"
-#include "dorps.h"
 #include "anrinf.h"
 #include "infvar.h"
 #include "infdim.h"

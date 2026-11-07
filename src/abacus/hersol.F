@@ -105,7 +105,7 @@ C
       use hrunit_mod, only: LUSOL
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
-!      use orgcom_mod, only: CAVORG
+      use orgcom_mod, only: CAVORG
       use mxcent_mod, only: MXCENT
       use dummy_mod, only: DUMMY
       use symmet_mod, only: MAXREP, NAOS
@@ -121,7 +121,6 @@ C  CBISOL : LCAVMX,LMTOT,LMNTOT
 C  ORGCOM : CAVORG
 C  HRUNIT : LUSOL
 C
-#include "orgcom.h"
 C
       CHARACTER*8 LABSOL(4)
       DIMENSION   FILL4(4)
@@ -232,7 +231,7 @@ C
 C     12. Jan. 1993 HJAaJ+KVM
 C
       use dummy_mod, only: DUMMY
-!      use orgcom_mod, only: CAVORG
+      use orgcom_mod, only: CAVORG
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEP, NUCIND
       use maxorb_mod, only: MXCORB
@@ -258,7 +257,6 @@ C  CBISOL : LCAVMX,NCNTCV
 C  TAYSOL : GSOLNN()
 C  ORGCOM : CAVORG(3)
 C
-#include "orgcom.h"
 C
 C     Local arrays
 C
@@ -690,7 +688,7 @@ C
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
       use cbisol_mod, only: LCAVMX, LMNTOT
-!      use orgcom_mod, only: CAVORG
+      use orgcom_mod, only: CAVORG
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -709,7 +707,6 @@ C  ONECOM : KCKTA, KCKTB, KCKTAB,
 C           (KCKTAB = KCKTA*KCKTB)
 C  LMNS   : [LMN]VALU[AB](MXAQN)
 C
-#include "orgcom.h"
 C
       INTEGER T,U,V
 C
@@ -1587,7 +1584,6 @@ C
      &          DERMAT(*), TEMPMA(NNBASX,NCOMP,-LCAVMX:LCAVMX),
      &          TRAMAT((LCAVMX + 1)*(LCAVMX + 2)*(2*LCAVMX + 1)/2),
      &          WORK(LWORK)
-#include "orgcom.h"
 #include "mgsolt.h"
 #include "inforb.h"
 #include "infinp.h"
@@ -1789,7 +1785,6 @@ C
       LOGICAL   FOUND
 C
 #include "mgsolt.h"
-#include "orgcom.h"
 #include "inforb.h"
 #include "infinp.h"
 #include "inftap.h"

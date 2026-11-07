@@ -268,7 +268,9 @@ C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 !      use ccom_mod, only: THRS
       use onecom_mod
-!      use dcbgrd_mod, only: DODERM, GRADKN, GRADNU, GRADRO, I, INTCLASS
+#ifdef PRG_DIRAC
+      use dcbgrd_mod, only: DODERM, GRADKN, GRADNU, GRADRO, INTCLASS
+#endif
       use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX,
      &  LCLASS, NCENT, NHKT, NUCO, NUMCF, SPHR
       use priunit_mod, only: LUPRI
@@ -279,7 +281,7 @@ C
       use cbisol_mod, only: EPDIEL, LCAVMX, LMNTOT, LMTOT, RCAV, SOLVNT
       use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
       use maxaqn_mod, only: MXAQN, MXQN
-!      use dorps_mod, only: DOREPS
+      use dorps_mod, only: DOREPS
       use maxorb_mod, only: MXCORB, MXSHEL
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -293,13 +295,10 @@ C
      &          FACINT(NUCDEP,*), WORK(LWORK), COORC(3,NUCDEP),
      &          SIGNC(3,NUCDEP), NCENTC(NUCDEP), JSYMC(NUCDEP),
      &          JCENTC(NUCDEP), GEXP(NUCDEP),TLMD(3*NUCDEP*LMNTOT,2)
-#ifdef PRG_DIRAC
-#include "dcbgrd.h"
-#else
+#ifndef PRG_DIRAC
 #include "energy.h"
 #endif
 #include "ccom.h"
-#include "dorps.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEDR1','*',103)
 C
@@ -983,14 +982,12 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use dipole_mod, only: DDIPN, DIPMN
-!      use dorps_mod, only: DOREPS
-!      use orgcom_mod, only DIPORG
+      use dorps_mod, only: DOREPS
+      use orgcom_mod, only: DIPORG
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D100 = 100.0D0
       LOGICAL DIFDIP
-#include "orgcom.h"
-#include "dorps.h"
 C
 C     Dipole moment
 C

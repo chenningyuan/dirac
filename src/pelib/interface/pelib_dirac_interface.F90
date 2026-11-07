@@ -3067,7 +3067,6 @@ module pelib_dirac_interface
 !      use pe_work
 !#include "implicit.h"
 !#include "qm3.h"
-!#include "orgcom.h"
 !
 !      logical :: trimat
 !      character(len=8), dimension(9*mxcent) :: labint

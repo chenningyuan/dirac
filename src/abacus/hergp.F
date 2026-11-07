@@ -2169,14 +2169,13 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
 !      use codata_mod, only: XFAMU
-!      use orgcom_mod, only: CMXYZ, ORIGIN
+      use orgcom_mod, only: CMXYZ
       use nuclei_mod, only: CORD, ISOTOP, ISTBNU, IZATOM, NATOMS, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
 #include "implicit.h"
 #include "codata.h"
       REAL*8    GEOM(3*NATOMS), AMASS(NATOMS)
       INTEGER   NATTYP(NATOMS), NUMIS(NATOMS)
-#include "orgcom.h"
 C
       ICHTOT = 0
       JATOM  = 0
@@ -2271,6 +2270,7 @@ C  /* Deck chargebc */
 C     Determine nuclei charge barycenter in orgcom.h(NCHBC) from information in common blocks
 C     J. J. Aucar, 2024
 
+      use orgcom_mod, only: NCHBC
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, IZATOM, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -2281,7 +2281,6 @@ C     J. J. Aucar, 2024
       IMPLICIT NONE
 
 !#include "codata.h"
-#include "orgcom.h"
 
 C     Variables Declaration
       INTEGER :: IATOM, ISYMOP
@@ -2300,7 +2299,6 @@ C     Nuclei charge barycenter calculation
                !If charge of IATOM is greater than 0 (i.e. if not point charge)
                IF (IZATOM(IATOM) .GT. 0) THEN
                   ! use effective nuclear charge in CHARGE(:) (less than real charge for ECPs)
-!      use orgcom_mod, only: NCHBC, ORIGIN
                   ! instead of real nuclear charge in IZATOM(:)
                   CHTOT = CHTOT + CHARGE(IATOM)
                   NCHBC(1) = NCHBC(1) + CHARGE(IATOM)*

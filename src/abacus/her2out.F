@@ -994,7 +994,7 @@ C
       use doxyz_mod, only: DOXYZ
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use dorps_mod, only: IF
+      use dorps_mod, only: DOREPS
       use twocom_mod
 #include "implicit.h"
       INTEGER :: I
@@ -1003,7 +1003,6 @@ C
       DIMENSION IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
       DIMENSION SO(*), BUF(600), IBUF(600)
-#include "dorps.h"
       SAVE BUF, IBUF, ICOUNT, NBUFCL
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DR2OUT',-1)

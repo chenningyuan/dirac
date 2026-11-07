@@ -569,7 +569,7 @@ C  /* Deck Gabdr2 */
       use twocom_mod
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use dorps_mod, only: DOCOOR
+      use dorps_mod, only: DOCOOR
 !      use dcbham_mod, only: HFXFAC, IF
       use doxyz_mod, only: DOXYZ
 !      use blocks_mod, only: BIGVEC, NCNTSH
@@ -584,10 +584,8 @@ C  /* Deck Gabdr2 */
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
 #include "blocks.h"
-#include "dorps.h"
 #ifdef PRG_DIRAC
 #include "dcbham.h"
-#include "dcbgrd.h"
 #else
 #include "energy.h"
 #endif

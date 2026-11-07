@@ -1,5 +1,7 @@
 module openrsp_interface_2el
 
+      use dcbgrd_mod, only: INTCLASS, RELGRD
+      use dorps_mod, only: DOPERT
       use cbihr2_mod, only: ICEDIF, TKTIME
       use mxcent_mod, only: MXCENT, MXCOOR
    use dirac_interface
@@ -12,8 +14,6 @@ module openrsp_interface_2el
 
 #include "dcbbas.h"
 #include "dcbgen.h"
-#include "dcbgrd.h"
-#include "dorps.h"
 #include "exeinf.h"
 
 contains

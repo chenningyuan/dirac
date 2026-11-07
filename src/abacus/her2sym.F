@@ -153,7 +153,7 @@ C
       use twosta_mod, only: LWTOT, MWDRSY, MWTOT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-!      use dorps_mod, only: IF
+      use dorps_mod, only: DOREPS
       use mxcent_mod, only: MXCENT
       use symmet_mod, only: ISYMAX, MAXREP, PT
       use doxyz_mod, only: DOXYZ
@@ -161,7 +161,6 @@ C
       LOGICAL SQ12EL, SOP000
       DIMENSION AOINT(NCCINT,*), SOINT(NOABCD,*), WORK(LWORK),
      &          IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*)
-#include "dorps.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DRSYM2',-1)
          WRITE (LUPRI,'(A,3I5)') ' ISYMR, ISYMT, ISYMTS ',

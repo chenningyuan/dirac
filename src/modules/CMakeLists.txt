@@ -19,6 +19,7 @@ set(MODULE_SOURCES
     crossd.F90
     crsdir.F90
     csym1.F90
+    dcbgrd.F90
     dcbibt.F90
     dcbwav.F90
     derzer.F90
@@ -26,6 +27,7 @@ set(MODULE_SOURCES
     dirac_partask.F90
     dirprt.F90
     disbuf.F90
+    dorps.F90
     doxyz.F90
     dummy.F90
     efield.F90
@@ -52,6 +54,7 @@ set(MODULE_SOURCES
     nuctap.F90
     oneadr.F90
     onecom.F90
+    orgcom.F90
     pi.F90
     pincom.F90
     precision.F90
@@ -75,7 +78,6 @@ set(MODULE_SOURCES
     #ccom.F90
     #dcbesr.F90
     #dcbnmr.F90
-    #dorps.F90
     #infdim.F90
     #nqcc.F90
     #rotg.F90

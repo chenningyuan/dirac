@@ -170,7 +170,7 @@ C
       use nuclei_mod, only: NUCDEP
       use priunit_mod, only: LUPRI
 !      use cbitro_mod, only: CUT, GDTRO, HESTRO, IPRINT, NOROT1, RDTRO, SKIP
-!      use dorps_mod, only: DOPERT
+      use dorps_mod, only: DOPERT
 #include "implicit.h"
       INTEGER :: I
 C
@@ -178,12 +178,9 @@ C
 C
 #include "cbitro.h"
 #include "abainf.h"
-#ifdef PRG_DIRAC
-#include "dcbgrd.h"
-#else
+#ifndef PRG_DIRAC
 #include "energy.h"
 #endif
-#include "dorps.h"
 #include "infvar.h"
 #include "exeinf.h"
 C
@@ -298,7 +295,7 @@ C  /* Deck setper */
 C
 C     Sets DCORD, DCORGD, NGDVEC, IGDREC, IGDCOR, NGDTOT
 C
-!      use dorps_mod, only: DOPERT, NDCORD
+      use dorps_mod, only: DCORD, DCORGD, DOPERT, NDCORD
       use priunit_mod, only: LUPRI
 !      use spnout_mod, only: ABUND, DOFC, DOPSO, DOSD, DOSDFC, DOSELE
       use chrnos_mod, only: CHRNOS
@@ -316,7 +313,6 @@ C
 C
 #include "spnout.h"
 #include "abainf.h"
-#include "dorps.h"
 #include "gdvec.h"
 C
 C
@@ -556,7 +552,7 @@ C
 !      use cbitro_mod, only: COMPAR, IPRINT
       use trkoor_mod, only: DEPEND, NCOOR
       use symmet_mod, only: IPTCNT, IPTCOR, MAXREP, NCRREP
-!      use dorps_mod, only: WORK
+      use dorps_mod, only: DOPERT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
@@ -564,7 +560,6 @@ C
       DIMENSION TMAT(6,NCOOR), WORK(LWORK)
 C
 #include "cbitro.h"
-#include "dorps.h"
 C
 C     *************************************************
 C     ***** Determine trarot coordinates and TMAT *****
@@ -1705,7 +1700,7 @@ C
 #endif
       use iratdef_mod, only: IRAT
       use priunit_mod, only: LUPRI
-!      use dorps_mod, only: WORK
+      use dorps_mod, only: DCORD, DCORGD
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use chrxyz_mod, only: CHRXYZ
 #include "implicit.h"
@@ -1720,7 +1715,6 @@ C  NUCLEI: DCORGD, DCORD
 C
 #include "abainf.h"
 #include "cbitro.h"
-#include "dorps.h"
 #include "infvar.h"
 #ifndef PRG_DIRAC
 #include "inftap.h"
@@ -2002,7 +1996,7 @@ C
 !      use cbitro_mod, only: COMPAR
 !      use abainf_mod, only: GDALL
       use nuclei_mod, only: ITRACO, NTRACO
-!      use dorps_mod, only: DCORD, DCORGD
+      use dorps_mod, only: DCORD, DCORGD
 #include "implicit.h"
       INTEGER :: I,J
 C
@@ -2013,7 +2007,6 @@ C  NUCLEI: DCORD, DCORGD, NTRACO, ITRACO
 C
 #include "abainf.h"
 #include "cbitro.h"
-#include "dorps.h"
 C
 C     DCORGD is initialized to all .true. in HESINP subroutine/
 C
@@ -2046,7 +2039,7 @@ C     atom IATOM and Cartesian direction IXYX does not contribute to any
 C     symmetry coordinate.
 C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use dorps_mod, only: DOREPS
+      use dorps_mod, only: DOCOOR, DOREPS
       use maxorb_mod, only: MXCORB
       use nuclei_mod, only: NUCIND
       use maxaqn_mod, only: MXAQN, MXQN
@@ -2062,7 +2055,6 @@ C
 C
 #include "abainf.h"
 #include "cbitro.h"
-#include "dorps.h"
 C
       IF (KEY .EQ. 'HERMIT') THEN
          DO 100 IREP = 0, MAXREP

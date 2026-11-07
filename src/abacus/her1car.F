@@ -76,15 +76,14 @@ C
       use primit_mod, only: PRICCF, PRIEXP
       use pi_mod, only: PI
       use aovec_mod, only: MXCONT
-!      use dcbgrd_mod, only: DODERM
+#ifdef PRG_DIRAC
+      use dcbgrd_mod, only: DODERM
+#endif
       use onecom_mod
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#ifdef PRG_DIRAC
-#include "dcbgrd.h"
-#endif
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.00D00, D3 = 3.00D00,
      &                       THIRD = D1/D3, GNUTHR = 1.D-4, D1P5 = 1.5D0
 C
@@ -732,9 +731,6 @@ C     ... note that STDER2 is not implemented yet, and will require more than 6
      &          STDER2(KCKTAB,NDER2,2), 
      &          ADER(KCKTAB,NATOMC,*), AHGTF(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#ifdef PRG_DIRAC
-!#include "dcbgrd.h"
-#endif
       MAXADD = 1
       IF (SECDER) MAXADD = 2
       INT = 0

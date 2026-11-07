@@ -103,6 +103,10 @@ C  /* Deck oneso1 */
      &                  JCENTC,NCENTC,SIGNC,GEXP,NNBASX,DSHELL,FSHELL,
      &                  RLMINT,RLMTAB,FCM,TLMD,LMNO,LOMITVNUC)
 !      use dcbbas_mod, only: N2BBASX, NTBAS
+#ifdef PRG_DIRAC
+      use dcbgrd_mod, only: DODERM, GRADKN, GRADNU, GRADRO, GRD_NOSMLS,
+     &  GRD_NOSMLV, INTCLASS
+#endif
       use dummy_mod, only: DUMMY, IDUMMY
       use maxorb_mod, only: MXCORB
       use nuclei_mod, only: NUCDEP, NUCNUM
@@ -141,7 +145,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 !#include "dcbham.h"
-#include "dcbgrd.h"
 #else
 #include "energy.h"
 #endif 

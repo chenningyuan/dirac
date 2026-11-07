@@ -30,7 +30,6 @@ C
 C     Added: MI & HJAaJ, 2002/2003
 C
 C*****************************************************************************
-!      use orgcom_mod, only: CMXYZ, DIPORG, GAGORG, GAGORG_SET, NCHBC
 !      use dcbprp_mod, only: EXPPED, FULMAT, IPRDEF, LONDON, MSUSCP, NOORTH, OPTROT, REGRAD, SEPTEP, SHIELD, SYMCON
 !      use dcbnmr_mod, only: EPREORTH, INTNMR, NOONEI, NOTWOL
 !      use dcbham_mod, only: BSS, LEVYLE, RDSUSLLMOD, X2C
@@ -47,9 +46,9 @@ C*****************************************************************************
       use symmet_mod, only: MAXREP
       use nuclei_mod, only: NATOMS
       use cbiher_mod, only: IPRDEF
+      use orgcom_mod, only: CMXYZ, DIPORG, GAGORG, GAGORG_SET, NCHBC
 #include "implicit.h"
       INTEGER :: I
-#include "orgcom.h"
 #include "dcbprp.h"
 #include "dcbnmr.h"
 #include "dcbham.h"

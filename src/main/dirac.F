@@ -112,7 +112,6 @@ C  /* Deck dirctl */
 !      use dcbham_mod, only: BSS, X2C
 !      use dgroup_mod, only: NBSYM
 !      use dcbdhf_mod, only: NOPEN
-!      use dcbgrd_mod, only: DONGRD
       use checkpoint
       use interface_ao_specific
       use interface_mo_specific
@@ -124,6 +123,7 @@ C  /* Deck dirctl */
 
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCOOR
+      use dcbgrd_mod, only: DONGRD
       implicit none
 
 ! dcbgrd.h : DONGRD
@@ -131,7 +131,6 @@ C  /* Deck dirctl */
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
-#include "dcbgrd.h"
 
       logical run_pamset, tobe
       integer ierr

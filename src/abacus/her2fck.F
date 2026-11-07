@@ -1137,6 +1137,9 @@ C
 C  /* Deck sklexp */
       SUBROUTINE SKLEXP(SKLTON,FACTOR,INDEX,IPOINT,MAXDER,IPRINT)
 C
+#ifdef PRG_DIRAC
+      use dcbgrd_mod, only: GRADEE
+#endif
       use nuclei_mod, only: ISTBNU, NUCDEP, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, MAXREP, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -1150,9 +1153,7 @@ C
       DIMENSION SKLTON(MXCOOR,MXCOOR),
      &          INDEX(NUCIND,3,0:MAXREP), FACTOR(3*NUCDEP,0:MAXREP),
      &          IPOINT(3*NUCDEP,0:MAXREP)
-#ifdef PRG_DIRAC
-#include "dcbgrd.h"
-#else
+#ifndef PRG_DIRAC
 !#include "energy.h"
 #endif
 C

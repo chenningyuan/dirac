@@ -124,7 +124,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcblab.h"
-!#include "orgcom.h"
 
       DIMENSION SMAT(NTBAS(0),NTBAS(0),2),ICLAB(NTBAS(0))
 
@@ -474,7 +473,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
 
 #include "inforb.h"
-!#include "orgcom.h"
 #include "functionals.h"
       
       DIMENSION SMAT(*)

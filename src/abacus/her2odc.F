@@ -707,13 +707,12 @@ C     TUH Apr 11 1988
 C
       use maxaqn_mod, only: MXQN
       use twosta_mod, only: LWTOT, MWTOT, TEXCOE, TKTIME
-!      use orgcom_mod, only: WORK
+      use orgcom_mod, only: ORIGIN
 #include "implicit.h"
       LOGICAL SAM12X, SAM12Y, SAM12Z, ONECEN, DO1, DO2, BIGVEC, UNDIFF,
      &        SPNORB, LONDON
       DIMENSION COEF12(*), NPCO1(*), NPCO2(*), JSTR1(*), JSTR2(*),
      &          COOR12(*), EXP12(*), NUCS12(*), WORK(LWORK)
-#include "orgcom.h"
 C
       IF (TKTIME) TIMSTR = SECOND()
       DIFX  = SIGN1X*COR1X - SIGN2X*COR2X
@@ -1493,14 +1492,13 @@ C     tuh Sep 4 92
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
-!      use orgcom_mod, only: ORIGIN
+      use orgcom_mod, only: ORIGIN
       use chrxyz_mod, only: CHRXYZ
 #include "implicit.h"
       INTEGER :: I
       INTEGER A, B, ABM, T, X, IODD(3)
       DIMENSION COEF12(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
      &          COOR12(NUC1*NUC2,3,3), COOR1(MXUC12)
-#include "orgcom.h"
 
 C
       IODD(1) = I120X

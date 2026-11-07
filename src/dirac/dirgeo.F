@@ -26,9 +26,9 @@ C     Written by Joern Thyssen 1997/06/17
 C     Last revision : 1997/06/17 jth
 C
 C*****************************************************************************
-!      use dcbgrd_mod, only: DONGRD
 !      use dcbpsi_mod, only: DOCCM, DOCIM, DOKRMC, DOLUCIAR, DOLUCT, DOMP2, DORES
 !      use dcbham_mod, only: BSS, LEVYLE, SPINFR, ZORA
+      use dcbgrd_mod, only: DONGRD
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCOOR
          use dirac_cfg
@@ -36,7 +36,6 @@ C*****************************************************************************
 C
 #include "dcbham.h"
 #include "dcbpsi.h"
-#include "dcbgrd.h"
 C
       LOGICAL NOGRAD
 C

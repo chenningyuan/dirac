@@ -1509,7 +1509,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use mxcent_mod, only: MXCOOR
 !      use infpar_mod, only: MPARID
 !      use dcbxpp_mod, only: BEDECD, DOBED, MAXEXC
-!      use dcbgrd_mod, only: GRADEE, GRADNN
       use memory_allocator                                 
       use interface_to_mpi                                 
 #include "implicit.h"                                      
@@ -1523,7 +1522,6 @@ C TODO commented out due to dcborb.hç
 #include "dcbxpp.h"
 #if defined (PRG_DIRAC)                                    
 !#include "dcbgen.h"                                        
-#include "dcbgrd.h"                                        
 #else                                                      
 #include "gnrinf.h"                                        
 #include "energy.h"                                        

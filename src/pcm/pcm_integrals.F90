@@ -230,9 +230,6 @@ contains
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
-#ifdef PRG_DIRAC
-#include "dcbgrd.h"
-#endif
 #include "ccom.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
@@ -404,9 +401,6 @@ contains
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXCOOR
       use maxorb_mod, only: MXPRIM
-#ifdef PRG_DIRAC
-#include "dcbgrd.h"
-#endif
 
         ! Passed variables
         integer(c_size_t), intent(in) :: nr_points

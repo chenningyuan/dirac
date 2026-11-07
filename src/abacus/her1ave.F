@@ -23,8 +23,11 @@ C
 C     tuh 1984
 C     modified for symmetry Jul 5 1988 tuh
 C
+#ifdef PRG_DIRAC
+      use dcbgrd_mod, only: GRADNU, INTCLASS
+#endif
       use symmet_mod, only: IPTCNT, MAXREP, PT
-!      use dorps_mod, only: DOREPS
+      use dorps_mod, only: DOREPS
       use onecom_mod, only: ICENTA, KCKTAB, KHKTAB, NCENTA
       use ader_mod, only: IA0000, IA000X, IA000Y, IA000Z, IA00XX,
      &  IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ
@@ -37,10 +40,7 @@ C
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOCX, DOCY, DOCZ
       DIMENSION ADER(KCKTAB,NATOMC,*), DSHELL(KHKTAB,4), NCENTC(*),
      &          JCENTC(*), SIGNC(3,*), JSYMC(*)
-#include "dorps.h"
-#ifdef PRG_DIRAC
-#include "dcbgrd.h"
-#else
+#ifndef PRG_DIRAC
 #include "energy.h"
 #endif
 C
@@ -246,6 +246,7 @@ C     tuh 1984
 C
 C     modified for symmetry tuh Jul 5 1988
 C
+      use dorps_mod, only: DOREPS
       use onecom_mod, only: KCKTAB, KHKTAB, NCENTA, NCENTB, SIGNBX,
      &  SIGNBY, SIGNBZ
       use symmet_mod, only: IPTCNT, MAXREP, PT
@@ -257,7 +258,6 @@ C
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(KHKTAB), FSHELL(KHKTAB),
      &          STDER0(KCKTAB,2), STDER1(KCKTAB,3,2), STDER2(KCKTAB,6,2)
-#include "dorps.h"
 #include "energy.h"
 C
 C     Multiply densities and Fock elements with integrals
@@ -523,6 +523,9 @@ C
 C     tuh 1984
 C     modified for symmetry tuh Jul 5 1988
 C
+#ifdef PRG_DIRAC
+      use dcbgrd_mod, only: GRADNU, INTCLASS
+#endif
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use onecom_mod, only: ICENTA, ICENTB, KCKTAB, KHKTAB, NCENTA,
@@ -530,7 +533,7 @@ C
       use symmet_mod, only: IPTCNT, MAXREP, PT
       use mxcent_mod, only: MXCENT, MXCOOR
       use ader_mod
-!      use dorps_mod, only: DOREPS
+      use dorps_mod, only: DOREPS
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.00D00, D1 = 1.00D00, D2 = 2.00D00
@@ -538,10 +541,7 @@ C
      &        DOCX, DOCY, DOCZ
       DIMENSION ADER(KCKTAB,NATOMC,*), DSHELL(KHKTAB,4), NCENTC(*),
      &          JCENTC(*), SIGNC(3,*), JSYMC(*)
-#include "dorps.h"
-#ifdef PRG_DIRAC
-#include "dcbgrd.h"
-#else
+#ifndef PRG_DIRAC
 #include "energy.h"
 #endif
 C
@@ -1145,7 +1145,7 @@ C
      &  SIGNBX, SIGNBY, SIGNBZ
       use symmet_mod, only: IPTAX, IPTCNT, ISYMAX, MAXREP, PT
       use dipole_mod, only: DDIPE
-!      use dorps_mod, only: DOREPS
+      use dorps_mod, only: DOREPS
       use mxcent_mod, only: MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1153,7 +1153,6 @@ C
       REAL(dp), PARAMETER :: D0 = 0.00D00
       LOGICAL DIFDIP
       DIMENSION DSHELL(KHKTAB), SINT0(KCKTAB), DINT1(KCKTAB,3,3)
-#include "dorps.h"
 C
 C
       IF (DIFDIP) THEN
@@ -1282,8 +1281,10 @@ C     Based on AVEKFS by tuh
 C
       use mxcent_mod, only: MXCENT, MXCOOR
       use symmet_mod, only: IPTCNT
-!      use dcbgrd_mod, only: GRADRO, INTCLASS
-!      use dorps_mod, only: DOREPS
+#ifdef PRG_DIRAC
+      use dcbgrd_mod, only: GRADRO, INTCLASS
+#endif
+      use dorps_mod, only: DOREPS
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use onecom_mod, only: KCKTAB, KHKTAB, NCENTA, NCENTB, SIGNBX,
@@ -1293,8 +1294,6 @@ C
       REAL(dp), PARAMETER :: D0 = 0.00D00, D2 = 2.0D00
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION FSHELL(KHKTAB),STDER1(KCKTAB,6,2)
-#include "dorps.h"
-#include "dcbgrd.h"
 C
 C     Currently analytic hessian is .NOT. supported
       IF ( SECDER ) RETURN
@@ -1365,17 +1364,17 @@ C
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbgen_mod, only: CVAL
-!      use dcbgrd_mod, only: GRADKN
+#ifdef PRG_DIRAC
+      use dcbgrd_mod, only: GRADKN
+#endif
       use maxorb_mod, only: MXCORB
-!      use dorps_mod, only: DOREPS
+      use dorps_mod, only: DOREPS
       use symmet_mod, only: IPTCNT
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.00D00, D2 = 2.00D00
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(KHKTAB,4),STDER1(KCKTAB,6,2)
-#include "dorps.h"
-#include "dcbgrd.h"
 #include "dcbgen.h"
 C
 C     Multiply densities with integrals, scale with c
@@ -1460,9 +1459,11 @@ C
 C     jth 1997/04/24
 C     Based on AVEKFS by tuh
 C
-!      use dcbgrd_mod, only: GRADKN
 !      use dcbgen_mod, only: CVAL
-!      use dorps_mod, only: DOREPS
+#ifdef PRG_DIRAC
+      use dcbgrd_mod, only: GRADKN
+#endif
+      use dorps_mod, only: DOREPS
       use onecom_mod, only: KCKTAB, KHKTAB, NCENTA, NCENTB, SIGNBX,
      &  SIGNBY, SIGNBZ
       use symmet_mod, only: IPTCNT
@@ -1474,8 +1475,6 @@ C
       REAL(dp), PARAMETER :: D0 = 0.00D00, DM2 = -2.0D00
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(KHKTAB,4), STDER1(KCKTAB,6,2)
-#include "dorps.h"
-#include "dcbgrd.h"
 #include "dcbgen.h"
 C
 C     Multiply densities with integrals, scale with -2c^2

@@ -359,7 +359,6 @@ C
      &        INDHSQ(*), IODDHR(*), INDHER(*), GABRAO(*),
      &        DMRAO(*),DMRSO(*),DINTSKP(*),WORK(LWORK)
 #ifdef PRG_DIRAC
-!#include "dcbgrd.h"
 #include "dcbham.h"
 #else
 #include "energy.h"
@@ -1766,14 +1765,16 @@ C  /* Deck symlop */
       use priunit_mod, only: LUPRI
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use dcbgrd_mod, only: GRADEE
+#ifdef PRG_DIRAC
+      use dcbgrd_mod, only: GRADEE
+#endif
       use nuclei_mod, only: NAMDEP, NDEGNM, NUCNUM
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: FMULT, ISYMAX, MAXOPR, PT
 !      use blocks_mod, only: BIGVEC, IORBSH, ISYMBL, LCLASH, NCNTSH, NHKTSH, NSYMBL
       use twosta_mod, only: LWTOT, MWAOIN, MWTOT, TDSOUT, TFCKOU,
      &  TKTIME, TSYMOU
-!      use dorps_mod, only: DOCOOR
+      use dorps_mod, only: DOCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use twocom_mod
       use doxyz_mod, only: DOXYZ
@@ -1816,9 +1817,7 @@ C  /* Deck symlop */
 CMI ... added missing declarations (as in GABDR2)
       DIMENSION COEFAB(*),COEFCD(*)
 #include "blocks.h"
-#include "dorps.h"
 #ifdef PRG_DIRAC
-#include "dcbgrd.h"
 #include "dcbham.h"
 #else
 #include "energy.h"
@@ -3128,7 +3127,6 @@ C  /* Deck nintso */
 #include "implicit.h"
       INTEGER :: I
       LOGICAL LONDON, SPNORB, UNDIFF, SOFOCK, DISTRI, SQ12EL
-!#include "dorps.h"
 C
       IF (UNDIFF .OR. SOFOCK .OR. DISTRI) THEN
          NINTS     = NMBOSO(SQ12EL,0)
@@ -4286,11 +4284,10 @@ C  /* Deck whtrep */
       use mxcent_mod, only: MXCENT
       use symmet_mod, only: ISYMAX, MAXREP
       use twocom_mod, only: IPTREP, NOPREP
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
-!      use dorps_mod, only: WORK
       INTEGER :: I
       LOGICAL DOPREP(0:7)
-#include "dorps.h"
 C
       DO 100 I = 0, MAXREP
          DOPREP(I) = .FALSE.

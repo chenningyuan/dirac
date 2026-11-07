@@ -36,7 +36,6 @@ C
 #include "cbilnr.h"
 #include "abainf.h"
 #include "anrinf.h"
-#include "dorps.h"
 #include "absorp.h"
 C
       PARAMETER (NTABLE = 14, CM_TO_AU = 4.556333D-6)

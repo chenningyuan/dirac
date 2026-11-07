@@ -144,6 +144,7 @@ C                      *CALL SYMMET   from READIN
 C                      *CALL DORPS    from abatro.u
 C                       ( only DOREPS and DOCOOR used)
 C
+      use dorps_mod, only: DOCOOR, DOREPS
       use iratdef_mod, only: IRAT
       use dummy_mod, only: DUMMY, IDUMMY
       use aovec_mod, only: MXAOVC
@@ -156,7 +157,6 @@ C
       DIMENSION WORK(LWORK)
 #include "inforb.h"
 #include "cbitwo.h"
-#include "dorps.h"
 C
       CALL ABARUN(ABA)
 C

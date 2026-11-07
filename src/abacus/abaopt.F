@@ -23,9 +23,11 @@ C                  It uses both the old cbiwlk.h and the new optinf.h
 C
 C  /* Deck opinpu */
       SUBROUTINE OPINPU(WORD)
-!      use dcbgrd_mod, only: DONGRD, DOTRCK, IGRD_INTFLG, IPRGRD, SCRGRD
 !      use optinf_mod, only: BAKER, BFGS, BFGSR1, BOFILL, BRKSYM, CARTCO, CHGRDT, CMBMOD, CONOPT, CRDIN1, CRDINT, DELINT, DFP, DISPLA, DOPRE, DOSPE, ENERGY, ERGOLD, ERGPRD, ERGPRO, EVAL, EVALOL, EVLINI, FINDRE, FINPRE, FSTORD, GDIIS, GECONV, GRADNM, GRDDIA, GRDINI, GRDTHR, HFPROP, HSFILE, ICNSTR, ICONDI, INITHS, INMDHS, INRDHS, IPRE, IPRINT, IREDIC, ITOTRJ, ITRBRK, ITRMAX, ITRNMR, KEEPHE, LINDHD, LNSRCH, MAXPRE, MAXREJ, MODHES, MULTI, NCART, NCRTOT, NEWTON, NOAUX, NOBRKS, NODIHE, NOTRST, NSPMOD, NUMPRE, NWSYMM, PSB, QUADSD, RANKON, RATFUN, REBILD, REDINT, REJINI, RTENBD, RTENGD, RTRJMN, RTRJMX, SADDLE, SCHLEG, SNDORD, SPBSTX, STEEPD, STPDIA, STPINT, STPNRM, STPNRO, STPSYM, THRERG, THRSTP, THRSYM, TRSTDE, TRSTIN, TRSTRA, TRSTRG, VISUAL, VRBOND, VRCORD, VREIGV, VRML, VRML_SYM, VRVIBA
 !      use cbiwlk_mod, only: ZERGRD
+#ifdef PRG_DIRAC
+      use dcbgrd_mod, only: DONGRD, DOTRCK, IGRD_INTFLG, IPRGRD, SCRGRD
+#endif
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
 !      use dcbgen_mod, only: NEWSYM, OPTIMI
@@ -35,7 +37,6 @@ C  /* Deck opinpu */
 #include "optinf.h"
 #include "cbiwlk.h"
 #ifdef PRG_DIRAC
-#include "dcbgrd.h"
 #include "dcbgen.h"
 #else
 #include "infinp.h"
@@ -2388,7 +2389,6 @@ C
 C     Retreives the energy and gradient of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
 C
-!      use dcbgrd_mod, only: DONGRD
 #ifdef PRG_DIRAC
       use memory_allocator
       use dirac_cfg
@@ -2399,6 +2399,9 @@ C
       use symmet_mod, only: NCRREP
       use nuclei_mod, only: NUCDEP
       use taymol_mod, only: GRDMOL
+#ifdef PRG_DIRAC
+      use dcbgrd_mod, only: DONGRD
+#endif
 #include "implicit.h"
 
 #ifndef PRG_DIRAC
@@ -2410,8 +2413,6 @@ C
 #include "pvibav.h"
 #include "rspprp.h"
 #include "esg.h"
-#else
-#include "dcbgrd.h"
 #endif
       LOGICAL EXHER, EXSIR, EXABA
       REAL*8  EGRAD(MXCOOR)

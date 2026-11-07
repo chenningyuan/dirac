@@ -478,7 +478,6 @@ C
       use nuclei_mod, only: NUCDEG
       use symmet_mod, only: MAXREP
 !      use blocks_mod, only: MAXSHL, NSYMBL
-!      use dorps_mod, only: DOCOOR, DOREPS
       use maxaqn_mod, only: MXAQN, MXQN
 !      use abainf_mod, only: DOSYM
       use parint_mod, only: parint_t
@@ -490,6 +489,7 @@ C
       use interface_to_mpi
       use hrunit_mod, only: LUDASP, LUINTA, LUONEL, LUSOL, LUSUPM
       use cbisol_mod, only: SOLVNT
+      use dorps_mod, only: DOCOOR, DOREPS
 #include "implicit.h"
 C
       INTEGER :: I
@@ -507,7 +507,6 @@ C
 #include "abainf.h"
 #include "inforb.h"
 #include "cbirea.h"
-#include "dorps.h"
 C
       LOGICAL NODMAT,NOFMAT
       DIMENSION DMAT(*), IREPDM(NDMAT), IFCTYP(NDMAT),
@@ -811,6 +810,9 @@ C     Written by Henrik Koch and Paal Dahle July-1994
 C
 C   MI: Added TEC changes....
 C
+#ifdef PRG_DIRAC
+      use dcbgrd_mod, only: GRADEE
+#endif
       use mxcent_mod, only: MXCOOR
       use priunit_mod, only: LUPRI
 !      use infpar_mod, only: ICOUNT, MPARID, NODES, TIMING
@@ -824,9 +826,7 @@ C
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
       INTEGER :: I,J,K
-#ifdef PRG_DIRAC
-#include "dcbgrd.h"
-#else
+#ifndef PRG_DIRAC
 #include "energy.h"
 #endif
 #include "suscpt.h"
@@ -1039,7 +1039,9 @@ C  /* Deck timres */
 C
 C     Written by Henrik Koch and Paal Dahle Nov-1993
       use priunit_mod, only: LUPRI
-!      use dcbgrd_mod, only: DMXCPT, DMXWLT, RELGRD
+#if defined (PRG_DIRAC) && defined (VAR_MPI)
+      use dcbgrd_mod, only: DMXCPT, DMXWLT, RELGRD
+#endif
 !      use infpar_mod, only: IPRPAR, NODE, NODES
       use mxcent_mod, only: MXCOOR
       use interface_to_mpi
@@ -1052,9 +1054,6 @@ C     Written by Henrik Koch and Paal Dahle Nov-1993
       INTEGER :: I
 #include "infpar.h"
 C
-#ifdef PRG_DIRAC
-#include "dcbgrd.h"
-#endif
 C
       INTEGER   NSTAT(NODES)
 
@@ -1190,6 +1189,9 @@ CMI  TEC changes for LAO (2003,2006)
 
 !      use inforb_mod, only: N2BASX, NNBASX
 !      use dcbgen_mod, only: RELCAL
+#ifdef PRG_DIRAC
+      use dcbgrd_mod, only: GRADEE
+#endif
       use mxcent_mod, only: MXCOOR
 !      use infpar_mod, only: MYTID, PARHER
       use priunit_mod, only: LUPRI
@@ -1203,7 +1205,6 @@ C
 #include "infpar.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
-#include "dcbgrd.h"
 #else
 #include "gnrinf.h"
 #include "energy.h"
@@ -1342,7 +1343,6 @@ C     Written by Henrik Koch and Paal Dahle
 C     Revised Oct 4 1996 - tsaue
 C
 !      use abainf_mod, only: DOSYM
-!      use dorps_mod, only: DOCOOR, DOREPS
 !      use infpar_mod, only: IPRPAR, MPARID, NODES, NTASK, TIMING
       use symmet_mod, only: MAXREP
       use maxorb_mod, only: MXCORB
@@ -1365,6 +1365,7 @@ C
       use hrunit_mod, only: LUDASP, LUINTA, LUONEL, LUSOL, LUSUPM
       use molinp_mod, only: NCLINE
       use cbisol_mod, only: NCNTCV, SOLVNT
+      use dorps_mod, only: DOCOOR, DOREPS
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
@@ -1382,7 +1383,6 @@ C
 #include "inforb.h"
 #include "cbirea.h"
 C
-#include "dorps.h"
 #include "abainf.h"
       DIMENSION WORK(*), DSEND(2), ISEND(2)
       CHARACTER*6 NAVN
@@ -1651,7 +1651,9 @@ CMI changes from TEC for LAO
       use dummy_mod, only: DUMMY, IDUMMY
       use maxorb_mod, only: MXCORB, MXSHEL
       use nuclei_mod, only: NUCDEP
-!      use dcbgrd_mod, only: GRADEE, GRADNN
+#ifdef PRG_DIRAC
+      use dcbgrd_mod, only: GRADEE, GRADNN
+#endif
       use priunit_mod, only: LUPRI
       use twocom_mod
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -1684,7 +1686,6 @@ CMI changes from TEC for LAO
      &          IJSHEL(2),INDEX_IJ(*),TIMES(*)
 C
 #ifdef PRG_DIRAC
-#include "dcbgrd.h"
 #include "dcbham.h"
 #else
 #include "energy.h"
@@ -2074,14 +2075,15 @@ C     Written by Henrik Koch and Paal Dahle Nov-1993.
 C
 CMi TECs changes for LAO
 C
+#if defined (PRG_DIRAC) && defined (VAR_MPI)
+      use dcbgrd_mod, only: GRADEE
+#endif
       use mxcent_mod, only: MXCOOR
 !      use infpar_mod, only: ICOUNT, IPRPAR, MPARID, TIMING
       use interface_to_mpi
 #include "implicit.h"
       INTEGER :: I
-#ifdef PRG_DIRAC
-#include "dcbgrd.h"
-#else
+#ifndef PRG_DIRAC
 #include "energy.h"
 #endif
 #include "suscpt.h"

@@ -5412,7 +5412,6 @@ C***********************************************************************
 !      use dcbbas_mod, only: NFBAS
 !      use dcbham_mod, only: BLOCKD, BSS, CAP, CMPEIG, CONT2C, DKH1, DKH2, DO2C4C, DO4C2C, DOASHIFT, DOEFFQED, ECPCALC, ESHIFT, FAKE2C, FREEPJ, GAUNT, HFXATT, HFXFAC, HFXMU, I2CHAM, IBSS, ICTLV1C, IMFCH, INI2C, INTV1C, IPANGMOM, IPBETAMT, IPKINERG, IPMOLFLD, IPOVRLAP, IPR1OP, IPRHAM, IPSPNMOM, IPSPNORB, IPVEMB0, ISORDER_AMFI_X2C, LEVYLE, LSCALE_DFT_GAUNT, MAX1OPER, MC, MDIRAC, N1OPER, NOAMFI, NONREL, NOPRTR, NOSFMU, NOSMLV, NOSPIN, ONECAP, ONECNV, ONECOFF, ONESYS, PROJEC, PROOWN, QDOTS, QED, SMLV1C, SOLVEN, SPINFR, SPINFR2, SSMTRC, START2C, TRMO4C2C, TRS_MIX, URKBAL, USEDF, VEXTPJ, WRITE_JZ_MATRIX, WRITE_K_MATRIX, X2C, X2CMMF, YREQ1, ZORA, ZORA4, ZORASC
 !      use dgroup_mod, only: FREP, LINEAR, NBSYM, NFSYM, NZC1
-!      use orgcom_mod, only: DIPORG, GAGORG, GAGORG_SET, ORIGIN
       use dirac_cfg
       use fde_mod, only: fde_input_init,fde_dirac_input
       use dft_cfg
@@ -5435,6 +5434,7 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dummy_mod, only: IDUMMY
       use nuclei_mod, only: NAMDEP, NAMN, NONT, NONTYP, NUCDEP
+      use orgcom_mod, only: DIPORG, GAGORG, GAGORG_SET, ORIGIN
 #include "implicit.h"
       INTEGER :: I,J
       PARAMETER (NTABLE = 76,NDIR = 16)
@@ -5451,7 +5451,6 @@ C
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbxpr.h"
-#include "orgcom.h"
 #include "codata.h"
 C
       LOGICAL  SYMSTP,TRSSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,

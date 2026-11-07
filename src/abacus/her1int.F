@@ -68,7 +68,7 @@ C  /* Deck pr1dr1 */
       use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX,
      &  LCLASS, NCENT, NHKT, NLRGSH, NSMLSH, NUCO, NUMCF, SPHR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use orgcom_mod, only: ORIGIN
+      use orgcom_mod, only: CAVORG, CMXYZ, DIPORG, GAGORG, ORIGIN
       use pi_mod, only: PI
 !      use ccom_mod, only: THRS
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -94,7 +94,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "orgcom.h"
 #include "ccom.h"
 C
 C
@@ -1143,7 +1142,7 @@ C MI/HJAaJ - added new integrals for NMR & magnetizabilities with LAO
       use onecom_mod
       use pi_mod, only: PI
       use priunit_mod, only: LUPRI
-!      use orgcom_mod, only: CAVORG, CMXYZ, DIPORG, GAGORG, ORIGIN
+      use orgcom_mod, only: CAVORG, CMXYZ, DIPORG, GAGORG, ORIGIN
       use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXPRIM
       use primit_mod, only: PRICCF, PRIEXP
@@ -1162,7 +1161,6 @@ C
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
       integer :: ncentc(*)
 C
-#include "orgcom.h"
 #ifdef PRG_DIRAC
 #else
 #include "gnrinf.h"
@@ -2044,7 +2042,7 @@ C  /* Deck pr1prd */
 !     Special subroutine for DSO - diamagnetic spin-orbit integrals
 !
       use symmet_mod, only: FMULT, ISYMAX, MAXOPR, PT
-!      use orgcom_mod, only: ORIGIN
+      use orgcom_mod, only: ORIGIN
       use maxorb_mod, only: MXCORB, MXPRIM
       use primit_mod, only: PRICCF, PRIEXP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -2064,7 +2062,6 @@ C
      &          CORCZ(*), SHLINT(KCKTAB,*), AHGTF(*),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,3)
 C
-#include "orgcom.h"
 C
       XYZ(I,J) = PT(IAND(ISYMAX(I,1),J))
 C
@@ -2835,7 +2832,7 @@ C     K. Ruud, Aug.-93.
 C     Rewritten in order to separate dipole origin, aug.-94 KR
 C
       use maxaqn_mod, only: MXAQN
-!      use orgcom_mod, only: DIPORG
+      use orgcom_mod, only: DIPORG
       use onecom_mod, only: CORAX, CORAY, CORAZ, KCKTA, KCKTAB, KCKTB
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
@@ -2843,7 +2840,6 @@ C
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0, D2I = 1.0D0/D2
       DIMENSION SHLINT(KCKTAB,9)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "orgcom.h"
       INT = 0
       ADX = CORAX - DIPORG(1)
       ADY = CORAY - DIPORG(2)
@@ -2911,7 +2907,7 @@ C  /* Deck cm2int */
 C
 C     K. Ruud, Aug.-93
 C
-!      use orgcom_mod, only: DIPORG
+      use orgcom_mod, only: DIPORG
       use onecom_mod, only: CORAX, CORAY, CORAZ, KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
@@ -2920,7 +2916,6 @@ C
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0
       DIMENSION SHLINT(KCKTAB,18)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "orgcom.h"
       INT = 0
       ADX = CORAX - DIPORG(1)
       ADY = CORAY - DIPORG(2)
@@ -3088,7 +3083,7 @@ C     K. Ruud, February.-02.
 C     Based on CM1INT
 C
       use maxaqn_mod, only: MXAQN
-!      use orgcom_mod, only: DIPORG
+      use orgcom_mod, only: DIPORG
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: CORAX, CORAY, CORAZ, KCKTA, KCKTAB, KCKTB
       use kinds_mod, only: dp
@@ -3099,7 +3094,6 @@ C
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 !radovan: dummy just to make it compile
       character(16) :: field3
-#include "orgcom.h"
       INT = 0
       ADX = CORAX - DIPORG(1)
       ADY = CORAY - DIPORG(2)
@@ -5064,7 +5058,7 @@ C--------------------------------------------------------------------------
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use primit_mod, only: PRICCF, PRIEXP
       use maxaqn_mod, only: MXAQN, MXQN
-!      use orgcom_mod, only: ORIGIN
+      use orgcom_mod, only: ORIGIN
       use onecom_mod
       use pi_mod, only: PI
       use aovec_mod, only: MXCONT
@@ -5082,7 +5076,6 @@ C--------------------------------------------------------------------------
      &          FACINT(NATOMC), CORCX(NATOMC), CORCY(NATOMC),
      &          CORCZ(NATOMC), SHLINT(KCKTAB,*), AHGTF(*),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "orgcom.h"
       NUCPN1 = 0
       DO 60 IREP = 0, MAXREP
          DO 50 IATOM = 1, NUCIND
@@ -6601,7 +6594,7 @@ C     K.Ruud-94
 C
       use onecom_mod, only: CORAX, CORAY, CORAZ, KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
-!      use orgcom_mod, only: ORIGIN
+      use orgcom_mod, only: ORIGIN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -6613,7 +6606,6 @@ C
      &          LO((IORDER + 1)*(IORDER + 2)/2),
      &          MO((IORDER + 1)*(IORDER + 2)/2),
      &          NO((IORDER + 1)*(IORDER + 2)/2)
-#include "orgcom.h"
 C
 C
       INT = 0
@@ -6711,7 +6703,7 @@ C  /* Deck sl2in1 */
 C
 C     K.Ruud-94
 C
-!      use orgcom_mod, only: ORIGIN
+      use orgcom_mod, only: ORIGIN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use maxaqn_mod, only: MXAQN
       use onecom_mod, only: CORAX, CORAY, CORAZ, KCKTA, KCKTAB, KCKTB
@@ -6726,7 +6718,6 @@ C
      &          LO((IORDER + 1)*(IORDER + 2)/2),
      &          MO((IORDER + 1)*(IORDER + 2)/2),
      &          NO((IORDER + 1)*(IORDER + 2)/2)
-#include "orgcom.h"
 C
 C
       INT = 0
@@ -7243,7 +7234,7 @@ C  /* Deck pr1prv */
      &                  DIFABZ,DONUC1,DOMOM1,HUCFAC)
       use pi_mod, only: PI
       use nuclei_mod, only: GNUEXP, ISTBNU, NUCIND
-!      use orgcom_mod, only: ORIGIN
+      use orgcom_mod, only: ORIGIN
       use primit_mod, only: PRICCF, PRIEXP
       use symmet_mod, only: MAXREP
       use priunit_mod, only: LUPRI
@@ -7265,7 +7256,6 @@ C
      &          CORCZ(NATOMC), SHLINT(KCKTAB,*), AHGTF(*),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 C
-#include "orgcom.h"
 C
 C
 C Does only work for Tensor/Chiral effect!

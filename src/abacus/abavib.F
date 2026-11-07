@@ -235,7 +235,7 @@ C
 !      use cbivib_mod, only: DOVCD, HESFIL, HESPUN, IPRINT, MAXDIF, NINTCM
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use iratdef_mod, only: IRAT
-!      use dorps_mod, only: DOREPS
+      use dorps_mod, only: DOREPS
       use dummy_mod, only: IDUMMY
       use nuclei_mod, only: NATOMS, NFLOAT, NUCIND
 !      use abainf_mod, only: DIPDER, NUMHES, POLAR, RAMAN, VROA
@@ -250,7 +250,6 @@ C Used from common blocks:
 C   TAYMOL : HESMOL
 C
 #include "abainf.h"
-#include "dorps.h"
 #include "cbivib.h"
 C
       CALL QENTER('VIBCTL')
@@ -455,6 +454,7 @@ C      2) vibrational analysis (VIBANA)
 C      3) partition functions  (PRTFUN)
 C      4) vibrational polarizabilities (VIBPOL)
 C
+      use dorps_mod, only: DOREPS
       use maxorb_mod, only: MXCORB
       use cbisol_mod, only: SOLVNT
 !      use codata_mod, only: XFAMU, XTANG, XTKAYS, XTKMML
@@ -478,7 +478,6 @@ C
 C
 #include "gnrinf.h"
 #include "cbivib.h"
-#include "dorps.h"
 #include "cbilnr.h"
 #include "codata.h"
 C
@@ -1384,8 +1383,8 @@ C  /* Deck vibpol */
 C
 C     Vibrational polarization, implemented 19-Jul-1986 HJAaJ
 C     Ref: Rinaldi et al., Chem.Phys.Lett. 128 (1986) 177-181
-!      use dorps_mod, only: DOREPS
 !      use moldip_mod, only: POLFLT
+      use dorps_mod, only: DOREPS
       use symmet_mod, only: ISYMAX
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
@@ -1399,7 +1398,6 @@ C
       LOGICAL POLAR, ALLXYZ
       DIMENSION DGRAD(3,NCORD), VINRTI(3,3), EVAL(NCORD), EVEC(NCORD,*)
 #include "moldip.h"
-#include "dorps.h"
 C
       DIMENSION ALFVIB(3,3), ALFELE(3,3), AMAT(3,3), AVEC(3)
 C
@@ -3223,7 +3221,6 @@ include "implicit.h"
 C
 #include "cbiwlk.h"
 #include "abainf.h"
-#include "orgcom.h"
 C
       FAC = ALPHA2/(PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
       FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4)

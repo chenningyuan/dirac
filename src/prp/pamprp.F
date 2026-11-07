@@ -7999,7 +7999,6 @@ C
 C
 !#include "abainf.h"
 #include "spinro.h"
-!#include "orgcom.h"
 !#include "dgroup.h"
 !#include "dcbham.h"
 #include "codata.h"
@@ -9128,7 +9127,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use orgcom_mod, only: CMXYZ, GAGORG
+      use orgcom_mod, only: CMXYZ, GAGORG
 !      use dcbprp_mod, only: IPROTG, IPRPRP
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEE, XLR_SKIPEP
       use nuclei_mod, only: NATOMS, NFLOAT, NUCDEP
@@ -9142,7 +9141,6 @@ C
 C
       integer I,J
 C
-#include "orgcom.h"
 !#include "dcborb.h"
 #include "dcbprp.h"
 !#include "dcbxpr.h"
@@ -9412,7 +9410,7 @@ C***********************************************************************
       use nuclei_mod, only: CORD, ISOTOP, ISTBNU, IZATOM, NUCIND
       use symmet_mod, only: IPTAX, ISYMAX, MAXOPR, PT
 !      use rotg_mod, only: GFANUC
-!      use orgcom_mod, only: CMXYZ
+      use orgcom_mod, only: CMXYZ
 !      use dgroup_mod, only: LINEAR
 !      use dcbprp_mod, only: LONDON
 !      use codata_mod, only: PMASS, XFAMU
@@ -9422,7 +9420,6 @@ C
       integer I,J
 C
 #include "rotg.h"
-#include "orgcom.h"
 #include "dgroup.h"
 #include "dcbprp.h"
 #include "codata.h"
@@ -11378,7 +11375,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: IPTAX
-!      use orgcom_mod, only: CMXYZ
+      use orgcom_mod, only: CMXYZ
 !      use spinro_mod, only: LINDET, SPRDNL
 !      use dgroup_mod, only: LINEAR
 !      use dcbham_mod, only: SPINFR, URKBAL, ZORA
@@ -11392,7 +11389,6 @@ C
 #include "dcbprp.h"
 #include "dcbexp.h"
 #include "dcbxlr.h"
-#include "orgcom.h"
 #include "spinro.h"
 #include "dgroup.h"
 #include "dcbham.h"
@@ -11925,14 +11921,13 @@ C
       use nuclei_mod, only: CORD, ISTBNU, NUCDEP, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use spinro_mod, only: SPRDNL
-!      use orgcom_mod, only: CMXYZ
+      use orgcom_mod, only: CMXYZ
       implicit none
 C
       integer I,J
 C
 !#include "abainf.h"
 #include "spinro.h"
-#include "orgcom.h"
 C
       integer IPRINT,IATOM,ISYMOP,NATOM,NCMAT
 C
@@ -12008,7 +12003,7 @@ C***********************************************************************
      &  NAMDEP, NUCDEP, NUCIND
       use symmet_mod, only: IPTAX, ISYMAX, MAXOPR, PT
 !      use spinro_mod, only: GTRANT, SPRNUC, SPRNUC2, SPRNUC3
-!      use orgcom_mod, only: CMXYZ
+      use orgcom_mod, only: CMXYZ
 !      use dgroup_mod, only: LINEAR
 !      use codata_mod, only: ALPHA2, PMASS, XFAMU, XTHZ
       use consts_mod, only: D0, D1, D2, D6
@@ -12017,7 +12012,6 @@ C
       integer I,J
 C
 #include "spinro.h"
-#include "orgcom.h"
 #include "dgroup.h"
 #include "codata.h"
 C
@@ -13050,7 +13044,7 @@ C***********************************************************************
      &  NAMDEP, NUCDEP, NUCIND
       use symmet_mod, only: IPTAX, ISYMAX, MAXOPR, PT
 !      use spinro_mod, only: GTRANT
-!      use orgcom_mod, only: CMXYZ
+      use orgcom_mod, only: CMXYZ
 !      use codata_mod, only: CVEL, GFERMI, S2THETAW, XFAMU, XTHZ
       use consts_mod, only: D0, D1, D2, D4
       implicit none
@@ -13058,7 +13052,6 @@ C
       integer I,J
 C
 #include "spinro.h"
-#include "orgcom.h"
 #include "codata.h"
 C
       integer K,KATOM,IPRINT,IATOM,ICOOR,ISYMOP,IX,IY,
