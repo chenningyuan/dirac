@@ -20,7 +20,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                  BUF1,BUF2,
      &                  VOOOO,VOOOOA,VVOOO,VVOOOA,VVVOO,VVVOOA,
      &                  VVOVO,VVOVOA,VVOVV,VVOVVA,VVVVV,VVVVVA,
-     &                  EPS,FOO,FVO,FVV,BREIT_LOC,SRTALL,INTERFACE_LOC)
+     &                  EPS,FOO,FVO,FVV,BREIT_LOC,SRTALL,INTERFACE_LOC,
+     &                  ONEPAS)
 C
       use interface_to_mpi
       use spinor_indexing
@@ -31,6 +32,14 @@ C
 C     Reads 1-electron and 2-electron integrals
 C     Constructs Fock matrix elements
 C     This version reads from files created by TMOONE & ROTRAN or DIRAC
+C
+C     ONEPAS = .TRUE. : all classes, including the local VOVV and VVVV
+C     integrals, are sorted while reading the integral file only once.
+C     This requires separate arrays VVOVV(NV5PAR), VVVVV(NV6PAR) and
+C     VVOVO(NV4) (and the A arrays), see CCSETI; not used with Breit.
+C     ONEPAS = .FALSE. : the VOVV and VVVV integrals are sorted in
+C     separate passes, possibly several, over the integral file, with
+C     VVOVO, VVOVV and VVVVV sharing the same buffer of size NVT.
 C
 C---------------Routines called----------------------------------------
 C
@@ -63,7 +72,7 @@ C
       REAL*8 VVOVV(RCW,*),VVOVVA(RCW,*),VVVVV(RCW,*),VVVVVA(RCW,*)
       REAL*8 BUF1(*),BUF2(*),CBUF(RCW,*)
       REAL*8 EPS(*), ORIG_TOTSCF
-      LOGICAL BREIT_LOC,SRTALL,TOBE
+      LOGICAL BREIT_LOC,SRTALL,TOBE,ONEPAS
       CHARACTER*10 INTERFACE_LOC
 C
 C---------------Local variables--------------------------------------
@@ -75,7 +84,7 @@ C
       CHARACTER*10 FNODE,LFNAM
       integer dummy,i,idum,idummy,ind1,ind2,inze,ipass,irep,itrs,itrsgn
       integer ityp,jtrs,mreader,n5,n6,nkr,nkr2,nonzr,npass,nsec,nsec5
-      integer nsec6,nze,INTTYP
+      integer nsec6,nze,INTTYP,iatyp1
 C
 C---------------Executable code--------------------------------------
 C
@@ -154,6 +163,21 @@ C
       CALL WAIO_OPEN(ITAPT+2)
       CALL WAIO_OPEN(ITAPT+3)
       CALL WAIO_OPEN(ITAPT+4)
+      IF (ONEPAS) THEN
+         CALL WAIO_OPEN(ITAPT+5)
+         CALL WAIO_OPEN(ITAPT+6)
+         IATYP1 = 0
+         N5F = 1
+         N5L = NV5PAR
+         N5  = NV5PAR
+         N6F = 1
+         N6L = NV6PAR
+         N6  = NV6PAR
+         WRITE (IW,'(/A)') ' All integral classes are sorted in a'//
+     &                     ' single pass'
+      ELSE
+         IATYP1 = 1
+      ENDIF
 C
 C  We may have already sorted these integrals when restarting, in that case jump ahead
 C
@@ -174,6 +198,12 @@ C
       CALL XCOPY (NV2,A0,0,VVOOOA,1)
       CALL XCOPY (NV3,A0,0,VVVOOA,1)
       CALL XCOPY (NV4,A0,0,VVOVOA,1)
+      IF (ONEPAS) THEN
+         CALL XCOPY (N5,A0,0,VVOVV,1)
+         CALL XCOPY (N5,A0,0,VVOVVA,1)
+         CALL XCOPY (N6,A0,0,VVVVV,1)
+         CALL XCOPY (N6,A0,0,VVVVVA,1)
+      ENDIF
 C
       CALL DAYTIME (DATEX,TIMEX)
       WRITE(IW,*)
@@ -181,7 +211,7 @@ C
      &     'Start sorting of integral classes at '//datex//' '//timex
       WRITE(IW,*)
 C
-  100 CALL GET2INTS (MDINT,KR,NSP,ITRSGN,1,INDK,INDL,
+  100 CALL GET2INTS (MDINT,KR,NSP,ITRSGN,IATYP1,INDK,INDL,
      &               NONZR,NZE,CBUF,IBUF,MREADER,PERMSYM)
       IF (NONZR.LT.0) THEN
 C        We ran out of integrals on this node
@@ -236,6 +266,34 @@ C            This was the last node, we are done processing the integrals, goto 
                IND = IVOVO(IREP) + (IND1-1)*NVO(IREP) + IND2
                VVOVOA(1,IND) = CBUF(1,I) * ITRS
                IF (CARITH) VVOVOA(2,IND) = CBUF(2,I) * JTRS
+            ELSEIF (ITYP.EQ.14.OR.ITYP.EQ.-14) THEN
+C              Single pass only: local VOVV integrals
+               IND = IVOVVT(IREP) + (IND1-1)*NVO(IREP) + IND2
+               IF (IND.GT.IDIST(3,2,IREP).AND.
+     &             IND.LE.IDIST(4,2,IREP)) THEN
+                  IND = IND - IDIST(3,2,IREP) + IDIST(5,2,IREP)
+                  IF (ITYP.GT.0) THEN
+                     VVOVV(1,IND) = CBUF(1,I) * ITRS
+                     IF (CARITH) VVOVV(2,IND) = CBUF(2,I) * JTRS
+                  ELSE
+                     VVOVVA(1,IND) = CBUF(1,I) * ITRS
+                     IF (CARITH) VVOVVA(2,IND) = CBUF(2,I) * JTRS
+                  ENDIF
+               ENDIF
+            ELSEIF (ITYP.EQ.16.OR.ITYP.EQ.-16) THEN
+C              Single pass only: local VVVV integrals
+               IND = IVVVVTT(IREP) + (IND1-1)*NVVT(IREP) + IND2
+               IF (IND.GT.IDIST(3,1,IREP).AND.
+     &             IND.LE.IDIST(4,1,IREP)) THEN
+                  IND = IND - IDIST(3,1,IREP) + IDIST(5,1,IREP)
+                  IF (ITYP.GT.0) THEN
+                     VVVVV(1,IND) = CBUF(1,I) * ITRS
+                     IF (CARITH) VVVVV(2,IND) = CBUF(2,I) * JTRS
+                  ELSE
+                     VVVVVA(1,IND) = CBUF(1,I) * ITRS
+                     IF (CARITH) VVVVVA(2,IND) = CBUF(2,I) * JTRS
+                  ENDIF
+               ENDIF
             ENDIF
   102 CONTINUE
       GOTO 100
@@ -263,6 +321,12 @@ C
       CALL RWRIT(ITAPT+2,VVOOO,NV2*RCW*IRW,1)
       CALL RWRIT(ITAPT+3,VVVOO,NV3*RCW*IRW,1)
       CALL RWRIT(ITAPT+4,VVOVO,NV4*RCW*IRW,1)
+      IF (ONEPAS) THEN
+         CALL XAXPY (N5,-A1,VVOVVA,1,VVOVV,1)
+         CALL RWRIT(ITAPT+5,VVOVV,N5*RCW*IRW,1)
+         CALL XAXPY (N6,-A1,VVVVVA,1,VVVVV,1)
+         CALL RWRIT(ITAPT+6,VVVVV,N6*RCW*IRW,1)
+      ENDIF
       CALL XTIME(0,2,'-- Sorting: OOOO to VOVO     ')
 C
 C     This is a restart point : save the files and update status.
@@ -290,6 +354,7 @@ C
 C
 C Now get the VOVV integrals
 C
+      IF (ONEPAS) GOTO 450
       CALL WAIO_OPEN(ITAPT+5)
 C
 C  We may have already sorted these integrals when restarting, in that case jump ahead
@@ -435,6 +500,7 @@ C        call relcc_restart_check('VOVV sorted integrals        ',IW)
 C
 C     GET THE VVVV INTEGRALS
 C
+      IF (ONEPAS) GOTO 500
       CALL WAIO_OPEN(ITAPT+6)
 C
       IF (IMSTAT(3).EQ.3) GOTO 550 
@@ -1007,7 +1073,7 @@ C
       integer i,i0,i1,icase,icc,ijsg,ijsign,ikind,iktyp,ipi,itr1,itr2
       integer ityp,j,j0,jcase,jlind,jltyp,k,k0,k1,kiind,kityp,klsg,l,l0
       integer itr, itrsg_r,itrsg_i
-      integer nij1,nij2,nkl1,nkl2,nocmin,nocmax
+      integer nij1,nij2,nkl1,nkl2,nocmin,nocmax,ktyp1,ktyp2
 C
 C---------------Executable code--------------------------------------
 C
@@ -1106,6 +1172,17 @@ C     combinations fits the classes of this pass are skipped before
 C     the expansion.
 C
       CALL XTIME(0,1,'--- Sorting: expansion       ')
+C
+C     Classes beyond VOVO that are kept: IATYP, or both VOVV and VVVV
+C     for IATYP=0 (all classes in one pass)
+C
+      IF (IATYP.EQ.0) THEN
+         KTYP1 = 14
+         KTYP2 = 16
+      ELSE
+         KTYP1 = IATYP
+         KTYP2 = IATYP
+      ENDIF
       NOCMIN = 0
       NOCMAX = 4
       IF (.NOT.FOCKSP) THEN
@@ -1165,7 +1242,8 @@ C                 Contribution to direct part
                   IBUF(6,NZE) = ITRSG_I
                   IBUF(7,NZE) = INZ
 C                 Skip unnecessary integrals
-                  IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
+                  IF (ITYP.GT.6.AND.ITYP.NE.KTYP1.AND.
+     &                ITYP.NE.KTYP2) NZE=NZE-1
                ELSE
 C                 Contribution to exchange part
                   ITYP = (PAIR_INDEX(J,L,1,1)-1)*4
@@ -1178,7 +1256,8 @@ C                 Contribution to exchange part
                   IBUF(6,NZE) = ITRSG_I
                   IBUF(7,NZE) = INZ
 C                 Skip unnecessary integrals
-                  IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
+                  IF (ITYP.GT.6.AND.ITYP.NE.KTYP1.AND.
+     &                ITYP.NE.KTYP2) NZE=NZE-1
                ENDIF
             ENDIF
             I = KR(-IKR)
@@ -1230,7 +1309,8 @@ C                   Canonical integral : direct
                     IBUF(6,NZE) = ITRSG_I
                     IBUF(7,NZE) = INZ
 C                   Skip unnecessary integrals
-                    IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
+                    IF (ITYP.GT.6.AND.ITYP.NE.KTYP1.AND.
+     &                  ITYP.NE.KTYP2) NZE=NZE-1
                   ENDIF
 
                   IF (JLIND.NE.0.AND.KIIND.NE.0) THEN
@@ -1245,7 +1325,8 @@ C                   Canonical integral : exchange
                     IBUF(6,NZE) = ITRSG_I
                     IBUF(7,NZE) = INZ
 C                   Skip unnecessary integrals
-                    IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
+                    IF (ITYP.GT.6.AND.ITYP.NE.KTYP1.AND.
+     &                  ITYP.NE.KTYP2) NZE=NZE-1
                   ENDIF
                ENDDO
             ENDDO
@@ -1310,7 +1391,8 @@ C                         Canonical integral : direct
                           IBUF(6,NZE) = ICC * IJSG * KLSG
                           IBUF(7,NZE) = INZ
 C                         Skip unnecessary integrals
-                          IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
+                          IF (ITYP.GT.6.AND.ITYP.NE.KTYP1.AND.
+     &                        ITYP.NE.KTYP2) NZE=NZE-1
                         ENDIF
 C
                         IF (JLIND.NE.0.AND.KIIND.NE.0) THEN
@@ -1325,7 +1407,8 @@ C                         Canonical integral : exchange
                           IBUF(6,NZE) = ICC * IJSG * KLSG
                           IBUF(7,NZE) = INZ
 C                         Skip unnecessary integrals
-                          IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
+                          IF (ITYP.GT.6.AND.ITYP.NE.KTYP1.AND.
+     &                        ITYP.NE.KTYP2) NZE=NZE-1
                         ENDIF
                       ENDDO
                       ENDDO
@@ -1396,7 +1479,8 @@ C                            Contribution to direct part
                              IBUF(6,NZE) = ICC * IJSG * KLSG
                              IBUF(7,NZE) = INZ
 C                            Skip unnecessary integrals
-                             IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
+                             IF (ITYP.GT.6.AND.ITYP.NE.KTYP1.AND.
+     &                           ITYP.NE.KTYP2) NZE=NZE-1
                           ELSE
 C                            Contribution to exchange part
                              ITYP = (PAIR_INDEX(J,L,1,1)-1)*4
@@ -1409,7 +1493,8 @@ C                            Contribution to exchange part
                              IBUF(6,NZE) = ICC * IJSG * KLSG
                              IBUF(7,NZE) = INZ
 C                            Skip unnecessary integrals
-                             IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
+                             IF (ITYP.GT.6.AND.ITYP.NE.KTYP1.AND.
+     &                           ITYP.NE.KTYP2) NZE=NZE-1
                           ENDIF
                        ENDIF
                      J = I1
