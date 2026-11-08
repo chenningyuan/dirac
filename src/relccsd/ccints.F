@@ -161,7 +161,8 @@ C
 C
 C     RE-ENTRY POINT IN CASE THE GAUNT INTERACTION HAS TO BE ADDED
 C
-    1 ICOUNT = 0
+    1 CALL XTIME(0,1,'-- Sorting: OOOO to VOVO     ')
+      ICOUNT = 0
 C
 C     GET THE OOOO, VOOO, VVOO AND VOVO INTEGRALS
 C
@@ -262,6 +263,7 @@ C
       CALL RWRIT(ITAPT+2,VVOOO,NV2*RCW*IRW,1)
       CALL RWRIT(ITAPT+3,VVVOO,NV3*RCW*IRW,1)
       CALL RWRIT(ITAPT+4,VVOVO,NV4*RCW*IRW,1)
+      CALL XTIME(0,2,'-- Sorting: OOOO to VOVO     ')
 C
 C     This is a restart point : save the files and update status.
 C
@@ -299,6 +301,7 @@ C
 C     Determine # of passes necessary for treating VOVV integrals
 C     on a specific node
 C
+      CALL XTIME(0,1,'-- Sorting: VOVV classes     ')
       NPASS = (NV5PAR-1) / NVT + 1
       NSEC5 = 1
       N5L = 0
@@ -407,6 +410,7 @@ C ----------------------
       WRITE(IW,'(A,I6,A)') ' Pass',ipass,' ended at '//datex//' '//timex
       CALL FLSHFO (IW)
       ENDDO
+      CALL XTIME(0,2,'-- Sorting: VOVV classes     ')
 C ----------------------
 C
 C     This is a restart point : save the files and update status.
@@ -435,6 +439,7 @@ C
 C
       IF (IMSTAT(3).EQ.3) GOTO 550 
 C
+      CALL XTIME(0,1,'-- Sorting: VVVV classes     ')
       NPASS = (NV6PAR-1) / NVT + 1
       NSEC6 = 1
       N6L = 0
@@ -542,6 +547,7 @@ C --------------------------
       WRITE(IW,'(A,I6,A)') ' Pass',ipass,' ended at '//datex//' '//timex
       CALL FLSHFO (IW)
       ENDDO
+      CALL XTIME(0,2,'-- Sorting: VVVV classes     ')
 C --------------------------
 C
   500 CLOSE(MDINT)
@@ -1001,6 +1007,7 @@ C
       integer i,i0,i1,icase,icc,ijsg,ijsign,ikind,iktyp,ipi,itr1,itr2
       integer ityp,j,j0,jcase,jlind,jltyp,k,k0,k1,kiind,kityp,klsg,l,l0
       integer itr, itrsg_r,itrsg_i
+      integer nij1,nij2,nkl1,nkl2,nocmin,nocmax
 C
 C---------------Executable code--------------------------------------
 C
@@ -1011,6 +1018,7 @@ C     be distributed over the nodes or only on the master
 C     They will always need to be dsitributed at this point
 C 
 
+      CALL XTIME(0,1,'--- Sorting: read integrals  ')
    1  CONTINUE
       IF (MYPROC.EQ.MREADER) THEN
 C
@@ -1063,10 +1071,12 @@ C     For real groups we skip the zero imaginary part in MOLFDIR format.
       ENDIF
 
       ENDIF
+      CALL XTIME(0,2,'--- Sorting: read integrals  ')
 C     End of reader branch, now all nodes are active again
 
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1 ) THEN
+        CALL XTIME(0,1,'--- Sorting: broadcast       ')
         call interface_mpi_BCAST(IKR,  1,MREADER,global_communicator)
         call interface_mpi_BCAST(JKR,  1,MREADER,global_communicator)
         call interface_mpi_BCAST(NONZR,1,MREADER,global_communicator)
@@ -1078,10 +1088,44 @@ C     End of reader branch, now all nodes are active again
           call interface_mpi_bcast_r2_work_f77(CBUF,RCW,NONZR,
      &                   MREADER,global_communicator)
         ENDIF
+        CALL XTIME(0,2,'--- Sorting: broadcast       ')
       ENDIF
 #endif
       IF (NONZR.EQ.-1) RETURN
 
+C
+C     Without Fock space, the number of occupied indices of an integral
+C     is the same for all its index permutations, and it determines
+C     which classes it can contribute to: >=2 for OOOO to VOVO
+C     (IATYP=1), 1 for VOVV (IATYP=14) and 0 for VVVV (IATYP=16).
+C     Time reversal may change the number when the occupation of a
+C     Kramers pair is split (open shells), so we consider the numbers
+C     NIJ1/NIJ2 (NKL1/NKL2) of occupied indices in the pair IJ (KL)
+C     without and with time reversal. Integrals for which none of the
+C     combinations fits the classes of this pass are skipped before
+C     the expansion.
+C
+      CALL XTIME(0,1,'--- Sorting: expansion       ')
+      NOCMIN = 0
+      NOCMAX = 4
+      IF (.NOT.FOCKSP) THEN
+         IF (IATYP.EQ.1) THEN
+            NOCMIN = 2
+         ELSEIF (IATYP.EQ.14) THEN
+            NOCMIN = 1
+            NOCMAX = 1
+         ELSEIF (IATYP.EQ.16) THEN
+            NOCMAX = 0
+         ENDIF
+         NIJ1 = NOCSP(KR(IKR)) + NOCSP(KR(JKR))
+         NIJ2 = NOCSP(KR(-IKR)) + NOCSP(KR(-JKR))
+         IF ((NIJ1.GT.NOCMAX.OR.NIJ1+2.LT.NOCMIN).AND.
+     &       (NIJ2.GT.NOCMAX.OR.NIJ2+2.LT.NOCMIN)) THEN
+            NZE = 0
+            CALL XTIME(0,2,'--- Sorting: expansion       ')
+            RETURN
+         ENDIF
+      ENDIF
       IJSIGN = SIGN(1,IKR*JKR) * ITRSGN
 C
 C
@@ -1093,6 +1137,10 @@ C
       DO INZ = 1, NONZR
          KKR = INDK(INZ)
          LKR = INDL(INZ)
+         NKL1 = NOCSP(KR(KKR)) + NOCSP(KR(LKR))
+         NKL2 = NOCSP(KR(-KKR)) + NOCSP(KR(-LKR))
+         IF (.NOT.(OKOCC(NIJ1+NKL1).OR.OKOCC(NIJ1+NKL2).OR.
+     &             OKOCC(NIJ2+NKL1).OR.OKOCC(NIJ2+NKL2))) CYCLE
          I = KR(IKR)
          J = KR(JKR)
          K = KR(KKR)
@@ -1309,6 +1357,10 @@ C
       DO 150 INZ = 1, NONZR
          KKR = INDK(INZ)
          LKR = INDL(INZ)
+         NKL1 = NOCSP(KR(KKR)) + NOCSP(KR(LKR))
+         NKL2 = NOCSP(KR(-KKR)) + NOCSP(KR(-LKR))
+         IF (.NOT.(OKOCC(NIJ1+NKL1).OR.OKOCC(NIJ1+NKL2).OR.
+     &             OKOCC(NIJ2+NKL1).OR.OKOCC(NIJ2+NKL2))) CYCLE
          I0 = KR(IKR)
          J0 = KR(JKR)
          IJSG = 1
@@ -1380,6 +1432,7 @@ C                            Skip unnecessary integrals
   140    CONTINUE
   150 CONTINUE
       ENDIF
+      CALL XTIME(0,2,'--- Sorting: expansion       ')
 C
       RETURN
 10010 WRITE(6,'(/A/A,L10,2A)')
@@ -1390,6 +1443,22 @@ C
      & 'ERROR branch taken when reading 2-e integrals',
      & 'CARITH =',CARITH,', INTERFACE =',INTERFACE
       CALL QUIT('ERROR READING 2-E INTEGRALS')
+C
+      CONTAINS
+C
+      INTEGER FUNCTION NOCSP(ISP)
+C     1 if spinor ISP is occupied, 0 otherwise (pair type of (ISP,ISP)
+C     is 1 for an occupied and 4 for a virtual spinor, see MKINDEX)
+      INTEGER ISP
+      NOCSP = (4 - PAIR_INDEX(ISP,ISP,1,1)) / 3
+      END FUNCTION NOCSP
+C
+      LOGICAL FUNCTION OKOCC(N)
+C     Can an integral with N occupied indices contribute in this pass ?
+      INTEGER N
+      OKOCC = N.GE.NOCMIN.AND.N.LE.NOCMAX
+      END FUNCTION OKOCC
+C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETFM (NSP,EPS,FOO,FVO,FVV,E0,E1)
