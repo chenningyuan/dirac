@@ -14,8 +14,7 @@
   - DFT with London orbitals (shielding, magnetizability): the XC reorthonormalization
     term uses the blocked linear-response integrator, and the direct spin-density term
     is evaluated and distributed with DGEMM (these XC terms were most of the run time).
-  - ExaCorr: OpenMP-parallel AO integrals and the first quarter-transformation as one ZGEMM
-    (integral transformation several times faster).
+  - ExaCorr: OpenMP-parallel AO integrals.
   - Builds with ExaCorr: pam sets OMP_STACKSIZE=200M if none of OMP_STACKSIZE,
     GOMP_STACKSIZE, KMP_STACKSIZE is defined. The threadprivate arrays of InteRest/ExaCorr
     (~100 MB) are placed in the stack of every OpenMP/MKL thread, so with the default

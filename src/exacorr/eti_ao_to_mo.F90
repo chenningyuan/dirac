@@ -535,10 +535,13 @@ module eti_ao_to_mo
 !        Do 1st and 2nd quarter-transformation
          ierr=construct_tensor_t(a1int_tensor,C8,a1int_dims,init_val=ZERO)
          ! call print_date('constructed a1 and a2')
-         call first_quarter_transform(mocoefa_tensor(1),aoint_tensor,a1int_tensor,aoint_dims,a1int_dims(1))
+         ierr=t_einsum("D(i,q,r,s)+=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefa_tensor(1),aoint_tensor)
+         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
          ierr=t_einsum("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefa_tensor(2))
          if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=21; return; endif
-         call first_quarter_transform(mocoefb_tensor(1),aoint_tensor,a1int_tensor,aoint_dims,a1int_dims(1))
+         ierr=initialize_tensor_t(a1int_tensor,ZERO)
+         ierr=t_einsum("D(i,q,r,s)=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefb_tensor(1),aoint_tensor)
+         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
          ierr=t_einsum("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefb_tensor(2))
          if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=22; return; endif
          ! call print_date('first ht done')
@@ -549,34 +552,6 @@ module eti_ao_to_mo
 !        call print_date('leaving ao2mo_eti')
 
         end subroutine do_ht1
-
-        subroutine first_quarter_transform (mocoef_tensor,l_tensor,d_tensor,l_dims,nmo)
-
-!        D(i,q,r,s) = conj(C(p,i)) * L(p,q,r,s): with the last three indices taken together
-!        this is D = C^H L, done as one ZGEMM on the (host, column-major) tensor bodies.
-!        The executors do this contraction with conjugation much slower and without threads.
-
-         implicit none
-
-         type(tensor_t), intent(inout) :: mocoef_tensor, l_tensor, d_tensor
-         integer(INTD), intent(in)     :: l_dims(4), nmo
-
-         type(C_PTR)          :: pc, pl, pd
-         complex(8), pointer  :: c(:,:), l(:,:), d(:,:)
-         integer              :: nao, ncol
-         integer(INTD)        :: ierr
-
-         nao  = l_dims(1)
-         ncol = l_dims(2)*l_dims(3)*l_dims(4)
-         ierr = direct_data_pointer(mocoef_tensor,pc)
-         ierr = direct_data_pointer(l_tensor,pl)
-         ierr = direct_data_pointer(d_tensor,pd)
-         call c_f_pointer(pc,c,(/nao,int(nmo)/))
-         call c_f_pointer(pl,l,(/nao,ncol/))
-         call c_f_pointer(pd,d,(/int(nmo),ncol/))
-         call zgemm('C','N',int(nmo),ncol,nao,(1.0d0,0.0d0),c,nao,l,nao,(0.0d0,0.0d0),d,int(nmo))
-
-        end subroutine first_quarter_transform
 
         subroutine do_ht2 (a2int_tensor,moint_tensor,aomo_spaces)
 
