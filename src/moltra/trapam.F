@@ -1989,9 +1989,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
-!      use blocks_mod, only: MAXSHL, NLRGBL
+      use blocks_mod, only: MAXSHL, NLRGBL
 #include "implicit.h"
-#include "blocks.h"
 C
       LOGICAL L2TYP(0:4),LBIT
 C
@@ -2090,11 +2089,10 @@ C*****************************************************************************
 !      use dgroup_mod, only: JBTOF, NBSYM, NFSYM
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
-!      use blocks_mod, only: NLRGBL
+      use blocks_mod, only: NLRGBL
 #include "implicit.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "blocks.h"
 C
       DIMENSION NSPCK(0:7,0:3),ISPCK(0:7,0:7,3)
       DIMENSION NBBASA(0:7,0:2),NBBASB(0:7,0:2)
@@ -2248,14 +2246,14 @@ C
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
-!      use blocks_mod, only: IORBSB, IORBSH, ISTBSH, KHKTSH, MAXSHL, NHKTSH, NORBSH
+      use blocks_mod, only: IORBSB, IORBSH, ISTBSH, KHKTSH, MAXSHL,
+     &  NHKTSH, NORBSH
 !      use dcbbas_mod, only: NTBAS
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTSYM, ISYMAO, MAXREP
 #include "implicit.h"
       INTEGER :: I, II
-#include "blocks.h"
 #include "dcbbas.h"
 C
       DIMENSION INDX(3,*),IIREP(0:7),IIIREP(0:7)
@@ -2385,14 +2383,14 @@ C
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
-!      use blocks_mod, only: BIGVEC, IORBSB, IORBSH, ISTBSH, KHKTSH, NHKTSH, NORBSH
+      use blocks_mod, only: BIGVEC, IORBSB, IORBSH, ISTBSH, KHKTSH,
+     &  NHKTSH, NORBSH
 !      use dgroup_mod, only: NBSYM
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTSYM, ISYMAO, MAXREP
       use comdis_mod, only: ISHLA, ISHLB, NINSHA, NINSHB, NPASS, NSPCK
 #include "implicit.h"
-#include "blocks.h"
       LOGICAL SHAEQB1,DCMPAB,MKINAB,MKIJPA,MKIAB,DIAGAB1,ABSPOI
       DIMENSION INDX(3,*),INDXAB(NINSHA,NINSHB,5),IJPAIRS(0:7)
       DIMENSION IJPASS(0:7,*)
@@ -2794,13 +2792,12 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
-!      use blocks_mod, only: NSYMBL
+      use blocks_mod, only: NSYMBL
 !      use dgroup_mod, only: FREP, NFSYM
 !      use dcbbas_mod, only: NTBAS
 #include "implicit.h"
       INTEGER :: I
 C
-#include "blocks.h"
 #include "dgroup.h"
 #include "dcbbas.h"
       LOGICAL SAME
@@ -2999,7 +2996,7 @@ C***********************************************************************
       use aovec_mod, only: MXAOVC
 !      use dcbbas_mod, only: NTBAS
 !      use dgroup_mod, only: FREP, NFSYM
-!      use blocks_mod, only: NSYMBL
+      use blocks_mod, only: NSYMBL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -3008,7 +3005,6 @@ C
 C
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "blocks.h"
       DIMENSION QB(*),Q(*),NDMOQR(2,2),ICMOQR(2),NSTR(2,0:2),
      &          IND(*),WORK(*)
 C
@@ -3075,11 +3071,10 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
 !      use dgroup_mod, only: NFSYM
-!      use blocks_mod, only: NSYMBL
+      use blocks_mod, only: NSYMBL
 #include "implicit.h"
 C
 #include "dgroup.h"
-#include "blocks.h"
 C
       DIMENSION NDMOQR(2,2,4),ICMOQR(2,4),NSTR(2,0:2,4),ISAME(4),
      &          Q1(*),Q2(*),Q3(*),Q4(*),WORK(*),DINTSKP(2,4)
@@ -3126,12 +3121,11 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
 !      use dgroup_mod, only: FREP, NFSYM
-!      use blocks_mod, only: NSYMBL
+      use blocks_mod, only: NSYMBL
 #include "implicit.h"
       INTEGER :: I
 C
 #include "dgroup.h"
-#include "blocks.h"
 C
       LOGICAL SAME
       DIMENSION NDMOQR(2,2,4),ICMOQR(2,4),NSTR(2,0:2,4),ISAME(4),
@@ -3195,12 +3189,11 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
 !      use dgroup_mod, only: NFSYM
-!      use blocks_mod, only: NSYMBL
+      use blocks_mod, only: NSYMBL
 #include "implicit.h"
       INTEGER :: I
 C
 #include "dgroup.h"
-#include "blocks.h"
 C
       LOGICAL SAME
       DIMENSION NDMOQR(2,2,4),ICMOQR(2,4),NSTR(2,0:2,4),ISAME(4),
@@ -4756,7 +4749,7 @@ C
 !      use dcbbas_mod, only: I1_DCBBAS, I2_DCBBAS, NTBAS
       use symmet_mod
 !      use dgroup_mod, only: I1_DGROUP, I2_DGROUP, LINEAR, NFSYM, NZ
-!      use blocks_mod, only: NSYMBL
+      use blocks_mod, only: NSYMBL
       use twosta_mod, only: MXHERMEM
       use interface_to_mpi
       use kinds_mod, only: dp
@@ -4775,7 +4768,6 @@ C
 #include "dcbmpt.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "blocks.h"
 C
       LOGICAL ANTIS,LMP2,NSAME
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)

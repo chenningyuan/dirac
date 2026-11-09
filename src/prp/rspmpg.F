@@ -235,7 +235,6 @@ C
 #include "dcbxpr.h"
 #include "dcbxrs.h"
 C
-!#include "blocks.h"
       REAL(dp), PARAMETER :: gpthrs=1.d-9
       dimension ablrf(nfreq,nlrapt,nlrbpt,*)
       dimension rcnv(nbfreq,nlrbpt)

@@ -29,10 +29,9 @@ C
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
-!      use optinf_mod, only: IPRINT, VRBOND, VRCORD, VREIGV
+      use optinf_mod, only: EVAL, IPRINT, VRBOND, VRCORD, VREIGV
 !      use cbiwlk_mod, only: DOREPW
 #include "implicit.h"
-#include "optinf.h"
 #include "cbiwlk.h"
       LOGICAL LAST
       DIMENSION ATMARR(MXCENT,8), EVEC(IEDIM,IEDIM)
@@ -160,13 +159,12 @@ C
 C     Punch out geometry to VRML-file
 C
 !      use codata_mod, only: XTANG
-!      use optinf_mod, only: IPRINT, VRBOND
+      use optinf_mod, only: IPRINT, VRBOND
       use nuclei_mod, only: NUCDEP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "codata.h"
-#include "optinf.h"
       DIMENSION GVEC(NCORD), EVEC(NCORD), ATCHRG(NCORD)
       DIMENSION ATMARR(MXCENT,8)
       CHARACTER*12 FILENM
@@ -269,11 +267,10 @@ C
 C     Punch out geometry to VRML-file
 C
 !      use codata_mod, only: XTANG
-!      use optinf_mod, only: VRBOND
+      use optinf_mod, only: VRBOND
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
 #include "codata.h"
-#include "optinf.h"
       DIMENSION ATM(5,0:MXCENT)
       DIMENSION DRTAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
       DIMENSION ATMARR(MXCENT,8)

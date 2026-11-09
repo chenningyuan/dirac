@@ -43,7 +43,7 @@ C***********************************************************************
 !      use dcblab_mod, only: IPLAB, MAXLAB, NPLAB, PLABEL
       use aosotr_mod, only: IPCEN, IPTYP
 !      use dgroup_mod, only: NBSYM
-!      use ccom_mod, only: KHK, NHKOFF
+      use ccom_mod, only: GTOTYP, KHK, NHKOFF
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -56,7 +56,6 @@ C
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbbas.h"
-#include "ccom.h"
       CHARACTER CLS(2)*1,DEG*2
       integer, allocatable :: kp(:)
 C
@@ -3837,11 +3836,10 @@ C***********************************************************************
       use maxorb_mod, only: MXSHEL
       use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH
       use maxaqn_mod, only: MXQN
-!      use ccom_mod, only: KHK
+      use ccom_mod, only: KHK
       use nuclei_mod, only: NUCDEG, NUCIND
 #include "implicit.h"
 C
-#include "ccom.h"
       DIMENSION INDAO(*),INDAOS(*)
       DIMENSION INDNAO(2,*)
 C

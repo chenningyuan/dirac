@@ -46,6 +46,7 @@ C
       END
       SUBROUTINE MOGTO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &                 KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
+      use ccom_mod, only: NHKOFF
       use nuclei_mod, only: NONT, NONTYP, NUCDEG
       use primit_mod, only: PRIEXP
       use aovec_mod, only: MXCONT
@@ -57,7 +58,6 @@ C
 #include "inftap.h"
       PARAMETER (D0 = 0.0D0)
 C
-#include "ccom.h"
 
       CHARACTER CHRSEG*10, GTOTMP*1, SPDCAR*1
       LOGICAL SEG, NRMPRI

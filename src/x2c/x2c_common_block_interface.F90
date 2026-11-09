@@ -57,7 +57,7 @@ contains
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: CHARGE, NBAS_ATOMTYPE, NONT, NONTYP, NUCDEG, NUCDEP
       use maxaqn_mod, only: MXQN
-!      use ccom_mod, only: DOSPHE
+      use ccom_mod, only: DOSPHE
 !      use dcbprp_mod, only: NOPCT
 !      use dcbxpr_mod, only: IPRPLBL, IPRPSYM, IPRPTIM, NPRPS, PRPNAM
 !      use dcbprl_mod, only: IPRLTYP
@@ -70,7 +70,6 @@ contains
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
-#include "ccom.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"

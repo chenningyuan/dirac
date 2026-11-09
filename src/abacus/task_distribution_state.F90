@@ -14,12 +14,11 @@ contains
   integer function required_task_order_size(is_parallel) result(required_size)
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
+      use blocks_mod, only: NLRGBL, NSMLBL
 #include "implicit.h"
 !#include "dcbgen.h"
 !#include "dcbdhf.h"
 !#include "dcbbas.h"
-!      use blocks_mod, only: NLRGBL, NSMLBL
-#include "blocks.h"
     logical, intent(in) :: is_parallel
 
     required_size = 0
@@ -72,12 +71,11 @@ contains
   integer function task_class_offset(i2typ) result(offset)
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
+      use blocks_mod, only: NLRGBL, NSMLBL
 #include "implicit.h"
 !#include "dcbgen.h"
 !#include "dcbdhf.h"
 !#include "dcbbas.h"
-!      use blocks_mod, only: NLRGBL, NSMLBL
-#include "blocks.h"
     integer, intent(in) :: i2typ
 
     select case (i2typ)

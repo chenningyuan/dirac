@@ -6,12 +6,14 @@ set(MODULE_SOURCES
     aovec.F90
     argoscom.F90
     argoscomch.F90
+    blocks.F90
     cbiher.F90
     cbihr1.F90
     cbihr2.F90
     cbione.F90
     cbirea.F90
     cbisol.F90
+    ccom.F90
     chrnos.F90
     chrsgn.F90
     chrxyz.F90
@@ -57,6 +59,7 @@ set(MODULE_SOURCES
     nuctap.F90
     oneadr.F90
     onecom.F90
+    optinf.F90
     orgcom.F90
     pi.F90
     pincom.F90
@@ -78,7 +81,6 @@ set(MODULE_SOURCES
     twosta.F90
     xyzpow.F90
     # drafts, not migrated yet
-    #ccom.F90
     #dcbesr.F90
     #dcbnmr.F90
     #infdim.F90

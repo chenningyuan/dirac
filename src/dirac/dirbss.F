@@ -8515,7 +8515,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dgroup_mod, only: NZ
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: BNCRON, LUBSS
-!      use ccom_mod, only: DOSPHE
+      use ccom_mod, only: DOSPHE
       use maxaqn_mod, only: MXQN
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -8523,7 +8523,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "ccom.h"
 C
       DIMENSION WORK(LWORK),HMAT(*)
       LOGICAL ISONBSSMAT

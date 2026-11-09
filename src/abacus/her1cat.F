@@ -297,7 +297,7 @@ C*****************************************************************************
       use nuclei_mod, only: NUCDEP, NUCNUM
       use priunit_mod, only: LUPRI
       use onecom_mod
-!      use ccom_mod, only: THRS
+      use ccom_mod, only: THRS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -315,7 +315,6 @@ C
 #ifndef PRG_DIRAC
 #include "energy.h"
 #endif
-#include "ccom.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from CATDR1','*',103)
 C
@@ -648,7 +647,6 @@ C
       DIMENSION VCMAT(*), ADER(*), FACCBA(NCENTC,NUCDEP,NUCDEP),
      &          DSHELL(KHKTAB), DENMAT(*),
      &          COORC(3,*), JSYMC(*), JCENTC(*), SIGNC(3,*),GEXP(*)
-!#include "ccom.h"
 C
 #ifdef PRG_DIRAC
 !#include "dgroup.h"

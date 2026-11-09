@@ -9705,7 +9705,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dcbbas_mod, only: NTBAS
 !      use dcbgen_mod, only: LUBSS
 !      use dcbxpr_mod, only: IPRPSYM, NPRPS, PRPNAM
-!      use ccom_mod, only: DOSPHE
+      use ccom_mod, only: DOSPHE
 #include "implicit.h"
       INTEGER :: I
 #include "dgroup.h"
@@ -9716,7 +9716,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbxpr.h"
 !#include "dcbprp.h"
 !#include "dcbprl.h"
-#include "ccom.h"
 C
       DIMENSION WORK(LWORK),VMAT(*)
       LOGICAL IS_PCTRA

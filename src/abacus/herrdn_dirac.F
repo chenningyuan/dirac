@@ -32,7 +32,7 @@ C      ICP = 2 : Read small component
 C
 C***********************************************************************
 !      use dcbham_mod, only: ECPCALC, IF
-!      use ccom_mod, only: KHK
+      use ccom_mod, only: KHK
       use cbirea_mod, only: INPTST
       use molinp_mod, only: MLINE, NMLINE
       use maxaqn_mod, only: MXQN
@@ -62,7 +62,6 @@ C     Check if we work on Linux or on Windows
       LOGICAL WIN
 #include "dcbgen.h"
 #include "dcbham.h"
-#include "ccom.h"
 C
       DATA SZ / 'LARGE', 'SMALL' /
 C
@@ -393,11 +392,10 @@ C             2 - upwards  : small L-1 from large L
 C             0 - if not specified same as 3 (both down and up)
 C
 C*****************************************************************************
-!      use ccom_mod, only: KHK
+      use ccom_mod, only: KHK
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "ccom.h"
 C
       LOGICAL SEG,INPTST,CNTBAS
       DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),

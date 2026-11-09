@@ -221,6 +221,7 @@ contains
         !            density matrix as input, potentials vector as output.
         !
 
+      use ccom_mod, only: THRS
       use nuclei_mod, only: NUCNUM
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod
@@ -230,7 +231,6 @@ contains
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
-#include "ccom.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
 #include "dgroup.h"

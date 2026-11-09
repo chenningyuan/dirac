@@ -401,7 +401,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dcborb_mod, only: NASHT
 !      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
-!      use blocks_mod, only: LCLASH, NCNTSH, NHKTSH
+      use blocks_mod, only: LCLASH, NCNTSH, NHKTSH
       use nuclei_mod, only: NAMN
 #include "implicit.h"
 C
@@ -410,7 +410,6 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "blocks.h"
 C     MXGBFSZ determines direct access record lengths, can be used to tune I/O
       PARAMETER (MXGBFSZ=4096)
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
@@ -1045,14 +1044,14 @@ C     Modified for ISHEL range May 2001 /jth+hjaaj
 C
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
-!      use blocks_mod, only: IORBSB, IORBSH, ISTBSH, KHKTSH, LCLASH, NHKTSH, NORBSH
+      use blocks_mod, only: IORBSB, IORBSH, ISTBSH, KHKTSH, LCLASH,
+     &  NHKTSH, NORBSH
 !      use dgroup_mod, only: JBTOF, NZ
 !      use dcbbas_mod, only: IBAS, IBBAS
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ICOS, IPTSYM, ISYMAO, MAXREP
 #include "implicit.h"
-#include "blocks.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 C

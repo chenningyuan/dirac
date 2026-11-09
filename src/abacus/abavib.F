@@ -2988,7 +2988,7 @@ C     Determines the irep of a given normal coordinate, by comparing
 C     the results of symmetry operations with the character table.
 C
 !      use pgroup_mod, only: I
-!      use optinf_mod, only: VRVIBA
+      use optinf_mod, only: VRVIBA
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use codata_mod, only: XFAMU
@@ -2997,7 +2997,6 @@ C
       use symmet_mod, only: ISOP, ISYMAX, IXVAL, MAXOPR, MAXREP, PT
 #include "implicit.h"
 #include "pgroup.h"
-#include "optinf.h"
 #include "codata.h"
 C
       DIMENSION EVEC(NCORD,NCORD), EVC1(NCORD), EVC2(NCORD)

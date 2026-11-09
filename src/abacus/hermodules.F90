@@ -729,7 +729,7 @@
       use symmet_mod, only: MAXREP
       use maxorb_mod, only: MXCORB
       use cbirea_mod, only: FAMPAR, INPTST, IPREAD, NFAMEXP, TOL_SYMADD, UNCONT
-!      use ccom_mod, only: DOCART, DOSPHE, NHTYP, THRS
+      use ccom_mod, only: DOCART, DOSPHE, NHTYP, THRS
 !      use dgroup_mod, only: ATOMIC, LINEAR, NONATM
       use maxaqn_mod, only: MXAQN, MXQN
 !      use infpar_mod, only: MYTID
@@ -779,7 +779,6 @@
       INTEGER :: int8
       integer blk
 !
-#include "ccom.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #include "dgroup.h"

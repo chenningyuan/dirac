@@ -1056,7 +1056,6 @@ C***********************************************************************
 !      use dcbbas_mod, only: NFBAS
 !      use dcbgen_mod, only: BARNUC, BNCRON, BNSPON, DOHUCKEL, DOLVC, FORCE_BNC, IDFLAG, INTGEN, IPRGEN, KCHARG, TWOCOMP
 !      use dcbdhf_mod, only: AOC, ATHUCK, ATOMST, AUTOCC, BMCOND, CACC, CNVINT, CONVRG, DA, DALPHA, DAMPFC, DF, DHFCONV, DHFERG, DHFEXIT, DHF_INTTYP, DHF_SKIPEE, DHF_SKIPEP, DIISAO, DIISMO, DIISON, DIISTH, DLSHIF, DOBOSSEL, DOCCNV, DODAMP, DODIIS, DODSCF, DOLEVEL, DOMOFREEZE, DYNSEL, E1PART, E2PART, ELERGY, ERGBUF, ERGCNV, ERGCNV2, ERGVAL, EVCCNV, EVCCNV2, EVCVAL, FCKCNV, FCKCNV2, FCKVAL, FIXDIF, IMOFREEZE, INIOCC, INTBUF, INTDEF, INTFLG, IPREIG, IPRSCF, ITDIIS, ITRINT, ITRSCF, MAXBCK, MAX_BOS_BL, MAXITR, MAXITR2, MFRAG, MXDIIS, MXMACRO, MXMICRO, MXMOFREEZE, MXOPEN, NACSH, NACSH_BOS, NAELEC_DHF, NASH_DHF, NASHMFT, NELEC_DHF, NELECT_DHF, NEWOCC, NFRAG, NFRO_DHF, NISH_BOS, NISH_DHF, NMOFREEZE, NOPEN, NOQCDHF, NOSWIT, NPRJNUC, OLEV, OPEN_FAC, OVLSEL, PRJFIL, PRJTHR, SCFCNV, SCFCNV2, SCFPOP, SCFTID, SIRIFC, TDDG, TDF2, TRIFCK, TRIVEC, VCFROZ, VCPROJ, WRITE_FMO_MATRIX
-!      use ccom_mod, only: NHTYP
 !      use dcborb_mod, only: MAX_SUB_BL
 !      use dcbatom_mod, only: ATOMFIL, NVECATOM, OCCATOM, VECATOM
 !      use dcbhoc_mod, only: HOCFIL, HUCPAR, MAXHOC, VECHOC
@@ -1081,6 +1080,7 @@ C***********************************************************************
       use nuclei_mod, only: IZATOM, NAMN, NATOMS, NFLOAT, NONT, NONTYP,
      &  NUCDEP
       use huckel_mod, only: EWMO, HUCPROJCMO
+      use ccom_mod, only: NHTYP
 #include "implicit.h"
       INTEGER :: I,J,K
       PARAMETER (NTABLE = 65)
@@ -1109,7 +1109,6 @@ C
 #include "dgroup.h"
 #include "dcbatom.h"
 #include "dcbhoc.h"
-#include "ccom.h"
 C
       SAVE SET
       DATA TABLE /'.PROJEC','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
@@ -7776,7 +7775,7 @@ C       LABOPT = 1: individual atoms
 C       LABOPT = 2: individual orbital shells
 C
 C***********************************************************************
-!      use ccom_mod, only: KHK, NHTYP
+      use ccom_mod, only: KHK, NHTYP
       use maxaqn_mod, only: MXQN
       use dcbibt_mod, only: IGET, IPACK, JGET, KGET, LGET
 !      use dcblab_mod, only: IATTR, NPLAB
@@ -7784,7 +7783,6 @@ C***********************************************************************
 #include"implicit.h"
       INTEGER :: I,J,K
 C
-#include "ccom.h"
 #include "dcblab.h"
       CHARACTER LAB(*)*12,SPDCAR*1
       DIMENSION ILAB(*)

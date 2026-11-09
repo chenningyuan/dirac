@@ -264,7 +264,6 @@ C
      &  PT
 !      use energy_mod, only: ENERKE, ENERNA, NA
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-!      use ccom_mod, only: THRS
       use onecom_mod
 #ifdef PRG_DIRAC
       use dcbgrd_mod, only: DODERM, GRADKN, GRADNU, GRADRO, INTCLASS
@@ -282,6 +281,7 @@ C
       use dorps_mod, only: DOREPS
       use maxorb_mod, only: MXCORB, MXSHEL
       use kinds_mod, only: dp
+      use ccom_mod, only: THRS
 #include "implicit.h"
       PARAMETER (LUTEMP = 48)
       REAL(dp), PARAMETER :: D0 = 0.00D00
@@ -296,7 +296,6 @@ C
 #ifndef PRG_DIRAC
 #include "energy.h"
 #endif
-#include "ccom.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEDR1','*',103)
 C

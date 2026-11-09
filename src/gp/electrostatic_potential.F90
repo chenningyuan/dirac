@@ -268,7 +268,7 @@ module electrostatic_potential
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use ccom_mod, only: THRS
+      use ccom_mod, only: THRS
 !      use dgroup_mod, only: NBSYM
 !      use dcbham_mod, only: BSS, LEVYLE, NOSMLV, X2C
       use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX, LCLASS, NCENT, NHKT, NLRGSH, NUCO, NUMCF
@@ -276,7 +276,6 @@ module electrostatic_potential
       use symmet_mod, only: FMULT, MULT
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use nuclei_mod, only: NUCNUM
-#include "ccom.h"
 #include "dgroup.h"
 #include "dcbham.h"
 

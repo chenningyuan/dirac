@@ -31,11 +31,10 @@ C
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXQN
       use hrunit_mod, only: LUONEL
-!      use ccom_mod, only: THRS
+      use ccom_mod, only: THRS
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "ccom.h"
 C
       DIMENSION BUF(600), IBUF(600), STHMAT(NNBASX,*)
       CHARACTER*8 LAB123(3), TITLES, TITLEH, TITLET
@@ -134,7 +133,7 @@ C     appropriate SO integrals.
 C
       use maxorb_mod, only: MXCORB
       use iratdef_mod, only: IRAT
-!      use ccom_mod, only: THRS
+      use ccom_mod, only: THRS
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
@@ -148,7 +147,6 @@ C
       DIMENSION SOINT(LSOINT), BUF(600), IBUF(600), BUFDA(NBUF),
      *          IBUFDA(IRAT*NBUF)
 C
-#include "ccom.h"
       EQUIVALENCE (BUFDA(1),IBUFDA(1))
 C
 C     **************************
@@ -484,7 +482,7 @@ C
       use priunit_mod, only: LUPRI
       use abainf_mod, only: NWNABA
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use ccom_mod, only: THRS
+      use ccom_mod, only: THRS
       use taysol_mod, only: GSOLTT
       use maxorb_mod, only: MXCORB
       use kinds_mod, only: dp
@@ -492,7 +490,6 @@ C
       LOGICAL NODC, NODV, DNULL
 #include "energy.h"
 #include "inforb.h"
-#include "ccom.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D100 = 100.0D0
       DIMENSION WORK(LWORK)
       IF (IPRINT .GE. 5) CALL HEADER('Output from SHDCHK',-1)

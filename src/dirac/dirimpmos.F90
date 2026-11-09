@@ -31,7 +31,7 @@ subroutine impmos()
 !      use dcbbas_mod, only: NTBAS
 !      use dcbimp_mod, only: FILIMP, QCPACK
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use blocks_mod, only: NCNTSH, NHKTSH, NLRGBL, NORBSH
+      use blocks_mod, only: NCNTSH, NHKTSH, NLRGBL, NORBSH
       use aovec_mod, only: MXAOVC
       use consts_mod, only: D0
  use carsph, only : sph2car, carsph_init, carsph_clear
@@ -45,7 +45,6 @@ subroutine impmos()
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "blocks.h"
 #include "dcbimp.h"
 
 ! parameter:

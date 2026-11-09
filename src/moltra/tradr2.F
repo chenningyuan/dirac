@@ -30,7 +30,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use aovec_mod, only: MXAOVC
 !      use dcbgen_mod, only: MP2ORG, PARCAL
 !      use dgroup_mod, only: NFSYM
-!      use blocks_mod, only: MAXSHL, NSYMBL
+      use blocks_mod, only: MAXSHL, NSYMBL
 !      use dcbtra_mod, only: SCRTRA
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
       use interface_to_mpi
@@ -43,7 +43,6 @@ C
 #endif
 #include "dcbgen.h"
 #include "dgroup.h"
-#include "blocks.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
       LOGICAL ANTIS,LMP2

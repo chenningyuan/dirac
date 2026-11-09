@@ -70,7 +70,7 @@ C  /* Deck pr1dr1 */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use orgcom_mod, only: CAVORG, CMXYZ, DIPORG, GAGORG, ORIGIN
       use pi_mod, only: PI
-!      use ccom_mod, only: THRS
+      use ccom_mod, only: THRS
       use maxorb_mod, only: MXCORB, MXSHEL
       use symmet_mod, only: FMULT, ISYMAO, MAXREP, MULT
       use symind_mod, only: INDFA, INDFB, ISOFRA, ISOFRB
@@ -93,7 +93,6 @@ C
 #include "dcbgen.h"
 #else
 #endif
-#include "ccom.h"
 C
 C
       TOLS   = THRS*THRS

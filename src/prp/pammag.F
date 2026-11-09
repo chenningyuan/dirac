@@ -1959,7 +1959,9 @@ C*****************************************************************************
       use cbihr2_mod, only: IPRNTA, IPRNTB, IPRNTC, IPRNTD, TKTIME
 !      use dgroup_mod, only: NZ
       use aovec_mod, only: MXAOVC
-!      use blocks_mod, only: NLRGBL, NSMLBL
+#if defined (VAR_MPI)
+      use blocks_mod, only: NLRGBL, NSMLBL
+#endif
 !      use dcbgen_mod, only: PARCAL, RELCAL
 !      use dcbnmr_mod, only: INTNMR
 !      use dcbprp_mod, only: IPRPRP, LONDON
@@ -1982,7 +1984,6 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "dgroup.h"
 C
-#include "blocks.h"
 #include "dcbgen.h"
 #include "dcbnmr.h"
 #include "dcbprp.h"

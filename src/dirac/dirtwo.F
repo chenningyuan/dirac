@@ -1549,12 +1549,11 @@ C*****************************************************************************
       use maxaqn_mod, only: MXQN
       use hrunit_mod, only: LUINTA
       use dummy_mod, only: IDUMMY
-!      use ccom_mod, only: THRS
+      use ccom_mod, only: THRS
 #include "implicit.h"
       INTEGER IREPA(*), LWORK
       REAL(8) WORK(LWORK)
 C
-#include "ccom.h"
 #include "dcbgen.h"
 #include "dcbham.h"
       LOGICAL LBIT,TOBE,REGO
@@ -3244,7 +3243,7 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
       use aovec_mod, only: MXAOVC
 !      use dcbbas_mod, only: N2BBASX
-!      use blocks_mod, only: NSYMBL
+      use blocks_mod, only: NSYMBL
       use cbihr2_mod, only: IPRTWO, SCRFCK
 !      use dcbham_mod, only: MDIRAC
 !      use dgroup_mod, only: IQTOPQ, IRQMAT, JBTOF, JQBAS, NBSYM, NZ, NZC1
@@ -3264,7 +3263,6 @@ C
      &          WORK(LWORK)
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "blocks.h"
 C
       CALL QENTER('DIRAOF')
       KWORK = 1
@@ -3411,8 +3409,8 @@ C*****************************************************************************
       use aovec_mod, only: MXAOVC
       use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
      &  IPRTWO, RTNTWO, SCRFCK, THRFAC, TKTIME
-!      use blocks_mod, only: NLRGBL, NSMLBL
-!      use ccom_mod, only: KHK, NHTYP, THRS
+      use blocks_mod, only: NLRGBL, NSMLBL
+      use ccom_mod, only: KHK, NHTYP, THRS
       use shells_mod, only: KMAX
       use quaternion_algebra
       use kinds_mod, only: dp
@@ -3431,8 +3429,6 @@ C
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "ccom.h"
-#include "blocks.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
 #endif
@@ -3964,7 +3960,7 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use dgroup_mod, only: NZ
       use aovec_mod, only: MXAOVC
-!      use blocks_mod, only: MAXSHL, NSYMBL
+      use blocks_mod, only: MAXSHL, NSYMBL
       use kinds_mod, only: dp
       use gab_screening, only: qorb_ok, qorb_igtyp, qorb_use
 #include "implicit.h"
@@ -3977,7 +3973,6 @@ C
      &          IHRMOP(NFMAT),ISYMOP(NFMAT),WORK(LWORK)
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "blocks.h"
 C
       CALL QENTER('DIRSOF')
       KWORK = 1
@@ -4037,7 +4032,7 @@ C
 C     Driver for direct SCF calculations in SO-basis
 C
 C*****************************************************************************
-!      use blocks_mod, only: NLRGBL, NSMLBL
+      use blocks_mod, only: NLRGBL, NSMLBL
       use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
      &  IPRTWO, RTNTWO, SCRFCK, THRFAC, TKTIME
       use dirac_partask_mod, only: HERFCK_PAR
@@ -4045,7 +4040,7 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use dcbgen_mod, only: IDFLAG, PARCAL, TWOCOMP, TWOCOMPBSS
       use maxaqn_mod, only: MXQN
-!      use ccom_mod, only: THRS
+      use ccom_mod, only: THRS
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: HFXMU
 !      use dgroup_mod, only: NZ
@@ -4061,8 +4056,6 @@ C
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "ccom.h"
-#include "blocks.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
 #endif
@@ -4239,14 +4232,13 @@ C*****************************************************************************
 !      use dcbbas_mod, only: N2BBASX, NTBAS
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use blocks_mod, only: NSYMBL
+      use blocks_mod, only: NSYMBL
       use quaternion_algebra
 #include "implicit.h"
       INTEGER :: I,J
 C
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "blocks.h"
       DIMENSION DQO(N2BBASX,NZ,NFMAT),
      &          DMRQO(NSYMBL,NSYMBL,NZ,NFMAT),
      &          ISYMOP(NFMAT),WORK(LWORK)
@@ -4320,11 +4312,10 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXQN
-!      use ccom_mod, only: THRS
+      use ccom_mod, only: THRS
       use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
      &  RTNTWO, THRFAC, TKTIME
 #include "implicit.h"
-#include "ccom.h"
 !#include "dgroup.h"
 C
       LOGICAL NODV,NOPV,NOCONT,RELCAL

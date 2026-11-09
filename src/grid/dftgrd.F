@@ -28,14 +28,13 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use maxaqn_mod, only: MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP, NUCIND
-!      use ccom_mod, only: NHTYP
+      use ccom_mod, only: NHTYP
 !      use dftwrk_mod, only: NSCHEME, RADERR, RNDMAX
         use num_grid_cfg
         use memory_allocator
 
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "ccom.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 
 #include "dftwrk.h"
@@ -205,7 +204,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use maxorb_mod, only: MXCORB
       use nuclei_mod, only: ISTBNU, NAMN, NOORBT, NUCIND
       use symmet_mod, only: MAXREP, MULT
-!      use ccom_mod, only: NHTYP
+      use ccom_mod, only: NHTYP
 !      use dcbham_mod, only: LEVYLE, MC
        use num_grid_cfg
        use interface_grid
@@ -220,7 +219,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "dftwrk.h"
 
-#include "ccom.h"
 !#include "dcbbas.h"
 #include "dcbham.h"
 
@@ -657,14 +655,13 @@ C***********************************************************************
       use maxaqn_mod, only: MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dummy_mod, only: DUMMY
-!      use ccom_mod, only: NHTYP
+      use ccom_mod, only: NHTYP
       use nuclei_mod, only: NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, D3=3.0D0
 C     
       CHARACTER SPDCAR*1
-#include "ccom.h"
       LOGICAL ADDSML
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)      
 C     Grid spacing....
@@ -1578,7 +1575,6 @@ C
      &  NUCDEP, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
 #include "implicit.h"
-!#include "ccom.h"
       DIMENSION ZAN(*), C(3,NUCDEP)
       NAT = 0
       NUM = NBASIS

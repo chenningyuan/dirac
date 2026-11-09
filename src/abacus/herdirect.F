@@ -405,7 +405,6 @@ C
 C  /* Deck aindex */
 #ifdef PRG_DIRAC
       SUBROUTINE AINDEX(ISHELA,NAINTS,INDEXA,DOINDX,IPRINT)
-!      use blocks_mod, only: IORBSB, IORBSH, ISTBSH, KHKTSH, NHKTSH, NORBSH
 #else /* PRG_DIRAC */
       SUBROUTINE AINDEX(ISHELA,NAINTS,INDEXA,DOINDX,IORBSH,IPRINT)
 #endif /* PRG_DIRAC */
@@ -415,6 +414,8 @@ C  /* Deck aindex */
       use priunit_mod, only: LUPRI
       use aovec_mod, only: MXAOVC
       use symmet_mod, only: IPTSYM, ISYMAO, MAXREP
+      use blocks_mod, only: IORBSB, IORBSH, ISTBSH, KHKTSH, NHKTSH,
+     &  NORBSH
 #include "implicit.h"
       INTEGER :: I,J
       LOGICAL DOINDX
@@ -423,7 +424,6 @@ C  /* Deck aindex */
 #else /* PRG_DIRAC */
       DIMENSION INDEXA(*), IORBSH(MXSHEL,MXAOVC)
 #endif /* PRG_DIRAC */
-#include "blocks.h"
 C
       IORB = 0
       MULA   = ISTBSH(ISHELA)

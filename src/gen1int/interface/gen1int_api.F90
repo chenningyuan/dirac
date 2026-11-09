@@ -133,7 +133,7 @@ module gen1int_api
                               num_prim, num_contr, KPRIM, exponents, ucontr_coefs)
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXQN
-!      use ccom_mod, only: SPH
+      use ccom_mod, only: SPH
       use nuclei_mod, only: CHARGE, CORD, NUCDEP
       use orgcom_mod, only: DIPORG, GAGORG, ORIGIN
     integer, intent(in) :: num_comp
@@ -150,7 +150,6 @@ module gen1int_api
     integer, intent(in) :: KPRIM
     real(REALK), intent(in) :: exponents(KPRIM,KBLOCK,num_comp)
     real(REALK), intent(in) :: ucontr_coefs(KPRIM,KPRIM,KBLOCK,num_comp)
-#include "ccom.h"
     integer icomp      !incremental recorder over components
     integer IDX_CENT   !index of symmetry independent center
     integer IDX_BLOCK  !

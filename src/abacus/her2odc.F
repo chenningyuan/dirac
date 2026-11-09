@@ -499,6 +499,7 @@ C  /* Deck odcseg */
 C
 C     TUH 84
 C
+      use blocks_mod, only: IORBSH
       use maxaqn_mod, only: MXAQN, MXQN
       use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP
       use pi_mod, only: R2PI52
@@ -514,7 +515,6 @@ C
       INTEGER :: I
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0
       LOGICAL TCON12, TPR12, DIAG12, ALLSYM, EXPECT, DIRFCK, DOTHIS
-#include "blocks.h"
       COMMON /MAXOLD/ OLDMAX
       DIMENSION NPCO1(NSET1,2), NPCO2(NSET2,2), JSTR1(*), JSTR2(*),
      &          COOR12(NUC1*NUC2,3,3,NODC12),

@@ -670,7 +670,6 @@
       use argoscom_mod, only: IROWMAX
       USE RECP_NTR
 #include "implicit.h"
-!#include "ccom.h"
       INTEGER blk
 !     Skip if RECP is not set
       IF (.NOT.ALLOCATED(RECP_SET)) GOTO 9000

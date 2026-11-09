@@ -704,14 +704,13 @@ C                                                PRT & TUH  880428
 C
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
-!      use ccom_mod, only: THRS
+      use ccom_mod, only: THRS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: ISTBNU, NUCDEP
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
 #include "implicit.h"
       INTEGER :: I,J
-#include "ccom.h"
       DIMENSION SAODER(KCKTAB,*), TAODER(KCKTAB,*)
       LOGICAL LDIAG, FULMAT, ANTI
       IF (IPRINT .GT. 10) THEN
@@ -810,14 +809,13 @@ C
       use nuclei_mod, only: ISTBNU, NUCDEP
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
       use maxorb_mod, only: MXCORB
-!      use ccom_mod, only: THRS
+      use ccom_mod, only: THRS
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I,J
       LOGICAL LDIAG, ONECEN
       DIMENSION CAODER(KCKTAB,*), AAODER(KCKTAB,*)
       LOGICAL FULMAT, ANTI
-#include "ccom.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DASYM1',-1)
          WRITE (LUPRI,'(A,2I5)') ' ICENTA/B ', ICENTA, ICENTB

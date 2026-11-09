@@ -1083,7 +1083,7 @@ C
       use priunit_mod, only: LUPRI
       use pi_mod, only: PI
 !      use dcbgen_mod, only: CVAL
-!      use ccom_mod, only: NHTYP
+      use ccom_mod, only: NHTYP
       use maxaqn_mod, only: MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCIND
@@ -1093,7 +1093,6 @@ C
       INTEGER :: I,J
 #include "dcbham.h"      
 #include "dcbgen.h"
-#include "ccom.h"
 C     
       LOGICAL ADDSML,GRASP,UEHCUT
       REAL(dp), PARAMETER :: ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0,
@@ -11203,7 +11202,7 @@ C***********************************************************************
 !      use dcbcls_mod, only: CLSCAL, NPRPCLS
 !      use dgroup_mod, only: ATOMIC, IPQTOQ, IQDEF, IQTOPQ, IRQMAT, JBTOF, JQBAS, LINEAR, NFSYM, NZ
 !      use dcbdhf_mod, only: DF
-!      use ccom_mod, only: DOSPHE
+      use ccom_mod, only: DOSPHE
       use maxaqn_mod, only: MXQN
 !      use dcbbas_mod, only: I2BASX, NFBAS, NTBAS
       use priunit_mod, only: LUPRI
@@ -11217,7 +11216,6 @@ C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
 C
-#include "ccom.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"

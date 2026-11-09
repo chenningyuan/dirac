@@ -1540,7 +1540,7 @@ C
 C***********************************************************************
       use aovec_mod, only: MXCONT
       use priunit_mod, only: LUPRI
-!      use ccom_mod, only: NHTYP
+      use ccom_mod, only: NHTYP
       use maxaqn_mod, only: MXQN
       use maxorb_mod, only: MXPRIM, MXSHEL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -1554,7 +1554,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0=0.0D0
 C
 C
-#include "ccom.h"
       CHARACTER SPDCAR*1
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
 C
@@ -2663,10 +2662,9 @@ C
 C
 C***********************************************************************
       use maxaqn_mod, only: MXQN
-!      use ccom_mod, only: NHTYP
+      use ccom_mod, only: NHTYP
 #include "implicit.h"
 C
-#include "ccom.h"
       LOGICAL DONRM
       DIMENSION SPHM(*),WORK(LWORK)
       KWORK = 1
@@ -2825,7 +2823,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use nuclei_mod, only: ISTBNU
-!      use ccom_mod, only: NHKOFF
+      use ccom_mod, only: NHKOFF
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use sphtrm_mod, only: CSP, ISPADR
       use kinds_mod, only: dp
@@ -2834,7 +2832,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
 C
-#include "ccom.h"
       LOGICAl DONRM
       DIMENSION IFUN(NFUN,3),IRED(3,LMAX),CRED(*)
 C
@@ -2932,10 +2929,9 @@ C       SPHM - transformation matrix
 C       
 C***********************************************************************
       use maxaqn_mod, only: MXQN
-!      use ccom_mod, only: NHTYP
+      use ccom_mod, only: NHTYP
 #include "implicit.h"
 C
-#include "ccom.h"
       LOGICAL DONRM
       DIMENSION SPHM(*),IRKB(*),WORK(LWORK)
       KWORK = 1
@@ -2985,7 +2981,7 @@ C***********************************************************************
       use xyzpow_mod, only: MVAL, NVAL
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use priunit_mod, only: LUPRI
-!      use ccom_mod, only: NHKOFF
+      use ccom_mod, only: NHKOFF
       use symmet_mod, only: ICOS, IPTSYM
       use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NSTRT,
      &  NUCO
@@ -3001,7 +2997,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D2=2.0D0
 C
 C
-#include "ccom.h"
 #include "pgroup.h"
 !#include "dgroup.h"
       LOGICAL DONRM,LRKB

@@ -30,7 +30,7 @@ C     Written by T.Saue Apr 6 1997
 CTROND check for contraction and spherical
 C
 C*****************************************************************************
-!      use ccom_mod, only: NHTYP
+      use ccom_mod, only: NHTYP
       use twosta_mod, only: MWAOIN, MWC1DR, MWC2DR, MWC2HI, MWFCAB,
      &  MWFCCD, MWHCIN, MWHRIN, MWHRND, MWHRSQ, MWPSO, MWRJ00, MWSOIN,
      &  MWTOT
@@ -38,15 +38,14 @@ C*****************************************************************************
       use aovec_mod, only: MXAOVC
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
-!      use blocks_mod, only: ISTBSH, KHKTSH, NHKTSH, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
+      use blocks_mod, only: ISTBSH, KHKTSH, NHKTSH, NORBSH, NSETSH,
+     &  NUCOSH, SEGMSH, SPHRSH
       use twocom_mod
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 C
 C
-#include "ccom.h"
-#include "blocks.h"
 C
 C
       LOGICAL DIRFCK,SOFOCK,DPATH1,DPATH2
@@ -553,14 +552,13 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
       use nuclei_mod, only: NAMN
       use twocom_mod
-!      use blocks_mod, only: LCLASH, MAXSHL, NCNTSH, NHKTSH, NLRGBL
+      use blocks_mod, only: LCLASH, MAXSHL, NCNTSH, NHKTSH, NLRGBL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use aovec_mod, only: MXAOVC
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
 C
-#include "blocks.h"
       CHARACTER SPDCAR*1,COMP(2)*1
       LOGICAL DIRFCK
       DIMENSION IMSHL(4)

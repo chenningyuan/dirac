@@ -480,7 +480,6 @@ C
       use maxorb_mod, only: MXCORB, MXSHEL
       use nuclei_mod, only: NUCDEG
       use symmet_mod, only: MAXREP
-!      use blocks_mod, only: MAXSHL, NSYMBL
       use maxaqn_mod, only: MXAQN, MXQN
       use parint_mod, only: parint_t
 #if defined (VAR_MPI)
@@ -497,6 +496,7 @@ C
       use gnrinf_mod, only: PANAS, RELCAL
 #endif
       use abainf_mod, only: DOSYM
+      use blocks_mod, only: MAXSHL, NSYMBL
 #include "implicit.h"
 C
       INTEGER :: I
@@ -507,7 +507,6 @@ C
 #else
 #endif
 C
-#include "blocks.h"
 #include "infpar.h"
 C
 #include "inforb.h"
@@ -1670,7 +1669,7 @@ CMI changes from TEC for LAO
       use aovec_mod, only: MXAOVC
       use taymol_mod, only: GRDMOL, HESMOL
       use taysol_mod, only: GSOLNN, GSOLTT
-!      use blocks_mod, only: BIGVEC, CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, LCLASH, MAXSHL, NCNTSH, NHKTSH, NLRGBL, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
+      use blocks_mod
       use cbisol_mod, only: SOLVNT
 !      use suscpt_mod, only: SUSCEP, SUSCEP
       use interface_to_mpi
@@ -1697,7 +1696,6 @@ C
 #include "energy.h"
 #endif
 #include "suscpt.h"
-#include "blocks.h"
 #include "infpar.h"
 C
 #include "inforb.h"
@@ -2356,8 +2354,9 @@ C     IMODE 2 : Fill the array NPOS
 C
 C     Written by Luuk Visscher, august 2001
 C*****************************************************************************
-!      use blocks_mod, only: KHKTSH, LCLASH, MAXSHL, NCNTSH, NLRGBL, NORBSH
 !      use dcbham_mod, only: SMLV1C
+      use blocks_mod, only: KHKTSH, LCLASH, MAXSHL, NCNTSH, NLRGBL,
+     &  NORBSH
       use maxorb_mod, only: MXCORB, MXSHEL
       use priunit_mod, only: LUPRI
       use aovec_mod, only: MXAOVC
@@ -2365,7 +2364,6 @@ C*****************************************************************************
 #ifdef PRG_DIRAC
 #include "dcbham.h"
 #endif
-#include "blocks.h"
 C
       INTEGER  NPOS(*)
       REAL*8   TIMES(*)

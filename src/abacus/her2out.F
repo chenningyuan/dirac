@@ -405,7 +405,7 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use twocom_mod
       use aovec_mod, only: MXAOVC
-!      use blocks_mod, only: MAXSHL
+      use blocks_mod, only: MAXSHL
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: NBASIS
@@ -429,7 +429,6 @@ C
      &          FMAT(NBASIS,NBASIS,*), DMAT(NBASIS,NBASIS,*),
      &          DNSBUF(2,NDMAT),DMRSO(MAXSHL,MAXSHL,NDMAT),
      &          IFCTYP(NDMAT),DINTSKP(2,4),IREPDM(NDMAT)
-#include "blocks.h"
 C
       IF (IPRINT .GE. 6) CALL HEADER('Subroutine FCKOU1',-1)
       IF (IPRINT .GE. 10) THEN
@@ -1776,7 +1775,7 @@ C*****************************************************************************
       use twosta_mod, only: N2WRIT
       use aovec_mod, only: MXAOVC
       use priunit_mod, only: LUPRI
-!      use blocks_mod, only: LCLASH
+      use blocks_mod, only: LCLASH
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
@@ -1787,7 +1786,6 @@ C*****************************************************************************
      &          IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          INDX(3,*),INDXAB(NINSHA,NINSHB,5)
-#include "blocks.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DT2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -1939,7 +1937,7 @@ C     GMAT   - sorted batch of SO-integrals
 C     INDXAB - pointers from given p and q (relative in shell)
 C
 C*****************************************************************************
-!      use blocks_mod, only: LCLASH
+      use blocks_mod, only: LCLASH
       use maxorb_mod, only: MXCORB, MXSHEL
       use twocom_mod
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1960,7 +1958,6 @@ C*****************************************************************************
      &          INDX(3,*),INDXAB(NINSHA,NINSHB,5)
       DIMENSION LGREC(NPASS),LGBUF(NPASS)
       DIMENSION RGBUF(NGBFSZ,NPASS),IGBUF(NGBFSZ,NPASS)
-#include "blocks.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DT2OUT',-1)
       IF (IPRINT .GT. 10) THEN

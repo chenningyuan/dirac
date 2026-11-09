@@ -43,13 +43,12 @@ C*****************************************************************************
      &  ZERTOL
 !      use infpar_mod, only: IF, MPARID, MYTID
       use priunit_mod, only: LUPRI
-!      use optinf_mod, only: VRML_SYM
+      use optinf_mod, only: VRML_SYM
 #include "implicit.h"
 
 ! infpar.h : MYTID, MPARID
 ! optinf.h : VRML_SYM
 #include "infpar.h"
-#include "optinf.h"
 
       DIMENSION WORK(LWORK)
       CHARACTER KASYM(3,3)*1, POINT_GROUP*15

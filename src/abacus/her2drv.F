@@ -45,7 +45,7 @@ C     E. R. Davidson, JCP 62, 400 (1975)
 C     P. R. Taylor,   TCA 69, 447 (1986)
 C     J. Almloef, MOLECULE Program Description, USIP Report 74 - 29
 C
-!      use ccom_mod, only: NHTYP, THRS
+      use ccom_mod, only: NHTYP, THRS
       use priunit_mod, only: LUPRI
       use twosta_mod
       use maxaqn_mod, only: MXQN
@@ -59,7 +59,6 @@ C
       DIMENSION DMAT(*), FMAT(*), GMAT(*), IREPDM(*), IFCTYP(*),
      &        INDX(2,*),INDXAB(*), WORK(LWORK),DINTSKP(*),
      &        GABRAO(*),DMRAO(*),DMRSO(*),INDEX(*),TIMES(*)
-#include "ccom.h"
 C
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWOINT','*',103)
 C980827-hjaaj : "old" NOCONT does not work in this version
@@ -336,7 +335,7 @@ C  /* Deck twolop */
      &                  ADISTR,I2TYP,ICEDIF,SCREEN,
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,GENCNT)
 C
-!      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, LCLASH, MAXSHL, NCNTSH, NHKTSH, NLRGBL, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
+      use blocks_mod
       use maxaqn_mod, only: MXAQN, MXQN
 !      use inforb_mod, only: NBAST
       use mxcent_mod, only: MXCENT, MXCOOR
@@ -365,7 +364,6 @@ C
 #endif
 #include "suscpt.h"
 #include "inforb.h"
-#include "blocks.h"
 C
       CALL QENTER('TWOLOP')
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWOLOP','*',103)
@@ -771,7 +769,7 @@ C
       use symmet_mod, only: MULT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, MAXSHL, NCNTSH, NHKTSH, NLRGBL, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
+      use blocks_mod
       use nuclei_mod, only: NBASIS
       use maxaqn_mod, only: MXAQN, MXQN
       use twocom_mod
@@ -790,7 +788,6 @@ C
 #else
 #include "energy.h"
 #endif
-#include "blocks.h"
 C
       CALL QENTER('TWODSA')
       KWORK = 1
@@ -998,7 +995,7 @@ C  /* Deck twodis */
      &                RELCAL,GENCNT)
 C
 !      use dcbham_mod, only: IF, ONECAP
-!      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, LCLASH, NCNTSH, NHKTSH, NORBSH, NSETSH, NSYMBL, NUCOSH, SEGMSH, SPHRSH
+      use blocks_mod
       use comdis_mod, only: ISHLA, ISHLB
       use twocom_mod
       use symmet_mod, only: MULT
@@ -1014,7 +1011,6 @@ C
       DIMENSION DMAT(*), FMAT(*), GMAT(*), IFCTYP(*),
      &      GABRAO(*),DMRAO(NSYMBL,NSYMBL,*),DINTSKP(*),
      &      INDX(2,*), INDXAB(*), INDHSQ(*), IODDHR(*), WORK(LWORK)
-#include "blocks.h"
 #ifdef PRG_DIRAC
 #include "dcbham.h"
 #endif
@@ -1106,7 +1102,7 @@ C
       use priunit_mod, only: LUPRI
       use twocom_mod
       use maxaqn_mod, only: MXAQN, MXQN
-!      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, LCLASH, MAXSHL, NCNTSH, NHKTSH, NLRGBL, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
+      use blocks_mod
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXCENT, MXCOOR
       use aovec_mod, only: MXAOVC
@@ -1128,7 +1124,6 @@ C
 #else
 #include "energy.h"
 #endif
-#include "blocks.h"
 C
       CALL QENTER('DISLOP')
       IF (JPRINT .GT. 5) CALL TITLER('Output from DISLOP','*',103)
@@ -1456,8 +1451,8 @@ C  /* Deck twood1 */
       use twocom_mod
       use twosta_mod, only: LWTOT, MWFCAB, MWFCCD, MWPSO, MWSOIN, MWTOT
       use gab_screening, only: qorb_use, prune_thr
+      use blocks_mod, only: JSTRSH, NCONTS, NPRIMS
 #include "implicit.h"
-!      use blocks_mod, only: JSTRSH, NCONTS, NPRIMS
       INTEGER :: I
       PARAMETER (LUPAS = 27, LUPAO = 29)
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK,
@@ -1481,7 +1476,6 @@ C  /* Deck twood1 */
      &          NREDAB(*), NREDCD(*), WRKBUF(*),GABRAO(*),
      &          DMRAO(*),DMRSO(*),DINTSKP(*),IREPDM(*),INDX(2,*),
      &          INDXAB(*)
-#include "blocks.h"
 C
       CALL QENTER('TWOOD1')
       KWORK = 1
@@ -1651,6 +1645,7 @@ C     AD, BC and BD (all symmetry images, all density matrices).
 C     Pruning is only done for segmented shells where the sets of
 C     ODCSEG are the contracted orbitals of the shell.
 C
+      use blocks_mod, only: ISYMBL, NCNTSH, NSYMBL
       use twocom_mod, only: IGENAB, IGENCD, ISHELA, ISHELB, ISHELC,
      &  ISHELD, SCRTHR
       use priunit_mod, only: LUPRI
@@ -1661,7 +1656,6 @@ C
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0)
       LOGICAL PRNCHK
-#include "blocks.h"
       DIMENSION GABRAO(NSYMBL,NSYMBL), DMRAO(NSYMBL,NSYMBL,NDMAT),
      &          ISHL(4), NBL(4), IBL(8,4)
 C
@@ -1727,12 +1721,12 @@ C     .TRUE. if the sets of shell ISH used in ODCSEG are its contracted
 C     orbitals in the order of IORBSH (checked via the index of the
 C     contracted function in its AO block), required for pruning
 C
+      use blocks_mod, only: IORBSH, NCONTS, NORBSH, NSETSH, SEGMSH
       use shells_mod, only: IPTSHL, NUMCF
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
       use gab_screening, only: ao2orb
 #include "implicit.h"
-#include "blocks.h"
 C
       PRNCHK = .FALSE.
       IF (IGEN .NE. 2 .OR. .NOT.SEGMSH(ISH)) RETURN
@@ -1771,7 +1765,8 @@ C  /* Deck symlop */
       use nuclei_mod, only: NAMDEP, NDEGNM, NUCNUM
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: FMULT, ISYMAX, MAXOPR, PT
-!      use blocks_mod, only: BIGVEC, IORBSH, ISYMBL, LCLASH, NCNTSH, NHKTSH, NSYMBL
+      use blocks_mod, only: BIGVEC, IORBSH, ISYMBL, LCLASH, NCNTSH,
+     &  NHKTSH, NSYMBL
       use twosta_mod, only: LWTOT, MWAOIN, MWTOT, TDSOUT, TFCKOU,
      &  TKTIME, TSYMOU
       use dorps_mod, only: DOCOOR
@@ -1816,7 +1811,6 @@ C  /* Deck symlop */
      &          INDX(2,*),INDXAB(*)
 CMI ... added missing declarations (as in GABDR2)
       DIMENSION COEFAB(*),COEFCD(*)
-#include "blocks.h"
 #ifdef PRG_DIRAC
 #include "dcbham.h"
 #else
@@ -2512,7 +2506,6 @@ C  /* Deck caoint */
      &          NPNTAB(*), NPNTCD(*), NREDAB(*), NREDCD(*),
      &          FMAT(NBASIS,NBASIS,*), DMAT(NBASIS,NBASIS,*), IFCTYP(*),
      &          DNSBUF(*),DINTSKP(*),WORK(LWORK)
-!#include "ccom.h"
 C
 C     *************************
 C     ***** Print Section *****
@@ -2670,10 +2663,9 @@ C  /* Deck paovec */
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
       use shells_mod, only: KMAX
+      use blocks_mod, only: SEGMEN
 #include "implicit.h"
-!      use blocks_mod, only: SEGMEN
       DIMENSION WORK(LWORK)
-#include "blocks.h"
 C
       CALL QENTER('PAOVEC')
 C
@@ -2715,7 +2707,7 @@ C hjaaj aug2000: possibilities:
 C                here we can also split a contracted block
 C                in more blocks, if needed for memory
 C
-!      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, JSTRSH, KCKTSH, KHKTSH, MAXSHL, NCNTSH, NHKTSH, NLRGBL, NORBSH, NPRIMS, NSMLBL, NSYMBL, NUCOSH, SEGMEN, SPHRSH
+      use blocks_mod
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use priunit_mod, only: LUPRI
       use shells_mod, only: CENT, IPTSHL, ISTBAO, KCKT, KHKT, KMAX,
@@ -2739,7 +2731,6 @@ C
 #include "dcbgen.h"
 #else
 #endif
-#include "blocks.h"
 C
 C
       MXAOSH = 0
@@ -3337,7 +3328,6 @@ C
      &          INDHSQ(*), IODDHR(NRTOP,0:7),
      &          LMNVLS(KCKMAX,5,4),
      &          NPNTAB(*), NPNTCD(*), NREDAB(*), NREDCD(*)
-!#include "ccom.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from INTDR1','*',103)
 C
@@ -3750,7 +3740,8 @@ C  /* Deck paoset */
       SUBROUTINE PAOSET(KORBSH,IPRVPR)
       use primit_mod, only: PRICCF
       use shells_mod, only: KMAX, NRCO, NUCO
-!      use blocks_mod, only: JSTRSH, MAXSHL, NCONTS, NPRIMS, NSETSH, SEGMSH
+      use blocks_mod, only: JSTRSH, MAXSHL, NCONTS, NPRIMS, NSETSH,
+     &  SEGMSH
       use aovec_mod, only: MXAOVC, MXCONT
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use kinds_mod, only: dp
@@ -3760,7 +3751,6 @@ C  /* Deck paoset */
 C
       DIMENSION KORBSH(KMAX,MXAOVC), IPRVPR(KMAX)
 C
-#include "blocks.h"
 C
 C     Parameters for sets of primitives
 C     =================================
@@ -4172,12 +4162,11 @@ C  /* Deck getlm1 */
       use maxaqn_mod, only: MXQN
       use twocom_mod, only: KCKMAX
       use sphtrm_mod, only: CSP, ISPADR
+      use ccom_mod, only: DOCART
 #include "implicit.h"
-!      use ccom_mod, only: DOCART
       INTEGER :: I,J
       CHARACTER*1 TYPE
       DIMENSION LMN(KCKMAX,5)
-#include "ccom.h"
       CALL LMNVAL(NHKTX,KCKTX,LMN(1,1),LMN(1,2),LMN(1,3))
       DO 100 I = 1, KCKTX
          LMN(I,4) = MOD(LMN(I,1),2)+2*MOD(LMN(I,2),2)+4*MOD(LMN(I,3),2)
@@ -4668,10 +4657,9 @@ C*****************************************************************************
       use aovec_mod, only: MXAOVC
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use blocks_mod, only: NSYMBL
+      use blocks_mod, only: NSYMBL
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "blocks.h"
       REAL(dp), PARAMETER :: D0 = 0.0D00, D1 = 1.0D00, D2 = 2.0D00
       DIMENSION GABRAO(NSYMBL,NSYMBL,0:3)
 C

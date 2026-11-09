@@ -34,10 +34,10 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
-!      use ccom_mod, only: NHTYP
+      use ccom_mod, only: NHTYP
       use twocom_mod
       use aovec_mod, only: MXAOVC
-!      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, LCLASH, MAXSHL, NCNTSH, NHKTSH, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
+      use blocks_mod
       use nuclei_mod, only: NBASIS
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -45,8 +45,6 @@ C*****************************************************************************
 #ifdef PRG_DIRAC
 #else
 #endif
-#include "ccom.h"
-#include "blocks.h"
 C
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DIRFCK, RETUR, TTIME,
      &        NOCONT, SPNORB, DISTRI, SQ12EL, LONDON, SUSCEP, DDFOCK,
@@ -396,8 +394,8 @@ C  /* Deck gabdr1 */
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
       use twocom_mod
+      use blocks_mod, only: JSTRSH, NCONTS, NPRIMS
 #include "implicit.h"
-!      use blocks_mod, only: JSTRSH, NCONTS, NPRIMS
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK,
      &        DISTRI, NOCONT, LONDON, SPNORB, ONECEN,SOFOCK,
      &        SQ12EL, SUSCEP, TPRAB, TPRCD
@@ -421,7 +419,6 @@ C               Electron 2
      &          JSTRC(NSETC), JSTRD(NSETD),
      &          NINDCD(NORBC*NORBD,2), NORTCD(8),
      &          NPNTCD(*),NREDCD(*)
-#include "blocks.h"
 C
       CALL QENTER('GABDR1')
       KWORK = 1
@@ -571,7 +568,7 @@ C  /* Deck Gabdr2 */
       use dorps_mod, only: DOCOOR
 !      use dcbham_mod, only: HFXFAC, IF
       use doxyz_mod, only: DOXYZ
-!      use blocks_mod, only: BIGVEC, NCNTSH
+      use blocks_mod, only: BIGVEC, IORBSH, NCNTSH
       use aovec_mod, only: MXAOVC
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -582,7 +579,6 @@ C  /* Deck Gabdr2 */
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
-#include "blocks.h"
 #ifdef PRG_DIRAC
 #include "dcbham.h"
 #else
@@ -1115,7 +1111,7 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use blocks_mod, only: IORBSH
+      use blocks_mod, only: IORBSH
       use twocom_mod
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: MAXOPR
@@ -1130,7 +1126,6 @@ C*****************************************************************************
      &          AOINT2(NCCINT),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          IEFFA(0:7),IEFFB(0:7)
-#include "blocks.h"
 C
 Chj/980617: changed ISYMA test from MULA to MULAB, we must
 C           include all different operations where at least one of
@@ -1246,14 +1241,13 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NBASIS
       use aovec_mod, only: MXAOVC
-!      use blocks_mod, only: NSYMBL
+      use blocks_mod, only: NSYMBL
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
       INTEGER :: I
 C
-#include "blocks.h"
       DIMENSION DMAT(NBASIS*NBASIS,NDMAT),
      &          DRAO(NSYMBL,NSYMBL,NDMAT),WORK(LWORK)
 C
@@ -1302,11 +1296,10 @@ C*****************************************************************************
       use nuclei_mod, only: NAMN, NUCDEG
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use blocks_mod, only: LCLASH, MAXSHL, NCNTSH, NHKTSH, NSYMBL
+      use blocks_mod, only: LCLASH, MAXSHL, NCNTSH, NHKTSH, NSYMBL
 #include "implicit.h"
       INTEGER :: I,II,J,JJ,K
 C
-#include "blocks.h"
       DIMENSION DRAO(NSYMBL,NSYMBL,NDMAT),INDEX(NSYMBL)
       CHARACTER SPDCAR*1,COMP(2)*1
       COMP(1) = 'L'
@@ -1366,12 +1359,11 @@ C*****************************************************************************
       use nuclei_mod, only: NBASIS, NUCDEG
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use shells_mod, only: IPTSHL, KMAX
-!      use blocks_mod, only: ISYMBL, KHKTSH, NCNTSH
+      use blocks_mod, only: ISYMBL, KHKTSH, NCNTSH
 #include "implicit.h"
 C
       INTEGER :: II
 C
-#include "blocks.h"
       DIMENSION INDRAO(NBASIS)
 C
       IOFF = 0
@@ -1443,7 +1435,7 @@ C*****************************************************************************
       use nuclei_mod, only: NAMN, NBASIS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use aovec_mod, only: MXAOVC
-!      use blocks_mod, only: LCLASH, MAXSHL, NCNTSH, NHKTSH
+      use blocks_mod, only: LCLASH, MAXSHL, NCNTSH, NHKTSH
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1451,7 +1443,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D0=0.0D0
 C
 C
-#include "blocks.h"
       DIMENSION DMAT(NBASIS*NBASIS,NDMAT),
      &          DRSO(MAXSHL,MAXSHL,NDMAT),WORK(LWORK)
       CHARACTER SPDCAR*1,COMP(2)*1
@@ -1797,7 +1788,7 @@ C/* Deck Gabgen */
      &                  recompute_Gab_,IPRINT,WORK,LWORK)
       use maxorb_mod, only: MXCORB, MXSHEL
       use nuclei_mod, only: NBASIS
-!      use blocks_mod, only: MAXSHL, NSYMBL
+      use blocks_mod, only: MAXSHL, NSYMBL
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use chrxyz_mod, only: CHRXYZ
@@ -1815,7 +1806,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "blocks.h"
       LOGICAL EXTST,NOCONT, recompute_Gab_, DOQORB
       CHARACTER GABLAB(3)*8,RTNLBL(2)*8
       DIMENSION WORK(*)
@@ -2028,7 +2018,7 @@ C/* Deck Getgab */
       use aovec_mod, only: MXAOVC
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use blocks_mod, only: NSYMBL
+      use blocks_mod, only: NSYMBL
       use chrxyz_mod, only: CHRXYZ
       use labeled_storage
 C***********************************************************************
@@ -2041,7 +2031,6 @@ C***********************************************************************
       use gab_settings, only: recompute_Gab
 #include "implicit.h"
       INTEGER :: I
-#include "blocks.h"
       LOGICAL EXTST,FNDLAB
       CHARACTER GABLAB(3)*8
       DIMENSION GABM(NSYMBL,NSYMBL,*), WORK(*)

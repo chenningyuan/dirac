@@ -852,7 +852,7 @@ C*****************************************************************************
       use dcbgrd_mod
 !      use exeinf_mod, only: FTRONV
       use maxaqn_mod, only: MXAQN, MXQN
-!      use blocks_mod, only: NLRGBL, NSMLBL, NSYMBL
+      use blocks_mod, only: NLRGBL, NSMLBL, NSYMBL
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -879,7 +879,6 @@ C
 !#include "dgroup.h"
 #include "dcbham.h"
 C two el. part
-#include "blocks.h"
 C
 #include "exeinf.h"
 C
@@ -2095,7 +2094,7 @@ C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
       use consts_mod, only: D0
-!      use optinf_mod, only: GRDTHR
+      use optinf_mod, only: GRDTHR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: NUCDEP
@@ -2108,7 +2107,6 @@ C
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOSS
       CHARACTER*3 STR
-#include "optinf.h"
 C
       CALL QENTER('ESTGSS')
 C

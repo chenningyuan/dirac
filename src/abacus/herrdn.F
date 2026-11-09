@@ -233,13 +233,13 @@ C
 C
 C     Initialize /CBIREA/
 C
+      use ccom_mod, only: THRS
       use cbirea_mod
       use numder_mod, only: NOMOVE
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
       LOGICAL RELCAL, TSTINP
 #include "infpar.h"
-#include "ccom.h"
 Caspg adding numder to set NOMOVE
 Caspg
       THRS = 1.0D-15
@@ -511,6 +511,7 @@ C******************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       USE RECP_NTR
+      use ccom_mod, only: DOCART, DOSPHE, THRS
 #include "implicit.h"
 #include "codata.h"
       PARAMETER (THRMIN = 1.D-15)
@@ -542,7 +543,6 @@ C     JHS The following variables come from a common block and are thus kept in 
       INTEGER   IFXYZ(3), blk
       LOGICAL   ANG, ADDSYM
 
-#include "ccom.h"
 #include "infpar.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
@@ -841,6 +841,7 @@ C                      - determine Cartesian powers
 C               NHKOFF(J) - offset for components in list of l-functions
 C               MAXOPR - maximum number of operations to loop over
 C***********************************************************************
+      use ccom_mod, only: KHK, NHKOFF, NHTYP
       use nuclei_mod, only: ISTBNU, NUCIND
       use symmet_mod, only: MAXOPR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -848,7 +849,6 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 C
-#include "ccom.h"
 C
 C     ***** Tabulate Incomplete Gamma Function *****
 C
@@ -895,6 +895,7 @@ C
 C       Read orbital and geometry input data
 C
 C***********************************************************************
+      use ccom_mod, only: NHTYP
       use cbirea_mod, only: BASIS, DIRAC, FAMPAR, INPTST, IPREAD,
      &  LCMMAX, NFAMEXP, UNCONT
       use molinp_mod, only: MLINE, NMLINE
@@ -919,7 +920,6 @@ C***********************************************************************
       CHARACTER SPDCAR*1,BSET*5,ZMATL*1,BASFIL*20,AUXFIL*20,BSKEYWORD*14
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       DIMENSION IBLOCK(MXBSETS)
-#include "ccom.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -2332,6 +2332,7 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
+      use ccom_mod, only: DOCART, NHTYP, THRS
       use cbirea_mod, only: DIRAC, IPREAD
       use aosotr_mod, only: IAOAO
       use nuclei_mod
@@ -2357,7 +2358,6 @@ C*****************************************************************************
      &          NTPRIM(MXBSETS),NTBAS(MXBSETS)
       DIMENSION IBLOCK(MXBSETS)
       integer blk
-#include "ccom.h"
 C
 
 
@@ -2635,12 +2635,12 @@ C
 C     Generate string : Uncontracted/contracted basis functions
 C
 C*****************************************************************************
+      use ccom_mod, only: KHK
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
       CHARACTER TSTRING*(6*MXQN+3)
       CHARACTER SPDCAR*1 ! type declaration for external function
       DIMENSION JCO(IQM),NRC(*),NUC(*)
-#include "ccom.h"
 C*****************************************************************************
       IND = 1
       TSTRING(IND:IND) = '['
@@ -3160,7 +3160,6 @@ C  /* Deck orbinx */
       DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
      &          ALPHA(KPRIM,KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
-#include "ccom.h"
 C
       NBLOCK = 0
       DO 100 I=1,IQM
@@ -3488,6 +3487,7 @@ C******************************************************************************
       use maxorb_mod, only: MXSHEL
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
+      use ccom_mod, only: KCK, KHK, SPH
 #include "implicit.h"
 C
       PARAMETER (D0 = 0.0D0)
@@ -3497,7 +3497,6 @@ C
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &          SEG(KBLOCK),ALPHA(KPRIM,KBLOCK),
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
-#include "ccom.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
@@ -3627,6 +3626,7 @@ C     Process basis data
 C     written by Luuk Visscher, trivial modification of orbpro
 C
 C******************************************************************************
+      use ccom_mod, only: KCK, KHK, SPH
       use fitprimit_mod, only: PRICCF_FIT, PRICRX_FIT, PRICRY_FIT,
      &  PRICRZ_FIT, PRIEXP_FIT
       use fitshells_mod
@@ -3644,7 +3644,6 @@ C
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &          SEG(KBLOCK),ALPHA(KPRIM,KBLOCK),
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
-#include "ccom.h"
 #ifdef PRG_DIRAC
 #else
 #endif
@@ -3745,6 +3744,7 @@ C
 C  /* Deck orbout */
       SUBROUTINE ORBOUT(ICLS,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &           IPCON,KATOM,KANG,KBLOCK,KPRIM,ALPHA,CPRIMU,NRMPRI)
+      use ccom_mod, only: GTOTYP, KHK, NHKOFF
       use cbirea_mod, only: IPREAD, UNCONT
       use fitprimit_mod, only: NPLSH_FIT, PRIEXP_FIT
       use nuclei_mod, only: NAMN, NLARGE, NONT, NONTYP, NPLRG,
@@ -3758,7 +3758,6 @@ C  /* Deck orbout */
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0)
 C
-#include "ccom.h"
       CHARACTER    CHRSEG*10,DEG*2
       CHARACTER*60 FMTA, FMTB, FMTC, FMTD
       LOGICAL      SPHER, SEG, NRMPRI
@@ -4152,6 +4151,7 @@ C     tuh 120988
 C
 C     Polished and annotated - tsaue March 10 1993
 C*************************************************************************
+      use ccom_mod, only: DOCART, KHK, NHKOFF, NHTYP
       use cbirea_mod, only: IPREAD
       use pincom_mod, only: INDGEN, IPIND
       use sphtrm_mod, only: CSP
@@ -4173,7 +4173,6 @@ C
       DIMENSION LVALUE(MXAQN), MVALUE(MXAQN), NVALUE(MXAQN),
      &          IRREP(MXCORB)
       integer soef, blk
-#include "ccom.h"
 C
 C*****************************************************************************
 C Determine ISYMAO:
@@ -4394,6 +4393,7 @@ C
 C     Print routine for symmetry
 C
 C*****************************************************************************
+      use ccom_mod, only: GTOTYP
       use cbirea_mod, only: DIRAC, IPREAD
       use aosotr_mod, only: CTRAN, IPCEN, IPTYP, ITRAN
       use chrsgn_mod, only: CHRSGN
@@ -4406,7 +4406,6 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
-#include "ccom.h"
 #include "pgroup.h"
       CHARACTER COMP(2)*1
 C
@@ -5248,6 +5247,7 @@ C     Miro,Sept.2017 - parallel job was setting LUINFO value to 0 for GNU compil
 C     upon fixing I also made routine "implicit none" style
 C
 C=======================================================================
+      use ccom_mod, only: DOCART, GTOTYP, KCK, KHK, SPH, SPHNRM
       use cbirea_mod, only: IPREAD
       use molinp_mod, only: MLINE, NMLINE
       use sphtrm_mod, only: CSP, ISPADR, NCSP
@@ -5256,7 +5256,6 @@ C=======================================================================
       use priunit_mod, only: LUPRI
       implicit none
       real*8, parameter :: D1 = 1.0D0
-#include "ccom.h"
       integer, intent(in) :: LUINFO
       CHARACTER*1 KEY
       LOGICAL DOOWN
@@ -5470,6 +5469,7 @@ C  /* Deck wronel */
 C
 C     Write interface records
 C
+      use ccom_mod, only: DOCART, GTOTYP
       use sphtrm_mod, only: CSP, ISPADR, NCSP
       use frame_mod, only: POTNUC
       use hrunit_mod, only: LUONEL
@@ -5496,7 +5496,6 @@ C
      &     TABLE3 /'********','        ','        ','SYMINPUT'/,
      &     TABLE4 /'********','        ','        ','TESTDATA'/,
      &     TABLE5 /'********','        ','        ','SPHERICA'/
-#include "ccom.h"
 C
       CALL GETDAT(CDATE,CTIME)
       TABLE1(2) = CDATE
@@ -5602,6 +5601,7 @@ C
       END
 C  /* Deck reapri */
       SUBROUTINE REAPRI
+      use ccom_mod, only: DOCART, NHTYP, THRS
       use aosotr_mod, only: CTRAN, IAOAO, ITRAN
       use nuclei_mod
       use shells_mod
@@ -5613,7 +5613,6 @@ C  /* Deck reapri */
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
-#include "ccom.h"
 C
       CALL HEADER('Test output from REAPRI',-1)
       WRITE (LUPRI,'(A,1P,D15.6)') ' THRS  ', THRS
@@ -5828,6 +5827,7 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
+      use ccom_mod, only: DOCART, NHTYP, THRS
 #include "implicit.h"
 #include "codata.h"
       PARAMETER (DSM = 1.0D-30)
@@ -5848,7 +5848,6 @@ C
 #include "dcbgen.h"
 #else
 #endif
-#include "ccom.h"
     1 FORMAT(/'   Internal coordinates (Z matrix)'/)
     2 FORMAT(I5,62X,F15.5)
     3 FORMAT(I5,I5,F14.7,43X,F15.5)
@@ -6662,6 +6661,7 @@ C     Added and modified by Miro Ilias for the AMFI part
 C     Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use ccom_mod, only: NHKOFF
       use nuclei_mod, only: CHARGE, NONT, NONTYP, NUCDEG
       use primit_mod, only: PRIEXP
       use aovec_mod, only: MXCONT
@@ -6670,7 +6670,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "ccom.h"
 #include "infpar.h"
 
       LOGICAL SEG
@@ -6800,13 +6799,13 @@ C!     Written by T.Saue May 1 1998
 C!     Rewrite by cut'n paste 2006 Trond Saue
 C!
 C***********************************************************************
+      use ccom_mod, only: GTOTYP, KCK
       use cbirea_mod, only: IPREAD
       use sphtrm_mod, only: CSP, ISPADR
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER(D1 = 1.0D0)
-#include "ccom.h"
       DIMENSION WORK(LWORK)
       KWORK = 1
       KFREE = KWORK
@@ -6902,8 +6901,8 @@ C
 C     Written by Lucas Visscher, 26-6-2007
 C
 C***********************************************************************
+      use ccom_mod, only: KHK
       use maxaqn_mod, only: MXQN
-#include "ccom.h"
       INTEGER DELTA_L
       IF (L+DELTA_L.GT.0) THEN
          KHK_SC = KHK(L+DELTA_L)
@@ -6927,6 +6926,7 @@ C     This is DKCON, written by K. Ruud,
 C     and imported from DALTON (with polish) by T. Saue Jan 15 2008
 C
 C******************************************************************************
+      use ccom_mod, only: KCK, KHK, SPH
       use cbirea_mod, only: MAXPRD
       use nuclei_mod, only: NONT, NONTYP, NUCDEG
       use pi_mod, only: PI
@@ -6944,7 +6944,6 @@ C
      &          CPRIM(KPRIM,KPRIM,KBLOCK)
       DIMENSION CONTC(IPRIMD,IORBD)
       DIMENSION LPRIM(MAXPRD)
-#include "ccom.h"
 C
 C
 C     PIPPINV is the inverse of PIPPI (see routine NRMORB)
