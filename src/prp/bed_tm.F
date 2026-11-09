@@ -1523,7 +1523,6 @@ C TODO commented out due to dcborb.hç
 #if defined (PRG_DIRAC)                                    
 !#include "dcbgen.h"                                        
 #else                                                      
-#include "gnrinf.h"                                        
 #include "energy.h"                                        
 #endif                                                     
 C

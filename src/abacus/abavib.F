@@ -24,11 +24,11 @@ cAdded VRML visualization of normal modes.
 #endif
 C  /* Deck vibinp */
       SUBROUTINE VIBINP(WORD)
+      use abainf_mod, only: IPRDEF
       use mxcent_mod, only: MXCENT, MXCOOR
       use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
       PARAMETER (NTABLE = 7)
-#include "abainf.h"
 #include "cbivib.h"
 C
       LOGICAL NEWDEF, DOINT
@@ -175,10 +175,10 @@ C
 C     Initialize /CBIVIB/
 C
       use mxcent_mod, only: MXCENT, MXCOOR
-!      use abainf_mod, only: DIPDER, IPRDEF, LINCPL, MOLGRD, MOLHES, VCD, VIB
+      use abainf_mod, only: DIPDER, IPRDEF, LINCPL, MOLGRD, MOLHES, VCD,
+     &  VIB
 !      use cbivib_mod, only: DIPOL, DOVCD, HESFIL, HESPUN, IPRINT, MAXDIF, MAXSUB, NCARD, NINTCM, NISOTP, SKIP
 #include "implicit.h"
-#include "abainf.h"
 #include "cbivib.h"
 C
       NCARD  = 0
@@ -238,7 +238,7 @@ C
       use dorps_mod, only: DOREPS
       use dummy_mod, only: IDUMMY
       use nuclei_mod, only: NATOMS, NFLOAT, NUCIND
-!      use abainf_mod, only: DIPDER, NUMHES, POLAR, RAMAN, VROA
+      use abainf_mod, only: DIPDER, NUMHES, POLAR, RAMAN, VROA
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: THRGEO = 1.D-4, THRSH = 1.0D-6
@@ -249,7 +249,6 @@ C
 C Used from common blocks:
 C   TAYMOL : HESMOL
 C
-#include "abainf.h"
 #include "cbivib.h"
 C
       CALL QENTER('VIBCTL')
@@ -462,7 +461,7 @@ C
       use iratdef_mod, only: IRAT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use cbilnr_mod, only: NFRVAL
-!      use gnrinf_mod, only: OPTWLK
+      use gnrinf_mod, only: OPTWLK
       use symmet_mod, only: MAXREP, NCRREP
       use priunit_mod, only: LUPRI
 !      use cbivib_mod, only: DOVCD, HESFIL, IPRINT, NINTCM, NISOTP
@@ -476,7 +475,6 @@ C
      &          EVAL(NCORD), EVEC(NCORD,NCORD), DGRAD(3,NCORD),
      &          VINRTI(3,3), CAAT(3,NCORD), WRK(LWRK)
 C
-#include "gnrinf.h"
 #include "cbivib.h"
 #include "cbilnr.h"
 #include "codata.h"
@@ -847,10 +845,10 @@ C  /* Deck vibana */
       use priunit_mod, only: LUPRI
 !      use pgroup_mod, only: I
 !      use cbiwlk_mod, only: IMODE, NMODIF, V3CAL
-!      use gnrinf_mod, only: OPTNEW
+      use gnrinf_mod, only: OPTNEW
       use taymol_mod, only: ERGMOL
       use symmet_mod, only: MAXREP
-!      use abainf_mod, only: LINCPL, RAMAN, VROA
+      use abainf_mod, only: LINCPL, RAMAN, VROA
 !      use molde_mod, only: MOLDEN
       use dummy_mod, only: IDUMMY
       use nuclei_mod, only: NAMDPX, NATOMS
@@ -878,10 +876,8 @@ C
      &          ROAAFQ(*), ROAGNQ(*), ROAGLQ(*), ROAAQ(*)
 C
 #include "molde.h"
-#include "abainf.h"
 #include "pgroup.h"
 #include "cbiwlk.h"
-#include "gnrinf.h"
 #include "hotfccom.h"
 C
       LOGICAL  INTENS, NEWSPC, ACTIVE, CNTAIN, LINEAR
@@ -2273,7 +2269,7 @@ C  /* Deck vibv3 */
 !      use thrzer_mod, only: THRZER
       use maxaqn_mod, only: MXAQN, MXQN
       use nuctap_mod, only: LUWLK
-!      use gnrinf_mod, only: NMWALK
+      use gnrinf_mod, only: NMWALK
       use dummy_mod, only: IDUMMY
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
@@ -2290,7 +2286,6 @@ C  /* Deck vibv3 */
 C
 #include "cbivib.h"
 #include "cbiwlk.h"
-#include "gnrinf.h"
 #include "codata.h"
 C
       luwlk = 0
@@ -2678,7 +2673,7 @@ C  /* Deck vibro1 */
      &                  ALMN,GMMNL,GMMNNL,RMINN,DPOLN,CZL,CZNL,CXL,CXNL,
      &                  C0L,C0NL,CBL,CBNL,CONVER,BOLTZ,ROAAFD,ROAGND,
      &                  ROAGLD,ROAAD,ROAAFU,ROAGNU,ROAGLU,ROAAU)
-!      use abainf_mod, only: RAMAN, VROA
+      use abainf_mod, only: RAMAN, VROA
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use codata_mod, only: ALPHAC, XFAMU, XTANG, XTKAYS, XTNM
       use nuctap_mod, only: LUWLK
@@ -2717,7 +2712,6 @@ C
      &          ROAAFU(3,3,MXFR), ROAGNU(3,3,MXFR),
      &          ROAGLU(3,3,MXFR), ROAAU(3,3,3,MXFR)
 C
-#include "abainf.h"
 #include "cbivib.h"
 C
 C Conversion factors from au to derivated cgs
@@ -3187,6 +3181,8 @@ C     This subroutine calculates vibrationally averaged molecular
 C     properties assuming that the calculation is performed at the effective
 C     geometry. K.Ruud, San Diego, March 1999
 C
+      use abainf_mod, only: MAGSUS, NQCC, POLAR, QUADRU, ROTG, SHIELD,
+     &  SPINRO, SPNSPN
       use nuclei_mod, only: ISOTOP, ISTBNU, IZATOM, NAMDEP, NOORBT,
      &  NUCDEP, NUCIND
       use pi_mod, only: PI
@@ -3220,7 +3216,6 @@ include "implicit.h"
       DOUBLE PRECISION FAC, FACTOR, PREFAC
 C
 #include "cbiwlk.h"
-#include "abainf.h"
 C
       FAC = ALPHA2/(PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
       FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4)

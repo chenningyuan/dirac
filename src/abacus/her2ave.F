@@ -2489,7 +2489,7 @@ C      the same as is in the older brother dalton
       use priunit_mod, only: LUPRI
       use chrxyz_mod, only: CHRXYZ
       use symmet_mod, only: IPTAX, ISYMAX
-!      use abainf_mod, only: DOSYM
+      use abainf_mod, only: DOSYM
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -2499,7 +2499,6 @@ C      the same as is in the older brother dalton
       DIMENSION AMAT(3,3), IND(3)
       CHARACTER*(*) SPC
       CHARACTER LAB(3)*2, CHRABC(3)*1
-#include "abainf.h"
 C
       DATA CHRABC /'A','B','C'/
 C

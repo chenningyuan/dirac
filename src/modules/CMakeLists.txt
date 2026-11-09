@@ -1,5 +1,6 @@
 # Fortran modules
 set(MODULE_SOURCES
+    abainf.F90
     ader.F90
     aosotr.F90
     aovec.F90
@@ -9,6 +10,7 @@ set(MODULE_SOURCES
     cbihr1.F90
     cbihr2.F90
     cbione.F90
+    cbirea.F90
     cbisol.F90
     chrnos.F90
     chrsgn.F90
@@ -36,6 +38,7 @@ set(MODULE_SOURCES
     gamcom.F90
     gen1int.F90
     gencon.F90
+    gnrinf.F90
     hertop.F90
     hrunit.F90
     huckel.F90

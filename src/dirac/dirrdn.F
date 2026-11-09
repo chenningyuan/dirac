@@ -33,7 +33,6 @@ C               Febr.2006 - MI to modify for pure two-comp. mode
 C
 C***********************************************************************
 
-!      use cbirea_mod, only: IPREAD
 !      use dcbimp_mod, only: DOIMPMOS, QCPACK
 !      use dgroup_mod, only: NZ, NZC1
 !      use dcbgen_mod, only: DOANA, DOJACO, DOPRP, DOPSI, DOTRA, INPTES
@@ -59,12 +58,12 @@ C***********************************************************************
 #endif
 
       use priunit_mod, only: LUCMD, LUPRI
+      use cbirea_mod, only: IPREAD
 #include "implicit.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbimp.h"
-#include "cbirea.h"
 
       integer, parameter   :: lwork = 100000
       real(8), allocatable :: WORK(:)
@@ -5274,7 +5273,7 @@ C     Last revision: May 14 1996 - tsaue
 C
 C***********************************************************************
 !      use dcbgen_mod, only: DIRCAL, DIRSET, DOACIN, DOACUT, DOANA, DOHRM, DOHUCKEL, DOJACO, DOPRP, DOPSI, DOPUT, DORKBIMP, DOTRA, HRINPC, IDFLAG, IGTDIR, ILLDIR, INPTES, INTGEN, INTGEN_SAVE, IPRGEN, IPRUSR, ISLDIR, ISPHTR, ISSDIR, NEWBAS, NEWPRP, NMWALK, NOTRA, NUCVAC, OPTIMI, OPTNEW, OPTWLK, PANAS, RDINPC, RELCAL, SEGBAS, STOL, TITLE, USRIPR, VACUUM
-!      use cbirea_mod, only: CNTMAT
+      use cbirea_mod, only: CNTMAT
       use maxorb_mod, only: MXSHEL
 !      use dcbprl_mod, only: NPRPLBL
       use siripc_mod, only: INPPRC, NEWGEO
@@ -5285,7 +5284,6 @@ C***********************************************************************
 #include "implicit.h"
 C
 #include "dcbgen.h"
-#include "cbirea.h"
 #include "dcbxpr.h"
 #include "dcbcls.h"
 #include "dcbprl.h"
@@ -9101,13 +9099,12 @@ C
 C***********************************************************************
       use priunit_mod, only: LUCMD
 !      use dcbham_mod, only: ECPCALC, LEVYLE, MDIRAC, NONREL
-!      use cbirea_mod, only: CNTMAT
+      use cbirea_mod, only: CNTMAT
 !      use dcbgen_mod, only: TWOCOMP, TWOCOMPBSS
 #include "implicit.h"
 C
 #include "dcbgen.h"
 #include "dcbham.h"
-#include "cbirea.h"
       CHARACTER WORD*7,PROMPT*1
       LOGICAL ISDO2C4C,ISDO4C2C,TWOCOMP_SAVE,TWOCOMPBSS_SAVE,CNTMAT_SAVE
       LOGICAL find_keyword

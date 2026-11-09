@@ -34,9 +34,9 @@ module x2c_2e_soc_interface
 #endif
   use x2cmod_cfg, only: x2c_intgen_2c
 
+      use cbirea_mod, only: IPREAD
   implicit none
 
-#include "cbirea.h"
 #include "dcbgen.h"
 #include "dcbcls.h"
 

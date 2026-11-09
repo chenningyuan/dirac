@@ -671,7 +671,6 @@
       USE RECP_NTR
 #include "implicit.h"
 !#include "ccom.h"
-!#include "cbirea.h"
       INTEGER blk
 !     Skip if RECP is not set
       IF (.NOT.ALLOCATED(RECP_SET)) GOTO 9000
@@ -769,6 +768,9 @@
 
       SUBROUTINE RECP_LNK_FINDEL(BASNAM,INTQ0,LUBAS)
 !     From FINDEL
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: BASDIR
+#endif
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: BASDIR
 #include "implicit.h"
@@ -795,7 +797,6 @@ C     long because contains the full dir-path
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #endif
 #if defined (SYS_WINDOWS)
       WIN = .TRUE.

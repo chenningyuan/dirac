@@ -18,12 +18,12 @@
 C
 C  /* Deck dipinp */
       SUBROUTINE DIPINP(WORD)
+      use abainf_mod, only: IPRDEF
       use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
       PARAMETER (NTABLE = 7)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include "abainf.h"
 #include "cbidip.h"
       DATA TABLE /'.SKIP  ', '.PRINT ', '.NODC  ', '.NODV  ',
      *            '.XXXXXX', '.XXXXXX', '.STOP  '/
@@ -108,8 +108,8 @@ C  /* Deck dipini */
 C
 C     Initialize /CBIDIP/
 C
+      use abainf_mod, only: DIPDER, IPRDEF, POLAR
 #include "implicit.h"
-#include "abainf.h"
 #include "cbidip.h"
       IPRINT = IPRDEF
       NODC   = .FALSE.
@@ -170,6 +170,7 @@ C  /* Deck dipct1 */
 C
 C     December 1989, tuh
 C
+      use abainf_mod, only: DIPDER
       use dorps_mod, only: DOREPS
       use dipole_mod, only: DDIPE, DDIPN, DDIPS, DIPME
       use nuclei_mod, only: NUCDEP
@@ -191,7 +192,6 @@ C
 #include "moldip.h"
 #include "cbidip.h"
 C
-#include "abainf.h"
 #include "linaba.h"
 #include "inftap.h"
 #include "infvar.h"
@@ -338,6 +338,7 @@ C  /* Deck dipadd */
       END
 C  /* Deck polpri */
       SUBROUTINE POLPRI(AMAT,SPC,ITYPE1)
+      use abainf_mod, only: DOSYM
       use dorps_mod, only: DOREPS
       use inirep_mod, only: IREPPI, NREPPI
       use chrxyz_mod, only: CHRXYZ
@@ -353,7 +354,6 @@ C  /* Deck polpri */
       DIMENSION AMAT(3,3), IND(3)
       CHARACTER*(*) SPC
       CHARACTER LAB(3)*2, CHRABC(3)*1
-#include "abainf.h"
 #include "inftap.h"
 C
       DATA CHRABC /'A','B','C'/
@@ -453,6 +453,7 @@ C Population Analysis based on Atomic Polar Tensors
 C
 C according to J. Cioslowski, J.Am.Chem.Soc. 111 (1989) 8333-8336
 C
+      use abainf_mod, only: DOSYM, MOLHES
       use cbisol_mod, only: SOLVNT
       use nuclei_mod, only: NAMDEP, NUCDEP
       use symmet_mod, only: ISYMAX
@@ -467,7 +468,6 @@ C
       DIMENSION SHESS(MXCOOR,MXCOOR), CHESS(MXCOOR,MXCOOR), WRK(LWRK)
       DIMENSION CSTRA(*), SCTRA(*)
       LOGICAL ALL
-#include "abainf.h"
       ALL = DOSYM(ISYMAX(1,1)+1) .AND. DOSYM(ISYMAX(2,1)+1)
      &                           .AND. DOSYM(ISYMAX(3,1)+1)
       IF (ALL) THEN
@@ -551,11 +551,11 @@ C     reference with CI property gradient
 C
 C     tuh 080190
 C
+      use abainf_mod, only: NWNABA
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER (THRS = 1.0D-10)
       CHARACTER TEXT*(*)
-#include "abainf.h"
 C
       IF (IPRINT .GE. 5) THEN
          CALL TITLER('Output from CHKPRP','*',103)

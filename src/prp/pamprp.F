@@ -3508,7 +3508,6 @@ C***********************************************************************
       use nuclei_mod, only: NATOMS, NUCDEP
 #include "implicit.h"
 C
-!#include "abainf.h"
       CHARACTER*(*) KEY
       DIMENSION SHESS(*),WORK(*)
 C
@@ -3558,7 +3557,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0=0.D00
       DIMENSION SHESS(NROW,NROW), CHESS(NROW,NROW)
       DIMENSION WORK(LWORK)
-!#include "abainf.h"
 C
       INTEGER BEGIN
 C
@@ -7997,7 +7995,6 @@ C***********************************************************************
 C
       integer I,J
 C
-!#include "abainf.h"
 #include "spinro.h"
 !#include "dgroup.h"
 !#include "dcbham.h"
@@ -11775,7 +11772,6 @@ C
 C
       integer I,J
 C
-!#include "abainf.h"
 #include "spinro.h"
 C
       double precision GEOM,ORIGIN
@@ -11926,7 +11922,6 @@ C
 C
       integer I,J
 C
-!#include "abainf.h"
 #include "spinro.h"
 C
       integer IPRINT,IATOM,ISYMOP,NATOM,NCMAT

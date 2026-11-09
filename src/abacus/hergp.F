@@ -102,12 +102,11 @@ C
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use abainf_mod, only: DOSYM
+      use abainf_mod, only: DOSYM
       use symmet_mod, only: IPTCOR, MAXREP, NCRREP
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "abainf.h"
       DIMENSION GRAD(MXCOOR), CGRAD(MXCOOR), CSTRA(*), SCTRA(*)
       IF (.NOT.DOSYM(1)) THEN
          WRITE (LUPRI,'(2X,A)')
@@ -146,7 +145,7 @@ C
       use nuclei_mod, only: NAMEX, NATOMS, NUCDEP
       use symmet_mod, only: IPTCOR, MAXREP, NCRREP
       use priunit_mod, only: LUPRI
-!      use abainf_mod, only: WRITE
+      use abainf_mod, only: DOSYM
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
@@ -155,7 +154,6 @@ C
       PARAMETER (D0=0.D00, KCOL=6)
       CHARACTER*(*) KEY
       DIMENSION SHESS(*), CSTRA(*), SCTRA(*)
-#include "abainf.h"
       INTEGER BEGIN, NROW, NCOL, NROW_DIM
       real(8), allocatable :: CHESS(:,:)
 C
@@ -1989,7 +1987,6 @@ C
       LOGICAL DONE, CARTRA
       CHARACTER FIELD*1, KEY*(*)
       DIMENSION AMAT(3,MXCOOR), CMAT(3,MXCOOR), CSTRA(*), SCTRA(*)
-!#include "abainf.h"
 C
       CARTRA = .TRUE.
 C

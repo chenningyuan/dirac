@@ -26,6 +26,9 @@ C     T. Helgaker, Sep. 91
 C
 C     gnrinf.h needed for PANAS correction factor
 C
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: PANAS
+#endif
       use twosta_mod, only: LWTOT, MWRJ00, MWTOT
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
@@ -36,7 +39,6 @@ C
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #endif
       CALL QENTER('HR2DRV')
       KWORK = 1

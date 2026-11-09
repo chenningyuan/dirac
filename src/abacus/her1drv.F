@@ -27,13 +27,12 @@ C     Trygve Helgaker, University of Oslo, Norway
 C
       use cbione_mod, only: CUT, IPRINT, NODC, NODV, SKIP
       use priunit_mod, only: LUCMD, LUPRI
-!      use abainf_mod, only: IPRDEF
+      use abainf_mod, only: IPRDEF
       use kinds_mod, only: dp
 #include "implicit.h"
       PARAMETER (NTABLE = 6)
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include "abainf.h"
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ','XXXXXXX',
      *            '.NODC  ', '.NODV  ','.STOP  '/
@@ -126,11 +125,10 @@ C  /* Deck oneini */
 C
 C     Initialize /CBIONE/
 C
-!      use abainf_mod, only: DIPDER, IPRDEF, MOLGRD, MOLHES
+      use abainf_mod, only: DIPDER, IPRDEF, MOLGRD, MOLHES
       use cbione_mod, only: CUT, DIFDIP, IPRINT, MAXDIF, NODC, NODV,
      &  SKIP
 #include "implicit.h"
-#include "abainf.h"
 C
       IPRINT = IPRDEF
       SKIP   = .FALSE.
@@ -780,7 +778,7 @@ C
 C     Symmetry included        880418  PRT & TUH
 C
       use priunit_mod, only: LUPRI
-!      use abainf_mod, only: CCSD
+      use abainf_mod, only: CCSD
 !      use inforb_mod, only: N2ORBT, NASHT, NBAST, NCMOT, NISHT, NNASHX, NNASHY, NNORBT, NOCCT, NORBT, NSSHT, NSYM
       use iratdef_mod, only: IRAT
       use nuctap_mod, only: LUMC
@@ -793,7 +791,6 @@ C
 C Used from common blocks:
 C   ABAINF : CCSD
 C
-#include "abainf.h"
 #include "inforb.h"
       INTEGER R, S, RS, U, V, UV
 C

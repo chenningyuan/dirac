@@ -18,14 +18,13 @@ C  /* Deck nucinp */
       SUBROUTINE NUCINP(WORD)
       use priunit_mod, only: LUCMD, LUPRI
 !      use cbinuc_mod, only: CUT, IPRINT, SKIP
-!      use abainf_mod, only: IPRDEF
+      use abainf_mod, only: IPRDEF
       use kinds_mod, only: dp
 #include "implicit.h"
       PARAMETER (NTABLE = 3)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include "cbinuc.h"
-#include "abainf.h"
       DATA TABLE /'.SKIP  ', '.PRINT ', '.STOP  '/
 C
       NEWDEF = (WORD .EQ. '*NUCREP')
@@ -93,10 +92,9 @@ C  /* Deck nucini */
 C
 C     Initialize /CBINUC/
 C
-!      use abainf_mod, only: IPRDEF, MOLGRD, MOLHES
 !      use cbinuc_mod, only: CUT, IPRINT, MAXDIF, SKIP
+      use abainf_mod, only: IPRDEF, MOLGRD, MOLHES
 #include "implicit.h"
-#include "abainf.h"
 #include "cbinuc.h"
 C
       IPRINT = IPRDEF

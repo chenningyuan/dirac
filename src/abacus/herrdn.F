@@ -50,6 +50,8 @@ C
       end module fitprimit_mod
 C
       SUBROUTINE REAINP(WORD,RELCAL,TSTINP)
+      use cbirea_mod, only: BIGVC, IPREAD, LCMMAX, LUMLCL, MAXPRD,
+     &  MAXPRI, NCMEND, NCMSTR, PRIBAS, TOL_SYMADD, UNCONT, ZCMVAL
       use numder_mod, only: NOMOVE
       use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
@@ -58,7 +60,6 @@ C
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 !
 !     Parameter MAXPRD in cbirea.h is default for MAXPRI
-#include "cbirea.h"
 Caspg adding numder to set NOMOVE
 Caspg
 C
@@ -232,13 +233,13 @@ C
 C
 C     Initialize /CBIREA/
 C
+      use cbirea_mod
       use numder_mod, only: NOMOVE
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
       LOGICAL RELCAL, TSTINP
 #include "infpar.h"
 #include "ccom.h"
-#include "cbirea.h"
 Caspg adding numder to set NOMOVE
 Caspg
       THRS = 1.0D-15
@@ -304,6 +305,10 @@ C               - common block MOLINP: deleted !!!
 C               - common block MOLINC: deleted !!!
 C               - common block HRUNIT: deleted !!!
 C******************************************************************************
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: RDINPC
+#endif
+      use cbirea_mod, only: DIRAC, IPREAD, LUMLCL, MAXPRI
       use molinp_mod, only: MLINE, NMLINE
       use nuclei_mod, only: NUCDEP
       use dummy_mod, only: IDUMMY
@@ -319,9 +324,7 @@ C
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #endif
-#include "cbirea.h"
 C
       CHARACTER(LEN=8) :: moltype
       LOGICAL          :: HERMIT,NEWFILE,SET,FEXIST
@@ -496,6 +499,10 @@ C       ISHELL - runs over all shells
 C       IPRIM  - runs over all primitives
 C       NUCIND - runs over all symmetry independent centers
 C******************************************************************************
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: KCHARG
+#endif
+      use cbirea_mod, only: DIRAC, IPREAD, MAXPRI, TOL_SYMADD
       use molinp_mod, only: MLINE, NMLAU, NMLINE
       use nuclei_mod, only: NONT, NONTYP
       use symmet_mod, only: MAXREP
@@ -507,7 +514,6 @@ C******************************************************************************
 #include "implicit.h"
 #include "codata.h"
       PARAMETER (THRMIN = 1.D-15)
-#include "cbirea.h"
       REAL(KIND=8):: WORK(LWORK)
 
 C     JHS The following local arrays are allocated at runtime to make memory
@@ -541,7 +547,6 @@ C     JHS The following variables come from a common block and are thus kept in 
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
       LOGICAL LINEAR, ATOMIC
 #endif
 #include "dgroup.h"
@@ -890,6 +895,8 @@ C
 C       Read orbital and geometry input data
 C
 C***********************************************************************
+      use cbirea_mod, only: BASIS, DIRAC, FAMPAR, INPTST, IPREAD,
+     &  LCMMAX, NFAMEXP, UNCONT
       use molinp_mod, only: MLINE, NMLINE
       use nuclei_mod, only: CHARGE, GNUEXP, IATOMTYP, ISOTOP, IZATOM,
      &  NONT, NONTYP, NOORBT, NUCIND
@@ -902,7 +909,6 @@ C***********************************************************************
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (DSM = 1.0D-30)
-#include "cbirea.h"
       DIMENSION WORK(LWORK)
       LOGICAL   SEG,ANG,NOORBTS,NOFITFS,ZMTTST,CNTBAS
       DIMENSION IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
@@ -1940,6 +1946,7 @@ C
 C     Read and process data about symmetry independent centers
 C
 C*****************************************************************************
+      use cbirea_mod, only: INPTST
       use molinp_mod, only: LEN_MLINE, MLINE, NCLINE, NMLINE
       use argoscom_mod, only: ECPNUC
       use nuclei_mod, only: CHARGE, CORD, GAUNUC, GNUEXP, ISOTOP,
@@ -1951,7 +1958,6 @@ C*****************************************************************************
 #include "codata.h"
       PARAMETER (CORMAX = 1.D5)
       PARAMETER (LUERR = 0)
-#include "cbirea.h"
 C
 C
       CHARACTER*(LEN_MLINE) TMP_LINE
@@ -2080,6 +2086,7 @@ C       Process orbital and geometry input data
 C
 C*****************************************************************************
 C
+      use cbirea_mod, only: IPREAD
       use huckel_mod, only: NHUCBA
       use fitprimit_mod, only: NPLSH_FIT, NPSHEL_FIT, NPSSH_FIT
       use fitshells_mod, only: KMAX_FIT, NLRGSH_FIT, NSMLSH_FIT
@@ -2094,7 +2101,6 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "cbirea.h"
 #include "dcbgen.h"
 C
       DIMENSION WORK(LWORK)
@@ -2326,6 +2332,7 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
+      use cbirea_mod, only: DIRAC, IPREAD
       use aosotr_mod, only: IAOAO
       use nuclei_mod
       use symmet_mod, only: MAXREP
@@ -2334,7 +2341,6 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "cbirea.h"
 #include "dcbgen.h"
       DIMENSION WORK(LWORK)
       LOGICAL   SEG,HERMIT,NRMPRI
@@ -2718,6 +2724,7 @@ C*****************************************************************************
 C  /* Deck gtoinp */
       SUBROUTINE GTOINP(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,ISGEN,NBLOCK,KAOVEC,KPRIM)
+      use cbirea_mod, only: DIRAC, INPTST
       use molinp_mod, only: MLINE, NMLINE
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
@@ -2733,7 +2740,6 @@ C
      &          ALPHA(KPRIM,KAOVEC),ISGEN(KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
 ! dcbham.h : ECPCALC
-#include "cbirea.h"
 #include "dcbham.h"
 C
       IF(DIRAC) THEN
@@ -2922,6 +2928,7 @@ C
 C  /* Deck gtoinp */
       SUBROUTINE FAMBAS(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,ISGEN,NBLOCK,KAOVEC,KPRIM)
+      use cbirea_mod, only: INPTST
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER (DSM=1.0D-30)
@@ -2935,7 +2942,6 @@ C
      &          ALPHA(KPRIM,KAOVEC),ISGEN(KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
 ! dcbham.h : ECPCALC
-#include "cbirea.h"
 #include "dcbham.h"
 C
       NBLOCK = 0
@@ -3017,13 +3023,13 @@ C
       END
 C  /* Deck famcopy */
       SUBROUTINE FAMCOPY(LUINFO,NUCIJ,NRCIJ,ALPHA,CPRIMU,KPRIM,IC)
+      use cbirea_mod, only: FAMEXP, INPTST, MXFAMEXP, NFAMEXP
       use molinp_mod, only: MLINE, NMLINE
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER(D1 = 1.0D0)
       DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)
-#include "cbirea.h"
       DIMENSION ILIST(MXFAMEXP),TMP(MXFAMEXP+2)
 C
 C     Card 9:
@@ -3064,6 +3070,7 @@ C
 C  /* Deck cmbas */
       SUBROUTINE CMBAS(IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,NBLOCK,KAOVEC,KPRIM)
+      use cbirea_mod, only: NCMEND, NCMSTR, ZCMVAL
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       LOGICAL SEG, FREE, SEGIJ
@@ -3071,7 +3078,6 @@ C  /* Deck cmbas */
      &          ALPHA(KPRIM,KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC),
      &          BASA(0:4), BASB(0:4)
-#include "cbirea.h"
       DATA (BASA(I),I=0,4) /0.584342, 0.452615, 0.382362, 0.337027,
      &                      0.304679/
       DATA (BASB(I),I=0,4) /0.424483, 0.309805, 0.251333, 0.215013,
@@ -3138,6 +3144,7 @@ C old version of GTOINP ??? -hjaaj July 2000
 C  /* Deck orbinx */
       SUBROUTINE ORBINX(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,NBLOCK,KAOVEC,KPRIM)
+      use cbirea_mod, only: INPTST
       use molinp_mod, only: MLINE, NMLINE
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXQN
@@ -3153,7 +3160,6 @@ C  /* Deck orbinx */
       DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
      &          ALPHA(KPRIM,KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
-#include "cbirea.h"
 #include "ccom.h"
 C
       NBLOCK = 0
@@ -3239,6 +3245,7 @@ C
 #endif /* NOT_USED */
 C  /* Deck acporb */
       SUBROUTINE ACPORB(LUINFO,FRMT,NUCIJ,NRCIJ,ALPHA,CPRIMU,KPRIM)
+      use cbirea_mod, only: INPTST
       use molinp_mod, only: MLINE, NMLINE
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
@@ -3250,7 +3257,6 @@ C  /* Deck acporb */
       CHARACTER*7 FMT3
       LOGICAL FREE
       DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)
-#include "cbirea.h"
 C
 C     Card 9:
 C
@@ -3394,10 +3400,10 @@ C
 C Description added by Miro ILIAS, March 2007, Tel Aviv
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use cbirea_mod, only: IPREAD
       use pi_mod, only: PI
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "cbirea.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0,
      &           DP25 = 0.25D0, DP5 = 0.5D0, DP75 = 0.75D0,
      &           THRMIN = 1.D-17)
@@ -3470,6 +3476,9 @@ C
 CMI LCOMP is 1 (L) or 2 (S component)
 C
 C******************************************************************************
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: SEGBAS
+#endif
       use nuclei_mod, only: CORD, ISTBNU, NONT, NONTYP, NUCDEG
       use shells_mod
       use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP,
@@ -3492,7 +3501,6 @@ C
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #endif
 C
       ICENT  = 0
@@ -3639,7 +3647,6 @@ C
 #include "ccom.h"
 #ifdef PRG_DIRAC
 #else
-#include "gnrinf.h"
 #endif
 C
       ICENT  = 0
@@ -3738,6 +3745,7 @@ C
 C  /* Deck orbout */
       SUBROUTINE ORBOUT(ICLS,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &           IPCON,KATOM,KANG,KBLOCK,KPRIM,ALPHA,CPRIMU,NRMPRI)
+      use cbirea_mod, only: IPREAD, UNCONT
       use fitprimit_mod, only: NPLSH_FIT, PRIEXP_FIT
       use nuclei_mod, only: NAMN, NLARGE, NONT, NONTYP, NPLRG,
      &  NPLRG_FIT, NUCDEG
@@ -3751,7 +3759,6 @@ C  /* Deck orbout */
       PARAMETER (D0 = 0.0D0)
 C
 #include "ccom.h"
-#include "cbirea.h"
       CHARACTER    CHRSEG*10,DEG*2
       CHARACTER*60 FMTA, FMTB, FMTC, FMTD
       LOGICAL      SPHER, SEG, NRMPRI
@@ -3974,6 +3981,7 @@ C
 C     Process molecular data
 C
 C******************************************************************************
+      use cbirea_mod, only: IPREAD
       use frame_mod, only: POTNUC
       use nuclei_mod
       use symmet_mod, only: MAXREP, MULT
@@ -3983,7 +3991,6 @@ C******************************************************************************
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
-#include "cbirea.h"
       DIMENSION WORK(LWORK)
 #include "dgroup.h"
 C     
@@ -4145,6 +4152,7 @@ C     tuh 120988
 C
 C     Polished and annotated - tsaue March 10 1993
 C*************************************************************************
+      use cbirea_mod, only: IPREAD
       use pincom_mod, only: INDGEN, IPIND
       use sphtrm_mod, only: CSP
       use huckel_mod, only: HUCEXC, IHUCPT
@@ -4166,7 +4174,6 @@ C
      &          IRREP(MXCORB)
       integer soef, blk
 #include "ccom.h"
-#include "cbirea.h"
 C
 C*****************************************************************************
 C Determine ISYMAO:
@@ -4387,6 +4394,7 @@ C
 C     Print routine for symmetry
 C
 C*****************************************************************************
+      use cbirea_mod, only: DIRAC, IPREAD
       use aosotr_mod, only: CTRAN, IPCEN, IPTYP, ITRAN
       use chrsgn_mod, only: CHRSGN
       use nuclei_mod, only: NAMN, NFLOAT, NUCDEG
@@ -4400,7 +4408,6 @@ C*****************************************************************************
 C
 #include "ccom.h"
 #include "pgroup.h"
-#include "cbirea.h"
       CHARACTER COMP(2)*1
 C
 C*****************************************************************************
@@ -4470,6 +4477,7 @@ C  /* Deck symnco */
 C     **********************************************************
 C     ***** Calculate symmetry-adapted nuclear coordinates *****
 C     **********************************************************
+      use cbirea_mod, only: IPREAD
       use nuclei_mod, only: ISTBNU, NAMN, NUCDEP, NUCIND
       use chrxyz_mod, only: CHRXYZ
       use symmet_mod, only: IPTCNT, IPTNUC, ISYMAX, MAXREP
@@ -4479,7 +4487,6 @@ C     **********************************************************
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
-#include "cbirea.h"
       DIMENSION WORK(LWORK)
 
       LENGTH = 48*NUCIND
@@ -4589,6 +4596,7 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
+      use cbirea_mod, only: IPREAD
       use frame_mod, only: POTNUC
       use chrsgn_mod, only: CHRSGN
       use nuclei_mod, only: CORD, ISTBNU, NAMEX, NUCDEP, NUCIND
@@ -4608,7 +4616,6 @@ C
       DIMENSION WORK(LWORK)
 C
 #include "pgroup.h"
-#include "cbirea.h"
 C
 C
       KWORK = 1
@@ -5241,6 +5248,7 @@ C     Miro,Sept.2017 - parallel job was setting LUINFO value to 0 for GNU compil
 C     upon fixing I also made routine "implicit none" style
 C
 C=======================================================================
+      use cbirea_mod, only: IPREAD
       use molinp_mod, only: MLINE, NMLINE
       use sphtrm_mod, only: CSP, ISPADR, NCSP
       use mxcent_mod, only: MXCENT
@@ -5249,7 +5257,6 @@ C=======================================================================
       implicit none
       real*8, parameter :: D1 = 1.0D0
 #include "ccom.h"
-#include "cbirea.h"
       integer, intent(in) :: LUINFO
       CHARACTER*1 KEY
       LOGICAL DOOWN
@@ -5809,6 +5816,9 @@ C  /* Deck buildz */
 C
 C     Modified for HERMIT/SIRIUS/ABACUS -> K.Ruud, May-95
 C
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: KCHARG
+#endif
       use cbisol_mod, only: SOLVNT
       use molinp_mod, only: MLINE, NCLINE, NMLINE
       use nuclei_mod, only: CHARGE, CORD, IZATOM, NAMN, NONT, NONTYP,
@@ -5837,7 +5847,6 @@ C
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #endif
 #include "ccom.h"
     1 FORMAT(/'   Internal coordinates (Z matrix)'/)
@@ -6313,9 +6322,9 @@ C
 !
 ! MI: Added debugging output (June,2009)
 !
+      use cbirea_mod, only: IPREAD
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "cbirea.h"
 C
       CHARACTER*80 STRING
       CHARACTER TYPE*3, FRMT*7
@@ -6436,6 +6445,7 @@ C
 C     Written by J. Thyssen - Jun 4 1998
 C
 C***********************************************************************
+      use cbirea_mod, only: FAMEXP, FAMPAR, INPTST, MXFAMEXP, NFAMEXP
       use molinp_mod, only: MLINE, NMLINE
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
@@ -6444,7 +6454,6 @@ C
       PARAMETER ( D0 = 0.00 D00 , D1 = 1.00 D00 )
       CHARACTER KEYWRD*6
 C
-#include "cbirea.h"
 C
 C
 C
@@ -6791,13 +6800,13 @@ C!     Written by T.Saue May 1 1998
 C!     Rewrite by cut'n paste 2006 Trond Saue
 C!
 C***********************************************************************
+      use cbirea_mod, only: IPREAD
       use sphtrm_mod, only: CSP, ISPADR
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER(D1 = 1.0D0)
 #include "ccom.h"
-#include "cbirea.h"
       DIMENSION WORK(LWORK)
       KWORK = 1
       KFREE = KWORK
@@ -6918,6 +6927,7 @@ C     This is DKCON, written by K. Ruud,
 C     and imported from DALTON (with polish) by T. Saue Jan 15 2008
 C
 C******************************************************************************
+      use cbirea_mod, only: MAXPRD
       use nuclei_mod, only: NONT, NONTYP, NUCDEG
       use pi_mod, only: PI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -6927,7 +6937,6 @@ C******************************************************************************
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0, DP5 = 0.50D0,
      &           DP75 = 0.75D0)
 C
-#include "cbirea.h"
       LOGICAL SEG,SPHER
       DIMENSION IQM(KATOM),NBLCK(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
@@ -6936,7 +6945,6 @@ C
       DIMENSION CONTC(IPRIMD,IORBD)
       DIMENSION LPRIM(MAXPRD)
 #include "ccom.h"
-C#include "gnrinf.h"
 C
 C
 C     PIPPINV is the inverse of PIPPI (see routine NRMORB)

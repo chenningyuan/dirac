@@ -4055,7 +4055,6 @@ C
 #ifdef PRG_DIRAC
       PARAMETER ( LUPROP = 19 )
 #else
-#include "gnrinf.h"
 #endif
 C
       CHARACTER*8 LABEL,RTNLBL(2)

@@ -28,7 +28,6 @@ C     Called from:  DIRCTL (after PAMINP)
 C                   EXEDIT ( -||-) - optimization
 C
 C***********************************************************************
-!      use cbirea_mod, only: CNTMAT, IPREAD
 !      use dcbgen_mod, only: DOHRM, IPRGEN, OPTIMI, RDINPC, TWOCOMP, TWOCOMPBSS
 !      use dcbham_mod, only: ECPCALC, NOSMLV, ONESYS, X2C
       use checkpoint
@@ -41,11 +40,11 @@ C***********************************************************************
 
       use priunit_mod, only: LUPRI
       use gen1int_mod, only: TEST_GEN1INT
+      use cbirea_mod, only: CNTMAT, IPREAD
 #include "implicit.h"
 C
 #include "dcbham.h"
 #include "dcbgen.h"
-#include "cbirea.h"
 C
 C
       LOGICAL TWOBUF,GOFAST,TOBE

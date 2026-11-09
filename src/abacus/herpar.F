@@ -169,6 +169,9 @@ C           HFXFAC - HF exchange factor
 C
 C
 C
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: NEWBAS, PARCAL
+#endif
       use interface_to_mpi
       use task_distribution_state, only: ensure_task_order_storage,
      &   task_order, task_class_offset, reset_task_order,
@@ -186,7 +189,6 @@ C
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #endif
 #include "inforb.h"
 #include "infpar.h"
@@ -378,6 +380,9 @@ C     Written by Paal Dahle May 1994.
 C     Revised Oct 1996 by T.Saue
 C
 !      use infpar_mod, only: ICOUNT, IPRPAR, NODES, NTASK
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: NEWBAS, RELCAL
+#endif
       use priunit_mod, only: LUPRI
       use task_distribution_state, only: reset_task_order,
      &   task_order_is_valid, mark_task_order_valid
@@ -387,7 +392,6 @@ C
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #endif
 C
       INTEGER INDEX_IJ(MTOTTK), NPOS(MTOTTK)
@@ -473,23 +477,26 @@ C
 !      use dcbham_mod, only: ECPCALC, HFXATT, HFXFAC, HFXMU, INTV1C, LEVYLE, NONREL, ONECAP, SMLV1C, SPINFR
       use priunit_mod, only: LUPRI
 !      use infpar_mod, only: IPRPAR, MPARID, NODES, NTASK, TIMING
-!      use cbirea_mod, only: MAXPRI, UNCONT
       use maxorb_mod, only: MXCORB, MXSHEL
       use nuclei_mod, only: NUCDEG
       use symmet_mod, only: MAXREP
 !      use blocks_mod, only: MAXSHL, NSYMBL
       use maxaqn_mod, only: MXAQN, MXQN
-!      use abainf_mod, only: DOSYM
       use parint_mod, only: parint_t
 #if defined (VAR_MPI)
       use parint_mod, only: parint_bcast
       use molinp_mod, only: NMLINE
+      use cbirea_mod, only: MAXPRI, UNCONT
       use siripc_mod, only: NEWGEO
 #endif
       use interface_to_mpi
       use hrunit_mod, only: LUDASP, LUINTA, LUONEL, LUSOL, LUSUPM
       use cbisol_mod, only: SOLVNT
       use dorps_mod, only: DOCOOR, DOREPS
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: PANAS, RELCAL
+#endif
+      use abainf_mod, only: DOSYM
 #include "implicit.h"
 C
       INTEGER :: I
@@ -498,15 +505,12 @@ C
 #include "dcbham.h"
 #include "dgroup.h"
 #else
-#include "gnrinf.h"
 #endif
 C
 #include "blocks.h"
 #include "infpar.h"
 C
-#include "abainf.h"
 #include "inforb.h"
-#include "cbirea.h"
 C
       LOGICAL NODMAT,NOFMAT
       DIMENSION DMAT(*), IREPDM(NDMAT), IFCTYP(NDMAT),
@@ -1197,6 +1201,9 @@ CMI  TEC changes for LAO (2003,2006)
       use priunit_mod, only: LUPRI
       use memory_allocator
       use interface_to_mpi
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: RELCAL
+#endif
 #include "implicit.h"
 C
 C
@@ -1206,7 +1213,6 @@ C
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #include "energy.h"
 #endif
 C
@@ -1342,13 +1348,11 @@ C
 C     Written by Henrik Koch and Paal Dahle
 C     Revised Oct 4 1996 - tsaue
 C
-!      use abainf_mod, only: DOSYM
 !      use infpar_mod, only: IPRPAR, MPARID, NODES, NTASK, TIMING
       use symmet_mod, only: MAXREP
       use maxorb_mod, only: MXCORB
 !      use inforb_mod, only: I1_INFORB, N2BASX
 !      use dcbgen_mod, only: PANAS, RDINPC, RELCAL, TWOCOMP
-!      use cbirea_mod, only: MAXPRI, UNCONT
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMDEP, NAMDPX, NAMEX,
      &  NAMN, NATOMS, NUCDEP, NUCIND
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1359,6 +1363,7 @@ C
 #if defined (VAR_MPI)
       use parint_mod, only: parint_bcast
       use molinp_mod, only: NMLINE
+      use cbirea_mod, only: MAXPRI, UNCONT
 #endif
       use interface_to_mpi
       use kinds_mod, only: dp
@@ -1366,6 +1371,10 @@ C
       use molinp_mod, only: NCLINE
       use cbisol_mod, only: NCNTCV, SOLVNT
       use dorps_mod, only: DOCOOR, DOREPS
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: PANAS, RDINPC, RELCAL
+#endif
+      use abainf_mod, only: DOSYM
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
@@ -1376,14 +1385,11 @@ C
 #include "dcbham.h"
 #include "dgroup.h"
 #else
-#include "gnrinf.h"
 #endif
 #include "infpar.h"
 C
 #include "inforb.h"
-#include "cbirea.h"
 C
-#include "abainf.h"
       DIMENSION WORK(*), DSEND(2), ISEND(2)
       CHARACTER*6 NAVN
       LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH, LSEND(6)

@@ -3832,6 +3832,9 @@ C  /* Deck dobrki */
 C
 C     This procedure does the actual breaking of symmetry.
 C
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: HRINPC, NEWSYM, RDINPC, RDMLIN
+#endif
       use nuclei_mod, only: CORD, ISTBNU, NONTYP, NUCIND, NUCNUM
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
@@ -3841,18 +3844,16 @@ C
      &  NCRREP, PT
 !      use cbiwlk_mod, only: START, ZERGRD
 !      use optinf_mod, only: BRKSYM, ENERGY, ERGOLD, EVAL, GECONV, ICRTCR, IINTCR, INDHES, INDTOT, IPRINT, ITRBRK, ITRMAX, ITRNMR, KEEPHE, RSTARR, STPDIA, STPNRM, THRERG
-!      use cbirea_mod, only: BASIS
+      use cbirea_mod, only: BASIS
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
       INTEGER :: I,II,J
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #endif
 #include "optinf.h"
 #include "cbiwlk.h"
-#include "cbirea.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS
       CHARACTER FILENM*10, TMPLN*80
       DIMENSION GEINFO(0:ITRMAX,6), NONTVC(MXCENT)

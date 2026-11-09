@@ -33,6 +33,9 @@ C  /* Deck opinpu */
 !      use dcbgen_mod, only: NEWSYM, OPTIMI
       use priunit_mod, only: LUCMD, LUPRI
       use kinds_mod, only: dp
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: NEWSYM
+#endif
 #include "implicit.h"
 #include "optinf.h"
 #include "cbiwlk.h"
@@ -40,7 +43,6 @@ C  /* Deck opinpu */
 #include "dcbgen.h"
 #else
 #include "infinp.h"
-#include "gnrinf.h"
 #endif
       INTEGER, PARAMETER :: NTABLE = 68, ITRMX = 25, MXREJ = 3
       REAL(dp), PARAMETER :: D0 = 0.0D0, DEFTHE = 1.0D-6,
@@ -1254,6 +1256,9 @@ C  /* Deck optmin */
 !
 
 !      use optinf_mod, only: DELINT, FINDRE, ICRTCR, IINTCR, INMDHS, INRDHS, IPRINT, NENECALCS, NEWTON, REDINT, VISUAL
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: HRINPC, IPRUSR
+#endif
       use cbiher_mod, only: TSTINP
       use mxcent_mod, only: MXCENT
 !      use dcbgen_mod, only: HRINPC, IPRUSR
@@ -1264,7 +1269,6 @@ C  /* Deck optmin */
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #endif
 #include "optinf.h"
       LOGICAL TSTIN
@@ -1346,6 +1350,9 @@ C
 
 C  /* Deck runopt */
       SUBROUTINE RUNOPT(MXRCRD)
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: IPRUSR, RDINPC, RDMLIN, USRIPR
+#endif
       use nuclei_mod, only: CORD
       use maxorb_mod, only: MXCORB
 !      use dcbgen_mod, only: IPRUSR, RDINPC, RDMLIN, USRIPR
@@ -1362,7 +1369,6 @@ C  /* Deck runopt */
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #include "molde.h"      
 #endif
       LOGICAL EXHER, EXSIR, EXABA, MINEND, INDXOK, STATPO, ACTIVE
@@ -2055,7 +2061,6 @@ C
 #include "optinf.h"
 #if defined (PRG_DIRAC)
 #else
-#include "gnrinf.h"
 #endif
       CHARACTER*1 MARK
       LOGICAL     ILL_NUMBER ! external function
@@ -2285,7 +2290,6 @@ C
 #include "optinf.h"
 #ifndef PRG_DIRAC
 #include "infinp.h"
-#include "gnrinf.h"
 #else /* PRG_DIRAC */
 #include "dcbham.h"
 #include "dcbdhf.h"
@@ -2405,7 +2409,6 @@ C
 #include "implicit.h"
 
 #ifndef PRG_DIRAC
-#include "gnrinf.h"
 #include "infinp.h"
 #include "inftap.h"
 #include "infpar.h"
@@ -4771,7 +4774,6 @@ C
 !      use optinf_mod, only: DELINT, IPRINT, NCART, NCRTOT, REDINT
 #if defined (PRG_DIRAC)
 #else
-#include "gnrinf.h"
 #endif
 #include "optinf.h"
 #include "cbiwlk.h"
@@ -6046,6 +6048,9 @@ C     If the step is acceptable, the geometry is updated
 C     and written to file.
 C
 !      use dcbgen_mod, only: HRINPC, RDINPC, RDMLIN
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: HRINPC, RDINPC, RDMLIN
+#endif
       use nuclei_mod, only: CORD, NUCIND
       use priunit_mod, only: LUPRI
 !      use optinf_mod, only: CONOPT, ENERGY, ERGOLD, EVLINI, GRADNM, IINTCR, IPRINT, ITRMAX, ITRNMR, MAXREJ, NCART, NEWTON, REDINT, STPNRM, TRSTRA
@@ -6055,7 +6060,6 @@ C
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #endif
       DIMENSION CSTEP(MXCOOR), EGRAD(MXCOOR)
       DIMENSION COONEW(3,MXCENT), COOOLD(3,MXCENT)
@@ -6284,6 +6288,9 @@ C  /* Deck dobrk */
 C
 C     This procedure does the actual breaking of symmetry.
 C
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: HRINPC, NEWSYM, RDINPC, RDMLIN
+#endif
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
@@ -6300,7 +6307,6 @@ C
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #endif
 #include "optinf.h"
 #include "cbiwlk.h"
@@ -6567,8 +6573,11 @@ C
 
 C  /* Deck inipre */
       SUBROUTINE INIPRE
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: RDINPC, RDMLIN
+#endif
       use priunit_mod, only: LUPRI
-!      use cbirea_mod, only: BASIS
+      use cbirea_mod, only: BASIS
 !      use optinf_mod, only: DOPRE, IPRE, ITRNMR, PREBTX, VRML
       use molinp_mod, only: MLINE
       use mxcent_mod, only: MXCENT, MXCOOR
@@ -6577,11 +6586,9 @@ C  /* Deck inipre */
       use memory_allocator
 #include "implicit.h"
 #include "optinf.h"
-#include "cbirea.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #endif
 #include "inftap.h"
       CHARACTER TMPLIN*80
@@ -6642,6 +6649,9 @@ C
 C     This procedure ends preoptimization and starts optimization with
 C     the "main" basis set.
 C
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: HRINPC, NEWSYM, RDINPC, RDMLIN
+#endif
       use molinp_mod, only: MLINE, NMLAU
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: IPTCNT, MAXOPR, NAXREP, NCRREP
@@ -6654,7 +6664,6 @@ C
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #endif
 #include "optinf.h"
       CHARACTER TMPLIN*80
@@ -6753,7 +6762,6 @@ C
 #include "implicit.h"
 #if defined (PRG_DIRAC)
 #else
-#include "gnrinf.h"
 #endif
 #include "optinf.h"
       DIMENSION SCLVEC(MXCOOR), BMTRAN(MXRCRD,MXRCRD)
@@ -6886,6 +6894,9 @@ C     Calculates single point energy with another basis if requested.
 C
 !      use optinf_mod, only: ENERGY, ITRMAX, ITRNMR, SPBSTX
 !      use dcbgen_mod, only: HRINPC, NEWSYM, RDINPC, RDMLIN
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: HRINPC, NEWSYM, RDINPC, RDMLIN
+#endif
       use molinp_mod, only: MLINE
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
@@ -6893,7 +6904,6 @@ C
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #endif
       DIMENSION GEINFO(0:ITRMAX,6)
       LOGICAL EXHER,EXSIR,EXABA,REJGEO
@@ -7173,7 +7183,6 @@ C
 #include "optinf.h"
 #if defined (PRG_DIRAC)
 #else
-#include "gnrinf.h"
 #endif
       CHARACTER*12 FILENM
       LOGICAL :: ex
@@ -7230,7 +7239,6 @@ C
 #include "optinf.h"
 #if defined (PRG_DIRAC)
 #else
-#include "gnrinf.h"
 #endif
       DIMENSION HESINT(MXRCRD,MXRCRD)
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
@@ -7303,7 +7311,6 @@ C
 #include "optinf.h"
 #if defined (PRG_DIRAC)
 #else
-#include "gnrinf.h"
 #endif
       LOGICAL HESEXS
       DIMENSION HESINT(MXRCRD,MXRCRD), ATMARR(MXCENT,8)
@@ -7455,6 +7462,9 @@ C
       use numder_mod, only: NOMOVE
       use taymol_mod, only: GRDMOL
       use molinp_mod, only: MLINE, NCLINE, NMLAU, NMLINE
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: RDINPC
+#endif
 #include "implicit.h"
 C
       PARAMETER (DP5 = 0.50D0, D100=100.0D0)
@@ -7471,7 +7481,6 @@ C
 #include "dcbmp2.h"
 #include "dcbpsi.h"
 #else
-#include "gnrinf.h"
 #endif
       real(8), allocatable :: STPSYM1(:),STPCAR1(:)
       real(8), allocatable :: COOR(:,:)

@@ -482,7 +482,7 @@ C
 !      use inforb_mod, only: NNBAST, NNBASX
 !      use energy_mod, only: GRADFS, GRADKE, GRADNA
       use priunit_mod, only: LUPRI
-!      use abainf_mod, only: NWNABA
+      use abainf_mod, only: NWNABA
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use ccom_mod, only: THRS
       use taysol_mod, only: GSOLTT
@@ -490,7 +490,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       LOGICAL NODC, NODV, DNULL
-#include "abainf.h"
 #include "energy.h"
 #include "inforb.h"
 #include "ccom.h"

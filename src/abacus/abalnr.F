@@ -26,6 +26,7 @@ C     Purpose: To enable calculations of frequency dependent second
 C     order response properties in ABACUS. In particular polariza-
 C     bilities and vibrational raman optical activity (VROA).
 C
+      use abainf_mod, only: IPRDEF, NODIFC, RAMAN, VROA
       use symmet_mod, only: ISYMAX
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -34,7 +35,6 @@ C
 #include "implicit.h"
 #include "cbiexc.h"
 #include "cbilnr.h"
-#include "abainf.h"
 #include "anrinf.h"
 #include "absorp.h"
 C
@@ -240,10 +240,10 @@ C  /* Deck lnrini */
 C
 C     Initialize /LNREXC/
 C
+      use abainf_mod, only: IPRDEF
 #include "implicit.h"
 #include "cbiexc.h"
 #include "cbilnr.h"
-#include "abainf.h"
 C
       IPR1IN   = IPRDEF
       IPRLNR   = IPRDEF
@@ -285,8 +285,6 @@ C
 #include "inftap.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
-#include "abainf.h"
-#include "gnrinf.h"
 #include "infsop.h"
 #include "absorp.h"
 C
@@ -710,7 +708,6 @@ C
 #include "infrsp.h"
 #include "inforb.h"
 #include "wrkrsp.h"
-#include "abainf.h"
 C
       LOGICAL TRIPLE
 C
@@ -1069,7 +1066,6 @@ C
 #include "inforb.h"
       PARAMETER ( D3 = 3.0D0)
       PARAMETER ( CM_TO_AU = 4.556333D-6, AU_TO_EV=27.2114 )
-#include "abainf.h"
 #include "cbilnr.h"
 #include "codata.h"
       DIMENSION POLDD(2,3,3,MXFR), POLDL(2,3,3,MXFR), POLDA(2,3,3,MXFR),

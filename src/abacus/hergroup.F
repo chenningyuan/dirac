@@ -30,7 +30,7 @@ C
 C     tsaue - 940825 - major revision: tagged on SYMGRP + polish
 C
 C*****************************************************************************
-!      use cbirea_mod, only: DIRAC, IPREAD
+      use cbirea_mod, only: DIRAC, IPREAD
       use symmet_mod, only: FMULT, IPTAX, IPTXYZ, ISYMAX, MAXREP, MULT,
      &  NAXREP, PT
       use maxaqn_mod, only: MXAQN, MXQN
@@ -40,7 +40,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "cbirea.h"
       CHARACTER*1 KASYM(3,3)
       CHARACTER*(*) CLASS
       DIMENSION IFXYZ(3),IS(0:7),IGEN(3)
@@ -182,7 +181,7 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
       use argoscom_mod, only: IGRPAG, NDPTAG, NDPTAGS
-!      use cbirea_mod, only: IPREAD
+      use cbirea_mod, only: IPREAD
       use symmet_mod, only: IPAR, IXVAL, JSOP, MAXREP, NINVC, NREFL,
      &  NROTS, PT
 !      use pgroup_mod, only: GROUP, GROUPS, REP, SYMOP
@@ -191,7 +190,6 @@ C*****************************************************************************
       INTEGER :: I,J,K
 C
 #include "pgroup.h"
-#include "cbirea.h"
       LOGICAL LSYMOP(0:7)
       DIMENSION IGEN(3),IROTS(3),IREFL(3),JPAR(0:7)
       CHARACTER*(*) CLASS
@@ -439,7 +437,7 @@ C     Febr.2007, M.Ilias - added operator type 20
 C
 C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
-!      use cbirea_mod, only: IPREAD
+      use cbirea_mod, only: IPREAD
       use mxcent_mod, only: MXCENT
 !      use dgroup_mod, only: FREP, IBTOSF, IFDIRP, IHQMAT, IPQTOQ, IQDEF, IQMAP, IQPH, IQTOPQ, ITOT, JMROI, JQBAS, JSPINR, NBSYM, NFSYM, NZ, NZ_IN_CI
       use symmet_mod, only: ISYMAX, MAXREP, NINVC
@@ -452,7 +450,6 @@ C*****************************************************************************
       INTEGER :: I,J
       REAL(dp), PARAMETER :: DM1 = -1.0D0, D1 = 1.0D0
 C
-#include "cbirea.h"
 #include "pgroup.h"
 #include "dgroup.h"
 C

@@ -649,14 +649,13 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
       use nuclei_mod, only: NBASIS, NUCDEG, NUCDEP, NUCIND
       use iratdef_mod, only: IRAT
-!      use abainf_mod, only: EXPFCK
+      use abainf_mod, only: EXPFCK
 !      use ccom_mod, only: KHK, NHTYP
 #include "implicit.h"
       INTEGER :: I
       LOGICAL   DIRFCK, DDFOCK, NODV, EXPECT, LONDON, PERTUR
       REAL*8    FMAT(NBASIS*NBASIS,*), WORK(LWORK) 
       INTEGER   ISYMDM(NDMAT), IFCTYP(NDMAT)
-#include "abainf.h"
 #include "ccom.h"
 CTROND: Take out inforb and abainf if possible !
       CALL QENTER('SKLFCK')

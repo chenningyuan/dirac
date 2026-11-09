@@ -2,11 +2,11 @@
      &                      dALPHAdR,dGPRIMEdR,dTHETAdR,wrk,lwrk)
       !ajt jan09 Reduced from nw to 1 frequency (thus several calls instead)
       !          Removed negative signs on all the tensors
+      use abainf_mod, only: DIPDER, DOSYM, NUMHES, RAMAN, VROA
       use mxcent_mod, only: MXCENT, MXCOOR
 #include "implicit.h"
 #include "cbilnr.h"
 #include "cbivib.h"
-#include "abainf.h"
 #include "moldip.h"
       dimension ALPHA(3,3),GPRIME(3,3),THETA(3,6)
       dimension DIPGRAD(3,nc),dALPHAdR(3,3,nc)
@@ -57,11 +57,11 @@ C * change lunit to -1
 
 
       subroutine HBTinterface(nc,DIPGRAD,wrk,lwrk)
+      use abainf_mod, only: DIPDER, DOSYM, NUMHES, RAMAN
       use mxcent_mod, only: MXCENT, MXCOOR
 #include "implicit.h"
 #include "cbilnr.h"
 #include "cbivib.h"
-#include "abainf.h"
 #include "moldip.h"
       dimension DIPGRAD(3,nc)
       dimension wrk(*)

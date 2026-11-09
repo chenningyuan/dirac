@@ -1019,6 +1019,9 @@ C* and finds the element in question.                    *
 C*********************************************************
 C/* Deck find_element */
       SUBROUTINE FIND_ELEMENT(BASNAM,INTQ,LUBAS,IPRINT,EMSL_TYPE)
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: BASDIR
+#endif
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 !      use infpar_mod, only: IF, MPARID, MYTID
@@ -1046,7 +1049,6 @@ C
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #endif
 
 #if defined (SYS_WINDOWS)
@@ -1270,6 +1272,9 @@ C/* Deck find_nqd */
       SUBROUTINE FIND_NQD(BASNAM, INTQ,NBLOCK,ALPHA,CPRIMU,CPRIM,NUC,
      &                    NRC,SEG,KPRIM,KAOVEC,DSM,POLFUN,IPOLST,
      &                    UNCONT,LUBAS,IPRINT)
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: BASDIR, LENBAS
+#endif
       use priunit_mod, only: LUPRI
       use dummy_mod, only: DUMMY, IDUMMY
 #include "implicit.h"
@@ -1294,7 +1299,6 @@ C
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #endif
 C
 C     Determine primitive basis

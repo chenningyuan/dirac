@@ -31,9 +31,9 @@ C      ICP = 1 : Read large component
 C      ICP = 2 : Read small component
 C
 C***********************************************************************
-!      use cbirea_mod, only: INPTST
 !      use dcbham_mod, only: ECPCALC, IF
 !      use ccom_mod, only: KHK
+      use cbirea_mod, only: INPTST
       use molinp_mod, only: MLINE, NMLINE
       use maxaqn_mod, only: MXQN
 !      use dcbgen_mod, only: BASDIR
@@ -62,7 +62,6 @@ C     Check if we work on Linux or on Windows
       LOGICAL WIN
 #include "dcbgen.h"
 #include "dcbham.h"
-#include "cbirea.h"
 #include "ccom.h"
 C
       DATA SZ / 'LARGE', 'SMALL' /

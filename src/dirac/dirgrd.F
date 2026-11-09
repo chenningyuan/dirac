@@ -1742,10 +1742,9 @@ C
 C     jth, 1997/24/04; revised 010626-hjaaj: also set MOLGRD,MOLHES,DIPDER
 C
 C*****************************************************************************
-!      use abainf_mod, only: DIPDER, DOSYM, MOLGRD, MOLHES
+      use abainf_mod, only: DIPDER, DOSYM, MOLGRD, MOLHES
 #include "implicit.h"
       INTEGER :: I
-#include "abainf.h"
       LOGICAL ALLSYM,RELGRD,RELHES,RELDIPD
       DOSYM(1) = .TRUE.
       DO I=2,8
@@ -2412,7 +2411,7 @@ C     CFIRST is the first character printed on each line
 C
       use nuclei_mod, only: NAMDEP, NAMEX, NUCDEP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use abainf_mod, only: DOSYM
+      use abainf_mod, only: DOSYM
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: IPTCOR, MAXREP, NCRREP
@@ -2420,7 +2419,6 @@ C
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "abainf.h"
       DIMENSION GRAD(MXCOOR,0:ICOMPO), CGRAD(MXCOOR,0:3), 
      &          CSTRA(*), SCTRA(*)
       CHARACTER*(*) LABEL(ICOMPO)
@@ -2566,10 +2564,9 @@ C     and modified for use in Dirac./jth 1998-02-04
 C
 !      use cbitro_mod, only: COMPAR, CUT, GDTRO, HESTRO, IPRINT, NOROT1, RDTRO, SKIP, THRESH, TRODIP, TROGRD, TROHES
 !      use dcbgen_mod, only: IPRGEN
-!      use abainf_mod, only: GDALL
+      use abainf_mod, only: GDALL
 #include "implicit.h"
 #include "cbitro.h"
-#include "abainf.h"
 #include "dcbgen.h"
       LOGICAL LCOMPA
 C

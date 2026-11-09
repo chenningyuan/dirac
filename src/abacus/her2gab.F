@@ -44,7 +44,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D0 = 0.00D00
 #ifdef PRG_DIRAC
 #else
-#include "gnrinf.h"
 #endif
 #include "ccom.h"
 #include "blocks.h"

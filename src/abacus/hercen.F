@@ -57,6 +57,7 @@
 !       BASREF : Lines of documentation for the basis set
 !
 !*****************************************************************************
+      use cbirea_mod, only: INPTST
       use molinp_mod, only: MLINE, NMLINE
       use nuclei_mod, only: NONT, NONTYP, NUCIND
       use gencon_mod, only: DIRCON
@@ -64,7 +65,6 @@
       use maxorb_mod, only: MXSHEL
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "cbirea.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,ANG,NOORBTS,CNTBAS
       DIMENSION IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),                 &
@@ -202,6 +202,7 @@
 !       and should be generated (e.g. the small component by the kinetic balance relation)
 !
 !*****************************************************************************
+      use cbirea_mod, only: BASIS, FAMPAR, IPREAD, NFAMEXP, UNCONT
       use molinp_mod, only: MLINE, NMLINE
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXSHEL
@@ -224,7 +225,6 @@
 
 ! cbirea.h : UNCONT
 #include "dcbgen.h"
-#include "cbirea.h"
 
       GENERATE = .FALSE.
       CNTBAS = .FALSE.
@@ -513,12 +513,12 @@
 !       Original version by Andre Gomes, isolated and reorganized by L. Visscher.
 !
 !*****************************************************************************
+      use cbirea_mod, only: IPREAD
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXSHEL
       use maxaqn_mod, only: MXAQN
 #include "implicit.h"
       PARAMETER (DSM = 1.0D-30)
-#include "cbirea.h"
       LOGICAL SEG,NOORBTS,CNTBAS
       DIMENSION JCO(KANG),NUC(KAOVEC),NRC(KAOVEC),                      &
      &          SEG(KAOVEC),                                            &

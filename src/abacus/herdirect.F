@@ -343,9 +343,9 @@ C  /* Deck sether */
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
       use symmet_mod, only: MAXREP, NAOS
+      use cbirea_mod, only: IPREAD, LUMLCL
 #include "implicit.h"
 !      use inforb_mod, only: NBAS, NSYM
-!      use cbirea_mod, only: IPREAD, LUMLCL
       INTEGER :: I
       DIMENSION WORK(LWORK)
 C
@@ -354,7 +354,6 @@ C  CBIREA: LUMLCL
 C  SYMMET: MAXREP,NAOS(8))
 C  INFORB: NSYM,NBAS(8)
 C
-#include "cbirea.h"
 #include "inforb.h"
 C
       LOGICAL SFIRST, RELCAL, TSTINP, HERMIT, NEWGEO

@@ -92,7 +92,6 @@ C
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #endif
 #include "ccom.h"
 C
@@ -796,7 +795,6 @@ C
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #endif
 C
       XYZ(I,J) = PT(IAND(ISYMAX(I,1),J))
@@ -1163,7 +1161,6 @@ C
 C
 #ifdef PRG_DIRAC
 #else
-#include "gnrinf.h"
 #endif
 C     DIFODC true if we have JMAXD .gt. 0 (take derivatives)
       DIFODC = (INTTYP.EQ. 3) .OR. (INTTYP.EQ. 5) .OR. (INTTYP.EQ.10)

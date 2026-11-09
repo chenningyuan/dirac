@@ -58,7 +58,6 @@ C
       PARAMETER (D0 = 0.0D0)
 C
 #include "ccom.h"
-#include "cbirea.h"
 
       CHARACTER CHRSEG*10, GTOTMP*1, SPDCAR*1
       LOGICAL SEG, NRMPRI
@@ -150,7 +149,6 @@ C
 
 #include "molde.h"
 #include "pgroup.h"
-!#include "cbirea.h"
 !#include "inftap.h"
 
       CHARACTER*2 ASYMB(103)

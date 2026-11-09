@@ -2738,7 +2738,6 @@ C
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #endif
 #include "blocks.h"
 C

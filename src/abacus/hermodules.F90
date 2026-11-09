@@ -728,7 +728,7 @@
       use nuclei_mod, only: NONT, NONTYP, NOORBT, NUCDEP
       use symmet_mod, only: MAXREP
       use maxorb_mod, only: MXCORB
-!      use cbirea_mod, only: FAMPAR, INPTST, IPREAD, NFAMEXP, TOL_SYMADD, UNCONT
+      use cbirea_mod, only: FAMPAR, INPTST, IPREAD, NFAMEXP, TOL_SYMADD, UNCONT
 !      use ccom_mod, only: DOCART, DOSPHE, NHTYP, THRS
 !      use dgroup_mod, only: ATOMIC, LINEAR, NONATM
       use maxaqn_mod, only: MXAQN, MXQN
@@ -740,7 +740,6 @@
 !     COMMON BLOCKS
 ! cbirea.h : UNCONT, IPREAD, TOL_SYMADD, ...
 ! infpar.h : mytid
-#include "cbirea.h"
 #include "infpar.h"
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
 
@@ -785,7 +784,6 @@
 #include "dcbgen.h"
 #include "dgroup.h"
 #else
-!#include "gnrinf.h"
       LOGICAL LINEAR, ATOMIC
 #endif
 

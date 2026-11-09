@@ -22,6 +22,9 @@ C
 C --- General Input for HERMIT ---
 C
 !      use dcbgen_mod, only: DIRCAL, HRINPC, IPRUSR, RELCAL
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: DIRCAL, HRINPC, IPRUSR, RELCAL
+#endif
       use orgcom_mod, only: CAVORG, CMXYZ
       use cbihr1_mod, only: CAVUSR, DORLM
       use cbiher_mod
@@ -46,7 +49,6 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 #else
-#include "gnrinf.h"
 #endif
 C
 C
@@ -1094,6 +1096,9 @@ C
       END
 C  /* Deck hr2inp */
       SUBROUTINE HR2INP(WORD)
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: DIRCAL, PANAS, RELCAL, SEGBAS
+#endif
       use priunit_mod, only: LUCMD, LUPRI
       use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
      &  IPRTWO, RTNTWO, RUNTWO, SCRFCK, SOFOCK, THRFAC, TKTIME, USRSCR
@@ -1111,7 +1116,6 @@ C
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#include "gnrinf.h"
 #endif
 ! infpar.h : NUMNOD
 #include "infpar.h"

@@ -18,6 +18,7 @@ C
 #ifndef PRG_DIRAC
 C  /* Deck wlkinp */
       SUBROUTINE WLKINP(WORD)
+      use abainf_mod, only: DOSYM, DOWALK, GDALL, IPRDEF
       use nuclei_mod, only: NUCDEP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUCMD, LUPRI
@@ -29,7 +30,6 @@ C
       LOGICAL NEWDEF, SETRAD
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, WRDTMP*4
       DIMENSION IDOREP(0:7), IWKVEC(NWKTYP), ISCVEC(NSCTYP)
-#include "abainf.h"
 #include "cbiwlk.h"
 C
       DATA TABLE /'.RESTAR', '.PRINT ', '.INDEX ', '.TRUST ',
@@ -488,11 +488,13 @@ C  /* Deck wlkini */
 C
 C     Initialize /CBIWLK/
 C
+      use abainf_mod, only: DOSYM, DOWALK, GDALL, IPRDEF
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: WLKREJ
+#endif
       use nuclei_mod, only: ISOTOP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-#include "abainf.h"
-#include "gnrinf.h"
 #include "cbiwlk.h"
 C
       IF (DOWALK) THEN
@@ -737,6 +739,7 @@ C  /* Deck wlkdr1 */
      &                  CSTRA,SCTRA,SRC0,SRCF,POLAR0,POLARF,
      &                  EFG0,EFGF,SPNTOT,SSJ0,SSJF,WORK,LWORK,NCRIND,
      &                  NCRTOT,N2CRT,NTMAT,NCART)
+      use abainf_mod, only: DIPDER, RAMAN, VIB, VROA
       use taymol_mod, only: ERGMOL
       use nuclei_mod, only: CORD, NUCDEP
       use iratdef_mod, only: IRAT
@@ -771,7 +774,6 @@ C
      *          EFG0(*), EFGF(*), SPNTOT(*), SSJ0(*), SSJF(*)
 C
 #include "cbiwlk.h"
-#include "abainf.h"
 #include "prkoor.h"
 C
 C
@@ -2913,13 +2915,15 @@ C
 C  /* Deck wlkend */
       LOGICAL FUNCTION WLKEND(GRDCAR,GRDNRM,NCART,INDHES,INDEX,
      *                        INDXOK,STATPO,ISTIND,IPOINT,NUMMOD)
+#ifndef PRG_DIRAC
+      use gnrinf_mod, only: GEOCNV, GRADML, ITERMX
+#endif
       use symmet_mod, only: MAXREP
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "gnrinf.h"
 C
       LOGICAL INDXOK, STATPO
       DIMENSION GRDCAR(NCART), INDHES(0:7)
@@ -3634,6 +3638,8 @@ C     coordinates of the molecule at the effective molecular geometry.
 C
 C     K.Ruud, San Diego March 1999
 C
+      use abainf_mod, only: MAGSUS, NOLOND, NQCC, POLAR, QUADRU, ROTG,
+     &  SHIELD, SPINRO, SPNSPN
       use chrsgn_mod, only: CHRSGN
       use nuclei_mod, only: NAMDEP, NAMDPX, NAMEX, NUCDEP
       use symmet_mod, only: IPTCOR
@@ -3661,7 +3667,6 @@ C
      &          SSJF(MXCOOR,MXCOOR,NCART), WORK(LWORK)
      DOUBLE PRECISION FACTOR, AUTOHZ
 C
-#include "abainf.h"
 C
 #include "moldip.h"
 #include "suscpt.h"
@@ -5625,12 +5630,12 @@ C
       END
 C  /* Deck wlkirc */
       SUBROUTINE WLKIRC(Q,GRDDIA,EVAL,NCART,RADIUS,DONWTN,IPRINT)
+      use abainf_mod, only: NWNABA
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER (TMAX = 10000.0D0)
       LOGICAL DONWTN
       DIMENSION GRDDIA(NCART), EVAL(NCART), Q(NCART)
-#include "abainf.h"
 C
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Gradient in WLKIRC',-1)
@@ -6138,6 +6143,7 @@ C  a) calculate second order prediction for energy change.
 C  b) if WFPRED, calculate first order prediction for change
 C     in MC wave function.
 C
+      use abainf_mod, only: GDALL
       use dorps_mod, only: DCORD, DCORGD
       use nuclei_mod, only: NUCIND
       use iratdef_mod, only: IRAT
@@ -6160,7 +6166,6 @@ C  ANRINF: THRNR
 C  INFVAR: NCONF,NWOPT,NVAR
 C  INFDIM: NVARMA
 C
-#include "abainf.h"
 #include "inflin.h"
 #include "cbiwlk.h"
 #include "inftap.h"
@@ -6983,6 +6988,7 @@ C  /* Deck wlkroa */
 C
 C     Numerical differentiation for Raman properties
 C
+      use abainf_mod, only: RAMAN, VROA
       use chrsgn_mod, only: CHRSGN
       use nuclei_mod, only: NAMEX
       use symmet_mod, only: IPTCOR
@@ -7001,7 +7007,6 @@ C
       DIMENSION WORK(LWORK)
       DOUBLE PRECISION XFRAIN,XFOAIN
 C
-#include "abainf.h"
 #include "cbilnr.h"
 C
       DIMENSION ROAAFU(3,3,MXFR),  ROAAFP(3,3,MXFR),

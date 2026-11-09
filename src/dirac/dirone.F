@@ -4352,7 +4352,6 @@ C*****************************************************************************
 !      use dcbdhf_mod, only: AOC, DF, I2TMOT, N2TMOTQ, NFMAT
 !      use dgroup_mod, only: ATOMIC, IPQTOQ, LINEAR, NFSYM, NZ
 !      use dcbgen_mod, only: IPRGEN, KCHARG, LUTMAT, LUX2C, NEWPRP, OPTIMI, RDINPC, TWOCOMP, TWOCOMPBSS
-!      use cbirea_mod, only: IPREAD
 !      use dcbbas_mod, only: I2TMT, N2BBASXQ, N2TMT, NFBAS, NTBAS, NZT
       use memory_allocator
       use checkpoint
@@ -4394,6 +4393,7 @@ C*****************************************************************************
       use nuclei_mod, only: CHARGE, NUCDEP, NUCIND
       use siripc_mod, only: NEWGEO
       use cbihr1_mod, only: IPRONE
+      use cbirea_mod, only: IPREAD
 #include "implicit.h"
 #ifndef MOD_XAMFI
       logical :: aoomod   = .false.
@@ -4407,7 +4407,6 @@ C   PAMIOU: LUTMAT
 #include "dcbgen.h"
 #include "dcbcls.h"
 #include "dcbham.h"
-#include "cbirea.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
 #include "dcborb.h"

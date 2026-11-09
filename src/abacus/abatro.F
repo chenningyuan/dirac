@@ -18,13 +18,12 @@ C
 C  /* Deck troinp */
       SUBROUTINE TROINP(WORD)
       use priunit_mod, only: LUCMD, LUPRI
+      use abainf_mod, only: GDALL, IPRDEF
 #include "implicit.h"
-!      use abainf_mod, only: GDALL, IPRDEF
 !      use cbitro_mod, only: COMPAR, CUT, GDTRO, IPRINT, NOROT1, RDTRO, SKIP, THRESH
       INTEGER :: I
       PARAMETER (NTABLE = 9)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include "abainf.h"
 #include "cbitro.h"
       LOGICAL NEWDEF
 C
@@ -125,9 +124,10 @@ C  /* Deck troini */
 C
 C     Initialize /CBITRO/
 C
+      use abainf_mod, only: DIPDER, DOSYM, GDALL, IPRDEF, MOLGRD,
+     &  MOLHES, VCD
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
-#include "abainf.h"
 #include "cbitro.h"
 #include "infinp.h"
 C
@@ -161,9 +161,9 @@ C     Dipole derivatives added June 1985 tuh
 C     Fully analytic expression for Hessian December 1986 tuh
 C     Rewritten for symmetry Nov/Dec 1988 tuh
 C
-!      use abainf_mod, only: GDALL
 !      use infvar_mod, only: NVAR
 !      use exeinf_mod, only: FTRONV, GTRONV, HTRONV, RTRONV
+      use abainf_mod, only: GDALL
       use trkoor_mod, only: NCOOR
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -177,7 +177,6 @@ C
       DIMENSION WORK(LWORK)
 C
 #include "cbitro.h"
-#include "abainf.h"
 #ifndef PRG_DIRAC
 #include "energy.h"
 #endif
@@ -301,7 +300,8 @@ C
       use chrnos_mod, only: CHRNOS
 !      use gdvec_mod, only: IDORCI, IDORCT, NGDTOT, NGDVEC
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, NAXREP
-!      use abainf_mod, only: DIPDER, MAGSUS, MOLHES, POLAR, RESTAR, ROTG, SHIELD, SPINRO, SPNSPN, VCD
+      use abainf_mod, only: DIPDER, MAGSUS, MOLHES, POLAR, RESTAR, ROTG,
+     &  SHIELD, SPINRO, SPNSPN, VCD, VROA
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
@@ -312,7 +312,6 @@ C
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
 #include "spnout.h"
-#include "abainf.h"
 #include "gdvec.h"
 C
 C
@@ -896,14 +895,13 @@ C
       use symmet_mod, only: IPTXYZ, MAXREP, NAXREP, NCRREP
       use chrxyz_mod, only: CHRXYZ
       use maxorb_mod, only: MXCORB
-!      use abainf_mod, only: WORK
+      use abainf_mod, only: DOSYM
 !      use cbitro_mod, only: COMPAR, HESTRO, IPRINT, TRODIP, TROGRD, TROHES
       use trkoor_mod, only: DEPEND, NCOOR, NTRREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I,J
       DIMENSION WORK(LWORK), HESTR(MXCOOR,MXCOOR), DIPTR(3,MXCOOR)
-#include "abainf.h"
 #include "cbitro.h"
 #include "moldip.h"
       IF (HESTRO) THEN
@@ -1298,7 +1296,7 @@ C
       use priunit_mod, only: LUPRI
       use trkoor_mod, only: DEPEND
       use symmet_mod, only: IPTCOR, NCRREP
-!      use abainf_mod, only: NWNABA
+      use abainf_mod, only: NWNABA
       use maxorb_mod, only: MXCORB
       use taymol_mod, only: GRDMOL
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1306,7 +1304,6 @@ C
 #include "implicit.h"
       DIMENSION FD(NDEP)
       LOGICAL   LPRINT
-#include "abainf.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
       IF (IPRINT .GT. 0) THEN
          LPRINT = .TRUE.
@@ -1368,13 +1365,12 @@ C
       use priunit_mod, only: LUPRI
       use taymol_mod, only: HESMOL
       use mxcent_mod, only: MXCOOR
-!      use abainf_mod, only: NWNABA
+      use abainf_mod, only: NWNABA
       use trkoor_mod, only: NCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       DIMENSION HESTR(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
-#include "abainf.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
       DIFMAX = D0
       DO 100 I = 1, NCOOR
@@ -1415,7 +1411,7 @@ C     directly.
 C
 C     tuh 171289
 C
-!      use abainf_mod, only: NWNABA
+      use abainf_mod, only: NWNABA
       use mxcent_mod, only: MXCOOR
       use priunit_mod, only: LUPRI
       use trkoor_mod, only: NCOOR
@@ -1425,7 +1421,6 @@ C
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D0 = 0.0D0
       DIMENSION DIPTR(3,MXCOOR), CSTRA(*), SCTRA(*)
-#include "abainf.h"
 #include "moldip.h"
       DIFMAX = D0
       DO 100 I = 1, 3
@@ -1694,7 +1689,6 @@ C
       use nuclei_mod, only: NUCIND
       use maxorb_mod, only: MXCORB
 !      use cbitro_mod, only: COMPAR, GDTRO, IPRINT, RDTRO
-!      use abainf_mod, only: NWNABA
 #ifdef PRG_DIRAC
       use nuctap_mod, only: ABAGDR, ABARDR, LUGDR, LURDR
 #endif
@@ -1703,6 +1697,7 @@ C
       use dorps_mod, only: DCORD, DCORGD
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use chrxyz_mod, only: CHRXYZ
+      use abainf_mod, only: NWNABA
 #include "implicit.h"
       INTEGER :: I
       PARAMETER (ZERO = 0.D00)
@@ -1713,7 +1708,6 @@ C
 C Used from common blocks:
 C  NUCLEI: DCORGD, DCORD
 C
-#include "abainf.h"
 #include "cbitro.h"
 #include "infvar.h"
 #ifndef PRG_DIRAC
@@ -1994,7 +1988,7 @@ C     Set DCORGD, indicating which GD vectors to calculate
 C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use cbitro_mod, only: COMPAR
-!      use abainf_mod, only: GDALL
+      use abainf_mod, only: GDALL
       use nuclei_mod, only: ITRACO, NTRACO
       use dorps_mod, only: DCORD, DCORGD
 #include "implicit.h"
@@ -2005,7 +1999,6 @@ C  ABAINF: GDALL
 C  CBITRO: COMPAR
 C  NUCLEI: DCORD, DCORGD, NTRACO, ITRACO
 C
-#include "abainf.h"
 #include "cbitro.h"
 C
 C     DCORGD is initialized to all .true. in HESINP subroutine/
@@ -2045,7 +2038,7 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, MAXREP, NCRREP
       use priunit_mod, only: LUPRI
-!      use abainf_mod, only: DIPDER, MOLGRD, MOLHES, POLAR
+      use abainf_mod, only: DIPDER, DOSYM, MOLGRD, MOLHES, POLAR
 !      use cbitro_mod, only: COMPAR, IPRINT
       use trkoor_mod, only: NTRREP
 #include "implicit.h"
@@ -2053,7 +2046,6 @@ C
 C
       CHARACTER*(*) KEY
 C
-#include "abainf.h"
 #include "cbitro.h"
 C
       IF (KEY .EQ. 'HERMIT') THEN
