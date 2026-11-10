@@ -1460,7 +1460,7 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: N2BBASXQ
+      use dcbbas_mod, only: N2BBASXQ
 !      use dcborb_mod, only: MXGAS, NCMOTQ
 !      use dgroup_mod, only: LINEAR
 !      use dcbopt_mod, only: E_LVCORR_MC, IOPT_INTDEF, IOPT_SYMMETRY, IPROPT, JGAS, MCTYPE, NCIROOT, NOPEN_MC, NZCONF, NZCONFQ, OPT_CIPROGRAM, OPT_THRGRD, SPINFR_KRMC
@@ -1480,7 +1480,6 @@ C
       CHARACTER WFTYP*(*)
       LOGICAL   WFCONV
 C
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbopt.h"

@@ -49,7 +49,6 @@ C***********************************************************************
 
 !      use dcbtra_mod, only: IPRTRA, ISAME, ISTRAT, ITRA_INTFL4, MOFILE_TRAINP, NCORE2, NO2IND, NO4IND, NOMDCINT, NOMDCINT_TRAINP, NOPAIR, NQQCLASS, PRPSYA, PRPTRA, RCORBS, TRA4_INDSTR, TRA_ANTIS, TRA_CORSTR, TRA_CORSTR2, TRA_EXACORR
 !      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
-!      use dcbbas_mod, only: N2BBASXQ, NFBAS
 !      use dcborb_mod, only: ICMOQ, IORB, NAOCC, NAOCCT, NAVIR, NAVIRT, NCMOTQ, NESH, NIOCC, NIOCCT, NIVIR, NIVIRT, NOCC, NORB, NORBT, NPSH
 !      use dgroup_mod, only: ATOMIC, LINEAR, NBSYM, NFSYM, NZ
 !      use dcbham_mod, only: SPINFR
@@ -62,12 +61,12 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use dummy_mod, only: DUMMY
       use dcbgen_mod, only: LUCOEF, LUKRMC
+      use dcbbas_mod, only: N2BBASXQ, NFBAS
 #include "implicit.h"
       INTEGER :: I, J, K
 C
 #include "dcbtra.h"
 #include "dcbtr3.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 
@@ -639,7 +638,7 @@ C***********************************************************************
       use dummy_mod, only: DUMMY
 !      use dcbmp2_mod, only: DMP2_VIRTHR, EMP2, IPRMP2, ISTRMP2, MP2NOP, MP2_ANTIS, MP2_INDSTR, MP2_INTFLG, SCRMP2
 !      use dcbtra_mod, only: IPRTRA, ISAME, ISTRAT, NOPAIR, NQQCLASS, SCRTRA
-!      use dcbbas_mod, only: N2BBASXQ, NFBAS
+      use dcbbas_mod, only: N2BBASXQ, NFBAS
 !      use dcborb_mod, only: ICMOQ, IORB, NESH, NOCC, NORB, NORBT, NPSH, NSSH
 !      use dgroup_mod, only: ATOMIC, NBSYM, NFSYM, NZ
       use dcbgen_mod, only: LUCOEF
@@ -650,7 +649,6 @@ C***********************************************************************
 C
 #include "dcbmp2.h"
 #include "dcbtra.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
       LOGICAL TOBE,TRANOP
@@ -927,7 +925,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: IPRTRA, ISAME, ITRA_INTFL4, NO4IND, NOPAIR, NQQCLASS, RCORBS, TRA_ANTIS
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
-!      use dcbbas_mod, only: N2BBASXQ, NFBAS
+      use dcbbas_mod, only: N2BBASXQ, NFBAS
 !      use dcborb_mod, only: ICMOQ, IORB, NAVIR, NCMOTQ, NESH, NIOCC, NOCC, NORB, NORBT, NPSH, NSSH
 !      use dgroup_mod, only: ATOMIC, NBSYM, NFSYM, NZ
       use dcbgen_mod, only: LUCOEF
@@ -937,7 +935,6 @@ C***********************************************************************
 C
 #include "dcbtra.h"
 #include "dcbtr3.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "mp1stpr.h"
@@ -1389,12 +1386,11 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: ISAME, ISTRAT, SCRTRA
       use comdis_mod, only: ISPCK, NSPCK
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
 #include "dcbtra.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       LOGICAL ANTIS,LMP2
@@ -1521,12 +1517,11 @@ C
 C     Written by Joost van Stralen september 2003
 C     
 C***********************************************************************
-!      use dcbbas_mod, only: NTBAS
 !      use dgroup_mod, only: NZ
+      use dcbbas_mod, only: NTBAS
       use comdis_mod, only: ISPCK, NSPCK
 #include "implicit.h"
 C
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       LOGICAL ANTIS
@@ -1578,11 +1573,10 @@ C     Written by Trond Saue and Luuk Visscher Jan 17 1996
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: NFBAS
+      use dcbbas_mod, only: NFBAS
 !      use dgroup_mod, only: FREP, NFSYM
 #include "implicit.h"
       INTEGER :: I, J
-#include "dcbbas.h"
 #include "dgroup.h"
 C
 C     Now say hi and give orbital information
@@ -1613,12 +1607,11 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUCOEF
-!      use dcbbas_mod, only: NFBAS
+      use dcbbas_mod, only: NFBAS
 !      use dcbham_mod, only: SMLV1C
 !      use dgroup_mod, only: FREP, NFSYM
 #include "implicit.h"
       INTEGER :: I, J
-#include "dcbbas.h"
 #include "dcbham.h"
 #include "dgroup.h"
       CHARACTER*24 DAYTID
@@ -1708,7 +1701,7 @@ C
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX
-!      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
+      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 !      use dcbtra_mod, only: IFPCK12, NFPCK12
       use comdis_mod, only: NSPCK
@@ -1722,7 +1715,6 @@ C
       DIMENSION Q1(*),Q2(*),GMAT(*),HMAT(*)
       DIMENSION IJPAIRS(0:7)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2)
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
 C
@@ -2081,13 +2073,12 @@ C     Luuk Visscher, january 1997
 C     Revised May 2001 for range in ISHELB /jth+hjaaj
 C
 C*****************************************************************************
-!      use dcbbas_mod, only: NBBAS
 !      use dgroup_mod, only: JBTOF, NBSYM, NFSYM
+      use dcbbas_mod, only: NBBAS
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
       use blocks_mod, only: NLRGBL
 #include "implicit.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       DIMENSION NSPCK(0:7,0:3),ISPCK(0:7,0:7,3)
@@ -2244,13 +2235,12 @@ C
       use aovec_mod, only: MXAOVC
       use blocks_mod, only: IORBSB, IORBSH, ISTBSH, KHKTSH, MAXSHL,
      &  NHKTSH, NORBSH
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTSYM, ISYMAO, MAXREP
 #include "implicit.h"
       INTEGER :: I, II
-#include "dcbbas.h"
 C
       DIMENSION INDX(3,*),IIREP(0:7),IIIREP(0:7)
 C
@@ -2790,12 +2780,11 @@ C***********************************************************************
       use aovec_mod, only: MXAOVC
       use blocks_mod, only: NSYMBL
 !      use dgroup_mod, only: FREP, NFSYM
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
 #include "implicit.h"
       INTEGER :: I
 C
 #include "dgroup.h"
-#include "dcbbas.h"
       LOGICAL SAME
       DIMENSION DRIJ(NSYMBL,NSYMBL,*),WORK(*),
      &          Q1(*),NDMOQ1(2,2),ICMOQ1(2),NSTR1(2,0:2),
@@ -2908,11 +2897,10 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IQDEF, NBSYM, NZ
-!      use dcbbas_mod, only: NFBAS, NTBAS
+      use dcbbas_mod, only: NFBAS, NTBAS
 #include "implicit.h"
 C
 #include "dgroup.h"
-#include "dcbbas.h"
       DIMENSION CAO(*),Q(*),WORK(*)
       IF(NSEL.EQ.NVEC) THEN
 C
@@ -2990,7 +2978,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
 !      use dgroup_mod, only: FREP, NFSYM
       use blocks_mod, only: NSYMBL
       use kinds_mod, only: dp
@@ -2999,7 +2987,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
 C
-#include "dcbbas.h"
 #include "dgroup.h"
       DIMENSION QB(*),Q(*),NDMOQR(2,2),ICMOQR(2),NSTR(2,0:2),
      &          IND(*),WORK(*)
@@ -3398,12 +3385,11 @@ C
 C***********************************************************************
 !      use dcbtra_mod, only: NFPCK12
 !      use dgroup_mod, only: JBTOF, NBSYM, NZ
-!      use dcbbas_mod, only: NBBAS
+      use dcbbas_mod, only: NBBAS
 #include "implicit.h"
 C
 #include "dcbtra.h"
 #include "dgroup.h"
-#include "dcbbas.h"
       DIMENSION ITQMT(0:7,0:7,2),NSTR(2,0:2,4)
 C
 C
@@ -3454,7 +3440,7 @@ C***********************************************************************
       use dcbgen_mod, only: PARCAL
 !      use dcbtra_mod, only: RCORBS
 !      use dgroup_mod, only: NFSYM, NZ
-!      use dcbbas_mod, only: N2BBASXQ
+      use dcbbas_mod, only: N2BBASXQ
 !      use dcbdhf_mod, only: INTDEF
       use interface_to_mpi
 #include "implicit.h"
@@ -3462,7 +3448,6 @@ C***********************************************************************
 C
 #include "dcbtra.h"
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcbdhf.h"
       LOGICAL RECAN
       DIMENSION NDMOQR(2,2),ICMOQR(2),KQ(2),KE(2),KIBE(2),
@@ -3710,7 +3695,7 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbdhf_mod, only: ESOLVE, ESOLVN, IFCKOP, IHRMOP, ISYMOP, NFMAT
 !      use dgroup_mod, only: FREP, IPQTOQ, NFSYM, NZ
-!      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
+      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcbham_mod, only: IPRSOL, SOLVEN, SPINFR
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3719,7 +3704,6 @@ C*****************************************************************************
 C
 #include "dcbdhf.h"
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcbham.h"
 CTOBS: Note the use of dcbdhf ! Should be generalized !!!
       LOGICAL TOBE
@@ -3847,7 +3831,7 @@ C***********************************************************************
       use dummy_mod, only: DUMMY
 !      use dcbtra_mod, only: IPRTRA, ISAME, ISTRAT, NOPAIR, NQQCLASS, SCRTRA, THROUT
 !      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
-!      use dcbbas_mod, only: N2BBASXQ, NFBAS
+      use dcbbas_mod, only: N2BBASXQ, NFBAS
 !      use dcborb_mod, only: ICMOQ, IORB, NAELEC, NASH, NGAS_DC, NISH, NORB, NORBT, NPSH
 !      use dgroup_mod, only: ATOMIC, NBSYM, NFSYM, NZ
 !      use dcbres_mod, only: INTRES, IPRRES, ISTRES, RESOUT, SCRRES
@@ -3861,7 +3845,6 @@ C***********************************************************************
 C
 #include "dcbtra.h"
 #include "dcbtr3.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbres.h"
@@ -4185,7 +4168,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: IPRTRA, ISAME, ISTRAT, NOPAIR, NQQCLASS, SCRTRA, THROUT
 !      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
-!      use dcbbas_mod, only: N2BBASXQ, NFBAS
+      use dcbbas_mod, only: N2BBASXQ, NFBAS
 !      use dcborb_mod, only: NAELEC, NASH, NISH, NORBT
 !      use dgroup_mod, only: ATOMIC, NBSYM, NFSYM, NZ
 !      use dcbres_mod, only: IPRRES, ISTRES, RESOUT, SCRRES
@@ -4199,7 +4182,6 @@ C***********************************************************************
 C
 #include "dcbtra.h"
 #include "dcbtr3.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbres.h"
@@ -4738,7 +4720,7 @@ C
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
 !      use dcbmp2_mod, only: CMMNFO, TPRI34, TPRI44
 !      use dcbmpt_mod, only: TESTLS, TESTSL
-!      use dcbbas_mod, only: I1_DCBBAS, I2_DCBBAS, NTBAS
+      use dcbbas_mod
       use symmet_mod
 !      use dgroup_mod, only: I1_DGROUP, I2_DGROUP, LINEAR, NFSYM, NZ
       use blocks_mod, only: NSYMBL
@@ -4757,7 +4739,6 @@ C
 #include "dcbtr3.h"
 #include "dcbmp2.h"
 #include "dcbmpt.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       LOGICAL ANTIS,LMP2,NSAME
@@ -4789,12 +4770,32 @@ C
       call interface_MPI_BCAST(I1_DCBORB,NUMELM,MPARID,
      &                         global_communicator)
 C
-C     dcbbas.h
-C     --------
+C     dcbbas_mod: sent field by field (module variables are not
+C     contiguous like the old COMMON /DCBBAS/)
+C     ----------
 C
-      NUMELM = ICOMMSIZE(I1_DCBBAS,I2_DCBBAS)
-      call interface_MPI_BCAST(I1_DCBBAS,NUMELM,MPARID,
-     &                         global_communicator)
+      call interface_MPI_BCAST(NBBAS,SIZE(NBBAS),MPARID,ICOMM)
+      call interface_MPI_BCAST(NFBAS,SIZE(NFBAS),MPARID,ICOMM)
+      call interface_MPI_BCAST(NTBAS,SIZE(NTBAS),MPARID,ICOMM)
+      call interface_MPI_BCAST(N2BAS,SIZE(N2BAS),MPARID,ICOMM)
+      call interface_MPI_BCAST(N2BASQ,SIZE(N2BASQ),MPARID,ICOMM)
+      call interface_MPI_BCAST(IBBAS,SIZE(IBBAS),MPARID,ICOMM)
+      call interface_MPI_BCAST(I2BBASX,SIZE(I2BBASX),MPARID,ICOMM)
+      call interface_MPI_BCAST(IBAS,SIZE(IBAS),MPARID,ICOMM)
+      call interface_MPI_BCAST(I2BASX,SIZE(I2BASX),MPARID,ICOMM)
+      call interface_MPI_BCAST(I2BAST,SIZE(I2BAST),MPARID,ICOMM)
+      call interface_MPI_BCAST(I2TMT,SIZE(I2TMT),MPARID,ICOMM)
+      call interface_MPI_BCAST(NNBBAST,1,MPARID,ICOMM)
+      call interface_MPI_BCAST(N2BBAST,1,MPARID,ICOMM)
+      call interface_MPI_BCAST(NNBBASX,1,MPARID,ICOMM)
+      call interface_MPI_BCAST(N2BBASX,1,MPARID,ICOMM)
+      call interface_MPI_BCAST(N2BBASXQ,1,MPARID,ICOMM)
+      call interface_MPI_BCAST(MXBBAS,1,MPARID,ICOMM)
+      call interface_MPI_BCAST(MXFBAS,1,MPARID,ICOMM)
+      call interface_MPI_BCAST(N2BAST,1,MPARID,ICOMM)
+      call interface_MPI_BCAST(N2BASTQ,1,MPARID,ICOMM)
+      call interface_MPI_BCAST(NZT,1,MPARID,ICOMM)
+      call interface_MPI_BCAST(N2TMT,1,MPARID,ICOMM)
 C
 C     dcbham.h
 C     --------

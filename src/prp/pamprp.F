@@ -4465,7 +4465,6 @@ C
 !#include "dcbxpr.h"
 #include "krciprop.h"
 !#include "dcborb.h"
-!#include "dcbbas.h"
 !#include "dgroup.h"
 C
 #ifdef CODE_NOT_WORKING
@@ -4550,7 +4549,6 @@ C
 !#include "dcbxpr.h"
 #include "krciprop.h"
 !#include "dcborb.h"
-!#include "dcbbas.h"
 !#include "dgroup.h"
 C
       CHARACTER PNAME(2)*16, PLABEL(2)*8
@@ -4597,7 +4595,6 @@ C
 #include "dcbxpr.h"
 #include "krciprop.h"
 !#include "dcborb.h"
-!#include "dcbbas.h"
 !#include "dgroup.h"
 C
 C     define operator type, factor, name and label
@@ -4656,7 +4653,6 @@ C
 !#include "dgroup.h"
 !#include "dcbxlr.h"
 !#include "dcborb.h"
-!#include "dcbbas.h"
       LOGICAL   SAME
       CHARACTER PNAME*16, PLABEL(2)*8
       REAL*8    PFAC(2)
@@ -9656,7 +9652,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXQN
 !      use dgroup_mod, only: NZ
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
       use dcbgen_mod, only: LUBSS
 !      use dcbxpr_mod, only: IPRPSYM, NPRPS, PRPNAM
       use ccom_mod, only: DOSPHE
@@ -9664,7 +9660,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       INTEGER :: I
 #include "dgroup.h"
 !#include "dcborb.h"
-#include "dcbbas.h"
 !#include "dcbexp.h"
 #include "dcbxpr.h"
 !#include "dcbprp.h"

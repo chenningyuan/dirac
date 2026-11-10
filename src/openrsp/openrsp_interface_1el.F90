@@ -1,5 +1,6 @@
 module openrsp_interface_1el
 
+      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBASX, NTBAS
       use dcbgen_mod, only: CVAL, LU1INT
       use symmet_mod, only: ISYMAX
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -21,7 +22,6 @@ module openrsp_interface_1el
    integer, parameter :: max_aoproper_indices = 900
    character(16)      :: op_name_to_aoproper_index(max_aoproper_indices) = '----------------'
 
-#include "dcbbas.h"
 #include "dcbcls.h"
 #include "dcbprl.h"
 #include "dcbxpr.h"

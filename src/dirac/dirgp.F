@@ -36,7 +36,7 @@ C*****************************************************************************
       use dcbgen_mod, only: LUCOEF, LUKRMC
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NCMOTQ, NORBT
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NFBAS
       use memory_allocator
       use dircmo
       use dirac_cfg, only: dirac_cfg_scf_calculation
@@ -44,7 +44,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I,J
 #include "dcbpsi.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -273,11 +272,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine get_dimension_info (idims)
       ! Pack dimension info needed in wricmo with information taken from
       ! common blocks (LV, 2021)
-!      use dcbbas_mod, only: NFBAS, NTBAS
 !      use dgroup_mod, only: ATOMIC, NFSYM, NZ
 !      use dcborb_mod, only: NCMOTQ, NESH, NORBT, NPSH
+      use dcbbas_mod, only: NFBAS
 #include "implicit.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
       integer, intent(out) :: idims(*)
@@ -304,7 +302,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       use shells_mod, only: CENT, JSTRT, NCENT, NHKT, NLRGSH, NUCO,
      &  NUMCF
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
       use aovec_mod, only: MXCONT
       use primit_mod, only: PRICCF, PRIEXP
       use maxorb_mod, only: MXPRIM, MXSHEL
@@ -318,7 +316,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      IUNIT should be open and positioned at the right place (i.e. after IBEIG)
 
 #include "implicit.h"
-#include "dcbbas.h"
 
        integer npriexp
 
@@ -354,15 +351,14 @@ C     IDIM(3,J) - number of AO-basis functions
 C     Written by BHP (adapted from TS WRICMO)
 C
 C*****************************************************************************
-!      use dcbbas_mod, only: NFBAS, NTBAS
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: NCMOTQ, NESH, NORBT, NPSH
+      use dcbbas_mod, only: NFBAS
       use dcbgen_mod, only: TITLE
 #include "implicit.h"
       INTEGER :: I,J
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbbas.h"
       CHARACTER TEXT*74
       DIMENSION CMO(NCMOTQ),EIG(NORBT),
      &          IBEIG(NORBT,2)
@@ -419,13 +415,12 @@ C***********************************************************************
 !      use dcborb_mod, only: NCMOTQ, NORBT
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NFSYM, NZ
-!      use dcbbas_mod, only: NFBAS, NTBAS
+      use dcbbas_mod, only: NFBAS
          use memory_allocator
          use dircmo
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
       LOGICAL INFO,LBIT,TEST,FNDLAB
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
@@ -592,11 +587,10 @@ C     Written by T.Saue Sept 1 1995
 C
 C*****************************************************************************
 !      use dcbdhf_mod, only: NACSH
-!      use dcbbas_mod, only: N2BBASXQ, NTBAS
+      use dcbbas_mod, only: N2BBASXQ
       use dcbgen_mod, only: TITLE
 #include "implicit.h"
 C
-#include "dcbbas.h"
 #include "dcbdhf.h"
       CHARACTER TEXT*74
       DIMENSION FOCK(N2BBASXQ*N)
@@ -619,11 +613,10 @@ C     Read AO Fock matrix from unformatted file
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: N2BBASXQ, NTBAS
+      use dcbbas_mod, only: N2BBASXQ
 !      use dcbdhf_mod, only: NACSH
 #include "implicit.h"
 C
-#include "dcbbas.h"
 !#include "dgroup.h"
 #include "dcbdhf.h"
       LOGICAL INFO, INFO_loc
@@ -674,12 +667,11 @@ C
 C     Written by T.Saue Oct 12 1995
 C
 C*****************************************************************************
-!      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dcbdhf_mod, only: NACSH, NFMAT
+      use dcbbas_mod, only: N2BBASXQ
       use dcbgen_mod, only: TITLE
 #include "implicit.h"
 C
-#include "dcbbas.h"
 #include "dcbdhf.h"
       CHARACTER TEXT*74
       DIMENSION DMAT(N2BBASXQ*NFMAT)
@@ -700,11 +692,10 @@ C
 C     Read SO density matrix from unformatted file
 C
 C*****************************************************************************
-!      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dcbdhf_mod, only: NACSH, NFMAT
+      use dcbbas_mod, only: N2BBASXQ
 #include "implicit.h"
 C
-#include "dcbbas.h"
 #include "dcbdhf.h"
       CHARACTER TEXT*74
       DIMENSION DMAT(N2BBASXQ*NFMAT)
@@ -1624,8 +1615,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck acmout */
       SUBROUTINE ACMOUT()
-!      use dcbbas_mod, only: N2BBASX, NTBAS
 !      use dgroup_mod, only: NFSYM, NZC1
+      use dcbbas_mod, only: N2BBASX, NTBAS
       use dcbgen_mod, only: LUCOEF, LUKRMC
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NCMOTQ, NORB, NORBT
@@ -1668,7 +1659,6 @@ C*****************************************************************************
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
       LOGICAL TOBE, TOBEK, FNDLAB, MCORB, MJAVA, X2CMOB
       CHARACTER TEXT*74
@@ -1924,12 +1914,11 @@ C
 C***********************************************************************
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbprj_mod, only: NREFS
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NFBAS
 #include "implicit.h"
 C
       INTEGER :: I
 #include "dcbprj.h"
-#include "dcbbas.h"
 #include "dgroup.h"
       DIMENSION NR(NREFS,NFSYM),NP(2,0:2),WORK(*)
       NCDIM = 0
@@ -2169,7 +2158,7 @@ C
 C***********************************************************************
       use pi_mod, only: PI
 !      use dcborb_mod, only: NCMOTQ, NORBT
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NFBAS
 !      use dgroup_mod, only: NFSYM
 !      use dcbrot_mod, only: ROTANG
       use kinds_mod, only: dp
@@ -2178,7 +2167,6 @@ C***********************************************************************
 C
 #include "dcbrot.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
       DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT)
 
@@ -2309,7 +2297,6 @@ C
 C     Manipulation of CHECKPOINT after a wave function calculation
 C
 C***********************************************************************
-!      use dcbbas_mod, only: NFBAS, NTBAS
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NORB, NORBT
 !      use dcbreo_mod, only: IMOORF, IREORF, LMOORF, MXREORD
       use dcbgen_mod, only: LUCOEF, LUKRMC
@@ -2345,9 +2332,9 @@ C
       contains
 
       subroutine pstor1 (cmo,eig,ibeig,read_mcscf)
-!      use dcbbas_mod, only: NFBAS, NTBAS
 !      use dcbreo_mod, only: IMOORF, IREORF, LMOORF, MXREORD
 !      use dcbpsi_mod, only: PHCOEF
+      use dcbbas_mod, only: NFBAS
       use dircmo
 C***********************************************************************
 C
@@ -2358,7 +2345,6 @@ C***********************************************************************
 #include "implicit.h"
 C
 #include "dcbpsi.h"
-#include "dcbbas.h"
 #include "dcbreo.h"
       real(8)             :: CMO(:),EIG(:)
       integer             :: IBEIG(:)
@@ -2569,7 +2555,6 @@ C
 C     Written by Trond Saue Sep 6 2006
 C
 C***********************************************************************
-!      use dcbbas_mod, only: NTBAS
 !      use dgroup_mod, only: NFSYM
       use dcbgen_mod, only: LUCOEF
       use priunit_mod, only: LUPRI
@@ -2577,7 +2562,6 @@ C***********************************************************************
 #include "implicit.h"
 C
 !#include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
       LOGICAL TOBE,OWNBAS,LBIT,C1READ
       CHARACTER*(*) FRAGFIL(NFRAG)
@@ -3254,7 +3238,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck acmoin */
       SUBROUTINE ACMOIN()
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: N2BBASX, NTBAS
+      use dcbbas_mod, only: N2BBASX, NTBAS
 !      use dgroup_mod, only: IPQTOQ, IQDEF, NFSYM, NZ
       use dcbgen_mod, only: IPRGEN, LUCOEF
 !      use dcborb_mod, only: NORBT
@@ -3272,7 +3256,6 @@ C***********************************************************************
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
       CHARACTER TEXT*74
       DIMENSION IDIM(3),NBF(2)
@@ -3445,7 +3428,7 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: MC
-!      use dcbbas_mod, only: NBBAS, NTBAS
+      use dcbbas_mod, only: NBBAS
       use pgroup_mod, only: REP
       use quaternion_algebra
       use kinds_mod, only: dp
@@ -3453,7 +3436,6 @@ C***********************************************************************
       INTEGER :: I,II,III,J,K
       REAL(dp), PARAMETER :: D0=0.0D0, DTOL=1.0D-1
 C
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbham.h"
       DIMENSION CMO(NB,NO,4),IBUF(NO,2)
@@ -3586,14 +3568,13 @@ C     make compressed coefficients in sorted basis
 C
 C     Written by T.Saue Mar 4 2008
 C***********************************************************************
-!      use dcbbas_mod, only: NFBAS, NTBAS
 !      use dcborb_mod, only: ICMOQ, IORB, NCMOTQ, NORB, NORBT
+      use dcbbas_mod, only: NFBAS, NTBAS
       use quaternion_algebra
 #include "implicit.h"
 C
 C
 !#include "dgroup.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 C
       DIMENSION CBU(*),EIGU(*),IBEIGU(*),
@@ -3637,7 +3618,7 @@ C***********************************************************************
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NTBAS
+      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3646,7 +3627,6 @@ C***********************************************************************
 C
 #include "dgroup.h"
 #include "dcbham.h"
-#include "dcbbas.h"
       DIMENSION CBU(NBU,NOU,4),CBS(NBS,NOS,NZ),III(2)
 C
 C.....III is the totally symmetric irrep for the large components
@@ -3692,7 +3672,7 @@ C***********************************************************************
 
 !      use dcborb_mod, only: NCMOTQ, NORBT, NPSH
 !      use dcbham_mod, only: SUB_BL
-!      use dcbbas_mod, only: I2TMT, N2TMT, NTBAS, NZT
+      use dcbbas_mod, only: I2TMT, N2TMT, NFBAS, NZT
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NFSYM, NZ
       use dcbgen_mod, only: LUCOEF, LUTMAT
@@ -3703,7 +3683,6 @@ C***********************************************************************
 C
 #include "dcbham.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
       LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
@@ -3948,8 +3927,7 @@ C     Add AO Fock matrix read from unformatted file to contents of Fock
 C
 C*****************************************************************************
 C
-!      use dcbbas_mod, only: N2BBASXQ, NTBAS
-#include "dcbbas.h"
+      use dcbbas_mod, only: N2BBASXQ
       INTEGER IUNIT,N
       LOGICAL INFO
       Real*8 FOCK(N2BBASXQ*N)
@@ -4023,11 +4001,10 @@ C     together with NCBAS which is its row-dimension.
 C
 C     Written by T. Saue May 30 2012
 C***********************************************************************
-!      use dcbbas_mod, only: NTBAS
 !      use dcborb_mod, only: NORB, ICMOQ
+      use dcbbas_mod, only: NFBAS, NTBAS
 #include "implicit.h"
 C
-#include "dcbbas.h"
 #include "dcborb.h"
       DIMENSION CMO(*),CSEL(LRSEL,LCSEL,4),IVEC(NVEC),WORK(*)
       IF(ILABDF.EQ.1) THEN
@@ -4236,12 +4213,11 @@ C
 C     NOTE: 
 C
 C***********************************************************************
-!      use dcbbas_mod, only: NFBAS, NTBAS
 !      use dgroup_mod, only: NFSYM, NZ, NZC1
+      use dcbbas_mod, only: NFBAS, NTBAS
 #include "implicit.h"
 C
       INTEGER :: I
-#include "dcbbas.h"
 !#include "dcbham.h"
 #include "dgroup.h"
       DIMENSION CAO(*),CSO(*),NVEC(2)
@@ -4307,13 +4283,12 @@ C
 C***********************************************************************C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbham_mod, only: MC
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
       use nuclei_mod, only: NUCDEP
 #include "implicit.h"
       DIMENSION IBUF(*)
       integer, allocatable :: INUC(:)
 #include "dcbham.h"
-#include "dcbbas.h"
 C
       allocate(INUC(NTBAS(0)))
       CALL LSQMA1(INUC)
@@ -4626,7 +4601,7 @@ C***********************************************************************
 !      get information from common blocks about the basis set
 !      and return this (after some clean-up) as a basis_set_info_t
 
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
       use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXPRIM, MXSHEL
       use shells_mod, only: CENT, JSTRT, NCENT, NHKT, NLRGSH, NSMLSH,
@@ -4635,7 +4610,6 @@ C***********************************************************************
        use basis_set_datatypes
 
 #include "implicit.h"
-#include "dcbbas.h"
 
        type(basis_set_info_t), intent(inout) :: ao_basis
        logical, intent(in) ::  small_component

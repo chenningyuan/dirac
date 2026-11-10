@@ -28,12 +28,11 @@ C     Written May 27 1998 by T.Saue and K.Mikkelsen
 C
 C***********************************************************************      
 !      use dcbham_mod, only: LSOLMX
-!      use dcbbas_mod, only: N2BBASX, NNBBASX
+      use dcbbas_mod, only: N2BBASX, NNBBASX
       use dummy_mod, only: DUMMY
 #include "implicit.h"
 C
 C
-#include "dcbbas.h"
 #include "dcbham.h"
 C
       DIMENSION FOCK(*),DMAT(*),WORK(*)
@@ -90,7 +89,7 @@ C     Written May 27 1998 by T.Saue and K.Mikkelsen
 C
 C***********************************************************************      
       use maxorb_mod, only: MXCORB
-!      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
+      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
       use maxaqn_mod, only: MXAQN, MXQN
       use dummy_mod, only: IDUMMY
 !      use dgroup_mod, only: NZ
@@ -106,7 +105,6 @@ C
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0, D2 = 2.0D0
       REAL(dp), PARAMETER :: FLFAC = -0.5D0, DM2 = -2.0D0
 C
-#include "dcbbas.h"
 #include "dcbham.h"
 #include "dgroup.h"
 C

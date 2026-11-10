@@ -461,13 +461,12 @@
 !      use dcbxqr_mod, only: MAXFQR, MAXLQR, MAXQR, MZYEE, MZYEP
 !      use dgroup_mod, only: NZ
 !      use dcborb_mod, only: NCMOTQ
-!      use dcbbas_mod, only: NTBAS
 !      use dcbham_mod, only: SPINFR
+      use dcbbas_mod, only: NTBAS
 #include "implicit.h"
 #include "dcbxqr.h"
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dcbham.h"
 !
       PARAMETER ( LUCMO = 22 )
@@ -2345,7 +2344,6 @@
       use dirac_partask_mod, only: XCINT_PAR
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ORBXQ, NORBT
-!      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dcbxqr_mod, only: IPRXQR
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcbxrs_mod, only: INTFLG
@@ -2359,9 +2357,9 @@
 
 
       use kinds_mod, only: dp
+      use dcbbas_mod, only: N2BBASXQ, NTBAS
 #include "implicit.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dcbxqr.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
@@ -2654,14 +2652,13 @@
 !*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NORBT
-!      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
+      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcbxqr_mod, only: IPRXQR
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbxqr.h"
 !
@@ -2710,14 +2707,13 @@
 !*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: ICMOQ, IORB, NISH, NORB, NORBT, NPSH
-!      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
+      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbxqr_mod, only: IPRXQR
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbxqr.h"
 !
@@ -2812,14 +2808,13 @@
 !*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ORBXQ, NORBT
-!      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
+      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcbxqr_mod, only: IPRXQR
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbxqr.h"
 !
@@ -2886,14 +2881,13 @@
 !
 !*****************************************************************************
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBXQ, NISH, NORB, NORBT, NPSH
-!      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbxqr_mod, only: IPRXQR
+      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbxqr.h"
 !
@@ -3068,13 +3062,12 @@
 !*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: I2ORBX, ICMOQ, N2ORBXQ, NORB, NORBT
-!      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
+      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 !
       REAL(dp), PARAMETER :: D0 = 0.0D0

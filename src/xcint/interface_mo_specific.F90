@@ -23,9 +23,9 @@ contains
 #ifdef PRG_DIRAC
    subroutine interface_mo_write_dirac()
 
-!      use dcbbas_mod, only: N2BBASXQ
 !      use dcborb_mod, only: NAELEC, NASH, NELECT, NESH, NISH, NPSH
 !      use dcbdhf_mod, only: AOC, DF, NOPEN
+      use dcbbas_mod, only: N2BBASXQ
       use checkpoint
       use dircmo, only: select_mobasis
 
@@ -36,7 +36,6 @@ contains
       character(len=:), allocatable :: mobasis
 !     --------------------------------------------------------------------------
 
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 

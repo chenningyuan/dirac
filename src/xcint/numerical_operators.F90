@@ -103,10 +103,9 @@ module numoper_integrals
       end subroutine NumOper_BasisOffsetTables_init
 
       subroutine NumOper_CB_init
-!      use dcbbas_mod, only: IBBAS, NBBAS, NTBAS
 !      use dgroup_mod, only: NBSYM
+      use dcbbas_mod, only: IBBAS, NBBAS, NTBAS
 #include "implicit.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 
           integer :: i

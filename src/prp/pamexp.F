@@ -473,7 +473,7 @@ C
 C***********************************************************************
       use mxcent_mod, only: MXCENT
 !      use dcbexp_mod, only: NEXPP
-!      use dcbbas_mod, only: N2BBASXQ
+      use dcbbas_mod, only: N2BBASXQ
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NORBT
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
@@ -484,7 +484,6 @@ C
       INTEGER :: state_local 
 C
 #include "dcbexp.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -544,7 +543,7 @@ C***********************************************************************
       use mxcent_mod, only: MXCENT
 !      use dgroup_mod, only: FREP, IPQTOQ, NFSYM, NZ
 !      use dcborb_mod, only: I2ORBX, ICMOQ, NASHT, NCMOTQ, NOCC, NORB, NORBT
-!      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
+      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcbexp_mod, only: IPREXP, LEXPP, NEXPP, ORBANA, PRJANA, PRPCAN
       use dcbgen_mod, only: LUCOEF
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
@@ -556,7 +555,6 @@ C***********************************************************************
 C
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dcbexp.h"
 #include "dcbxpr.h"
 #include "dcbdhf.h"
@@ -862,7 +860,7 @@ C***********************************************************************
       use mxcent_mod, only: MXCENT
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 !      use dcbexp_mod, only: PRJANA
-!      use dcbbas_mod, only: N2BBASX
+      use dcbbas_mod, only: N2BBASX
 !      use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -870,7 +868,6 @@ C***********************************************************************
 C
 #include "dcbxpr.h"
 #include "dcbexp.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 C
 !     radovan:                    ONLY_TS: allow only totally symmetric
@@ -938,14 +935,13 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
-!      use dcbbas_mod, only: N2BBASX, NTBAS
+      use dcbbas_mod, only: N2BBASX, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
 #include "dcbxpr.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       LOGICAL FIRST(NZ),LEXPST(2)
@@ -1007,7 +1003,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: IPRPTYP, PRPNAM
-!      use dcbbas_mod, only: N2BBASX, NFBAS, NTBAS
+      use dcbbas_mod, only: N2BBASX, NFBAS, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1015,7 +1011,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1=1.0D0
 C
 #include "dcbxpr.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       LOGICAL FIRST(NZ)
@@ -1400,10 +1395,10 @@ C
 C     Written by T. Saue Jan 20 2005 
 C
 C***********************************************************************
-!      use dcbbas_mod, only: I2BASX, NFBAS
 !      use dcborb_mod, only: ICMOQ, IORB, NCMOTQ, NISH, NORB, NORBT
 !      use dcbxpr_mod, only: PRPNAM
 !      use dgroup_mod, only: NFSYM, NZ
+      use dcbbas_mod, only: I2BASX, NFBAS
       use dcbgen_mod, only: LUCOEF
        use dircmo
        use labeled_storage
@@ -1411,7 +1406,6 @@ C***********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
@@ -1487,7 +1481,7 @@ C     Written by T. Saue Jan 20 2005
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: NFBAS, NTBAS
+      use dcbbas_mod, only: NFBAS, NTBAS
 !      use dcborb_mod, only: NISH, NORB, NPSH
 !      use dgroup_mod, only: FREP, IPQTOQ, NZ
       use kinds_mod, only: dp
@@ -1495,7 +1489,6 @@ C***********************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
       CHARACTER MXFORM*6,FMT*6

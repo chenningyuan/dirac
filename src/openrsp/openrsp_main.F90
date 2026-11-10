@@ -16,8 +16,8 @@ contains
 
   subroutine openrsp_driver(work, lwork)
 
+      use dcbbas_mod, only: N2BBASXQ
       use priunit_mod, only: LUPRI
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 

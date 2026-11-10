@@ -31,7 +31,7 @@ contains
       use symmet_mod, only: ICOS, ISYMAX
       use aovec_mod, only: MXCONT
       use primit_mod, only: PRICCF, PRIEXP
-!      use dcbbas_mod, only: IBBAS, NBBAS
+      use dcbbas_mod, only: IBBAS, NBBAS
 !      use dgroup_mod, only: IPQTOQ, IQTOPQ, JBTOF, JM4POS, JQBAS, NBSYM, NFSYM, NZ
 !      use dcbham_mod, only: NOSMLV
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEG, NUCIND
@@ -41,7 +41,6 @@ contains
       character(1), parameter :: ls(2) = (/'L', 'S'/)
 !     --------------------------------------------------------------------------
 
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbham.h"
 

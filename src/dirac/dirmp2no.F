@@ -568,7 +568,7 @@ C
 C***********************************************************************
 !      use dgroup_mod, only: NBSYM, NFSYM, NZ
 !      use dcbdhf_mod, only: NASH_DHF, NFRO_DHF, NISH_DHF, NOPEN
-!      use dcbbas_mod, only: N2BBASXQ
+      use dcbbas_mod, only: N2BBASXQ, NFBAS
       use dcbgen_mod, only: INTGEN
       use dummy_mod, only: DUMMY
       use priunit_mod, only: LUPRI
@@ -582,7 +582,6 @@ C***********************************************************************
 C
       REAL*8    WORK(LWORK)
 
-#include "dcbbas.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1207,14 +1206,13 @@ C     written by S.Knecht - July 2008
 C
 C***********************************************************************
 !      use dgroup_mod, only: NFSYM, NZ
-!      use dcbbas_mod, only: NFBAS
 !      use dcborb_mod, only: IASH, ICMOQ, NASH, NASHT, NCMOTQ, NIOCC, NORB, NPSH
 !      use dcbmp2no_mod, only: IPRMP2NO
+      use dcbbas_mod, only: NFBAS
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbmp2no.h"

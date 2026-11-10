@@ -114,7 +114,7 @@ C
 C     Written by L.Visscher, march 1999
 C
 C***********************************************************************
-!      use dcbbas_mod, only: I2BASX, I2TMT, N2TMT, NFBAS, NTBAS, NZT
+      use dcbbas_mod, only: I2BASX, I2TMT, N2TMT, NFBAS, NTBAS, NZT
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUTMAT
 !      use dcborb_mod, only: I2ORBT, NORB
@@ -125,7 +125,6 @@ C***********************************************************************
 C
 !#include "dcbdhf.h"
 !#include "dcbham.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
       REAL(dp), PARAMETER :: DP5 = 0.50D00, D0 = 0.00D00, D1 = 1.00D00,

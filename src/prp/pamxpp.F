@@ -1108,9 +1108,9 @@ C*****************************************************************************
 !      use dcbxrs_mod, only: JSYMOP, NCSIM, NESIM, NEXCNV, NPSIM, NREDM, NZCONF, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcbxpp_mod, only: BEDECD, DOBED, MAXEXC, NBED, NCLS_XPP, NPPAPT, ORBXPP, ORIENTED
 !      use dcbibn_mod, only: JBENDX, JBPNDX
-!      use dcbbas_mod, only: NTBAS
 !      use dcborb_mod, only: NCMOTQ
 !      use dgroup_mod, only: NBSYM, NFSYM
+      use dcbbas_mod, only: NTBAS
       use orbital_rotation_indices
 
       use kinds_mod, only: dp
@@ -1123,7 +1123,6 @@ C
 Chj: MAXRM, MXLOAD
 #include "dcbibn.h"
 !#include "dcbham.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
       LOGICAL FIRST
@@ -1281,7 +1280,7 @@ C*****************************************************************************
 !      use dcbxpp_mod, only: GCLEAN, GCLEAN_FAC, GNOISE, GNOISE_FAC, IPRXPP, JPPAP, LPPAPS, LPPAPU, MAXEXC, NPPAP, NPPAPT, ORBXPP
 !      use dcbham_mod, only: SPINFR
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NORB
-!      use dcbbas_mod, only: NFBAS
+      use dcbbas_mod, only: NFBAS
 !      use dgroup_mod, only: JBTOF, JSPINR, LINEAR, NBSYM, NFSYM, NZ
       use pgroup_mod, only: REP
 !      use dcbxpr_mod, only: IPRPTIM, PRPNAM
@@ -1295,7 +1294,6 @@ C
 #include "dcbxpp.h"
 #include "dcbham.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbxpr.h"
       LOGICAL FIRST,TEST

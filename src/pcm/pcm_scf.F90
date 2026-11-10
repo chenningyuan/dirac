@@ -185,11 +185,11 @@ contains
     ! Roberto Di Remigio, 2012
     subroutine pcm_oper_ao_driver(oper, charge_name, work, lwork)
 
+      use dcbbas_mod, only: NTBAS
         use pcm_integrals, only: get_electronic_mep
         use pcmmod_cfg
         use pcmsolver, only: pcmsolver_get_surface_function
 
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 

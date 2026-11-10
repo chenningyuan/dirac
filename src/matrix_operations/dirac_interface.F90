@@ -3,6 +3,7 @@
 
 module dirac_interface
 
+      use dcbbas_mod, only: NFBAS, NTBAS
       use dcbgen_mod, only: INTGEN, PARCAL, TWOCOMP
       use dcbgrd_mod, only: GRADNN
       use dipole_mod, only: DDIPN, DIPMN
@@ -80,7 +81,6 @@ module dirac_interface
   end interface
 
 #include "../abacus/cbinuc.h"
-#include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dgroup.h"

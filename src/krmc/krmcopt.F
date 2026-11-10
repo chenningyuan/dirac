@@ -1353,7 +1353,7 @@ C***********************************************************************
       use consts_mod, only: D0, D2, DP5
 !      use dcborb_mod, only: I2ORBX, ICMOQ, MXGAS, N2ORBXQ, NASHT, NISHT, NORB, NORBT
 !      use dcbopt_mod, only: IOPT_IFCKOP, IOPT_IHRMOP, IOPT_INTFLG, IOPT_ISYMOP, IPROPT
-!      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
+      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use cbihr2_mod, only: IPRTWO
       use dirac_cfg ! for MCSCF-srDFT calculations
@@ -1363,7 +1363,6 @@ C
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dcbbas.h"
 #include "dgroup.h"
       DIMENSION DV(*),CMO(*),FC(*),FV(*)
       DIMENSION WORK(LWORK)
@@ -1657,7 +1656,7 @@ C***********************************************************************
 !      use dcbopt_mod, only: CWRTFO_MAT, ECORE_LR, E_LVCORR_MC, IOPT_IFCKOP, IOPT_IHRMOP, IOPT_INTFLG, IOPT_ISYMOP, IPROPT
       use dcbgen_mod, only: LUKRM3, LUX2C
 !      use dcbham_mod, only: X2CMMF
-!      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
+      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use frame_mod, only: POTNUC
       use cbihr2_mod, only: IPRTWO
@@ -1668,7 +1667,6 @@ C
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dgroup.h"
       LOGICAL   TOFILE
       DIMENSION CMO(*),FC(*), WORK(LWORK)
@@ -1831,13 +1829,12 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbdhf_mod, only: LUFCK1
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
 !      use dgroup_mod, only: IPQTOQ, NZ
       use cbihr1_mod, only: IPRONE
 #include "implicit.h"
 C
 #include "dcbdhf.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       DIMENSION H1AO(*), WORK(*)
@@ -2952,14 +2949,13 @@ C***********************************************************************
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NORB
 !      use dcbopt_mod, only: IPROPT
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
-!      use dcbbas_mod, only: NFBAS
+      use dcbbas_mod, only: NFBAS
 #include "implicit.h"
       INTEGER :: I
 C
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dgroup.h"
-#include "dcbbas.h"
 C
       REAL*8    CMO(*)
       INTEGER   JRDMO, IOPT, LUNIT
@@ -3065,7 +3061,7 @@ C***********************************************************************
       use dcbgen_mod, only: BNCRON, LUCOEF, LUKRM5, LUKRMC
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NORB, NORBT
 !      use dcbopt_mod, only: CINT_REORD, IANACI, IOPT_INTDEF, IOPT_INTFLG, IPROPT, JKRRUNTYPE, JMCMIN, JTRLVL, KTRLVL, MAXCIT, MCTYPE, MOPT_MXMACRO, NATOLCR, NZCONF, NZCONFQ, OPT_CIPROGRAM, SPINFR_KRMC
-!      use dcbbas_mod, only: NFBAS
+      use dcbbas_mod, only: NFBAS
 !      use dgroup_mod, only: ATOMIC, IPQTOQ, LINEAR, NFSYM, NZ
 !      use dcbnrt_mod, only: LNOROT, NOROT
 #include "implicit.h"
@@ -3073,7 +3069,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbnrt.h"
 C
@@ -4271,7 +4266,7 @@ C***********************************************************************
 !      use thrzer_mod, only: THRZER
 !      use dcbopt_mod, only: IPROPT, NZCONF, NZCONFQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPT, NZXOPTQ, OPT_CIPROGRAM, THRPCI
 !      use dcborb_mod, only: ICMOQ, N2ORBXQ, NCMOTQ, NOCC, NORB, NORBT
-!      use dcbbas_mod, only: NFBAS
+      use dcbbas_mod, only: NFBAS
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbgen_mod, only: LUKRM2
       use orbital_rotation_indices
@@ -4285,7 +4280,6 @@ C
 C
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       DIMENSION CMO(*), WORK(*), IBTYP(2,*), IBCVC(*),
@@ -5557,7 +5551,8 @@ C***********************************************************************
 !      use dcborb_mod, only: I2ORBT, ICMOQ, N2ORBTQ, NAELEC, NISHT, NORB, NORBT
 !      use dcbopt_mod, only: IPROPT
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
-!      use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, N2TMT, NFBAS, NTBAS, NZT
+      use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, N2TMT, NFBAS,
+     &  NTBAS, NZT
       use dcbgen_mod, only: BNCRON, LUTMAT
 #include "implicit.h"
       INTEGER :: I
@@ -5565,7 +5560,6 @@ C
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dgroup.h"
-#include "dcbbas.h"
 C
       DIMENSION CMO(*)
       DIMENSION WORK(*)

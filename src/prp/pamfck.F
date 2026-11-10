@@ -38,13 +38,12 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NNASHX, NORBT
-!      use dcbbas_mod, only: N2BBASXQ
+      use dcbbas_mod, only: N2BBASXQ
 #include "implicit.h"
       INTEGER :: I, J, K
 C
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 C
       CHARACTER COPT*(*), CCOPT*8,LABEL*8, FILENAME*20
       DIMENSION DMAT(*),WORK(*)

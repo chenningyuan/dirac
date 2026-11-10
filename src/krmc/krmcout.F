@@ -369,7 +369,7 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use dcblab_mod, only: IPLAB, PLABEL
 !      use dcborb_mod, only: ICMOQ, IORB, NOCC, NORB
-!      use dcbbas_mod, only: NFBAS
+      use dcbbas_mod, only: NFBAS
 !      use dgroup_mod, only: NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -377,7 +377,6 @@ C***********************************************************************
 C
 #include "dcblab.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       DIMENSION CMO(*)

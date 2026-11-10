@@ -119,12 +119,11 @@ C     Written by T.Saue - July 1996
 C     Last revision: Jul 10 1996 - tsaue
 C
 C***********************************************************************
-!      use dcbbas_mod, only: NTBAS
 !      use dcborb_mod, only: N2ORBXQ, NCMOTQ
 !      use dcbham_mod, only: SPINFR
+      use dcbbas_mod, only: NTBAS
 #include "implicit.h"
 C
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbham.h"
 C
@@ -422,12 +421,11 @@ C
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: N2BBASXQ
+      use dcbbas_mod, only: N2BBASXQ
 !      use dgroup_mod, only: NFSYM, NZ
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcbbas.h"
 #include "dgroup.h"
 !#include "dcbxpr.h"
 C
@@ -477,7 +475,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
-!      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NTBAS
+      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NTBAS
 !      use dcbham_mod, only: NOSPIN, SPINFR
 !      use dcborb_mod, only: IORB, NORB
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
@@ -488,7 +486,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
@@ -685,7 +682,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NZ
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
-!      use dcbbas_mod, only: N2BBASXQ
+      use dcbbas_mod, only: N2BBASXQ
 !      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -693,7 +690,6 @@ C***********************************************************************
 C
 #include "dgroup.h"
 #include "dcbxpr.h"
-#include "dcbbas.h"
 #include "dcbibn.h"
        LOGICAL ONFILE
        DIMENSION GP(*),CMO(*),IBEIG(*),JXPAR(*),PRPINT(*),WORK(*)

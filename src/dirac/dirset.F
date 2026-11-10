@@ -214,7 +214,7 @@ C***********************************************************************
 !      use dgroup_mod, only: JFSYM, NBSYM, NFSYM, NZ
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
-!      use dcbbas_mod, only: I2BAST, I2BASX, IBAS, IBBAS, MXBBAS, MXFBAS, N2BAS, N2BASQ, N2BAST, N2BASTQ, N2BBAST, N2BBASX, N2BBASXQ, NBBAS, NFBAS, NNBBAST, NNBBASX, NTBAS
+      use dcbbas_mod
       use maxorb_mod, only: MXCORB
       use inftap_mod, only: LUINTR
 !      use dcbham_mod, only: MDIRAC
@@ -226,7 +226,6 @@ C***********************************************************************
       INTEGER :: I,J
 C
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dgroup.h"
       CHARACTER COMP(2)*1
 C
@@ -432,15 +431,14 @@ C     Written by T.Saue - November 1994
 C     Last revision: Nov 23 1994 - tsaue
 C***********************************************************************
 !      use dgroup_mod, only: FREP, NFSYM, NZ
-!      use dcbbas_mod, only: NFBAS
 !      use dcborb_mod, only: I2ASHX, I2OCCX, I2ORBX, IASH, I_DCBORB_SET, IOCC, IORB, N2ASHT, N2ASHX, N2ASHXQ, N2ESHT, N2ESHX, N2ISHT, N2ISHX, N2OCCT, N2OCCX, N2ORBT, N2ORBTQ, N2ORBX, N2ORBXQ, N2PSHT, N2PSHX, N2SSHT, N2SSHX, NASHT, NCMOT, NCMOTQ, NESHT, NFORB, NFROT, NISHT, NNASHX, NOCC, NOCCT, NORB, NORBT, NPSHT, NSSHT, NTORB
 !      use dcbham_mod, only: URKBAL
+      use dcbbas_mod, only: NFBAS
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J
 C
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
       CHARACTER COMP(2)*1
@@ -806,7 +804,7 @@ C     Modified by O. Fossgaard July 2000 for SCDENS
 C
 C***********************************************************************
 
-!      use dcbbas_mod, only: N2BBASX, N2BBASXQ
+      use dcbbas_mod, only: N2BBASX, N2BBASXQ
       use nuclei_mod, only: NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use frame_mod, only: CORRLV
@@ -816,7 +814,6 @@ C***********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
-#include "dcbbas.h"
 #include "dcbdhf.h"     
 #include "dcbham.h"
       DIMENSION DMAT(N2BBASXQ,*),WORK(*)
@@ -866,7 +863,7 @@ C
 C     Written by O. Fossgaard July 2000     
 C     
 C***********************************************************************
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
       use nuclei_mod, only: ISTBNU, NAMN, NUCIND
       use priunit_mod, only: LUPRI
       use symmet_mod, only: FMULT
@@ -882,7 +879,6 @@ C***********************************************************************
       LOGICAL TABSCQ
 C
 C
-#include "dcbbas.h"
 #include "dcbham.h"
       DIMENSION SCQ(*),DMAT(*),WORK(LWORK)      
 C
@@ -989,7 +985,7 @@ C***********************************************************************
       use dcbibt_mod, only: JGET
       use maxorb_mod, only: MXCORB
 !      use dgroup_mod, only: NFSYM
-!      use dcbbas_mod, only: IBAS, NFBAS, NTBAS
+      use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NFBAS, NTBAS
       use symmet_mod, only: MAXREP
 !      use dcblab_mod, only: IATTR, IPLAB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -999,7 +995,6 @@ C***********************************************************************
 C
 #include "dcblab.h"
 #include "dgroup.h"
-#include "dcbbas.h"
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
       DIMENSION ICLAB(*),GROSS(*),SCQ(*)
 C
@@ -1062,7 +1057,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use symmet_mod, only: FMULT
       use nuclei_mod, only: ISTBNU, NAMN, NUCIND
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
       use maxorb_mod, only: MXCORB
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1070,7 +1065,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0
 C
 C
-#include "dcbbas.h"
 !#include "dcborb.h"
 #include "dcbham.h"
       DIMENSION QLC(*),DMAT(*),WORK(LWORK)      
@@ -1117,7 +1111,7 @@ C***********************************************************************
 !      use dgroup_mod, only: NFSYM
       use symmet_mod, only: MAXREP
       use maxaqn_mod, only: MXAQN, MXQN
-!      use dcbbas_mod, only: IBAS, NFBAS, NTBAS
+      use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NFBAS, NTBAS
       use mxcent_mod, only: MXCENT
       use dcbibt_mod, only: JGET
 #include "implicit.h"
@@ -1125,7 +1119,6 @@ C***********************************************************************
 C
 #include "dcblab.h"
 #include "dgroup.h"
-#include "dcbbas.h"
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
       DIMENSION ICLAB(*),GROSS(*),QLC(*)
 
@@ -1188,14 +1181,13 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dgroup_mod, only: NBSYM
-!      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
+      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
       use dcbgen_mod, only: LU1INT
       use symmet_mod, only: FMULT
       use nuclei_mod, only: ISTBNU, NAMN, NUCDEP, NUCIND
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "dcbbas.h"
 #include "dgroup.h"
 !#include "dcbham.h"
       DIMENSION QMAT(NUCDEP,NUCDEP,2,NMPOLOP),DMAT(*),WORK(LWORK)
@@ -1366,7 +1358,7 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use dcblab_mod, only: IATTR, IPLAB
 !      use dgroup_mod, only: NBSYM
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
       use dcbibt_mod, only: JGET, KGET
 #include "implicit.h"
 C
@@ -1374,7 +1366,6 @@ C
 C
 #include "dcblab.h"
 #include "dgroup.h"
-#include "dcbbas.h"
       DIMENSION ICLAB(*)
       integer, allocatable :: IDEGN(:,:)
       allocate(IDEGN(NUCIND,NBSYM))
@@ -1411,11 +1402,10 @@ C***********************************************************************
 
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "dcbbas.h"
       REAL(dp), PARAMETER :: D2=2.0D0
       DIMENSION RLMMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
       DIMENSION ICLAB(*),QMAT(NUCDEP,NUCDEP,2)
@@ -1454,7 +1444,7 @@ C     Written by T. Saue Jun 15 2007
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: N2TMT, NZT
+      use dcbbas_mod, only: I2TMT, N2TMT, NFBAS, NZT
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbdhf_mod, only: N2TMOTQ, NACSH, NACSHMF, NESHMF, NISHMF, NOCCMF, NOPEN, NPSHMF, NTMO
 !      use dcborb_mod, only: ID_SUB_BL, NASH, NBORB, NESH, NFORB, NFRO, NISH, NORB, NORB_SUB, NPSH, N_SUB_BL
@@ -1467,7 +1457,6 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
-#include "dcbbas.h"
 C
       LOGICAL GOFAST
       GOFAST = .FALSE.
@@ -1599,11 +1588,11 @@ C
 C     Written by T. Saue
 C
 C***********************************************************************
-!      use dcbbas_mod, only: NZT
 !      use dcbdhf_mod, only: NACSH, NACSHMF, NESHMF, NISHMF, NOCCMF, NOPEN, NPSHMF, NTMO
 !      use dcborb_mod, only: ID_SUB_BL, NASH, NBORB, NESH, NFRO, NISH, NORB_SUB, NPSH, N_SUB_BL
 !      use dcbham_mod, only: I2COFK, SUB_BL, URKBAL
 !      use dgroup_mod, only: NFSYM, NZ
+      use dcbbas_mod, only: NZT
       use dcbgen_mod, only: LUTMAT
 #include "implicit.h"
 C
@@ -1611,7 +1600,6 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
-#include "dcbbas.h"
 #include "dcbham.h"
 C
       NBRP = 4/NZ

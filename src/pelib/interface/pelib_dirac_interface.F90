@@ -594,11 +594,10 @@ module pelib_dirac_interface
     end subroutine pelib_ifc_finalize
 
     subroutine pelib_ifc_fock(dmat, fmat, tot_nrg, el_nrg)
-!      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
 !      use dcbham_mod, only: LEVYLE
+      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
         use pelib, only: pelib_master
         implicit none
-#include "dcbbas.h"
 #include "dcbham.h"
         ! Input/output.
         real(rp), intent(in   ) :: dmat(n2bbasx)
@@ -646,11 +645,10 @@ module pelib_dirac_interface
     end subroutine pelib_ifc_fock
 
     subroutine pelib_ifc_energy(dmat)
-!      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
 !      use dcbham_mod, only: LEVYLE
+      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
         use pelib, only: pelib_master
         implicit none
-#include "dcbbas.h"
 #include "dcbham.h"
         ! Input/output.
         real(rp), dimension(n2bbasx), intent(in) :: dmat(n2bbasx)
@@ -683,7 +681,7 @@ module pelib_dirac_interface
 
     subroutine pelib_ifc_response(fao, dens1, ndmat, dmat_ih_sym)
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: N2BBASXQ, NNBBASX, NTBAS
+      use dcbbas_mod, only: N2BBASXQ, NNBBASX, NTBAS
 !      use dcbham_mod, only: LEVYLE
         use pelib, only: pelib_master
         use pelib_options, only: pelib_gspol
@@ -692,7 +690,6 @@ module pelib_dirac_interface
 !       Purpose    : Calculate dynamical pelib response part and add it to the
 !                    one index transformed fock matrix
         implicit none
-#include "dcbbas.h"
 !#include "dcborb.h"
 #include "dcbham.h"
         ! Input/output.

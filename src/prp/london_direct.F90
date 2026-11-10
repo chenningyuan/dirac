@@ -18,6 +18,7 @@
 
 module london_direct_hb
 
+      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
       use dcbgen_mod, only: PARCAL, RELCAL
       use blocks_mod, only: NLRGBL, NSMLBL
       use cbihr2_mod, only: IPRNTA, IPRNTB, IPRNTC, IPRNTD, TKTIME
@@ -56,7 +57,6 @@ module london_direct_hb
    integer :: ifock_type(nr_mat*max_nr_xyz_comp)
    integer :: irepdm(nr_mat*max_nr_xyz_comp)
 
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbnmr.h"
 #include "dgroup.h"

@@ -435,7 +435,7 @@ C***********************************************************************
 !      use dcbxpr_mod, only: PRPNAM
 !      use dcbesr_mod, only: IPRESR, LESRP, MAX_CIESR_IT, MULTIPESR, NESRP, N_CIESR, STATE_ESR, THR_CIESR
 !      use dcbprp_mod, only: ESRGTENS, ESR_HFCC, IPESR
-!      use dcbbas_mod, only: N2BBASXQ
+      use dcbbas_mod, only: N2BBASXQ
 !      use dcborb_mod, only: N2ASHX
 !      use dgroup_mod, only: NZ, NZ_IN_CI
 !      use dcbopt_mod, only: NZCONF
@@ -460,7 +460,6 @@ C
 #include "dcbesr.h"
 #include "dcbprp.h"
 !#include "dcbham.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbopt.h"
@@ -1582,7 +1581,7 @@ C*****************************************************************************
 !      use dcbopt_mod, only: KZCONF, NZCONF
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NZ, NZ_IN_CI
 !      use dcborb_mod, only: ICMOQ, NASH, NASHT, NISH, NORBT, NPSH
-!      use dcbbas_mod, only: NFBAS
+      use dcbbas_mod, only: NFBAS
 !      use dcbesr_mod, only: IPRESR, MAX_CIESR_IT, MULTIPESR, N_CIESR, STATE_ESR, THR_CIESR
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 #include "implicit.h"
@@ -1604,7 +1603,6 @@ C
 #include "dcbopt.h"
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dcbesr.h"
 #include "dcbxpr.h"
 C
@@ -1998,14 +1996,13 @@ C     Based on prpex2 by Trond Saue May 27 1996
 C
 C***********************************************************************
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM
-!      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, NZ
 !      use dcborb_mod, only: NAELEC, NASHT
+      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
 #include "implicit.h"
 C
 #include "dcbxpr.h"
 !#include "dcbesr.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcborb.h"
 C
@@ -2465,7 +2462,7 @@ C
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dcbham_mod, only: LEVYLE, SPINFR
-!      use dcbbas_mod, only: N2BBASXQ, NFBAS, NTBAS
+      use dcbbas_mod, only: N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NESHT, NORB, NORBT
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 #include "implicit.h"
@@ -2481,7 +2478,6 @@ C  dcbbas.h : N2BBASXQ, ...
 C  dcborb.h : NORBT, ..., NCMOTQ
 C  dgroup.h : IPQTOQ
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 

@@ -24,7 +24,7 @@ C  /* Deck rgetno */
 !      use thrzer_mod, only: THRZER
 !      use dcborb_mod, only: IASH, ICMOQ, IOCC, IORB, N2ASHX, N2ASHXQ, NASH, NASHT, NCMOTQ, NESH, NESHT, NGAS_DC, NISH, NOCC, NORB, NORBT, NPSH
 !      use dcbopt_mod, only: IDENSLR_STATE, ISVRONO, NATOLCR, NZCONFQ, SAVE_REORDERED_NOS, SPINFR_KRMC
-!      use dcbbas_mod, only: NFBAS
+      use dcbbas_mod, only: NFBAS
 !      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM, NZ
       use memory_allocator
 C***********************************************************************
@@ -54,7 +54,6 @@ C
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       DIMENSION CREF(*)
@@ -550,7 +549,6 @@ C
 #include "dcborb.h"
 !#include "dcbopt.h"
 #include "dgroup.h"
-!#include "dcbbas.h"
 
       integer , parameter     :: dp = 8
       real(dp), parameter     :: d0 = 0.0d0
@@ -623,7 +621,7 @@ C***********************************************************************
 !      use dcbopt_mod, only: IPROPT, JGAS, MCTYPE, N2DSHXQ, N2VSHXQ, NDSH, NDSHT, NVSH, NVSHT, NZCONF, OPT_CHCKJZ, SPINFR_KRMC
       use dcbgen_mod, only: LUKRMC
 !      use dgroup_mod, only: IPQTOQ, NBSYM, NFSYM, NZ
-!      use dcbbas_mod, only: NFBAS
+      use dcbbas_mod, only: NFBAS
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXD2G, IDXI2G, IDXP2G, IDXU2G, IDXV2G
 !      use dcbkrmc_mod, only: DKRMC_MVOFAC
@@ -636,7 +634,6 @@ C
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcbidx.h"
 #include "dcbkrmc.h"
 C
@@ -1271,7 +1268,6 @@ C
 C
 !#include "dcbidx.h"
 #include "dcborb.h"
-!#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbopt.h"
 #include "krciprop.h"
@@ -1450,7 +1446,6 @@ C write-protection for DUMMY.
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-!#include "dcbbas.h"
 #include "dgroup.h"
 #include "krciprop.h"
 #include "dcbxpr.h"
@@ -1621,7 +1616,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 !#include "dcbopt.h"
-!#include "dcbbas.h"
 #include "dgroup.h"
 #include "krciprop.h"
 #include "dcbkrci.h"

@@ -93,7 +93,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
 !      use dcbham_mod, only: LEVYLE, MC, SSMTRC
-!      use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NFBAS, NTBAS
+      use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NFBAS, NTBAS
 !      use dgroup_mod, only: NFSYM
       use maxorb_mod, only: MXCORB
 !      use dcblab_mod, only: IATTR, IPLAB, PLABEL
@@ -118,7 +118,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &     RERRAV,RERRAB,RERRMX,SMATDF, SMATAN, SMATFR
 
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcblab.h"
 
@@ -531,7 +530,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 !      use dcbham_mod, only: MC
 !      use dgroup_mod, only: NBSYM
-!      use dcbbas_mod, only: IBBAS, NBBAS, NTBAS
+      use dcbbas_mod, only: IBBAS, NBBAS, NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: J
@@ -540,7 +539,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "dcbham.h"
 #include "dgroup.h"
-#include "dcbbas.h"
 
       DIMENSION GAO(NTBAS(0)),EXCMAT(NTBAS(0),NTBAS(0))
       

@@ -28,7 +28,7 @@ subroutine impmos()
 !      use dgroup_mod, only: ATOMIC, NBSYM, NZC1
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NCMOTQ, NESHT
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
 !      use dcbimp_mod, only: FILIMP, QCPACK
       use maxorb_mod, only: MXCORB, MXSHEL
       use blocks_mod, only: NCNTSH, NHKTSH, NLRGBL, NORBSH
@@ -42,7 +42,6 @@ subroutine impmos()
 ! parameters
 
 ! common blocks
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbimp.h"

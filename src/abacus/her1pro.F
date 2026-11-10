@@ -2315,13 +2315,13 @@ C     (OV 08.03.90)
 C
 C     Solvent flag (22.01.91/HJAAJ+KM) (SOLVENT)
 C
-!      use dcbbas_mod, only: N2BBASX
 #ifdef HAS_PELIB
       use pelib_dirac_interface, only: use_pelib, pelib_ifc_localfield,
      &                                 pelib_ifc_do_lf
 #endif
       use priunit_mod, only: LUPRI
       use pgroup_mod, only: REP
+      use dcbbas_mod, only: N2BBASX
 #include "implicit.h"
       PARAMETER (NTABLE = 54)
       PARAMETER (D2 = 2.D0)
@@ -2332,7 +2332,6 @@ C
      &          EFDIR*1,RTNLBL(2)*8
       DIMENSION WORK(LWORK), SOINT(NELMNT,NOPTYP), INTREP(*), INTADR(*)
 C
-#include "dcbbas.h"
       KLAST = 1
 C
 C     *******************************
@@ -4288,11 +4287,10 @@ C --- end of her1pro.F ---
 
       subroutine prop_to_checkpoint(label,prop,nelmnt)
 
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
       use checkpoint
 
 #include "implicit.h"
-#include "dcbbas.h"
 
       character(16), intent(in) :: label
       real(8), intent(in) :: prop(nelmnt)
@@ -4326,11 +4324,10 @@ C --- end of her1pro.F ---
 
       subroutine prop_to_propfile(label,prop,nelmnt)
 
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
       use labeled_storage
 
 #include "implicit.h"
-#include "dcbbas.h"
 
       character(16), intent(in) :: label
       real(8), intent(in) :: prop(nelmnt)

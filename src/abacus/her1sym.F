@@ -102,7 +102,6 @@ C  /* Deck oneso1 */
      &                  CORBZ0,DIFDIP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,
      &                  JCENTC,NCENTC,SIGNC,GEXP,NNBASX,DSHELL,FSHELL,
      &                  RLMINT,RLMTAB,FCM,TLMD,LMNO,LOMITVNUC)
-!      use dcbbas_mod, only: N2BBASX, NTBAS
 #ifdef PRG_DIRAC
       use dcbgrd_mod, only: DODERM, GRADKN, GRADNU, GRADRO, GRD_NOSMLS,
      &  GRD_NOSMLV, INTCLASS
@@ -121,6 +120,9 @@ C  /* Deck oneso1 */
       use kinds_mod, only: dp
 #ifndef PRG_DIRAC
       use energy_mod, only: GRADFS, GRADKE, GRADNA
+#endif
+#ifdef PRG_DIRAC
+      use dcbbas_mod, only: N2BBASX, NTBAS
 #endif
 #include "implicit.h"
       INTEGER :: I,J
@@ -146,7 +148,6 @@ C     only DSHELL(*,1) used for Dalton
 C
 #ifdef PRG_DIRAC
 #include "dgroup.h"
-#include "dcbbas.h"
 !#include "dcbham.h"
 #endif 
       ITRI(I,J) = MAX(I,J)*(MAX(I,J) - 1)/2 + MIN(I,J)

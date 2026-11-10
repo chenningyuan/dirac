@@ -353,7 +353,7 @@ C***********************************************************************
       use dcbgen_mod, only: IDFLAG, LUKRM4
 !      use dcbxrs_mod, only: BVTYP, E2CHEK, FKRMC, GPTNRM, ICRED, IERED, INTBUF, INTDEF, INTFLG, IPRED, IPRXRS, ITMIC, IZRED, JSYMOP, JTIMOP, KBCI, KBOE, KBOP, KCONV, LINEQ, LOFFTY, LUBCI, LUBOE, LUBOP, LUCYCL, LURSP, LUSCI, LUSOE, LUSOP, MAXITR, MAXSIM, NCRED, NCSIM, NDAMP, NERED, NESIM, NEVEC, NFREQ, NOSIM, NPRED, NPSIM, NREDM, NTSIM, NVPAR, NZCONF, NZCONFQ, NZRED, NZVARQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, THCXRS, TKNORM, UNCOUP, XRS_INTTYP
       use cbihr2_mod, only: SCRFCK, USRSCR
-!      use dcbbas_mod, only: N2BBAST, N2BBASXQ
+      use dcbbas_mod, only: N2BBAST, N2BBASXQ
 !      use dcbkrmc_itinfo_mod, only: DINFO, IINFO
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -363,7 +363,6 @@ C
 C
 #include "dcbxrs.h"
 !#include "dgroup.h"
-#include "dcbbas.h"
 #include "dcbkrmc_itinfo.h"
 C
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
@@ -3373,7 +3372,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: CVAL
 !      use dcbxrs_mod, only: FKRMC, IPRXRS, NFOCKMAT, NZXOPE, NZXOPP, STERNC, STERNH
-!      use dcbbas_mod, only: N2BBASXQ
+      use dcbbas_mod, only: N2BBASXQ
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NORBT
 !      use dgroup_mod, only: NZ
       use kinds_mod, only: dp
@@ -3382,7 +3381,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: DM4 = -4.0D0
 C
 #include "dcbxrs.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -4136,12 +4134,11 @@ C   Written by T.Saue and P.Norman Aug 23 2000
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
 !      use dcborb_mod, only: NORBT
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
       LOGICAL FNDLAB16

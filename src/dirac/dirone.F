@@ -211,7 +211,7 @@ C A. Sunaga Nov. 2018
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use symmet_mod, only: ISYMAX, MULT, PT
-!      use dcbbas_mod, only: NNBBASX, NTBAS
+      use dcbbas_mod, only: NNBBASX, NTBAS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbcls_mod, only: WRITI
       use pi_mod, only: PI
@@ -229,7 +229,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h" 
       INTEGER :: I,J
 C
-#include "dcbbas.h"
 #include "dcbham.h"
 #include "dcbcls.h"
 C      
@@ -558,7 +557,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
       use symmet_mod, only: ISYMAX
 !      use dcbham_mod, only: MC
       use nuclei_mod, only: NAMN
@@ -573,7 +572,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use kinds_mod, only: dp
 #include "implicit.h" 
       INTEGER :: I,J,K
-#include "dcbbas.h"
 C
 !#include "dgroup.h"
 #include "dcbham.h"
@@ -955,7 +953,6 @@ C
 C***********************************************************************
 #include "implicit.h"
       INTEGER :: J
-C#include "dcbbas.h"
       DIMENSION FUL(NDIM*NDIM), TRI(NDIM*NDIM)
 C
       DO J = 1, NDIM
@@ -2339,14 +2336,13 @@ C Written by Robert van Meer, Sept. 2010, last edited Mar. 2011
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use dcbbas_mod, only: NNBBASX
+      use dcbbas_mod, only: NNBBASX
       use nuclei_mod, only: GNUEXP, NUCIND
 !      use dcbham_mod, only: BSS, IF, IPRHAM, LEVYLE, X2C, ZORA
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,K
 #include "dcbham.h"
-#include "dcbbas.h"
 !#include "dcbxpr.h"
 C     GEXPEFFDE2 contains nuclear gaussian exponents related to size change
 C     EXPPLC = Exponent placeholder
@@ -2565,7 +2561,7 @@ C     Last revision May 19 1996
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: NNBBASX
+      use dcbbas_mod, only: NNBBASX, NTBAS
       use dummy_mod, only: IDUMMY
 #include "implicit.h"
       INTEGER :: I
@@ -2573,7 +2569,6 @@ C
       LOGICAL DOINT(4)
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4
       DIMENSION WORK(LWORK)
-#include "dcbbas.h"
 C
       CALL QENTER('BETAMT')
       KWORK = 1
@@ -2639,7 +2634,7 @@ C     Written by T.Saue May 1995
 C     Last revision May 19 1996 - tsaue
 C
 C*****************************************************************************
-!      use dcbbas_mod, only: NNBBASX
+      use dcbbas_mod, only: NNBBASX, NTBAS
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
@@ -2647,7 +2642,6 @@ C
       LOGICAl DOINT(4)
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4,OMITVNUC(2)*4
       DIMENSION WORK(LWORK)
-#include "dcbbas.h"
 C
       CALL QENTER('NUCATT')
       KWORK = 1
@@ -2699,15 +2693,14 @@ C  /* Deck nucat1 */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dummy_mod, only: DUMMY
       use nuclei_mod, only: NUCDEP
+      use dcbbas_mod, only: NNBBAST, NNBBASX, NTBAS
 #include "implicit.h"
-!      use dcbbas_mod, only: NNBBAST, NNBBASX
 !      use dcbham_mod, only: ECPCALC, IF
       INTEGER :: I
 C
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC(2)
       DIMENSION OP1INT(NNBBASX),WORK(LWORK)
-#include "dcbbas.h"
 #include "dcbham.h"
 C
       CALL QENTER('NUCAT1')
@@ -2772,9 +2765,8 @@ C  prepare imaginary, antisymmetric KINENERG integrals into LS/SL blocks,
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: NNBBASX
+      use dcbbas_mod, only: NNBBASX
 #include "implicit.h"
-#include "dcbbas.h"
       DIMENSION WORK(LWORK)
 !     ... local variables
       LOGICAl DOINT(4)
@@ -2826,7 +2818,7 @@ C   MI/Strasbg,Febr. 2006 H2cAO Hamiltonian reading placed into separate routine
 C
 C*****************************************************************************
 !      use dcbham_mod, only: BSS, I2COFK, IF, IPRHAM, MDIRAC, X2C
-!      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NTBAS
+      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NTBAS
       use dcbgen_mod, only: TWOCOMP, TWOCOMPBSS
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NFSYM, NZ
@@ -2836,7 +2828,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcbbas.h"
 #include "dcbham.h"
 #include "dgroup.h"
       DIMENSION FOCK(*),WORK(LWORK)
@@ -2982,7 +2973,7 @@ C*****************************************************************************
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPTYP
 !      use dcbprl_mod, only: WRITI
 !      use dgroup_mod, only: NZ
-!      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBASX
+      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBASX
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LU1INT, TWOCOMP
       use dirac_cfg
@@ -2993,7 +2984,6 @@ C*****************************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbham.h"
 !#include "dcbdhf.h"
@@ -3189,7 +3179,7 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTYP
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
 !      use dgroup_mod, only: IQTOPQ, JCOM, JM4, JM4POS, JQBAS, MCMP, NBSYM, NZ
 !      use dcbprl_mod, only: IPRLREP, IPRLTYP, NPRPLBL, PDOINT, PRPLBL
       use quaternion_algebra
@@ -3198,7 +3188,6 @@ C*****************************************************************************
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D1 = 1.0D0, PTOL = 1.0D-12
 C
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
@@ -3473,7 +3462,7 @@ C*****************************************************************************
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP
       use dcbgen_mod, only: LU1INT, LUBSS, LUX2C, TWOCOMP
 !      use dcbham_mod, only: BSS, IF, IPRHAM, X2C
-!      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NFBAS, NNBBASX, NTBAS
+      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NFBAS, NNBBASX, NTBAS
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprl_mod, only: WRITI
 !      use dgroup_mod, only: NFSYM, NZ
@@ -3484,7 +3473,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0, PTOL = 1.0D-12
 C
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcbham.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
@@ -3717,10 +3705,9 @@ C    Written by Miro ILIAS/Strasbourg/March 2006
 C
 C*****************************************************************************
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, NZ
-!      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
+      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
 #include "implicit.h"
 #include "dgroup.h"
-#include "dcbbas.h"
       DIMENSION PMAT(N2BBASX,NZ),PTRI(NNBBASX,NZ)
       LOGICAL   FIRST(NZ)
 C
@@ -3767,14 +3754,13 @@ C     Last revision: Nov 23 1994 - tsaue
 C     Last revision: Jan.2006 modified for pure nonrel.case...
 C
 C*****************************************************************************
-!      use dcbbas_mod, only: MXBBAS, N2BBASX
+      use dcbbas_mod, only: MXBBAS, N2BBASX
       use dcbgen_mod, only: ISPHTR, TWOCOMP
       use maxorb_mod, only: MXPRIM
       use aovec_mod, only: MXCONT
       use primit_mod, only: NPSHEL
 #include "implicit.h"
 C
-#include "dcbbas.h"
       LOGICAL LBIT
       DIMENSION VMAT(*),WORK(LWORK)
 C
@@ -3815,8 +3801,8 @@ C  /* Deck lowdi1 */
 C*****************************************************************************
 C     See SUBROUTINE LOWDIN for explanation
 C*****************************************************************************
-!      use dcbbas_mod, only: N2BBASX, NBBAS, NFBAS
 !      use dgroup_mod, only: JFSYM, NFSYM, NZ
+      use dcbbas_mod, only: N2BBASX, NBBAS, NFBAS
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NFRO
       use dcbgen_mod, only: ISPHTR, STOL, TWOCOMP
@@ -3830,7 +3816,6 @@ C
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbbas.h"
       LOGICAL LBIT
       CHARACTER COMP(2)*1
       DIMENSION VMAT(*),SMAT(*),EIG(*),IRKB(*),WORK(LWORK)
@@ -4052,12 +4037,11 @@ C
 C     Written by T.Saue Sep 12 1995
 C     Last revision: Sep 12 1995
 C*****************************************************************************
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
 #include "implicit.h"
 C Used from COMMON blocks:
 C  DCBBAS: NTBAS(0)
 C
-#include "dcbbas.h"
       DIMENSION VMAT(*),VBUF(*),WORK(LWORK)
       CALL QENTER('VFSORT')
       KWORK = 1
@@ -4083,11 +4067,10 @@ C
 C     Written by T.Saue Sep 12 1995
 C     Last revision: Sep 12 1995
 C*****************************************************************************
-!      use dcbbas_mod, only: NFBAS, NTBAS
 !      use dcborb_mod, only: NFORB, NFRO
+      use dcbbas_mod, only: NFBAS, NTBAS
 #include "implicit.h"
       INTEGER :: J,JJ
-#include "dcbbas.h"
 #include "dcborb.h"
       DIMENSION VBUF(NTBAS(0),*)
       DIMENSION VMAT(*),ISORT(*),NVEC(2)
@@ -4141,12 +4124,11 @@ C     Trond Saue, October 1995 - Oslo
 C     Last revision: May 21 1996 - tsaue
 C
 C*****************************************************************************
-!      use dcbbas_mod, only: NNBBASX
 !      use dgroup_mod, only: NZ
+      use dcbbas_mod, only: NNBBASX
 #include "implicit.h"
 C
       DIMENSION FOCK(*),WORK(LWORK)
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       CALL QENTER('FREEMT')
@@ -4212,7 +4194,7 @@ C
 C     It should be noted that Ar is symmetric, whereas Ai,Br and Bi
 C     are antisymmetric.
 C*****************************************************************************
-!      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NNBBASX, NTBAS
+      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NNBBASX, NTBAS
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, NFSYM, NZ
 !      use dcbham_mod, only: IPBETAMT, IPKINERG, IPRHAM
@@ -4220,7 +4202,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbham.h"
 C
@@ -4333,7 +4314,6 @@ C*****************************************************************************
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NESH, NESHT, NFORB, NFRO, NORB, NORBT, NPSH
 !      use dcbdhf_mod, only: AOC, DF, I2TMOT, N2TMOTQ, NFMAT
 !      use dgroup_mod, only: ATOMIC, IPQTOQ, LINEAR, NFSYM, NZ
-!      use dcbbas_mod, only: I2TMT, N2BBASXQ, N2TMT, NFBAS, NTBAS, NZT
       use memory_allocator
       use checkpoint
       use dircmo
@@ -4377,6 +4357,8 @@ C*****************************************************************************
       use cbirea_mod, only: IPREAD
       use dcbgen_mod, only: IPRGEN, KCHARG, LUTMAT, LUX2C, NEWPRP,
      &  OPTIMI, RDINPC, TWOCOMP, TWOCOMPBSS
+      use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, N2TMT, NFBAS,
+     &  NTBAS, NZT
 #include "implicit.h"
 #ifndef MOD_XAMFI
       logical :: aoomod   = .false.
@@ -4390,7 +4372,6 @@ C   PAMIOU: LUTMAT
 #include "dcbcls.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 ! needed for restart from X2CMAT
 #include "dgroup.h"
@@ -5268,7 +5249,7 @@ C*****************************************************************************
 !      use dcbham_mod, only: FREEPJ, IF, IPRHAM, LEVYLE, MDIRAC, SPINFR, SUB_BL, VEXTPJ
 !      use dgroup_mod, only: ATOMIC, NFSYM, NZ
       use dcbgen_mod, only: CVAL, IPRGEN
-!      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS, NZT
+      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS, NZT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -5280,7 +5261,6 @@ C  DCBBAS:
 C  DCBORB:
 C  DGROUP:
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -5657,8 +5637,8 @@ C     Written by T.Saue May 26 1996
 C     Last revision: Jan 20 1998 - L. Visscher
 C
 C*****************************************************************************
-!      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NNBBASX, NTBAS
 !      use dgroup_mod, only: NFSYM
+      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NNBBASX, NTBAS
       use dcbgen_mod, only: LU1INT
       use cbihr1_mod, only: IPRONE
       use memory_allocator
@@ -5668,7 +5648,6 @@ C*****************************************************************************
 C
       INTEGER :: I,J,JJ
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dgroup.h"
       DIMENSION SMAT(N2BBASX)
       CHARACTER*8 RTNLBL(2)
@@ -5740,7 +5719,8 @@ C*****************************************************************************
       use mxcent_mod, only: MXCENT
       use cbihr1_mod, only: IPRONE
       use maxaqn_mod, only: MXAQN, MXQN
-!      use dcbbas_mod, only: IBAS, IBBAS, N2BAS, N2BAST, N2BBASX, NFBAS, NNBBASX, NTBAS
+      use dcbbas_mod, only: IBAS, IBBAS, N2BAS, N2BAST, N2BBASX, NBBAS,
+     &  NFBAS, NNBBASX, NTBAS
       use dcbgen_mod, only: LU1INT, TWOCOMP
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -5748,7 +5728,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dgroup.h"
       DIMENSION SMAT(*)
       CHARACTER*8 RTNLBL(2)
@@ -5865,11 +5844,10 @@ C     Generate Lowdin's canoncial orthonormalization matrix with
 C     cartesian to spherical transformation embedded.
 C
 C***********************************************************************
-!      use dcbbas_mod, only: NBBAS
+      use dcbbas_mod, only: NBBAS
 #include "implicit.h"
 C
 C
-#include "dcbbas.h"
 !#include "dgroup.h"
       DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),
      &          WORK(*)
@@ -5961,10 +5939,9 @@ C     the restricted kinetic balance (RKB) transformation embedded.
 C     See SUBROUTINE RKBLO1 for further explanations.
 C
 C***********************************************************************
-!      use dcbbas_mod, only: NBBAS
+      use dcbbas_mod, only: NBBAS
 #include "implicit.h"
 C
-#include "dcbbas.h"
 !#include "dgroup.h"
       DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),IRKB(*),WORK(*)
 C
@@ -6324,7 +6301,7 @@ C     Written by T.Saue July 1997
 C     Last revision July 15 1997 - tsaue
 C
 C*****************************************************************************
-!      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
+      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
       use nuclei_mod, only: CHARGE, GNUEXP, NUCIND
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -6338,7 +6315,6 @@ C
       LOGICAL DOINT(2,2)
       CHARACTER OMITVNUC(2)*4
 #include "dgroup.h"
-#include "dcbbas.h"
 C
       CALL QENTER('TSCORR')
       KWORK = 1
@@ -6431,7 +6407,7 @@ C*****************************************************************************
 !      use dcbham_mod, only: BSS, IF, IPRHAM, MDIRAC, NOSMLV, X2C
 !      use dgroup_mod, only: IPQTOQ, NZ
       use cbihr1_mod, only: IPRONE
-!      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBASX, NTBAS
+      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBASX, NTBAS
       use nuclei_mod, only: CHARGE, NAMN, NOORBT, NUCDEP, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
@@ -6447,7 +6423,6 @@ C
       logical   fndlab12
       character*12 flabel
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcbham.h"
 
       real(8)  :: TIMSTR(2), TIMEND(2)
@@ -6983,7 +6958,7 @@ C     Revised Juli 2002 : jkp
 C
 C*****************************************************************************
 !      use dcbdhf_mod, only: NOPEN
-!      use dcbbas_mod, only: N2BBASX
+      use dcbbas_mod, only: N2BBASX
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: ICTLV1C, IF, INTV1C
       use kinds_mod, only: dp
@@ -6992,7 +6967,6 @@ C*****************************************************************************
 C
 #include "dcbdhf.h"
 #include "dcbham.h"
-#include "dcbbas.h"
       CHARACTER FMT*6,MXFORM*6
       DIMENSION FMAT(*), DMAT(*),WORK(LWORK)
 C
@@ -7041,15 +7015,14 @@ C***********************************************************************
 !      use dcborb_mod, only: NCMOT, NCMOTQ, NFRO, NORBT
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbdhf_mod, only: MFRAG, NFRAG, NPRJNUC, PRJFIL
-!      use dcbbas_mod, only: N2BBASXQ
 !      use dcbham_mod, only: PROOWN, SUB_BL
+      use dcbbas_mod, only: N2BBASXQ, NFBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0
 C
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
 C
@@ -7183,12 +7156,11 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dcbgen_mod, only: LUPMAT
       use nuclei_mod, only: NUCDEP
-!      use dcbbas_mod, only: N2BBASX, NTBAS
+      use dcbbas_mod, only: N2BBASX, NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, DM1 = -1.0D0
 C
-#include "dcbbas.h"
       DIMENSION WORK(*)
 C
       CALL QENTER('MK1CEX')
@@ -7262,7 +7234,7 @@ C*****************************************************************************
       use nuclei_mod, only: NUCDEP
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
       use dcbgen_mod, only: STOL
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -7271,7 +7243,6 @@ C*****************************************************************************
 C
 #include "dcbham.h"
 !#include "dgroup.h"
-#include "dcbbas.h"
       DIMENSION STOT(LDM,LDM),PTOT(LDM,LDM)
       DIMENSION WORK(*)
       DIMENSION INDNAO(2,*)
@@ -7415,13 +7386,12 @@ C     Written by L. Visscher, august 2001
 C     Last revision: Aug 16, 2001
 C
 C*****************************************************************************
-!      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, NZ
+      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
       use dcbgen_mod, only: LUPMAT
       use quaternion_algebra
 #include "implicit.h"
 C
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbham.h"
 C
@@ -7885,7 +7855,7 @@ C                  M.Ilias, Tel Aviv, April 2009 - extended with QJACOBI
 C
 C*****************************************************************************
 !      use dcborb_mod, only: IORB, MAX_SUB_BL, NBORB, NESH, NFRO, NORB, NORB_SUB, NPSH, N_SUB_BL, NTMO_SUB
-!      use dcbbas_mod, only: I2BASX, N2TMT, NFBAS, NTBAS
+      use dcbbas_mod, only: I2BASX, N2TMT, NFBAS, NTBAS
       use dcbgen_mod, only: DOJACO, DOQJACO
       use priunit_mod, only: LUPRI
       use dummy_mod, only: IDUMMY
@@ -7901,7 +7871,6 @@ C  DCBBAS:
 C  DCBORB:
 C  DGROUP:
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -8448,7 +8417,7 @@ C*****************************************************************************
       use dummy_mod, only: IDUMMY
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbham_mod, only: DO4C2C, IF, IPRHAM, MC, WRITE_K_MATRIX
-!      use dcbbas_mod, only: I2BASX, N2TMT, NFBAS, NTBAS, NZT
+      use dcbbas_mod, only: I2BASX, I2TMT, N2TMT, NFBAS, NTBAS, NZT
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: DOJACO, DOQJACO
 !      use dcborb_mod, only: ID_SUB_BL, IORB, MAX_SUB_BL, NBORB, NESH, NFRO, NORB, NORB_SUB, NPSH, N_SUB_BL
@@ -8458,7 +8427,6 @@ C*****************************************************************************
       PARAMETER (D0=0.D0, D1=1.D0, D2=2.D0)
 C
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbdhf.h"            
@@ -9440,11 +9408,10 @@ C
 C     Written by Luuk Visscher, oct 1999
 C
 C*****************************************************************************
-!      use dcbbas_mod, only: NNBBASX
 !      use dgroup_mod, only: NZ
+      use dcbbas_mod, only: NNBBASX
 #include "implicit.h"
 C
-#include "dcbbas.h"
 #include "dgroup.h"
       DIMENSION FOCK(*),WORK(LWORK)
 C
@@ -9482,7 +9449,7 @@ C
 C  Written by Luuk Visscher, oct 1999
 C
 C*****************************************************************************
-!      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NNBBASX, NTBAS
+      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NNBBASX, NTBAS
       use dcbgen_mod, only: LU1INT
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NFSYM, NZ
@@ -9491,7 +9458,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbham.h"
 C
@@ -9572,10 +9538,9 @@ C     Written by A. Sunaga, July 2018
 C
 C*****************************************************************************
 !      use dgroup_mod, only: NZ
-!      use dcbbas_mod, only: NNBBASX
+      use dcbbas_mod, only: NNBBASX
 #include "implicit.h"
 C
-#include "dcbbas.h"
 #include "dgroup.h"
       DIMENSION FOCK(*),WORK(LWORK)
 C
@@ -9615,14 +9580,13 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: IPOVRLAP, IPRHAM, IPSPNORB, SPINFR
-!      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NNBBASX, NTBAS
+      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NNBBASX, NTBAS
 !      use dgroup_mod, only: NFSYM, NZ
       use dcbgen_mod, only: LU1INT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbham.h"
 C
@@ -9796,13 +9760,12 @@ C***********************************************************************
 !      use dcbdhf_mod, only: NACSH, NASHMFT, NOPEN
 !      use dgroup_mod, only: NZ
 !      use dcbham_mod, only: SUB_BL
-!      use dcbbas_mod, only: NFBAS
 !      use dcborb_mod, only: NESH, NISH, NPSH, N_SUB_BL
+      use dcbbas_mod, only: NFBAS
 #include "implicit.h"
 C
       INTEGER :: I,II
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
@@ -9974,7 +9937,7 @@ C       TMAT - transformation matrix with negative-energy solutions deleted
 C     Written by T.Saue, October 1995
 C
 C***********************************************************************
-!      use dcbbas_mod, only: I2TMT, NFBAS, NZT
+      use dcbbas_mod, only: I2TMT, NFBAS, NZT
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: I2ORBT, IORB, NESH, NFORB, NFRO, NORB, NPSH
@@ -9987,7 +9950,6 @@ C***********************************************************************
 C
 #include "dgroup.h"
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
       DIMENSION TMAT(*),TMOD(*),FMAT(*),EIG(*),IBEIG(*),VMAT(*),WORK(*)
@@ -10096,7 +10058,7 @@ C***********************************************************************
       use dcbgen_mod, only: CVAL, IPRGEN
       use priunit_mod, only: LUPRI
 !      use dcbdhf_mod, only: WRITI
-!      use dcbbas_mod, only: NZT
+      use dcbbas_mod, only: NFBAS, NZT
 !      use dcborb_mod, only: NFORB, NFRO
 !      use dcbham_mod, only: IPRHAM
       use kinds_mod, only: dp
@@ -10107,7 +10069,6 @@ C
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*)
@@ -10220,8 +10181,8 @@ C
 C***********************************************************************
 !      use dgroup_mod, only: JFSYM, NFSYM, NZ
 !      use dcborb_mod, only: N2ORBT, NBORB, NESH, NFORB, NFRO, NORB, NORBT, NPSH
-!      use dcbbas_mod, only: MXBBAS, N2TMT, NFBAS, NTBAS, NZT
 !      use dcbdhf_mod, only: N2TMOTQ, NTMO
+      use dcbbas_mod, only: I2TMT, MXBBAS, N2TMT, NFBAS, NTBAS, NZT
       use dcbgen_mod, only: IPRGEN, STOL
       use cbihr1_mod, only: IPRONE
       use priunit_mod, only: LUPRI
@@ -10234,7 +10195,6 @@ C***********************************************************************
 C
 #include "dcbham.h"
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(*)
@@ -10425,7 +10385,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUCOEF
 !      use dcbham_mod, only: IPRHAM, SPINFR, SUB_BL
-!      use dcbbas_mod, only: I2TMT, N2TMT, NFBAS, NZT
+      use dcbbas_mod, only: I2TMT, N2TMT, NFBAS, NZT
 !      use dcbdhf_mod, only: MFRAG, N2TMOTQ
       use pgroup_mod, only: REP
       use kinds_mod, only: dp
@@ -10436,7 +10396,6 @@ C
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dcbdhf.h"
       integer, allocatable :: NVECS_SUB(:)
       DIMENSION CSEL(*),ESEL(*),ISEL(*),TMAT(*),TINV(*),
@@ -10687,10 +10646,9 @@ C     Get overlap matrix in AO-basis
 C     Written by Trond Saue June 4 2012
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: N2BBASX
+      use dcbbas_mod, only: N2BBASX, NTBAS
 #include "implicit.h"
 C
-#include "dcbbas.h"
       DIMENSION SMAT(*),WORK(*)
       KFRSAV=KFREE
 C.....Get overlap matrix in SO-basis (no symmetry packing)
@@ -10890,7 +10848,7 @@ C*****************************************************************************
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use dummy_mod, only: DUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
+      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
 !      use dcbham_mod, only: BSS, IF, MDIRAC, NOSMLV, X2C
       use maxaqn_mod, only: MXAQN, MXQN
       use cbihr1_mod, only: IPRONE
@@ -10907,7 +10865,6 @@ C
       integer, allocatable :: NCENT(:),JSYMC(:),JCENT(:)
       real*8, allocatable  :: fit_exp(:),fit_coef(:)
 !#include "dgroup.h"
-#include "dcbbas.h"
 #include "dcbham.h"
 C
 c
@@ -11083,10 +11040,11 @@ C
 C     Written by Trond Saue
 C
 C***********************************************************************
-!      use dcbbas_mod, only: I2BAST, I2BASX, N2BAST, N2BBASX, NFBAS, NTBAS
 !      use dcbham_mod, only: SSMTRC
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcb_ashift_mod, only: AREFFIL, ASHIFT_NVAL, ASHIFT_PAR, AVECREF, MAXAREF, MAXAVAL
+      use dcbbas_mod, only: I2BAST, I2BASX, N2BAST, N2BBASX, NFBAS,
+     &  NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
@@ -11094,7 +11052,6 @@ C
       INTEGER :: I
 C
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcb_ashift.h"      
       DIMENSION FOCK(*),WORK(*)
@@ -11165,7 +11122,7 @@ C***********************************************************************
       use dcbgen_mod, only: LU1INT, LUX2C, NEWPRP, RDINPC, TWOCOMP
       use ccom_mod, only: DOSPHE
       use maxaqn_mod, only: MXQN
-!      use dcbbas_mod, only: I2BASX, NFBAS, NTBAS
+      use dcbbas_mod, only: I2BASX, NFBAS, NTBAS
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: NPRPS
 !      use dcbham_mod, only: I2COFK, IF, MDIRAC, NOAMFI, ONESYS, SPINFR
@@ -11179,7 +11136,6 @@ C***********************************************************************
 C
 #include "dcbham.h"
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcbdhf.h"
 #include "dcbcls.h"
 #include "dcbxpr.h"            
@@ -11290,7 +11246,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dgroup_mod, only: ATOMIC, LINEAR, NFSYM, NZ
 !      use dcbham_mod, only: IPRHAM, X2C
 !      use dcbdhf_mod, only: AOC, NFMAT
-!      use dcbbas_mod, only: NFBAS, NTBAS
+      use dcbbas_mod, only: NFBAS, NTBAS
       use dcbgen_mod, only: LUX2C
       use memory_allocator
       use xamfi_environment
@@ -11300,7 +11256,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use dircmo
       use dirac_cfg, only: dirac_cfg_dft_calculation      
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 #include "dgroup.h"
@@ -11386,7 +11341,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE xamfi_atomcorr2(delta_xc_energy_aoosoc,
      &     no1esystem_aoosoc)
 !      use dgroup_mod, only: NZ
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
       use nuclei_mod, only: CHARGE
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dircmo      
@@ -11402,7 +11357,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &    dump_delta_xc_energy,
      &    goodbye_xamfi
       use aobasis_collector, only: deallocate_aobasis_container
-#include "dcbbas.h"
 #include "dcbham.h"      
 #include "dgroup.h"      
       real(8), allocatable :: tmat_mmf(:)

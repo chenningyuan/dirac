@@ -1562,14 +1562,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbtra_mod, only: NFPCK12
       use comdis_mod, only: NINSHA, NINSHB
-!      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
+      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
       use symmet_mod, only: ICOS, ISYMAX
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, K
 #include "dgroup.h"
 #include "dcbtra.h"
-#include "dcbbas.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D00, D1=1.0D00
       INTEGER   NSTR3(2)
@@ -1720,13 +1719,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-!      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
+      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dcbtra_mod, only: IFPCK34, NFPCK12, NFPCK34
       use symmet_mod, only: ISYMAX
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcbtra.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D00, D1=1.0D00
@@ -2359,12 +2357,11 @@ C     Written by T.Saue Sep 9, based on previous code
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: NFBAS
+      use dcbbas_mod, only: NFBAS
 !      use dgroup_mod, only: FREP, NFSYM
 #include "implicit.h"
       INTEGER :: I, K
 C
-#include "dcbbas.h"
 #include "dgroup.h"
 C     Global variables
       DIMENSION NSTR(2,0:2,4),  ICMOQR(2,4)
@@ -2608,7 +2605,6 @@ C
 !#include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbmp2.h"
-!#include "dcbbas.h"
 !#include "dgroup.h"
       DIMENSION KQ(2,4), KE(2,2), KIBE(2,4), ICMOIJ(2,4),
      &     NSTR(2,0:2,4), NSTRT(4), NSTRIJ(2,0:2,4), NSTTIJ(4),
@@ -2951,7 +2947,6 @@ C
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbmp2.h"
-!#include "dcbbas.h"
 !#include "dgroup.h"
       LOGICAL ANTIS, LMP2, L2TYP(0:3), TRIAN(2), MP2FIN
       DIMENSION KQ(2,4), KE(2,2), NSTR(2,0:2,4), NSTRT(4), KIBE(2,4),
@@ -3185,7 +3180,6 @@ C
 !#include "dcborb.h"
 !#include "dcbtra.h"
 #include "dcbtr3.h"
-!#include "dcbbas.h"
 #include "dgroup.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,2),NSTR(2,0:2,4),NSTRT(4),KIBE(2,4)

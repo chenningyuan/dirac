@@ -340,10 +340,10 @@ C                    Nov 2005 - MI
 C
 C*****************************************************************************
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
-!      use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, NFBAS, NTBAS, NZT
 !      use dcbham_mod, only: SUB_BL, ZORA
 !      use dcbdhf_mod, only: AOC, DA, DF, DIISAO, EVCVAL, I2TMOT, IPRSCF, LUCMOS, N2TMOTQ, NACSHMF, NESHMF, NFMAT, NISHMF, NOCCMF, NOPEN, NPSHMF, NTMO
 !      use dcborb_mod, only: NOCC, NPSH, N_SUB_BL, NTMO_SUB
+      use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, NFBAS, NTBAS, NZT
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -351,7 +351,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2 = 2.0D0,
      &                       DM1 = -1.00D00, D4 = 4.00D00, DP5 = 0.50D00
 C
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"

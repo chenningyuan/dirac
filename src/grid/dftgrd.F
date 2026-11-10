@@ -218,7 +218,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "dftwrk.h"
 
-!#include "dcbbas.h"
 #include "dcbham.h"
 
       DIMENSION ZAN(*), C(3,NAT)
@@ -1155,7 +1154,7 @@ C
 C***********************************************************************
 
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: N2BBASX, NTBAS
+      use dcbbas_mod, only: N2BBASX, NTBAS
 !      use dcbdhf_mod, only: NFMAT
       use memory_allocator
 #include "implicit.h"
@@ -1171,7 +1170,6 @@ C
       real(8), allocatable :: kasmat(:)
       integer, allocatable :: kiclab(:)
 C
-#include "dcbbas.h"
 #include "dcbdhf.h"
 C
       CALL QENTER('GETCHI')
@@ -1234,13 +1232,12 @@ C     Modified for CHI1 by Olav Fossgaard - June 2003
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
 #include "implicit.h"
       INTEGER :: I, J
 
       PARAMETER(MAXCEN = 100)
 
-#include "dcbbas.h"
       DIMENSION C(3,NAT)
       DIMENSION COORD(3,2),CHIMT(NAT,NAT),DMAT(NTBAS(0),NTBAS(0)),
      &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NAT,NAT),
@@ -1280,10 +1277,9 @@ C***********************************************************************
       use codata_mod, only: XTANG
       use priunit_mod, only: LUPRI
       use consts_mod, only: D0
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
 #include "implicit.h"
       INTEGER :: I, K
-#include "dcbbas.h"
 C
       DIMENSION CHIMT(NAT,NAT),COORD(3,2),DMAT(NTBAS(0),NTBAS(0)),
      &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NAT,NAT),
@@ -1443,11 +1439,10 @@ C                                                                      C
 C      Written by Olav Fossgaard - June 2003                           C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "dcbbas.h"
 
       REAL(dp), PARAMETER :: ZERO=0.0D0, ONE=1.0D0
 C

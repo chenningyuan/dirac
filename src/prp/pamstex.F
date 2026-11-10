@@ -200,7 +200,7 @@ C     .SCREEN
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IORB, NASH, NCMOTQ, NISH, NORBT, NPSH, NSSH
 !      use dgroup_mod, only: NFSYM, NZ
-!      use dcbbas_mod, only: N2BBASXQ
+      use dcbbas_mod, only: N2BBASXQ
 !      use dcbdhf_mod, only: DHFERG
 !      use dcbstex_mod, only: STEX_BATCHSIZE, STEX_COFACTOR, STEX_CUTOFF, STEX_HOLES, STEX_I2VIRX, STEX_IFSYM, STEX_LUINT, STEX_N2VIRX, STEX_N2VIRXQ, STEX_NHOLES, STEX_NPARAM, STEX_NR_OP, STEX_NVIR, STEX_NVIRT
       use labeled_storage
@@ -215,7 +215,6 @@ C
 !#include "dcbham.h"
 #include "dgroup.h"
 !#include "dcbxpr.h"
-#include "dcbbas.h"
 #include "dcbdhf.h"
 #include "dcbstex.h"
       DOUBLE COMPLEX REFGSOVL
@@ -440,16 +439,15 @@ C     determinant (only inactive part). Assumes 1-e part is
 C     on disk in DFFCK1
 !      use dcborb_mod, only: NCMOTQ
 !      use dgroup_mod, only: NZ
-!      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dcbdhf_mod, only: DHFERG, IFCKOP, IHRMOP, INTFLG, ISYMOP, LUFCK1
 !      use dcbstex_mod, only: STEX_SCRFCK
+      use dcbbas_mod, only: N2BBASXQ, NTBAS
       use cbihr2_mod, only: SCRFCK
 #include "implicit.h"
       INTEGER :: II
 #include "dcborb.h"
 !#include "dcbham.h"
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcbdhf.h"
 #include "dcbstex.h"
       DIMENSION WORK(LWORK),FMAT(N2BBASXQ),CMO(NCMOTQ)
@@ -618,12 +616,11 @@ C         4 -> -0.5*(  |i><j'| + |i'><j| )
 C
 !      use dcborb_mod, only: NORBT
 !      use dgroup_mod, only: IPQTOQ, NZ
-!      use dcbbas_mod, only: N2BBASXQ, NTBAS
+      use dcbbas_mod, only: N2BBASXQ, NTBAS
 #include "implicit.h"
       INTEGER :: II
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbbas.h"
       DIMENSION WORK(LWORK),CMO(NTBAS(0),NORBT,NZ),DAO(N2BBASXQ)
       DIMENSION CORB1(NTBAS(0),NZ),CORB2(NTBAS(0),NZ)
       CHARACTER OP
@@ -680,14 +677,13 @@ C
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NCMOTQ
 !      use dgroup_mod, only: ITOT, NZ
-!      use dcbbas_mod, only: N2BBASXQ, NTBAS
+      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dcbstex_mod, only: STEX_BATCHSIZE, STEX_HOLES, STEX_LUINT, STEX_N2VIRXQ, STEX_NHOLES, STEX_NVIRT
 !      use dcbdhf_mod, only: INTFLG
 #include "implicit.h"
       INTEGER :: II, JJ, KK
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcbstex.h"
 #include "dcbdhf.h"
       DIMENSION WORK(*),CMO(NCMOTQ),
@@ -1346,13 +1342,12 @@ C     tA*
 C     Compute <i|F|j>, where i are orbitals from CMO1 and j are obitals
 C     from CMO2
 !      use dcborb_mod, only: I2ORBX, ICMOQ, N2ORBX, N2ORBXQ, NORB, NORBT
-!      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NTBAS
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D0
@@ -1448,11 +1443,10 @@ C     AQ12 = sum j <i1|A|j1><j1|k2> = AQ*S
 C     Calculate the overlap between the mo's in cmo1 and cmo2
 !      use dcborb_mod, only: N2ORBXQ, NCMOTQ
 !      use dcbham_mod, only: SSMTRC
-!      use dcbbas_mod, only: N2BBASX
+      use dcbbas_mod, only: N2BBASX
 #include "implicit.h"
 #include "dcborb.h"
 #include "dcbham.h"
-#include "dcbbas.h"
       DIMENSION CMO1(NCMOTQ),CMO2(NCMOTQ),QOVL(N2ORBXQ),WORK(LWORK)
       KWORK = 1
       KFREE = KWORK
@@ -1740,14 +1734,13 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: ICMOQ, NISH, NORB, NPSH
-!      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
+      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbstex_mod, only: STEX_I2VIRX, STEX_N2VIRXQ, STEX_NVIR, STEX_NVIRT
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbstex.h"
 
@@ -1805,10 +1798,9 @@ C
 #ifdef NOTUSED
       SUBROUTINE ORBDENS(CMO,IIORB,DAO,WORK,LWORK)
 !      use dgroup_mod, only: IPQTOQ, NZ
-!      use dcbbas_mod, only: N2BBASXQ, NTBAS
+      use dcbbas_mod, only: N2BBASXQ, NTBAS
 #include "implicit.h"
 #include "dgroup.h"
-#include "dcbbas.h"
       DIMENSION WORK(LWORK),CMO(NTBAS(0),NORBT,NZ),DAO(N2BBASXQ)
       DIMENSION CORB1(NTBAS(0),NZ),CORB2(NTBAS(0),NZ)
       CHARACTER OP

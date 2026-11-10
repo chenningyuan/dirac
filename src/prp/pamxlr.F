@@ -138,7 +138,6 @@ C***********************************************************************
 !      use dcbham_mod, only: NOSPIN
 !      use dcbxlr_mod, only: BFREQ, INDBP, IPRXLR, JLRBP, LLBPSU, LLRBPU, NBFREQ, NCLS_XLR, NLRAPT, NLRBP, NLRBPT, NOSPIA, NOSPIB, THRCOM, XLRANA, XLR_INDSTR, XLR_RSPEXP, XLR_SKIPEE, XLR_SKIPEP
 !      use dcborb_mod, only: NCMOTQ, NORBT
-!      use dcbbas_mod, only: NTBAS
 !      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
 !      use dcbxpr_mod, only: IPRPTIM, PRPNAM
 !      use dcbxrs_mod, only: GPTNRM, JOPSY, JSYMOP, JTIMOP, LUXVC, NCRED, NDAMP, NERED, NFREQ, NPRED, NREDM, NZCONF, NZCONFQ, NZRED, NZVAR, NZVARQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZXOPT, NZXOPTQ, RSPLAB
@@ -162,13 +161,13 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
       use pgroup_mod, only: REP
+      use dcbbas_mod, only: NTBAS
 #include "implicit.h"
       REAL(dp), PARAMETER :: GPTHRS = 1.0D-9, D0 = 0.0D0, D2=2.0D0
 C
 #include "dcbham.h"
 #include "dcbxlr.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbxpr.h"
 #include "dcbxrs.h"
@@ -1455,10 +1454,10 @@ C***********************************************************************
 !      use dcbxrs_mod, only: NCSIM, NDAMP, NESIM, NEVEC, NFREQ, NPSIM, NSTAT, NZCONF, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcbxlr_mod, only: IPRXLR, NCLS_XLR, NLRAPT, NLRBPT, XLRANA, XLR_INDSTR
 !      use dcbibn_mod, only: JBENDX, JBPNDX
-!      use dcbbas_mod, only: NTBAS
 !      use dcborb_mod, only: NCMOTQ, NORBT
 !      use dcbham_mod, only: SPINFR
 !      use dgroup_mod, only: NFSYM
+      use dcbbas_mod, only: NTBAS
       use orbital_rotation_indices
 
       use kinds_mod, only: dp
@@ -1468,7 +1467,6 @@ C
 #include "dcbxrs.h"
 #include "dcbxlr.h"
 #include "dcbibn.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"

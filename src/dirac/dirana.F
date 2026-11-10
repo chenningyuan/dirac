@@ -143,7 +143,7 @@ C
 C***********************************************************************
 !      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: NOCC, NPSH
-!      use dcbbas_mod, only: N2BBASX, NTBAS
+      use dcbbas_mod, only: N2BBASX, NTBAS
       use maxorb_mod, only: MXCORB
 !      use dcbpop_mod, only: DONETP, DO_SCFPOP, ILABDF, IPRPOP, LABDEF, NPOPLAB, VECPOP, VECPOP_SAVE
 #include "implicit.h"
@@ -152,7 +152,6 @@ C
 C Used from COMMON blocks:
 C  DCBBAS: N2BBASX
 C  LABELS: NLAB
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbpop.h"
 #include "dgroup.h"
@@ -244,8 +243,8 @@ C     Written by T.Saue - Sep 11 1995
 C     Last revision: April 27 1996 - tsaue
 C
 C***********************************************************************
-!      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dcbpop_mod, only: ADDSML, DONETP, DO_SCFPOP, ILABDF, IPRPOP, LABDEF, NPOPLAB, VECPOP, VECPOP_SAVE
+      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
       use dcbgen_mod, only: LUKRMC
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
@@ -260,7 +259,6 @@ C
 C Used from COMMON blocks:
 C  DCBBAS: N2BBASX
 C  LABELS: NLAB
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbpop.h"
 #include "dgroup.h"
@@ -488,7 +486,7 @@ C     LAST VERSION: Jan 9 1997
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: N2BBASX, NTBAS
+      use dcbbas_mod, only: N2BBASX, NFBAS, NTBAS
 !      use dcbpop_mod, only: DONETP, DO_SCFPOP, ILABDF, IPOPLAB, IPRPOP, NPOPLAB, POPLAB
       use maxorb_mod, only: MXCORB
 !      use dcbham_mod, only: SSMTRC
@@ -506,7 +504,6 @@ C  DGROUP: NZ
 C
 #include "dcbpop.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dcbham.h"
 #include "dgroup.h"
 C
@@ -650,9 +647,9 @@ C                                        account)
 C***********************************************************************
 !      use dcborb_mod, only: NISH, NPSH
 !      use dcbpop_mod, only: DONETP, IPRPOP, NPOPLAB, POPLAB
-!      use dcbbas_mod, only: NTBAS
 !      use dcbham_mod, only: SPINFR
 !      use dgroup_mod, only: ATOMIC, LINEAR, NFSYM, NZ
+      use dcbbas_mod, only: NTBAS
       use maxorb_mod, only: MXCORB
       use pgroup_mod, only: REP
       use priunit_mod, only: LUPRI
@@ -670,7 +667,6 @@ C
 #include "dcbham.h"
 #include "dcbpop.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
 C
@@ -891,11 +887,10 @@ C     Written by T.Saue Oct 9 1995
 C     Last revision: Oct 9 1995
 C
 C***********************************************************************
-!      use dcbbas_mod, only: N2BBASX, NTBAS
+      use dcbbas_mod, only: N2BBASX
 #include "implicit.h"
 C Used from COMMON blocks
 C  DCBAS: N2BBASX
-#include "dcbbas.h"
       DIMENSION PMAT(*),SMAT(*),CMO(*),IGLAB(*),WORK(LWORK)
 C
       CALL QENTER('POPMAT')
@@ -932,7 +927,7 @@ C
 C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use dcbpop_mod, only: ILABDF
-!      use dcbbas_mod, only: IBAS, N2BBASX, NTBAS
+      use dcbbas_mod, only: IBAS, N2BBASX, NFBAS, NTBAS
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -943,7 +938,6 @@ C Used from COMMON blocks
 C  DCBBAS: NTBAS,NFBAS
 C  DCBORB: NORB
 C  DGROUP: NZ
-#include "dcbbas.h"
 !#include "dgroup.h"
 #include "dcbpop.h"
 C
@@ -1328,9 +1322,9 @@ C     Written by T.Saue March 26 1999
 C
 C***********************************************************************
 !      use dcborb_mod, only: NORBT, NPSH
-!      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbprj_mod, only: C1READ, IPRPRJ, MAXREF, NPROJNUC, NREFS, OWNBAS, REFFIL, VECREF
+      use dcbbas_mod, only: N2BBASXQ, NFBAS
       use priunit_mod, only: LUPRI
       use labeled_storage
       use kinds_mod, only: dp
@@ -1341,7 +1335,6 @@ C
 #include "dcbprj.h"
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 !#include "dcbham.h"
 C
       DIMENSION WORK(*)
@@ -2094,7 +2087,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NFSYM
 !      use dcbvec_mod, only: ILABDF, IPRCMP, IPRVEC, VECPRI
-!      use dcbbas_mod, only: N2BBASXQ, NFBAS, NTBAS
+      use dcbbas_mod, only: N2BBASXQ, NFBAS
 !      use dcborb_mod, only: ICMOQ, NOCC, NORB, NORBT, NPSH
       use dircmo
 #include "implicit.h"
@@ -2102,7 +2095,6 @@ C***********************************************************************
 C
 #include "dcbvec.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       LOGICAL TOBE
@@ -2350,7 +2342,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbrho1_mod, only: IOPTDD, IPRHO1
 !      use dcbdhf_mod, only: NFMAT
-!      use dcbbas_mod, only: N2BBASXQ, NTBAS
+      use dcbbas_mod, only: N2BBASXQ, NTBAS
       use dircmo
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2360,7 +2352,6 @@ C
       DIMENSION WORK(LWORK)
       real(8), allocatable :: cmo(:)
 #include "dcbrho1.h"
-#include "dcbbas.h"
 C
 C for NFMAT:
 #include "dcbdhf.h"
@@ -2499,9 +2490,9 @@ C
 C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
-!      use dcbbas_mod, only: NTBAS
 !      use dcbham_mod, only: MC
 !      use dcbrho1_mod, only: DSTEP
+      use dcbbas_mod, only: NTBAS
       use codata_mod, only: XTANG
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2509,7 +2500,6 @@ C***********************************************************************
 C
       DIMENSION DMAT(*),GAO(*),COORD(3,2),RHO(0:2),BUF(*),WORK(*)
       INTEGER :: I
-#include "dcbbas.h"
 #include "dcbham.h"
 #include "dcbrho1.h"
 C
@@ -2566,7 +2556,7 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: N2BBASXQ, NTBAS
+      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dcbham_mod, only: LEVYLE
       use dircmo
       use kinds_mod, only: dp
@@ -2577,7 +2567,6 @@ C
       DIMENSION WORK(LWORK),CUBE(3,0:4),LUCUBE(2)
       real(8), allocatable:: cmo(:)
 #include "dcbrho.h"
-#include "dcbbas.h"
 #include "dcbham.h"
 C
       CALL QENTER('GT3RHO')
@@ -2663,7 +2652,7 @@ c     Based on GT3RHO, this one by ulfek.
 !      use dcbham_mod, only: LEVYLE
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: N2BBASXQ, NTBAS
+      use dcbbas_mod, only: N2BBASXQ, NTBAS
       use nuclei_mod, only: NUCDEP
 !      use dcbrho_mod, only: ILSCUB, IPRRHO, NCUBE
       use dircmo
@@ -2678,7 +2667,6 @@ C
       character*16 filename
       real(8), allocatable :: cmo(:)
 #include "dcbrho.h"
-#include "dcbbas.h"
 #include "dcbham.h"
 C
       CALL QENTER('GT3RHO')
@@ -2791,8 +2779,8 @@ C
 C     Written by Trond Saue Nov 5 2002
 C
 C***********************************************************************
-!      use dcbbas_mod, only: NTBAS
 !      use dcbrho_mod, only: ILSCUB, IPRRHO, NCUBE
+      use dcbbas_mod, only: NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
@@ -2801,7 +2789,6 @@ C
       DIMENSION LUCUBE(*),CUBE(3,0:3),RHO(2,*),DMAT(*),GAO(*),
      &          BUF(*),WORK(*)
       INTEGER :: I
-#include "dcbbas.h"
 !#include "dcbham.h"
 #include "dcbrho.h"
 C
@@ -3135,10 +3122,10 @@ C     Written by T. Saue Sep 2013
 C
 C***********************************************************************
 !      use dcbham_mod, only: SSMTRC
-!      use dcbbas_mod, only: N2BAST, N2BBASXQ, NTBAS
 !      use dcborb_mod, only: NPSH
 !      use dcbprj_mod, only: IPRPRJ, NPROJNUC, NREFS, REFFIL, VECREF
 !      use dgroup_mod, only: NFSYM, NZ
+      use dcbbas_mod, only: N2BAST, N2BBASXQ, NFBAS
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUCOEF
       use kinds_mod, only: dp
@@ -3147,7 +3134,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbprj.h"
 #include "dgroup.h"
@@ -3891,7 +3877,7 @@ C***********************************************************************
 !      use dcbham_mod, only: SSMTRC
 !      use dcborb_mod, only: IOCC
 !      use dgroup_mod, only: FREP, IPQTOQ, IQDEF, NFSYM, NZ, NZC1
-!      use dcbbas_mod, only: N2BAST, N2BBASX, NTBAS
+      use dcbbas_mod, only: N2BAS, N2BAST, N2BBASX, NFBAS, NTBAS
       use dcbgen_mod, only: LUCOEF
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
@@ -3902,7 +3888,6 @@ C
 #include "dcbprj.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dcborb.h"
       DIMENSION NVECS(2,0:2),KVEC(2,0:MAXREF),NSTR(2,0:2,0:MAXREF),
      &          CSEL(*),ESEL(*),IBSEL(*),BVEC(*),
@@ -4251,14 +4236,13 @@ C=======================================================================
 C     Return an array with the index of the atom carrying a certain
 C     AO. In case of SO combinations from multiple atoms give the index
 C     of the first of these atoms. /UE 2008 (adapted from INDAOC)
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
       use nuclei_mod, only: NUCDEG, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXSHEL
       use shells_mod, only: KHKT, KMAX, NCENT, NHKT, NLRGSH
 #include "implicit.h"
 C
-#include "dcbbas.h"
       DIMENSION IAOATOM(NTBAS(0))
       NAORBC = 0
       JCENTD = 0
@@ -4343,10 +4327,9 @@ c     Make a projector on the basis of centers icent(1)
 c     .. icent(ncent) (and their symmetry related centers). The
 c     projector is created in MO basis (given by cmo) -ulfek
 !      use dcborb_mod, only: NORBT, NPSH
-!      use dcbbas_mod, only: NTBAS
 !      use dgroup_mod, only: IPQTOQ, NZ
+      use dcbbas_mod, only: NTBAS
       implicit none
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
       integer icent, ncent, aomap, i, j, ifind, n
@@ -4442,10 +4425,10 @@ C
 C     Written by T.Saue May 14 2012
 C
 C***********************************************************************
-!      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dgroup_mod, only: IPQTOQ, IQDEF, NFSYM, NZ, NZC1
 !      use dcbprj_mod, only: IPRPRJ, MAXREF, REFFIL, VECREF
 !      use dcborb_mod, only: NORBT, NPSH
+      use dcbbas_mod, only: N2BBASXQ, NFBAS, NTBAS
       use nuclei_mod, only: NONT, NONTYP, NOORBT, NUCDEG
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
@@ -4456,7 +4439,6 @@ C***********************************************************************
 C
 C
 #include "dcbprj.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
       DIMENSION NVECS(2,0:2),KVEC(2,0:MAXREF),NSTR(2,0:2,0:MAXREF),

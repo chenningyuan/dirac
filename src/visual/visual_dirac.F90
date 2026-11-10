@@ -230,7 +230,6 @@ contains
     use integer_kind_mpilib
 #endif
 ! legacy
-!#include "dcbbas.h"
 !#include "dgroup.h"
       use dirac_partask_mod, only: VISUAL_PAR
       use orgcom_mod, only: GAGORG
@@ -946,10 +945,9 @@ contains
   subroutine dmat_transform_mo2ao(cmo, dmat_mo, dmat_ao)
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: I2ORBX, ICMOQ
-!      use dcbbas_mod, only: I2BASX
+      use dcbbas_mod, only: I2BASX
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbbas.h"
     type(cmo_t), intent(in):: cmo
     type(dmat_t), intent(inout):: dmat_ao
     type(dmat_t), intent(in):: dmat_mo
@@ -1276,10 +1274,9 @@ contains
                 i1,i2,ns,is,js,ni,ii,ji,irep,fadd)
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: NORBT
-!      use dcbbas_mod, only: I2BASX, NTBAS
+      use dcbbas_mod, only: I2BASX, NTBAS
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbbas.h"
     real(kind=8), intent(inout) :: dmat(ntbas(0)*ntbas(0), nz)
     real(kind=8), intent(in) :: bmat(norbt, norbt, nz)
     type(cmo_t), intent(in) :: cmo

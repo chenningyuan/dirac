@@ -109,10 +109,9 @@ contains
 !
 !      use dgroup_mod, only: NFSYM
 !      use dcbham_mod, only: QED
-!      use dcbbas_mod, only: MXFBAS, N2BBASX
+      use dcbbas_mod, only: MXFBAS, N2BBASX
 #include "dgroup.h"
 #include "dcbham.h"
-#include "dcbbas.h"
 !
       LOGICAL SKIPEP,SKIPEE,GAS
       CHARACTER INDSTR(3,2)*72
@@ -196,13 +195,12 @@ contains
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXG2U
 !      use dgroup_mod, only: NFSYM
-!      use dcbbas_mod, only: MXFBAS
+      use dcbbas_mod, only: MXFBAS
 !      use dcbxrs_mod, only: STERNC
 #include "maxash.h"
 !
 #include "dcbidx.h"
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcbxrs.h"
 !
       integer :: JXOPE(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
@@ -437,10 +435,9 @@ contains
 !***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NFSYM
-!      use dcbbas_mod, only: MXFBAS
+      use dcbbas_mod, only: MXFBAS
 !
 #include "dgroup.h"
-#include "dcbbas.h"
 !
       LOGICAL QED, dryrun
       integer :: JXOPP(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
@@ -551,11 +548,10 @@ contains
 !***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IORB, NESH, NPSH
-!      use dcbbas_mod, only: NFBAS
+      use dcbbas_mod, only: NFBAS
 !      use dgroup_mod, only: FREP, NFSYM
 !
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
       CHARACTER INDSTR(NTYP,NFSYM)*72
       integer :: IND(LIND,NTYP,NFSYM),NIND(2,NTYP,NFSYM)
@@ -641,13 +637,12 @@ contains
 !      use dcbidx_mod, only: IDXG2U
 !      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: MXGAS, NAELEC, NASHT, NGASSP, NGAS_DC, NGSH
-!      use dcbbas_mod, only: MXFBAS
+      use dcbbas_mod, only: MXFBAS
 #include "maxash.h"
 !
 #include "dcbidx.h"
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 !
       integer :: JXOPE(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
       integer :: JACAC(MAXASH,MAXASH)

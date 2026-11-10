@@ -227,7 +227,6 @@ C
 C
 !#include "dcborb.h"
 #include "dcbxlr.h"
-!#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbxpr.h"
 #include "dcbxrs.h"
@@ -370,7 +369,6 @@ C***********************************************************************
 
 !#include "dgroup.h"
 #include "dcbxlr.h"
-!#include "dcbbas.h"
 !#include "dcborb.h"
 #include "dcbxrs.h"
 
@@ -654,9 +652,9 @@ C***********************************************************************
 !      use dcbxlr_mod, only: NLRAPT, NLRBPT
 !      use dcbibn_mod, only: JBENDX, JBPNDX
 !      use dcbham_mod, only: SPINFR
-!      use dcbbas_mod, only: NTBAS
 !      use dcborb_mod, only: NCMOTQ, NOCC, NORB, NORBT, NPSH, NSSH
 !      use dgroup_mod, only: NFSYM, NZ
+      use dcbbas_mod, only: NTBAS
       use orbital_rotation_indices
 
       use kinds_mod, only: dp
@@ -667,7 +665,6 @@ C
 #include "dcbxlr.h"
 #include "dcbibn.h"
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 !#include "../moltra/dcbtr3.h"

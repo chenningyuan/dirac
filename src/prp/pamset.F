@@ -28,13 +28,12 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: SPINFR
-!      use dcbbas_mod, only: N2BBASXQ, NTBAS
+      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NCMOTQ, NORBT
 !      use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
 C
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -111,7 +110,6 @@ C***********************************************************************
 !      use dcbdhf_mod, only: ESOLVE, ESOLVN, IFCKOP, IHRMOP, INTDEF, INTFLG, ISYMOP, NFMAT
 !      use dcbham_mod, only: IPRSOL, SOLVEN, SPINFR
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
-!      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: I2ORBX, ICMOQ, IORB, N2ORBXQ, NASHT, NORB, NORBT
        use dirac_cfg
        use dft_cfg
@@ -132,6 +130,10 @@ C***********************************************************************
 #if defined (VAR_MPI)
       use dcbgen_mod, only: PARCAL
 #endif
+      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
+#if defined (HAS_PCMSOLVER)
+      use dcbbas_mod, only: N2BBASX
+#endif
 #include "implicit.h"
       INTEGER :: I
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0, DP5 = 0.50D00,D2=2.0D0)
@@ -139,7 +141,6 @@ C
 #include "dcbdhf.h"
 #include "dcbham.h"
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcborb.h"
       type(fde_import) :: itmp
 CTOBS: Note the use of dcbdhf ! Should be generalized !!!
@@ -570,11 +571,10 @@ C     Written by T.Saue Oct 3 1997
 C
 C***********************************************************************
 !      use dcborb_mod, only: NORBT
-!      use dcbbas_mod, only: MXFBAS
+      use dcbbas_mod, only: MXFBAS
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "dcbbas.h"
       CHARACTER INDSTR(3,2)*72
       DIMENSION IORBCL(4,NORBT),NIND(2,3,2),WORK(*)
 C
@@ -621,13 +621,12 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IORB, NESH, NORBT, NPSH
-!      use dcbbas_mod, only: MXFBAS, NFBAS
+      use dcbbas_mod, only: MXFBAS, NFBAS
 !      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I, II, J
 C
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
       CHARACTER INDSTR(3,2)*72
       DIMENSION IORBCL(4,NORBT),IND(MXFBAS),

@@ -24,6 +24,7 @@ contains
                               )
 
 !     --------------------------------------------------------------------------
+      use dcbbas_mod, only: NTBAS
       type(matrix)                  :: M
       integer, intent(in)           :: center
       integer, intent(in), optional :: component
@@ -37,7 +38,6 @@ contains
       integer                       :: nr1, nr2, st1, st2
       real(8)                       :: d
 !     --------------------------------------------------------------------------
-#include "dcbbas.h"
 
       call init_mat(M, ntbas(0), ntbas(0))
       M%elms = 0.0d0

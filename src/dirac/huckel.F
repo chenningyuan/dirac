@@ -380,7 +380,7 @@ C ========================================================================
 C
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcbham_mod, only: BSS, LEVYLE, NOSMLV
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
       use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
      &  IPRTWO, RTNTWO, TKTIME
       use maxorb_mod, only: MXSHEL
@@ -392,7 +392,6 @@ C
       DIMENSION DNTSKP(8)
 ! dcbham.h : NOSMLV and BSS
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       CALL QENTER('HUCFCK')

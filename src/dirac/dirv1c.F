@@ -26,7 +26,7 @@ C
 C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
-!      use dcbbas_mod, only: NNBBASX
+      use dcbbas_mod, only: NNBBASX
       use dummy_mod, only: DUMMY
       use symmet_mod, only: FMULT
       use maxorb_mod, only: MXCORB
@@ -41,7 +41,6 @@ C
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC
       DIMENSION OP1INT(NNBBASX),WORK(LWORK),QMAT(NUCDEP,NUCDEP,2)
-#include "dcbbas.h"
 #include "dcbham.h"
 C
       CALL QENTER('TYPE1DRV')
@@ -143,7 +142,7 @@ C*****************************************************************************
 !      use dcbham_mod, only: ICTLV1C
       use nuclei_mod, only: CHARGE, GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
       use dummy_mod, only: DUMMY
-!      use dcbbas_mod, only: NNBBASX
+      use dcbbas_mod, only: NNBBASX
       use symmet_mod, only: FMULT
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
@@ -155,7 +154,6 @@ C
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC
       DIMENSION OP1INT(NNBBASX),WORK(LWORK),QMAT(NUCDEP,NUCDEP,2)
-#include "dcbbas.h"
 #include "dcbham.h"
 C
       CALL QENTER('TYPE2DRV')
@@ -292,7 +290,7 @@ C*****************************************************************************
       use nuclei_mod, only: GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: NNBBASX
+      use dcbbas_mod, only: NNBBASX
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use dummy_mod, only: DUMMY
@@ -306,7 +304,6 @@ C      PARAMETER (D0 = 0.0D0, QTHRS = 1.0D-10)
       LOGICAL DOINT(2,2), ADDQIC(2)
       CHARACTER*4 OMITVNUC
       DIMENSION OP1INT(NNBBASX),WORK(LWORK),QMAT(NUCDEP,NUCDEP,2,*)
-#include "dcbbas.h"
 #include "dcbham.h"
 C
       CALL QENTER('TYPE3DRV')
@@ -658,7 +655,7 @@ C               Written April 2002 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: NNBBASX
+      use dcbbas_mod, only: NNBBASX
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: FMULT
 !      use dcbham_mod, only: ICTLV1C
@@ -672,7 +669,6 @@ C
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC
       DIMENSION OP1INT(NNBBASX),WORK(LWORK),QMAT(NUCDEP,NUCDEP,2)
-#include "dcbbas.h"
 #include "dcbham.h"
 C
       CALL QENTER('TYPE4DRV')
@@ -771,7 +767,7 @@ C               Written June 2002 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: NNBBASX
+      use dcbbas_mod, only: NNBBASX
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dummy_mod, only: DUMMY
       use nuclei_mod, only: GNUEXP, NUCDEP, NUCIND
@@ -783,7 +779,6 @@ C
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC
       DIMENSION OP1INT(NNBBASX),WORK(LWORK)
-#include "dcbbas.h"
 C
       CALL QENTER('TYPE5DRV')
 c
@@ -874,7 +869,7 @@ C
 C*****************************************************************************
 !      use dgroup_mod, only: WORK
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBASX, NTBAS
+      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBASX, NTBAS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbdhf_mod, only: INTDEF, INTFLG, NOPEN
       use nuclei_mod, only: NUCDEP
@@ -887,7 +882,6 @@ C
       CHARACTER*4 OMITVNUC
       DIMENSION WORK(LWORK),F1MAT(*),F2MAT(*),DMAT(*)
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
 C

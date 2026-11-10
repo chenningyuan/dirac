@@ -464,9 +464,9 @@ C
 C***********************************************************************
 !      use dcborb_mod, only: N2ASHX, N2ASHXQ, N2ORBXQ, NASHT, NNASHX, NORBT
 !      use dcbham_mod, only: LEVYLE, SPINFR
-!      use dcbbas_mod, only: N2BBASXQ
 !      use dgroup_mod, only: LINEAR, NZ
 !      use dcbxrs_mod, only: FKRMC, IPRXRS, LSVCFG, LUBCI, NCSIM, NESIM, NOSIM, NPSIM, NZCONF, NZCONFQ, NZXOPE, NZXOPP, XRS_NOFQX, XRS_NOPFQ
+      use dcbbas_mod, only: N2BBASXQ
       use dcbgen_mod, only: LUKRMC
       use orbital_rotation_indices
 
@@ -481,7 +481,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
 C
@@ -699,7 +698,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: ICMOQ, IORB, NASH, NESH, NISH, NORB, NORBT, NPSH
-!      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
+      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, NFSYM, NZ
 !      use dcbxrs_mod, only: IPRXRS, JOPSY, JSYMOP
       use quaternion_algebra
@@ -709,7 +708,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D00
 C
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
 C
@@ -870,12 +868,11 @@ C
 C     Written by T.Saue Sep 17 1996
 C
 C***********************************************************************
-!      use dcbbas_mod, only: N2BBASXQ
 !      use dcborb_mod, only: NASHT
 !      use dcbxrs_mod, only: FKRMC, IPRXRS
+      use dcbbas_mod, only: N2BBASXQ
 #include "implicit.h"
 C
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbxrs.h"
       DIMENSION FMO(*),BEVEC(*),BPVEC(*),IBTYP(*),
@@ -1223,7 +1220,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0
 C
 #include "dcborb.h"
-!#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
 C
@@ -1300,16 +1296,15 @@ C     Written by T.Saue Sep 18 1996
 C
 C***********************************************************************
 !      use dcborb_mod, only: ICMOQ, IORB, NESH, NOCC, NORB, NORBT, NPSH
-!      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcbxrs_mod, only: IPRXRS, JOPSY, JSYMOP, NZXOPE, NZXOPP
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: II
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dcbxrs.h"
 #include "dgroup.h"
       LOGICAL EPMIX,LBIT
@@ -1653,7 +1648,6 @@ C***********************************************************************
       CHARACTER SSTR(2)*1
 C
 #include "dcborb.h"
-!#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
 C
@@ -3938,7 +3932,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: FKRMC, IPRXRS, NOSIM, NTSIM
 !      use dcbham_mod, only: SPINFR
-!      use dcbbas_mod, only: N2BBASXQ, NFBAS, NTBAS
+      use dcbbas_mod, only: N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: ICMOQ, NASHT, NCMOTQ, NORB, NORBT
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbgen_mod, only: LUKRMC
@@ -3947,7 +3941,6 @@ C***********************************************************************
 C
 #include "dcbxrs.h"
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -4056,7 +4049,6 @@ C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
 !      use dcbxrs_mod, only: INTFLG, IPRXRS, JSYMOP, JTIMOP, NCSIM, NESIM, NPSIM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
-!      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NISHT, NORBT
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcbham_mod, only: IPRSOL, SOLVEN, SPINFR
@@ -4088,11 +4080,14 @@ C***********************************************************************
 #if defined (VAR_MPI)
       use dcbgen_mod, only: PARCAL
 #endif
+      use dcbbas_mod, only: N2BBASXQ, NTBAS
+#if defined (HAS_PCMSOLVER)
+      use dcbbas_mod, only: N2BBASX
+#endif
 #include "implicit.h"
       INTEGER :: I
 C
 #include "dcbxrs.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbham.h"
@@ -4419,7 +4414,6 @@ C***********************************************************************
 C
 !#include "dcbxrs.h"
 #include "dcborb.h"
-!#include "dcbbas.h"
 C
       DIMENSION DMAT(*), BEVEC(*), BPVEC(*), CMO(*), DVT(*), DV(*)
       DIMENSION IHRMOP(*), WORK(*)
@@ -4458,7 +4452,7 @@ C***********************************************************************
       use consts_mod, only: D0, D1, DM1, DP5
 !      use dcbxrs_mod, only: IPRXRS, JSYMOP, NCSIM, NESIM, NPSIM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcborb_mod, only: N2ASHXQ, N2ORBX, N2ORBXQ, NASHT, NISHT, NORBT
-!      use dcbbas_mod, only: N2BBASXQ, NTBAS
+      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, NZ
       use orbital_rotation_indices
 
@@ -4468,7 +4462,6 @@ C
 C
 #include "dcbxrs.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       DIMENSION DMAT(N2BBASXQ,*)
@@ -4924,7 +4917,7 @@ C***********************************************************************
       use consts_mod, only: D0
 !      use dcbham_mod, only: NOSPIN, SPINFR
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBX, NOCC, NORB, NORBT, NPSH
-!      use dcbbas_mod, only: I2BASX, NFBAS, NTBAS
+      use dcbbas_mod, only: I2BASX, NFBAS, NTBAS
 !      use dcbxrs_mod, only: IPRXRS, JOPSY, JSYMOP, JTIMOP
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 #include "implicit.h"
@@ -4933,7 +4926,6 @@ C
 C
 #include "dcbham.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dcbxrs.h"
 #include "dgroup.h"
 C
@@ -5053,7 +5045,6 @@ C***********************************************************************
 C
 C
 #include "dgroup.h"
-!#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbxrs.h"
       DIMENSION SEVEC(NXOPE,NZ,*),SPVEC(NXOPP,NZ,*)
@@ -5175,7 +5166,6 @@ C***********************************************************************
 C
 C
 #include "dgroup.h"
-!#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbxrs.h"
 C
@@ -5425,7 +5415,6 @@ C***********************************************************************
 C
 C
 #include "dgroup.h"
-!#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbxrs.h"
 C
@@ -5806,7 +5795,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0
 C
 #include "dcborb.h"
-!#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
 C

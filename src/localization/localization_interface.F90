@@ -5,7 +5,7 @@
 !      use dcbloc_mod, only: HESLOC, IPRLOC, ITRLOC, LGCHCK, LGDIAG, LGFULL, LGGRAD, PRJLOC, SELMOS, THDIAG, THFULL, THGRAD, THXVEC
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUCOEF, TITLE, TWOCOMP
-!      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NFBAS
+      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NFBAS
 !      use dcborb_mod, only: ICMOQ, IORB, I_DCBORB_SET, NCMOTQ, NESH, NISH, NORB, NORBT, NPSH
 !      use dcbham_mod, only: LEVYLE, SSMTRC, X2C
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
@@ -16,7 +16,6 @@
   implicit none
 
 #include "dcbloc.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"

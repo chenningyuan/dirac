@@ -661,13 +661,12 @@ contains
 ! ------------------------------------------------------------------------------
   subroutine read_gp_data_from_common_blocks(self)
 !      use dcborb_mod, only: I2ORBX, ICMOQ, IORB, N2ORBXQ, NCMOTQ, NESH, NISH, NOCC, NORB, NORBT, NPSH
-!      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 !      use dcbham_mod, only: SPINFR
 !      use dcbdhf_mod, only: IHRMOP, INTFLG
+      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 #include "implicit.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbham.h"
 #include "dcbdhf.h"

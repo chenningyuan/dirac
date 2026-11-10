@@ -17,7 +17,6 @@ contains
       use blocks_mod, only: NLRGBL, NSMLBL
 #include "implicit.h"
 !#include "dcbdhf.h"
-!#include "dcbbas.h"
     logical, intent(in) :: is_parallel
 
     required_size = 0
@@ -73,7 +72,6 @@ contains
       use blocks_mod, only: NLRGBL, NSMLBL
 #include "implicit.h"
 !#include "dcbdhf.h"
-!#include "dcbbas.h"
     integer, intent(in) :: i2typ
 
     select case (i2typ)

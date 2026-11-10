@@ -34,7 +34,6 @@ module matrix_operations
 
   private
 
-#include "dcbbas.h"
 #include "dcborb.h"
 
 contains

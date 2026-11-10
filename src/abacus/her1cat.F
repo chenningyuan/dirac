@@ -628,7 +628,6 @@ C*****************************************************************************
       use dcbgrd_mod, only: GRADNU, GRD_NOSMLV, INTCLASS
 #endif
       use maxaqn_mod, only: MXAQN, MXQN
-!      use dcbbas_mod, only: N2BBASX, NTBAS
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -640,6 +639,9 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #ifndef PRG_DIRAC
       use energy_mod, only: GRADNA
+#endif
+#ifdef PRG_DIRAC
+      use dcbbas_mod, only: N2BBASX, NTBAS
 #endif
 #include "implicit.h"
       INTEGER :: I,J
@@ -653,7 +655,6 @@ C
 C
 #ifdef PRG_DIRAC
 !#include "dgroup.h"
-#include "dcbbas.h"
 #endif 
       ITRI(I,J) = MAX(I,J)*(MAX(I,J) - 1)/2 + MIN(I,J)
 #ifdef PRG_DIRAC

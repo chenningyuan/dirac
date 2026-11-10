@@ -17,7 +17,7 @@
 subroutine scf_energy_analysis(work, lwork)
 
 !      use dcbham_mod, only: INTV1C, ONECAP, SMLV1C
-!      use dcbbas_mod, only: N2BBASX, N2BBASXQ
+      use dcbbas_mod, only: N2BBASX, N2BBASXQ
       use dcbgen_mod, only: DOLVC
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZ
@@ -30,7 +30,6 @@ subroutine scf_energy_analysis(work, lwork)
   real(8), parameter :: d0 = 0.0d0
   real(8), parameter :: d2 = 2.0d0
 
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
@@ -195,14 +194,13 @@ end subroutine scf_energy_analysis
 subroutine scf_energy_evaluation(e_shell, dmat, fmat, itop)
 
 !      use dcbdhf_mod, only: DA, DF, MXOPEN, NFMAT
-!      use dcbbas_mod, only: N2BBASX
 !      use dgroup_mod, only: NZ
+      use dcbbas_mod, only: N2BBASX
 #include "implicit.h"
 
   real(8), parameter :: d2 = 2.0d0
   real(8), parameter :: dp25 = 0.25d0
 
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
 
@@ -237,7 +235,6 @@ end subroutine scf_energy_evaluation
 subroutine scf_energy_extensions(dmat_buf, work, lwork, jprint, lvcon, fmt, basis_elergy, elergy_out, dhferg_out)
 
 !      use dcbham_mod, only: IPRSOL, SOLVEN
-!      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dgroup_mod, only: NZ
 !      use dcbdhf_mod, only: DA, DF, ESOLVE, ESOLVN, NFMAT
   use dirac_cfg
@@ -255,13 +252,13 @@ subroutine scf_energy_extensions(dmat_buf, work, lwork, jprint, lvcon, fmt, basi
 
       use priunit_mod, only: LUPRI
       use frame_mod, only: CORRLV, POTNUC
+      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 #include "implicit.h"
 
   real(8), parameter :: d0 = 0.0d0
   real(8), parameter :: d2 = 2.0d0
   real(8), parameter :: dp25 = 0.25d0
 
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
 #include "dcbham.h"

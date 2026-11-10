@@ -40,6 +40,7 @@ module london_reorth_hb
       use symmet_mod, only: ISYMAX
       use dirac_partask_mod, only: FDE_PAR, XCINT_PAR
       use dcbgen_mod, only: PARCAL
+      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
   implicit none
 
   public london_reort_hb
@@ -49,7 +50,6 @@ module london_reorth_hb
 
   private
 
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbnmr.h"
 #include "dcbxpr.h"

@@ -1,5 +1,6 @@
 module openrsp_interface_response
 
+      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
    use dirac_interface
    use memory_allocator
    use matrix_defop_old
@@ -12,7 +13,6 @@ module openrsp_interface_response
 
    private
 
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
 #include "dcbxrs.h"

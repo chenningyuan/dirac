@@ -32,7 +32,6 @@ C     whereas Cauchy-Schwarz integrals must be provided externally
 C
 C*****************************************************************************
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, NZ
-!      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dcbham_mod, only: HFXATT, HFXFAC, HFXMU, MDIRAC, ONECAP, SMLV1C, ZORA, ZORA4
       use quaternion_algebra
 #ifdef MOD_SRDFT
@@ -41,13 +40,13 @@ C*****************************************************************************
       use kinds_mod, only: dp
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUPMAT
+      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
 #include "dcbham.h"
 #include "dgroup.h"
-#include "dcbbas.h"
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),
      &          DMAT(N2BBASX,NZ,NFMAT),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),
@@ -278,13 +277,12 @@ C     Written by T.Saue Sep 30 1996
 C
 C*****************************************************************************
 !      use dcbind_mod, only: IBIT1, IBIT2, NBIT1, NBIT2, NBITS, NIBUF
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
       use cbihr2_mod, only: IPRTWO
       use hrunit_mod, only: LUDASP, LUINTA, LUSOL, LUSUPM
 #include "implicit.h"
 C
 #include "dcbind.h"
-#include "dcbbas.h"
       DIMENSION WORK(LWORK)
       LUINTA = 11
         LUSUPM = 17
@@ -334,14 +332,13 @@ C		Class Ba and Bb placed in matrices of dimension NDIM2
 C		Class A placed in array of length NDIM
 C
 C*****************************************************************************
-!      use dcbbas_mod, only: N2BBASX, NTBAS
 !      use dcbind_mod, only: NIBUF
 !      use dgroup_mod, only: NBSYM
+      use dcbbas_mod, only: N2BBASX, NTBAS
 #include "implicit.h"
 C
 C
       INTEGER :: I
-#include "dcbbas.h"
 #include "dcbind.h"
 #include "dgroup.h"
       CHARACTER FILNAM*6
@@ -1510,10 +1507,9 @@ C
 C     Written by T.Saue May 18 1995
 C     Last revision : Sep 30 1996 - tsaue
 C*****************************************************************************
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
 #include "implicit.h"
 C
-#include "dcbbas.h"
       DIMENSION WORK(LWORK)
       KWORK = 1
       KFREE = KWORK
@@ -1807,10 +1803,9 @@ C
 C     Written by T.Saue Mar 3 1995
 C     Last revision : tsaue - Mar 3 1995
 C*****************************************************************************
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
 #include "implicit.h"
 C
-#include "dcbbas.h"
       DIMENSION IBUF(*),BUF(*),FMAT(*),DMAT(*),IND(*),
      &          IFCTYP(*),IREPDM(*)
 C
@@ -1870,12 +1865,11 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbind_mod, only: IBIT1, NBITS, NIBUF
-!      use dcbbas_mod, only: N2BBASX, NTBAS
+      use dcbbas_mod, only: N2BBASX, NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D4 = 4.0D0, D2 = 2.0D0
-#include "dcbbas.h"
 #include "dcbind.h"
 C
       DIMENSION FMAT(NTBAS(0),NTBAS(0),*),DMAT(NTBAS(0),NTBAS(0),*) 
@@ -2097,12 +2091,11 @@ C
 C*****************************************************************************
 !      use dcbind_mod, only: IBIT1, NBITS, NIBUF
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: N2BBASX, NTBAS
+      use dcbbas_mod, only: N2BBASX, NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D2 = 2.0D0, D4 = 4.0D0
-#include "dcbbas.h"
 #include "dcbind.h"
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
      &          DMAT(NTBAS(0),NTBAS(0),NDMAT) 
@@ -2320,12 +2313,11 @@ C
 C*****************************************************************************
 !      use dcbind_mod, only: IBIT1, NBITS, NIBUF
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: N2BBASX, NTBAS
+      use dcbbas_mod, only: N2BBASX, NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D2 = 2.0D0
-#include "dcbbas.h"
 #include "dcbind.h"
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
      &          DMAT(NTBAS(0),NTBAS(0),NDMAT)
@@ -2522,14 +2514,13 @@ C     Written by T.Saue Mar 5 1995
 C     Last revision: tsaue Mar 5 1995
 C
 C*****************************************************************************
-!      use dcbbas_mod, only: NTBAS
 !      use dcbind_mod, only: IBIT1, NBITS
+      use dcbbas_mod, only: NTBAS
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D4 = 4.0D0, D2 = 2.0D0
-#include "dcbbas.h"
 #include "dcbind.h"
 !#include "dgroup.h"
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
@@ -2703,12 +2694,11 @@ C
 C*****************************************************************************
 !      use dcbind_mod, only: IBIT1, NBITS
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D4 = 4.0D0, D2 = 2.0D0
-#include "dcbbas.h"
 #include "dcbind.h"
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
      &          DMAT(NTBAS(0),NTBAS(0),NDMAT)
@@ -2875,13 +2865,12 @@ C
 C*****************************************************************************
 !      use dcbind_mod, only: IBIT1, NBITS
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D4 = 4.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &                       DP5 = 0.5D0
-#include "dcbbas.h"
 #include "dcbind.h"
 !#include "dgroup.h"
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
@@ -3057,12 +3046,11 @@ C     Sep 3 1996 - tsaue   Genrazlized to IFCTYP
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D4 = 4.0D0, D2 = 2.0D0, DP5=0.5D0
-#include "dcbbas.h"
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
      &          DMAT(NTBAS(0),NTBAS(0),NDMAT)
       DIMENSION BUF(NDIM),IND(NDIM),IFCTYP(NDMAT),
@@ -3202,12 +3190,11 @@ C     Written by T.Saue, S.Reine and A.Gomes June 15 2006
 C
 C*****************************************************************************
       use kinds_mod, only: dp
-!      use dcbbas_mod, only: N2BBASX
+      use dcbbas_mod, only: N2BBASX
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
 #include "dgroup.h"
-#include "dcbbas.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0,
      &                       D10 = 10.0D0
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DMAT(N2BBASX,NZ,NFMAT),
@@ -3236,7 +3223,7 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
       use aovec_mod, only: MXAOVC
-!      use dcbbas_mod, only: N2BBASX
+      use dcbbas_mod, only: N2BBASX, NTBAS
       use blocks_mod, only: NSYMBL
       use cbihr2_mod, only: IPRTWO, SCRFCK
 !      use dcbham_mod, only: MDIRAC
@@ -3256,7 +3243,6 @@ C
      &          ISYMOP(*),IHRMOP(*),IFCKOP(*),
      &          WORK(LWORK)
 #include "dgroup.h"
-#include "dcbbas.h"
 C
       CALL QENTER('DIRAOF')
       KWORK = 1
@@ -3390,7 +3376,7 @@ C        ISYMOP - array indicating spatial symmetry, see routine SETFCK
 C        IHRMOP - array indicating Hermiticity, see routine SETFCK
 C
 C*****************************************************************************
-!      use dcbbas_mod, only: N2BBASX, NTBAS
+      use dcbbas_mod, only: N2BBASX, NTBAS
       use dirac_partask_mod, only: HERFCK_PAR
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use infpar_mod, only: TOTWAL
@@ -3421,7 +3407,6 @@ C   SHELLS: KMAX
 C   symmet.h : MAXREP
 C
 #include "dgroup.h"
-#include "dcbbas.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
 #endif
@@ -3618,8 +3603,8 @@ C     Sep 2 1996 tsaue - Allocate buffer IND for unpacking of indices
 C
 C*****************************************************************************
 !      use dgroup_mod, only: NZ
-!      use dcbbas_mod, only: N2BBASX
 !      use dcbind_mod, only: NIBUF
+      use dcbbas_mod, only: N2BBASX
 #include "implicit.h"
 C
 C Used from COMMON blocks:
@@ -3628,7 +3613,6 @@ C   INDPCK: NIBUF
 C
 #include "dcbind.h"
 #include "dgroup.h"
-#include "dcbbas.h"
       DIMENSION FSO(*),DSO(*),
      &          IFCKOP(NFMAT),ISYMOP(NFMAT),IHRMOP(NFMAT),
      &          WORK(LWORK)
@@ -3670,13 +3654,12 @@ C     Written by T.Saue Feb 1997
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: N2BBASX, NTBAS
+      use dcbbas_mod, only: N2BBASX, NTBAS
       use dcbgen_mod, only: IDFLAG
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
 #include "dgroup.h"
-#include "dcbbas.h"
 C
       LOGICAL LBIT
       DIMENSION FSO(N2BBASX,*),DSO(N2BBASX,*),
@@ -3946,7 +3929,7 @@ C     Driver for direct SCF calculations in SO-basis
 C
 C     Written by T.Saue August 28 1996
 C*****************************************************************************
-!      use dcbbas_mod, only: N2BBASX
+      use dcbbas_mod, only: N2BBASX
       use cbihr2_mod, only: SCRFCK
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use dgroup_mod, only: NZ
@@ -3963,7 +3946,6 @@ C
      &          IFCKOP(NFMAT),
      &          IHRMOP(NFMAT),ISYMOP(NFMAT),WORK(LWORK)
 #include "dgroup.h"
-#include "dcbbas.h"
 C
       CALL QENTER('DIRSOF')
       KWORK = 1
@@ -4035,7 +4017,7 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: HFXMU
 !      use dgroup_mod, only: NZ
-!      use dcbbas_mod, only: N2BBASX
+      use dcbbas_mod, only: N2BBASX
 !      use infpar_mod, only: TOTWAL
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -4044,7 +4026,6 @@ C*****************************************************************************
      &                       D0=0.0D0
 C
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcbham.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
@@ -4219,7 +4200,7 @@ C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
 !      use dgroup_mod, only: IQTOPQ, IRQMAT, JBTOF, JQBAS, NBSYM, NZ, NZC1
-!      use dcbbas_mod, only: N2BBASX, NTBAS
+      use dcbbas_mod, only: N2BBASX, NTBAS
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
       use blocks_mod, only: NSYMBL
@@ -4228,7 +4209,6 @@ C*****************************************************************************
       INTEGER :: I,J
 C
 #include "dgroup.h"
-#include "dcbbas.h"
       DIMENSION DQO(N2BBASX,NZ,NFMAT),
      &          DMRQO(NSYMBL,NSYMBL,NZ,NFMAT),
      &          ISYMOP(NFMAT),WORK(LWORK)

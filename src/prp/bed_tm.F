@@ -1496,7 +1496,7 @@ C     * on the BEDLEB routine - allocating the needed arrays           C
 C     * for entering BEDLED                                            C
       SUBROUTINE bedleb_launch_slave_procs()
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use dcbbas_mod, only: N2BBASXQ, NTBAS
+      use dcbbas_mod, only: N2BBASXQ, NTBAS
       use mxcent_mod, only: MXCOOR
 !      use infpar_mod, only: MPARID
 !      use dcbxpp_mod, only: BEDECD, DOBED, MAXEXC
@@ -1506,7 +1506,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                          
 C                                                          
 c TODO added due to NESH
-#include "dcbbas.h"                                    
 
 C TODO commented out due to dcborb.hç
 #include "infpar.h"                                        
@@ -1737,12 +1736,13 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use maxash_mod, only: MAXASH
 !      use dcborb_mod, only: ICMO, ICMOQ, IORB, N2ORB, N2ORBT, N2ORBX, NASH, NCMO, NCMOQ, NCMOT, NCMOTQ, NESH, NFRO, NISH, NORB, NORBT, NPSH
-!      use dcbbas_mod, only: I2BAST, I2BASX, IBBAS, MXFBAS, N2BBASX, N2BBASXQ, NBBAS, NFBAS, NNBBASX, NTBAS
 !      use dgroup_mod, only: NFSYM
 !      use dcbxrs_mod, only: INDSTR, JOPSY, NEXCNV, NREDM, NZHOPE, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, SKIPEE, SKIPEP
 !      use dcbxpp_mod, only: ANGPLOT, BEDECD, DOBED, MAXEXC
 !      use dcbxpr_mod, only: IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
 !      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
+      use dcbbas_mod, only: I2BAST, I2BASX, IBBAS, MXFBAS, N2BBASX,
+     &  N2BBASXQ, NBBAS, NFBAS, NNBBASX, NTBAS
       use dcbgen_mod, only: CVAL, LU1INT
       use codata_mod, only: CVEL
       use maxorb_mod, only: MXCORB
@@ -1759,7 +1759,6 @@ C
 #include "maxash.h"
 #include "dcborb.h"
 C
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"

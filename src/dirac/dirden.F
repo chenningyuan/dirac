@@ -28,10 +28,9 @@ C     Written by J. Thyssen
 C     Last revision: 1997/09/22 - jth
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: N2BBASXQ
+      use dcbbas_mod, only: N2BBASXQ
 #include "implicit.h"
 C
-#include "dcbbas.h"
       DIMENSION DCAO(*),DVAO(*),CMO(*),DV(*)
       DIMENSION WORK(*)
       LOGICAL GETDC,GETDV
@@ -73,13 +72,12 @@ C                    2002/09/26 - tf : minor cleanup
 C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NFSYM, NZ
-!      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
+      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: I2ORBX, ICMOQ, N2ORBXQ, NASH, NASHT, NORB, NORBT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 C
       DIMENSION DVAO(*),CMO(*),DV(NASHT,NASHT,NZ)
@@ -211,7 +209,7 @@ C
 C*****************************************************************************
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcborb_mod, only: NISH, NPSH
-!      use dcbbas_mod, only: N2BBASXQ, NFBAS, NTBAS
+      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -221,7 +219,6 @@ C
       LOGICAL LBIT
       DIMENSION DMAT(*), CMO(*)
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 !#include "dcbham.h"
 C
@@ -335,12 +332,11 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: NISH, NPSH
-!      use dcbbas_mod, only: NTBAS, NFBAS, I2BASX, 
+      use dcbbas_mod, only: I2BASX, NFBAS, NTBAS
 #include "implicit.h"
 C
       DIMENSION DMAT(*), CMO(*)
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 C
@@ -388,14 +384,13 @@ C     Written by T. Saue Nov 23 2004
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: N2BBASXQ
+      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbdhf_mod, only: AOC, NFMAT, NOPEN
 !      use dcborb_mod, only: NORB, ICMOQ
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, DM1=-1.0D0
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
@@ -453,7 +448,7 @@ C
 C*****************************************************************************
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: NORB
-!      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
+      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -461,7 +456,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
       DIMENSION DMAT(*),CMO(*)
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 C
 CTROND
@@ -556,7 +550,8 @@ C     Written by T. Saue
 
 C***********************************************************************
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
-!      use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, N2TMT, NFBAS, NTBAS, NZT
+      use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, N2TMT, NFBAS,
+     &  NTBAS, NZT
       use priunit_mod, only: LUPRI
 !      use dcbdhf_mod, only: I2TMOT, NTMO
       use dcbgen_mod, only: LUTMAT
@@ -566,7 +561,6 @@ C***********************************************************************
 C
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2=2.0D0, D1 = 1.0D00
 C
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
       DIMENSION DAO(*),WORK(*)

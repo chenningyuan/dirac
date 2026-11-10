@@ -115,11 +115,11 @@ contains
         !
         ! Roberto Di Remigio, 2012
         !
+      use dcbbas_mod, only: NTBAS
         use pcm_integrals, only: get_electronic_mep
         use pcmmod_cfg
         use pcmsolver, only: pcmsolver_get_surface_function
 
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 
@@ -300,13 +300,13 @@ contains
         ! Roberto Di Remigio, 2012-2013
         !
 
+      use dcbbas_mod, only: NTBAS
         use pcm_integrals, only: get_electronic_mep
         use pcmmod_cfg
         use pcmsolver, only: pcmsolver_set_surface_function, &
                              pcmsolver_compute_asc, &
                              pcmsolver_get_surface_function
 
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 

@@ -197,7 +197,6 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB
 !      use dgroup_mod, only: IPQTOQ, IQTOPQ, IRQMAT, JM4POS, NFSYM, NZ
       use nuclei_mod, only: NUCDEP, NUCIND
-!      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -212,6 +211,7 @@ C*****************************************************************************
       use dirac_cfg
       use dircmo
       use kinds_mod, only: dp
+      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
 #include "implicit.h"
       INTEGER :: I,J
 C
@@ -219,7 +219,6 @@ C
      &                       D2 = 2.00D00
 C
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 #include "dgroup.h"
@@ -842,7 +841,7 @@ C*****************************************************************************
       use chrxyz_mod, only: CHRXYZ
       use aovec_mod, only: MXAOVC
       use dcbgen_mod, only: DOLVC, NEWBAS, PARCAL, RELCAL
-!      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBAST, NNBBASX
+      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBAST, NNBBASX, NTBAS
       use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
      &  IPRTWO, RTNTWO, TKTIME
       use priunit_mod, only: LUPRI
@@ -875,7 +874,6 @@ C     Timing variables
       SAVE DPRTIM
       DATA DPRTIM /D0,D0,D0,D0,D0,D0,D0,D0/
 C
-#include "dcbbas.h"
 #include "dcbdhf.h"
 !#include "dgroup.h"
 #include "dcbham.h"
@@ -2592,13 +2590,12 @@ C
 C     31-July-2001 HJAaJ
 C
 !      use dcborb_mod, only: NASHT
-!      use dcbbas_mod, only: N2BBASXQ
 !      use dcbdhf_mod, only: DF, NOPEN
+      use dcbbas_mod, only: N2BBASXQ
       use dircmo
 #include "implicit.h"
       DIMENSION DSO(*), WORK(LWORK)
 C
-#include "dcbbas.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
 C

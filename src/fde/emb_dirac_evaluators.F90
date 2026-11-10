@@ -524,7 +524,6 @@ module fde_evaluators_dirac
 !      use dcbdhf_mod, only: NFMAT
       use dcbgen_mod, only: LUCOEF
 !      use dcborb_mod, only: NCMOTQ
-!#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
@@ -791,12 +790,11 @@ module fde_evaluators_dirac
 !     embedding potential for FDE, we have a diagonal operator just like
 !     for the molecular field.
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: NNBBASX, NTBAS
+      use dcbbas_mod, only: NNBBASX, NTBAS
 #include "implicit.h"
             LOGICAL DOINT(4)
             CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4
             character*80 string
-#include "dcbbas.h"
 
             integer :: file_unit, iprint, i, irrep_vemb
             real(kind=8), allocatable :: a_oneint(:)
@@ -1185,11 +1183,10 @@ module fde_evaluators_dirac
 !   ----------------------------------------------------------------------------
       subroutine fde_dirac_data_interface
 !   ----------------------------------------------------------------------------
-!      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dgroup_mod, only: NBSYM
+      use dcbbas_mod, only: N2BBASXQ, NTBAS
       use dcbgen_mod, only: LUCOEF
 #include "implicit.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 !#include "dcbdhf.h"
 

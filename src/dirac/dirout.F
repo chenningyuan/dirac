@@ -265,12 +265,11 @@ C     Last revision Jan 9 1997
 C
 C***********************************************************************
 !      use dgroup_mod, only: NFSYM
-!      use dcbbas_mod, only: NTBAS
 !      use dcborb_mod, only: NESH, NORB, NPSH
+      use dcbbas_mod, only: NFBAS, NTBAS
 #include "implicit.h"
 C
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcborb.h"
       CHARACTER VECPRI*72
       DIMENSION CMO(*),EIG(*),VECPRI(NFSYM),WORK(LWORK)
@@ -338,7 +337,7 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use dcblab_mod, only: IPLAB, PLABEL
       use symmet_mod, only: ICOS
-!      use dcbbas_mod, only: IBAS, IBBAS
+      use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NTBAS
 !      use dcborb_mod, only: NESH, NPSH
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
@@ -351,7 +350,6 @@ C***********************************************************************
 C
 #include "dcblab.h"
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcborb.h"
       LOGICAL LBIT
       CHARACTER FMT*6,MXFORM*6
@@ -477,8 +475,8 @@ C     Written by T.Saue November 1994
 C     Last revision: Jan 7 1998 - jth NFBAS(IFRP,0) is now parameter
 C***********************************************************************
 !      use dgroup_mod, only: JFSYM, NZ
-!      use dcbbas_mod, only: IBAS, IBBAS, NFBAS
 !      use dcbham_mod, only: MC
+      use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NFBAS
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -487,7 +485,6 @@ C
       REAL(dp), PARAMETER :: DM1 = -1.0D0
 C
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcbham.h"
       DIMENSION CMO(KNFBAS,NVEC,NZ),CBUF(KNFBAS,NVEC,4)
 C
@@ -739,12 +736,11 @@ C
 C*****************************************************************************
 !      use dcborb_mod, only: NESH, NPSH
 !      use dgroup_mod, only: NZ
-!      use dcbbas_mod, only: NFBAS
+      use dcbbas_mod, only: NFBAS
 #include "implicit.h"
 C
       INTEGER :: I,II
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 C
 C     KBAS = NFBAS(IFRP,0)
@@ -1663,8 +1659,8 @@ C
 C     Written by T.Saue Sep 25 2000
 C
 C***********************************************************************
-!      use dcbbas_mod, only: NFBAS
 !      use dgroup_mod, only: NFSYM, NZ
+      use dcbbas_mod, only: NFBAS
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NAMN
@@ -1674,7 +1670,6 @@ C***********************************************************************
       INTEGER :: I
 C
 #include "dgroup.h"
-#include "dcbbas.h"
       DIMENSION EIG(*),CMO(*),IBEIG(*),NSTR(2,0:2),KVEC(2),NVECS(2),
      &          CSEL(*),ESEL(*),IBSEL(*),IOFF(2),WORK(*)
       type(file_info_t)    :: fragfile
@@ -1991,13 +1986,13 @@ C     Written by T.Saue Sep 25 2000
 C
 C***********************************************************************
 !      use dcblab_mod, only: IATTR, IPLAB
+      use dcbbas_mod, only: IBAS, NFBAS
       use dcbibt_mod, only: JGET
       use maxorb_mod, only: MXCORB
 !      use dgroup_mod, only: IBAS
 #include "implicit.h"
       INTEGER :: I,II,J,K
 C
-#include "dcbbas.h"
 #include "dcblab.h"
       DIMENSION JBAS(*)
 C

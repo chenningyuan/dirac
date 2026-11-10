@@ -30,13 +30,12 @@ C***********************************************************************
       use dummy_mod, only: DUMMY
 !      use dcbtra_mod, only: IPRTRA, ITRA_INTFL2
 !      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
-!      use dcbbas_mod, only: N2BBASXQ
+      use dcbbas_mod, only: N2BBASXQ
       use dcbgen_mod, only: PARCAL
 #include "implicit.h"
 C
 #include "dcbtra.h"
 #include "dcbtr3.h"
-#include "dcbbas.h"
       LOGICAL TOBE,TRASAM
       real*8, intent(in) :: toterg
       DIMENSION WORK(*),NSTR(2,0:2,2),NSTRT(2),KQ(2,2),
@@ -109,13 +108,12 @@ C     Modified by Miro Ilias for DFT-COSCI, Auguste 2016
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbbas_mod, only: N2BBASXQ
+      use dcbbas_mod, only: N2BBASXQ
 !      use dcborb_mod, only: NORBT
 !      use dcbdhf_mod, only: DHFERG, E1PART, E2PART, ELERGY, INTFLG
 !      use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
 C
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 #include "dgroup.h"
@@ -194,7 +192,7 @@ C*****************************************************************************
 !      use dcbpsi_mod, only: DORES
 !      use dcbdhf_mod, only: IFCKOP, IHRMOP, INTFLG, ISYMOP, NFMAT, NOPEN
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
-!      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
+      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: I2ORBX, N2ORBXQ, NORBT
 !      use dcbham_mod, only: BSS, SPINFR, X2CMMF
 !      use dcbres_mod, only: COREDENS, NOVXC
@@ -207,7 +205,6 @@ C
 #include "dcbpsi.h"
 #include "dcbdhf.h"
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbres.h"
@@ -480,7 +477,7 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
-!      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
+      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: NORB
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -489,7 +486,6 @@ C*****************************************************************************
       DIMENSION DMAT(*),QCO(*)
       DIMENSION NSPC(2,0:2),NDMOQC(2,2),ICMOQC(2)
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 C
       CALL DZERO(DMAT,N2BBASXQ)
@@ -1746,8 +1742,8 @@ C     REMARKS:
 C     
 C***********************************************************************
 !      use dcborb_mod, only: ICMOQ, IORB, NORB, NORBT
-!      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1755,7 +1751,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C         
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       DIMENSION DMAT(N2BBASX,NZ),CMO(*),DMO(NORBT,NORBT,NZ),WORK(*)
@@ -1807,7 +1802,7 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
-!      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
+      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: NORB
 #include "implicit.h"
       real(8)            :: DMAT(*),QCO(*)
@@ -1816,7 +1811,6 @@ C*****************************************************************************
       real(8), parameter :: d1 = 1.0D0,d0 = 0.0D0
       integer            :: ncspin(2,0:2), i, j, iopen
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 C
       CALL DZERO(DMAT,2*N2BBASXQ)

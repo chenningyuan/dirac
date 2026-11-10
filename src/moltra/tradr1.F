@@ -23,11 +23,10 @@ C
 C     Written by Luuk Visscher, Februari 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dcbbas_mod, only: NFBAS
 !      use dgroup_mod, only: NFSYM
+      use dcbbas_mod, only: NFBAS
 #include "implicit.h"
       INTEGER :: I
-#include "dcbbas.h"
 #include "dgroup.h"
       PARAMETER (MAXTSK=1)
       LOGICAL ANTIS,LMP2
@@ -370,11 +369,10 @@ C
       use symmet_mod, only: ICOS
 !      use dcbtra_mod, only: NFPCK12
       use comdis_mod, only: ISPCK, NINSHA, NINSHB, NSPCK
-!      use dcbbas_mod, only: NBBAS
+      use dcbbas_mod, only: NBBAS
 #include "implicit.h"
 #include "dgroup.h"
 #include "dcbtra.h"
-#include "dcbbas.h"
 C
       DIMENSION INDX(3,*),INDXAB(NINSHA,NINSHB,4)
       DIMENSION IHTM(0:7),IHM(0:7),NHTM(2)
@@ -473,7 +471,7 @@ C
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX
-!      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
+      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 !      use dcbtra_mod, only: IFPCK34, NFPCK34
       use comdis_mod, only: NSPCK
@@ -486,7 +484,6 @@ C
       DIMENSION Q1(*),Q2(*),GMAT(*),HMAT(*)
       DIMENSION IJPAIRS(2)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2)
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
 C

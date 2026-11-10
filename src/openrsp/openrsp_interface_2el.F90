@@ -1,5 +1,6 @@
 module openrsp_interface_2el
 
+      use dcbbas_mod, only: N2BBASXQ
       use dcbgen_mod, only: RELCAL
       use dcbgrd_mod, only: INTCLASS, RELGRD
       use dorps_mod, only: DOPERT
@@ -13,7 +14,6 @@ module openrsp_interface_2el
 
    private
 
-#include "dcbbas.h"
 #include "exeinf.h"
 
 contains

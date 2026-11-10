@@ -700,6 +700,9 @@ contains
 
   subroutine test_grcont(n, nr_atoms, test_london, test_geo)
 
+#ifdef PRG_DIRAC
+      use dcbbas_mod, only: NTBAS
+#endif
     integer              :: n, nr_atoms
     logical              :: test_london, test_geo
 !   ----------------------------------------------------------------------------
@@ -714,9 +717,6 @@ contains
 #endif /* PRG_DIRAC */
     real(8)              :: F(n, n, 3), g(3, nr_atoms)
 
-#ifdef PRG_DIRAC
-#include "dcbbas.h"
-#endif /* PRG_DIRAC */
 
     lwork = 10000*n + 50*n*n
     allocate(work(lwork))

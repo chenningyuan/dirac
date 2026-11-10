@@ -751,12 +751,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use comdis_mod, only: ISHLA, ISHLB, ISPCK, KIGBUF, KLGBUF, KLGREC,
      &  KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS, NSPCK
 !      use dcbtr3_mod, only: IBAS1, IBAS2, IBBAS1, IBBAS2, ISPCK12, NBBAS1, NBBAS2, NSPCK12
-!      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
+      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dcborb_mod, only: NASHT
 #include "implicit.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
-#include "dcbbas.h"
 #include "dcborb.h"
       LOGICAL NOPV, NODV, TRIAN(2)
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
@@ -1002,7 +1001,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbtra_mod, only: IFPCK12, NFPCK12, NFPCK12T
       use comdis_mod, only: ISPCK, LGFIL, NGBFSZ, NPASS, NSPCK
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
-!      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
+      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0= 0.0D0, D1 = 1.0D0
@@ -1025,7 +1024,6 @@ C
 #include "dgroup.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
-#include "dcbbas.h"
 C
       CALL QENTER('MS6IN1')
       KFRSAV = KFREE
@@ -1236,7 +1234,7 @@ C
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX
-!      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
+      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 !      use dcbtra_mod, only: DO_FINESORT, IFPCK34, NFPCK12, NFPCK12T, NFPCK34
       use comdis_mod, only: NSPCK
@@ -1254,7 +1252,6 @@ C
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       LOGICAL INIT
       Real(8), Allocatable :: HTMP(:),HMAT(:),GMAT(:)
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
 #include "infpar.h"
@@ -1405,11 +1402,10 @@ C     Written by Luuk Visscher August 2004.
 C
 C     PURPOSE : Make G = G + G(Transposed)
 C
-!      use dcbbas_mod, only: NBBAS
 !      use dgroup_mod, only: NBSYM, NZ
+      use dcbbas_mod, only: NBBAS
       use comdis_mod, only: ISPCK
 #include "implicit.h"
-#include "dcbbas.h"
 #include "dgroup.h"
       DIMENSION GMAT(NDG,NZ)
 C

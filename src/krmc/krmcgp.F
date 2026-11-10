@@ -1083,7 +1083,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use consts_mod, only: D0, D1
-!      use dcbbas_mod, only: I2TMT, N2TMT, NFBAS, NZT
+      use dcbbas_mod, only: I2TMT, N2TMT, NFBAS, NZT
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use pgroup_mod, only: REP
 !      use dcborb_mod, only: I2ORBT, ICMOQ, IORB, N2ORBTQ, NCMOTQ, NOCC, NORB, NORBT
@@ -1092,7 +1092,6 @@ C***********************************************************************
       INTEGER :: I, J
 C
 C
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcborb.h"
 C
@@ -1220,7 +1219,7 @@ C***********************************************************************
 !      use dcborb_mod, only: ICMOQ, NESH, NORB, NPSH
 !      use dcbopt_mod, only: IPROPT
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
-!      use dcbbas_mod, only: N2BBASX, NFBAS, NTBAS
+      use dcbbas_mod, only: N2BBASX, NFBAS, NTBAS
 #include "implicit.h"
       INTEGER :: I, J
 C
@@ -1228,7 +1227,6 @@ C
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dgroup.h"
-#include "dcbbas.h"
 C
       DIMENSION CMO(*), WORK(*)
 C
@@ -1683,7 +1681,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
       use consts_mod, only: D0, D1
-!      use dcbbas_mod, only: NFBAS
+      use dcbbas_mod, only: NFBAS
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXE2G, IDXI2G, IDXP2G, IDXS2G, IDXU2G
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
@@ -1693,7 +1691,6 @@ C***********************************************************************
 #include "maxash.h"
 C
 C
-#include "dcbbas.h"
 #include "dcbidx.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -3284,7 +3281,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-!#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"

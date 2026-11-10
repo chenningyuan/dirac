@@ -1051,7 +1051,6 @@ C
 C***********************************************************************
 !      use dgroup_mod, only: ATOMIC, FREP, LINEAR, NBSYM, NFSYM
 !      use dcbham_mod, only: BSS, CONT2C, DO2C4C, DO4C2C, FREEPJ, INI2C, INTV1C, LEVYLE, ONECAP, ONECNV, PROJEC, PROOWN, SPINFR, START2C, URKBAL, USEDF, VEXTPJ, X2C, ZORA, ZORA4
-!      use dcbbas_mod, only: NFBAS
 !      use dcbdhf_mod, only: AOC, ATHUCK, ATOMST, AUTOCC, BMCOND, CACC, CNVINT, CONVRG, DA, DALPHA, DAMPFC, DF, DHFCONV, DHFERG, DHFEXIT, DHF_INTTYP, DHF_SKIPEE, DHF_SKIPEP, DIISAO, DIISMO, DIISON, DIISTH, DLSHIF, DOBOSSEL, DOCCNV, DODAMP, DODIIS, DODSCF, DOLEVEL, DOMOFREEZE, DYNSEL, E1PART, E2PART, ELERGY, ERGBUF, ERGCNV, ERGCNV2, ERGVAL, EVCCNV, EVCCNV2, EVCVAL, FCKCNV, FCKCNV2, FCKVAL, FIXDIF, IMOFREEZE, INIOCC, INTBUF, INTDEF, INTFLG, IPREIG, IPRSCF, ITDIIS, ITRINT, ITRSCF, MAXBCK, MAX_BOS_BL, MAXITR, MAXITR2, MFRAG, MXDIIS, MXMACRO, MXMICRO, MXMOFREEZE, MXOPEN, NACSH, NACSH_BOS, NAELEC_DHF, NASH_DHF, NASHMFT, NELEC_DHF, NELECT_DHF, NEWOCC, NFRAG, NFRO_DHF, NISH_BOS, NISH_DHF, NMOFREEZE, NOPEN, NOQCDHF, NOSWIT, NPRJNUC, OLEV, OPEN_FAC, OVLSEL, PRJFIL, PRJTHR, SCFCNV, SCFCNV2, SCFPOP, SCFTID, SIRIFC, TDDG, TDF2, TRIFCK, TRIVEC, VCFROZ, VCPROJ, WRITE_FMO_MATRIX
 !      use dcborb_mod, only: MAX_SUB_BL
 !      use dcbatom_mod, only: ATOMFIL, NVECATOM, OCCATOM, VECATOM
@@ -1080,6 +1079,7 @@ C***********************************************************************
       use ccom_mod, only: NHTYP
       use dcbgen_mod, only: BARNUC, BNCRON, BNSPON, DOHUCKEL, DOLVC,
      &  FORCE_BNC, IDFLAG, INTGEN, IPRGEN, KCHARG, TWOCOMP
+      use dcbbas_mod, only: NFBAS
 #include "implicit.h"
       INTEGER :: I,J,K
       PARAMETER (NTABLE = 65)
@@ -1102,7 +1102,6 @@ C
 C
 #include "dcbdhf.h"
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbatom.h"
@@ -4553,14 +4552,13 @@ C***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
 !      use dgroup_mod, only: FREP, NFSYM
 !      use dcbpop_mod, only: ADD_ALL, ADDSML, DONETP, ILABDF, IPOPLAB, IPRPOP, LABDEF, MAXLAB, NPOPLAB, POP_DTOL, POPLAB, VECPOP
-!      use dcbbas_mod, only: NFBAS
+      use dcbbas_mod, only: NFBAS
 #include "implicit.h"
       INTEGER :: I
       PARAMETER (NTABLE = 8)
 C
 #include "dcbana.h"
 #include "dcbpop.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbmp2no.h"
@@ -4768,7 +4766,7 @@ C***********************************************************************
       use dummy_mod, only: IDUMMY
 !      use dgroup_mod, only: FREP, NFSYM
 !      use dcborb_mod, only: NOCC
-!      use dcbbas_mod, only: NFBAS
+      use dcbbas_mod, only: NFBAS
 !      use dcbprj_mod, only: C1READ, IPRPRJ, IREFADJ, LWGPOP, MAXREF, MAYER, NPROJNUC, NREFS, OWNBAS, PATOMS, POLNRM, POLREF, PRJADJ, PROTHR, REFFIL, VECPRJ, VECREF
 !      use dcbana_mod, only: DOPRJ
 #include "implicit.h"
@@ -4777,7 +4775,6 @@ C***********************************************************************
 C
 #include "dcbana.h"
 #include "dcbprj.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -5091,8 +5088,8 @@ C     Written by T.Saue - May 1996
 C     Last revision: May 2 - 1996
 C
 C***********************************************************************
-!      use dcbbas_mod, only: NFBAS
 !      use dgroup_mod, only: FREP, NFSYM
+      use dcbbas_mod, only: NFBAS
       use priunit_mod, only: LUCMD, LUPRI
 !      use dcbana_mod, only: DOVEC
       use dummy_mod, only: IDUMMY
@@ -5104,7 +5101,6 @@ C***********************************************************************
 C
 #include "dcbana.h"
 #include "dcbvec.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -5399,7 +5395,6 @@ C***********************************************************************
 !      use dcbxpr_mod, only: WT1IN
 !      use dcb_effqed_mod, only: EFFQED_IPAR, EFFQED_NKAP, EFFQED_PAR, MAXKAP, MAXREF, REFFIL, VECREF
 !      use dcbdhf_mod, only: NFRAG, PRJFIL, PRJTHR, VCPROJ
-!      use dcbbas_mod, only: NFBAS
 !      use dcbham_mod, only: BLOCKD, BSS, CAP, CMPEIG, CONT2C, DKH1, DKH2, DO2C4C, DO4C2C, DOASHIFT, DOEFFQED, ECPCALC, ESHIFT, FAKE2C, FREEPJ, GAUNT, HFXATT, HFXFAC, HFXMU, I2CHAM, IBSS, ICTLV1C, IMFCH, INI2C, INTV1C, IPANGMOM, IPBETAMT, IPKINERG, IPMOLFLD, IPOVRLAP, IPR1OP, IPRHAM, IPSPNMOM, IPSPNORB, IPVEMB0, ISORDER_AMFI_X2C, LEVYLE, LSCALE_DFT_GAUNT, MAX1OPER, MC, MDIRAC, N1OPER, NOAMFI, NONREL, NOPRTR, NOSFMU, NOSMLV, NOSPIN, ONECAP, ONECNV, ONECOFF, ONESYS, PROJEC, PROOWN, QDOTS, QED, SMLV1C, SOLVEN, SPINFR, SPINFR2, SSMTRC, START2C, TRMO4C2C, TRS_MIX, URKBAL, USEDF, VEXTPJ, WRITE_JZ_MATRIX, WRITE_K_MATRIX, X2C, X2CMMF, YREQ1, ZORA, ZORA4, ZORASC
 !      use dgroup_mod, only: FREP, LINEAR, NBSYM, NFSYM, NZC1
       use dirac_cfg
@@ -5428,6 +5423,7 @@ C***********************************************************************
       use pgroup_mod, only: GROUP, GROUPS, SYMOP
       use codata_mod, only: XTANG
       use dcbgen_mod
+      use dcbbas_mod, only: NFBAS
 #include "implicit.h"
       INTEGER :: I,J
       PARAMETER (NTABLE = 76,NDIR = 16)
@@ -5438,7 +5434,6 @@ C
 #include "dcbham.h"
 #include "dcb_effqed.h"
 #include "dcb_ashift.h"            
-#include "dcbbas.h"
 #include "dcbdhf.h"
 #include "dgroup.h"
 #include "dcbxpr.h"
@@ -7864,14 +7859,13 @@ C***********************************************************************
       use dcbgen_mod, only: INTGEN
 !      use dcborb_mod, only: NASHT, NISH, NOCC
 !      use dcbmvo_mod, only: ADDREP, IF2MVO, INTMVO, IONMVO, IPRMVO, MVOWEIGHT, VECMVO
-!      use dcbbas_mod, only: NFBAS
+      use dcbbas_mod, only: NFBAS
 !      use dgroup_mod, only: FREP, NFSYM
 #include "implicit.h"
       INTEGER :: I,J
       PARAMETER (NTABLE = 8)
 C
 #include "dcbpsi.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbmvo.h"
@@ -8704,7 +8698,7 @@ C***********************************************************************
 !      use dcbprj_mod, only: C1READ, MAXREF, NREFS, OWNBAS, REFFIL, VECPRJ, VECREF
 !      use dgroup_mod, only: FREP, NFSYM
       use nuclei_mod, only: NAMDEP
-!      use dcbbas_mod, only: NFBAS
+      use dcbbas_mod, only: NFBAS
 #include "implicit.h"
       INTEGER :: I,J
       PARAMETER (NTABLE = 16)
@@ -8712,7 +8706,6 @@ C
 #include "dcbana.h"
 #include "dcbprj.h"
 #include "dcbloc.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       LOGICAL SET, NEWDEF,ORBDEF, RESET

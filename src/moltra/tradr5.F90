@@ -226,13 +226,12 @@
 !      use dcbtra_mod, only: LUTRA2, NFPCK12, SCRTRA
       use comdis_mod, only: ISHLA, ISHLB, ISPCK, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS, NSPCK
 !      use dcbtr3_mod, only: IBAS1, IBAS2, IBBAS1, IBBAS2, ISPCK12, NBBAS1, NBBAS2, NSPCK12
-!      use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NTBAS
+      use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NTBAS
 !      use dcborb_mod, only: NASHT
 !      use dgroup_mod, only: JBTOF, NBSYM, NZ
 #include "implicit.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
       LOGICAL NOPV, NODV, TRIAN(2)
@@ -628,7 +627,7 @@
 !      use dcbtra_mod, only: NFPCK12
       use comdis_mod, only: NINSHA, NINSHB
 !      use dcborb_mod, only: NAOCC, NAVIR, NCMOTQ
-!      use dcbbas_mod, only: IBAS, IBBAS
+      use dcbbas_mod, only: IBAS, IBBAS
       use symmet_mod, only: ICOS, ISYMAX
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
 !      use mp1stpr_mod, only: IOFFTM1, IOFFTM2
@@ -638,7 +637,6 @@
 #include "dgroup.h"
 #include "dcbtra.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dcbtr3.h"
 #include "mp1stpr.h"
 !
@@ -1789,12 +1787,11 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
 !      use dcborb_mod, only: NAOCC, NAVIR
-!      use dcbbas_mod, only: NBBAS, NFBAS
+      use dcbbas_mod, only: NBBAS, NFBAS
 #include "implicit.h"
       INTEGER :: I
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 !
       DIMENSION NBBASA(0:7,0:2)
       DIMENSION ILTMOFF(0:7,2)
@@ -1960,15 +1957,14 @@
 !                      spinor basis
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dcbbas_mod, only: NFBAS
 !      use dcborb_mod, only: ICMOQ, NAOCC, NAOCCT, NIOCC, NORB, NORBT, NPSH
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dcbbas_mod, only: NFBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: J
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D4 = 4.0D0
 !
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 !
@@ -2028,14 +2024,13 @@
 !                      spinor basis
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dcbbas_mod, only: NFBAS
 !      use dcborb_mod, only: ICMOQ, NAVIR, NAVIRT, NOCC, NORB, NORBT, NPSH
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dcbbas_mod, only: NFBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D4 = 4.0D0
 !
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 !

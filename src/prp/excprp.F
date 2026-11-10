@@ -56,14 +56,13 @@ C***********************************************************************
 !      use dcbxqr_mod, only: LAQROP, LSTATE, MAXFQR, MAXLQR, MAXQR, MZYEE, MZYEP, NAQROP, NQRHYP, RSTATE
 !      use dgroup_mod, only: NBSYM, NZ
 !      use dcborb_mod, only: NCMOTQ
-!      use dcbbas_mod, only: NTBAS
+      use dcbbas_mod, only: NTBAS
 !      use dcbham_mod, only: SPINFR
 #include "implicit.h"
 #include "dcbxpr.h"
 #include "dcbxqr.h"
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dcbham.h"
 C
       INTEGER LUCMO

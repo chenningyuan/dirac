@@ -119,12 +119,11 @@ C                    x  positronic
 C
 C***********************************************************************
 !      use dcborb_mod, only: NORBT
-!      use dcbbas_mod, only: N2BBASX, N2BBASXQ
 !      use dgroup_mod, only: NZ
+      use dcbbas_mod, only: N2BBASX, N2BBASXQ
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       DIMENSION DMO(*)
@@ -183,7 +182,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use cbihr2_mod, only: IPRTWO
 !      use dcborb_mod, only: NORBT
-!      use dcbbas_mod, only: N2BBASXQ
+      use dcbbas_mod, only: N2BBASXQ
 !      use dgroup_mod, only: NZ
 !      use dcbdhf_mod, only: INTFLG
       use kinds_mod, only: dp
@@ -191,7 +190,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
 C
@@ -276,15 +274,14 @@ C     REMARKS:
 C
 C***********************************************************************
 !      use dcborb_mod, only: ICMOQ, IORB, NOCC, NORB, NORBT, NPSH
-!      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: II
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1=1.0D0
 C
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       DIMENSION XLAGRAN(NORBT,NORBT,NZ)
@@ -376,15 +373,14 @@ C     REMARKS:
 C     
 C***********************************************************************
 !      use dcborb_mod, only: ICMOQ, IORB, NAVIR, NOCC, NORB, NORBT, NPSH
-!      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: II
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1=1.0D0
 C
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       DIMENSION DMOAX(NORBT,NORBT,NZ)

@@ -14,7 +14,7 @@ contains
 
     subroutine get_mep(nr_points, nr_points_irr, points, mep, dmat, work, lwork, iprint, skipss)
 
-#include "dcbbas.h"
+      use dcbbas_mod, only: NTBAS
 #include "dgroup.h"
 
         ! Passed variables
@@ -221,6 +221,7 @@ contains
         !            density matrix as input, potentials vector as output.
         !
 
+      use dcbbas_mod, only: NTBAS
       use ccom_mod, only: THRS
       use nuclei_mod, only: NUCNUM
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
@@ -232,7 +233,6 @@ contains
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
 #include "dcbdhf.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbham.h"
 
