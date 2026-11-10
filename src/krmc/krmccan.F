@@ -621,7 +621,7 @@ C***********************************************************************
       use consts_mod, only: D0, D1
 !      use dcborb_mod, only: I2ASHX, I2ORBX, ICMOQ, MXGAS, N2ASHXQ, N2ISHX, N2ORBXQ, N2PSHX, NASH, NASHT, NCMOTQ, NISH, NISHT, NORB, NORBT, NPSH, NPSHT
 !      use dcbopt_mod, only: IPROPT, JGAS, MCTYPE, N2DSHXQ, N2VSHXQ, NDSH, NDSHT, NVSH, NVSHT, NZCONF, OPT_CHCKJZ, SPINFR_KRMC
-!      use dcbgen_mod, only: LUKRMC
+      use dcbgen_mod, only: LUKRMC
 !      use dgroup_mod, only: IPQTOQ, NBSYM, NFSYM, NZ
 !      use dcbbas_mod, only: NFBAS
       use maxorb_mod, only: MXCORB
@@ -635,7 +635,6 @@ C
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbidx.h"
@@ -1441,7 +1440,7 @@ C***********************************************************************
       use consts_mod, only: D0, D2
 !      use dcborb_mod, only: ICMOQ, N2ASHX, N2ASHXQ, N2ORBXQ, NASHT, NISHT, NORB, NORBT
 !      use dcbopt_mod, only: IPROPT
-!      use dcbgen_mod, only: LUKRM3
+      use dcbgen_mod, only: LUKRM3
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NZ
 !      use krciprop_mod, only: DOJZEXP, LPROP_KRCI, NPROP_KRCI
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
@@ -1451,7 +1450,6 @@ C write-protection for DUMMY.
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dcbgen.h"
 !#include "dcbbas.h"
 #include "dgroup.h"
 #include "krciprop.h"
@@ -1607,7 +1605,7 @@ C***********************************************************************
       use codata_mod, only: DEBYE, EFAUMKSA, XFMP, XTEV, XTKAYS
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: MXGAS, NAELEC
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
 !      use dgroup_mod, only: NZ
 !      use krciprop_mod, only: DODIPMOM_KRCI, DOEEDM_KRCI, DOENSPS_KRCI, DOGENP_KRCI, DOJZEXP, DOMHYP_KRCI, DONMQM_KRCI, DOOSCILLST, ISYMEIG_KRCI, LPROP_KRCI, NPROP_KRCI, NPROP_ROOTS_KRCI, VKRCI_NUCMAGMOM, VKRCI_NUCSPIN, XREPEIG
 !      use dcbkrci_mod, only: MAX_NKRCI_MAX_SYM, NKRCI_CIROOTS, NKRCI_MAX_SYM
@@ -1623,7 +1621,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 !#include "dcbopt.h"
-#include "dcbgen.h"
 !#include "dcbbas.h"
 #include "dgroup.h"
 #include "krciprop.h"

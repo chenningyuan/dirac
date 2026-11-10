@@ -1241,7 +1241,6 @@ C
 !      use infpar_mod, only: MYTID, NODE
 #include "implicit.h"
       INTEGER :: I
-!#include "dcbgen.h"
 #include "infpar.h"
       CHARACTER*5  FILNAM
       CHARACTER*10 LFILNAM

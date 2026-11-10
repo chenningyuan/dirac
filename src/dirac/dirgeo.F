@@ -80,8 +80,8 @@ C
 C     Last revision: 1997/07/08 jth
 C
 C*****************************************************************************
-!      use dcbgen_mod, only: DOANA, DOPRP, DOPSI, INPTES
 !      use dcbdhf_mod, only: LUCYCL
+      use dcbgen_mod, only: DOANA, DOPRP, DOPSI, INPTES
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: IF, X2CMMF
       use dirac_cfg
@@ -90,7 +90,6 @@ C*****************************************************************************
       SAVE FIRST
       DATA FIRST /.TRUE./
 C 
-#include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
 C

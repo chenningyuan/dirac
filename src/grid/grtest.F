@@ -34,7 +34,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
  
       REAL(dp), PARAMETER :: DP5 = 0.5D0
 
-!#include "dcbgen.h"
 #include "dcbham.h"
 
       real(8), allocatable :: smat(:)
@@ -118,7 +117,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DOUBLE PRECISION ERRAV,ERRAB,RMS,ERRMX,MAXS,MAXP,MAXD,MAXF,
      &     RERRAV,RERRAB,RERRMX,SMATDF, SMATAN, SMATFR
 
-!#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -911,7 +909,6 @@ C***********************************************************************
       use memory_allocator
 #include "implicit.h"
 C
-!#include "dcbgen.h"
 !#include "dcbwt1.h"
       real(8), allocatable :: kwt(:)
       real(8), allocatable :: kcoor(:)

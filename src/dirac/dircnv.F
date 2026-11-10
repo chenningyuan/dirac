@@ -31,7 +31,7 @@ C
 C*****************************************************************************
 !      use dcbdhf_mod, only: ATHUCK, CACC, CONVRG, DAMPFC, DHFCONV, DHFERG, DHFEXIT, DIISON, DIISTH, DODAMP, DODIIS, ERGBUF, ERGCNV, ERGVAL, EVCCNV, EVCVAL, FCKCNV, FCKVAL, I2TMOT, INTBUF, INTFLG, IPRSCF, ITDIIS, KITER, LUDIIS, LUFOCK, MAXITR, MXDIIS, N2TMOTQ, NITER, NOSWIT, NTMO, SCFCNV
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: DOLVC
+      use dcbgen_mod, only: DOLVC
 !      use dcbham_mod, only: DO4C2C, ONECAP, ONECNV, ONECOFF, START2C
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use kinds_mod, only: dp
@@ -45,7 +45,6 @@ C
 #include "dcbdhf.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#include "dcbgen.h"
       LOGICAL OLDFMO, DAMPON, roundv
       DIMENSION FMO(*), EVEC(*),FBUF(*),BMAT(*),TMAT(*),
      &          DMAT(*),TINV(*),WORK(LWORK), FAO(*)

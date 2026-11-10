@@ -1162,7 +1162,6 @@ C***********************************************************************
 C
       DIMENSION DMAT(*)
       DIMENSION C(3,NAT)
-!#include "dcbgen.h"
 C
       DIMENSION CHIMT(NAT,NAT)
       real(8), allocatable :: kcoor(:)

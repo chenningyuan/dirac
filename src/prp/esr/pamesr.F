@@ -1578,7 +1578,7 @@ C     Based on PRPESR1
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: LUCOEF
+      use dcbgen_mod, only: LUCOEF
 !      use dcbopt_mod, only: KZCONF, NZCONF
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NZ, NZ_IN_CI
 !      use dcborb_mod, only: ICMOQ, NASH, NASHT, NISH, NORBT, NPSH
@@ -1601,7 +1601,6 @@ C  dcbgen : LU1INT,?
 C  dcbopt : KZCONF,NZCONF
 C  dgroup : NZ, NZ_in_CI (NZ_in_CI = 1 if CI vectors real, =2 if complex)
 C
-#include "dcbgen.h"
 #include "dcbopt.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -2464,7 +2463,7 @@ C        2. MP2NO on KRMCOLD
 C        3. DFCOEF with Hartree-Fock or DFT or MVO orbitals
 C
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: LUCOEF, LUKRMC
+      use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dcbham_mod, only: LEVYLE, SPINFR
 !      use dcbbas_mod, only: N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NESHT, NORB, NORBT
@@ -2481,7 +2480,6 @@ C  dcbham.h : SPINFR; LEVYLE
 C  dcbbas.h : N2BBASXQ, ...
 C  dcborb.h : NORBT, ..., NCMOTQ
 C  dgroup.h : IPQTOQ
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"

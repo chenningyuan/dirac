@@ -1733,8 +1733,8 @@ C
 !***********************************************************************
 !      use dcborb_mod, only: IORB, NAELEC, NASH, NASHT, NGSH, NISH, NORB, NORBT, NPSH
 !      use dcbham_mod, only: SPINFR
-!      use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dgroup_mod, only: LINEAR, NFSYM, NZ_IN_CI
+      use dcbgen_mod, only: LUCOEF, LUKRMC
       use pgroup_mod, only: GROUP
       use mospinor_info
       use symmetry_setup_krci
@@ -1743,7 +1743,6 @@ C
 C
 #include "dcborb.h"
 #include "dcbham.h"
-#include "dcbgen.h"
 #include "dgroup.h"
 C
       DIMENSION  VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)

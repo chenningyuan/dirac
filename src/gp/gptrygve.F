@@ -277,12 +277,13 @@ C  /* Deck stopit */
 C  /* Deck quit */
       SUBROUTINE QUIT(TEXT)
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: PARCAL
+#if (defined (PRG_DIRAC))
+#if defined (VAR_MPI)
+      use dcbgen_mod, only: PARCAL
+#endif
+#endif
       use interface_to_mpi
 #include "implicit.h"
-#if defined (PRG_DIRAC)
-#include "dcbgen.h"
-#endif
       CHARACTER TEXT*(*), STRING*70, BLA*1
 C
 #if defined (VAR_MPI)

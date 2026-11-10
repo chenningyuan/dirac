@@ -38,11 +38,10 @@ SUBROUTINE RECP_CHK_PRP
 ! check inconsistency in property options 
       use cbiher_mod, only: DSO
       use mxcent_mod, only: MXCENT, MXCOOR
-!      use dcbgen_mod, only: DOPRP
+      use dcbgen_mod, only: DOPRP
 !      use dcbprp_mod, only: DSO, MGRAD, PVC, SHIELD
 !      use inc_print_mod, only: RECP_OUT
   IMPLICIT NONE
-#include "dcbgen.h"
 #include "dcbprp.h"
 #include "inc_print.h"
   IF (DOPRP) THEN
@@ -70,11 +69,10 @@ END SUBROUTINE RECP_CHK_PRP
 SUBROUTINE RECP_CHK_OPT
 ! check inconsistency in optimize options
       use mxcent_mod, only: MXCOOR
-!      use dcbgen_mod, only: OPTIMI
+      use dcbgen_mod, only: OPTIMI
       use dcbgrd_mod, only: DONGRD
 !      use inc_print_mod, only: RECP_OUT
   IMPLICIT NONE
-#include "dcbgen.h"
 #include "inc_print.h"
 
   IF (OPTIMI) THEN

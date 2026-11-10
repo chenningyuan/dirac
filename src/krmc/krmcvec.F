@@ -28,13 +28,12 @@ C
 C*****************************************************************************
 !      use dcbxrs_mod, only: JTIMOP, LUBCI, LUBOE, LUBOP, NFREQ, NREDM, NZCONF, NZCONFQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZXOPTQ
 !      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
-!      use dcbgen_mod, only: LUKRM1
+      use dcbgen_mod, only: LUKRM1
 #include "implicit.h"
 C
 C
 #include "dcbxrs.h"
 #include "dcbibn.h"
-#include "dcbgen.h"
 C
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),
      &     IBPVC(*),EVALR(*),EVECR(NREDM,*),DKAPPA(*)

@@ -757,7 +757,7 @@ C***********************************************************************
 !      use dcbbas_mod, only: NFBAS
 !      use dcborb_mod, only: ICMOQ, IORB, NESH, NORB, NORBT, NPSH
 !      use dgroup_mod, only: NFSYM, NZ
-!      use dcbgen_mod, only: LUKRMC
+      use dcbgen_mod, only: LUKRMC
 !      use dcbopt_mod, only: OPT_CHCKJZ, SPINFR_KRMC
 #include "implicit.h"
       INTEGER :: I, J
@@ -767,7 +767,6 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbgen.h"
 #include "dcbopt.h"
       CHARACTER DAYTID*24, SECTID*12, CPUTID*12, WALLTID*12
       LOGICAL TRASAM

@@ -30,9 +30,9 @@ C
 C     Written by Trond Saue
 C
 C***********************************************************************
-!      use dcbgen_mod, only: LUCOEF
 !      use dgroup_mod, only: NZC1
 !      use dcb_effqed_mod, only: REFFIL
+      use dcbgen_mod, only: LUCOEF
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NONT, NONTYP, NUCDEG
       use priunit_mod, only: LUPRI
@@ -41,7 +41,6 @@ C***********************************************************************
       INTEGER :: J
 C
 C
-#include "dcbgen.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcb_effqed.h"      

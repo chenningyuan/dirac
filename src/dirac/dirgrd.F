@@ -202,7 +202,10 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: ISYMAX
-!      use dcbgen_mod, only: LUCOEF, PARCAL
+      use dcbgen_mod, only: LUCOEF
+#if defined (VAR_MPI)
+      use dcbgen_mod, only: PARCAL
+#endif
 !      use dcbham_mod, only: ONECAP
       use quaternion_algebra
       use xcint_main
@@ -220,7 +223,6 @@ C
 #include "dcborb.h"
 #include "dcbdhf.h"
 #include "dgroup.h"
-#include "dcbgen.h"
 C
       DIMENSION WORK(*)
       LOGICAL TOBE
@@ -839,7 +841,7 @@ C*****************************************************************************
       use dorps_mod, only: DOPERT
       use chrxyz_mod, only: CHRXYZ
       use aovec_mod, only: MXAOVC
-!      use dcbgen_mod, only: DOLVC, NEWBAS, PARCAL, RELCAL
+      use dcbgen_mod, only: DOLVC, NEWBAS, PARCAL, RELCAL
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBAST, NNBBASX
       use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
      &  IPRTWO, RTNTWO, TKTIME
@@ -874,7 +876,6 @@ C     Timing variables
       DATA DPRTIM /D0,D0,D0,D0,D0,D0,D0,D0/
 C
 #include "dcbbas.h"
-#include "dcbgen.h"
 #include "dcbdhf.h"
 !#include "dgroup.h"
 #include "dcbham.h"
@@ -1866,7 +1867,7 @@ C*****************************************************************************
 
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP
-!      use dcbgen_mod, only: DOLVC
+      use dcbgen_mod, only: DOLVC
       use taymol_mod, only: GRDMOL
 !      use dcbham_mod, only: INTV1C, ONECAP
       use priunit_mod, only: LUPRI
@@ -1878,7 +1879,6 @@ C*****************************************************************************
       INTEGER :: I
 C
 C
-#include "dcbgen.h"
 #include "dcbham.h"
 C
       LOGICAL LBIT
@@ -2018,7 +2018,7 @@ C*****************************************************************************
       use consts_mod, only: D0
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
       use codata_mod, only: CVEL
       use dcbgrd_mod, only: GRADER, GRADKN, GRADNN, GRADNU, GRADRO
       use nuclei_mod, only: NUCDEP
@@ -2028,7 +2028,6 @@ C
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOLS
       CHARACTER*3 STR
-#include "dcbgen.h"
 C
       CALL QENTER('ESTGLS')
 C
@@ -2559,11 +2558,10 @@ C     Copied from abacus/abatro.F (TROINI)
 C     and modified for use in Dirac./jth 1998-02-04
 C
 !      use cbitro_mod, only: COMPAR, CUT, GDTRO, HESTRO, IPRINT, NOROT1, RDTRO, SKIP, THRESH, TRODIP, TROGRD, TROHES
-!      use dcbgen_mod, only: IPRGEN
+      use dcbgen_mod, only: IPRGEN
       use abainf_mod, only: GDALL
 #include "implicit.h"
 #include "cbitro.h"
-#include "dcbgen.h"
       LOGICAL LCOMPA
 C
       IPRINT = IPRGEN

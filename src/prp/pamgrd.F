@@ -205,7 +205,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, NZ
 !      use dcborb_mod, only: ICMOQ, N2ASHXQ, NASHT, NORB, NORBT
-!      use dcbgen_mod, only: LUCOEF, LUKRMC
+      use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 !      use dcbham_mod, only: SPINFR
 !      use dcbpsi_mod, only: DOKRMC
@@ -215,7 +215,6 @@ C***********************************************************************
 C
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbgen.h"
 #include "dcbxpr.h"
 #include "dcbham.h"
 #include "dcbpsi.h"

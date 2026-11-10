@@ -28,7 +28,7 @@
       use priunit_mod, only: LUCMD, LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbxqr_mod, only: BQRFR, CNVXQR, CQRFR, INTXQR, IPRXQR, ITRIQR, ITRXQR, LAQROP, LBQROP, LCQROP, LQROP, MAXFQR, MAXLQR, MAXQRM, NAQROP, NBQRFR, NBQROP, NCQRFR, NCQROP, RESXQR, THCQR, XQRDIH, XQRNRM, XQR_ALLCMB, XQR_INDSTR, XQR_LEVICI, XQR_SKIPEE, XQR_SKIPEP
-!      use dcbgen_mod, only: INTGEN
+      use dcbgen_mod, only: INTGEN
 !      use dcbham_mod, only: BSS, FREEPJ, GAUNT, LEVYLE, VEXTPJ, X2C
 !      use dcbprp_mod, only: DOEXCPRP, DOTPA, DOVER, DOXQR, EXCPRPTYP
 !      use dgroup_mod, only: NFSYM
@@ -37,7 +37,6 @@
       INTEGER :: I, J
 !
 #include "dcbxqr.h"
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbprp.h"
 #include "dgroup.h"
@@ -2350,7 +2349,9 @@
 !      use dcbxqr_mod, only: IPRXQR
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcbxrs_mod, only: INTFLG
-!      use dcbgen_mod, only: PARCAL
+#if defined (VAR_MPI)
+      use dcbgen_mod, only: PARCAL
+#endif
       use dirac_cfg
       use dft_cfg
       use xcint_main
@@ -2364,7 +2365,6 @@
 #include "dcbxqr.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
-#include "dcbgen.h"
 !
 !
       REAL(dp), PARAMETER :: D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0
@@ -3004,7 +3004,6 @@
       INTEGER :: I
 #include "dcbxrs.h"
 #include "dcbxqr.h"
-!#include "dcbgen.h"
 !
       DIMENSION ISYMOP(3), IHRMOP(3), IFCKOP(3)
 !
@@ -3508,13 +3507,12 @@
 !*****************************************************************************
 !      use dcbxqr_mod, only: BQRFR, CQRFR, IPRXQR, LAQROP, LBQROP, LCQROP, MAXLQR, NAQROP, NBQRFR, NBQROP, NCQRFR, NCQROP
 !      use dcbham_mod, only: LEVYLE
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
 #include "dcbxqr.h"
 #include "dcbham.h"
-#include "dcbgen.h"
 !
       REAL(dp), PARAMETER :: D1 = 1.0D0
       CHARACTER PNAME*16,PLABEL*8

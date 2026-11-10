@@ -33,7 +33,6 @@ C*****************************************************************************
 !      use dcbprp_mod, only: EXPPED, FULMAT, IPRDEF, LONDON, MSUSCP, NOORTH, OPTROT, REGRAD, SEPTEP, SHIELD, SYMCON
 !      use dcbnmr_mod, only: EPREORTH, INTNMR, NOONEI, NOTWOL
 !      use dcbham_mod, only: BSS, LEVYLE, RDSUSLLMOD, X2C
-!      use dcbgen_mod, only: INTGEN, PARCAL
 !      use dcbxlr_mod, only: XLR_SKIPEP
       use dirac_cfg
 #ifdef MOD_LAO_REARRANGED
@@ -47,12 +46,12 @@ C*****************************************************************************
       use nuclei_mod, only: NATOMS
       use cbiher_mod, only: IPRDEF
       use orgcom_mod, only: CMXYZ, DIPORG, GAGORG, GAGORG_SET, NCHBC
+      use dcbgen_mod, only: INTGEN, PARCAL
 #include "implicit.h"
       INTEGER :: I
 #include "dcbprp.h"
 #include "dcbnmr.h"
 #include "dcbham.h"
-#include "dcbgen.h"
 #include "dcbxlr.h"
 !#include "dgroup.h"
 C
@@ -455,7 +454,7 @@ C***********************************************************************
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NFSYM, NZ
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBXQ, NCMOTQ, NISH, NOCC, NORB, NORBT, NPSH
 !      use dcbbas_mod, only: NTBAS
-!      use dcbgen_mod, only: LUCOEF
+      use dcbgen_mod, only: LUCOEF
 !      use dcbham_mod, only: SPINFR
 !      use dcbprp_mod, only: DOPCT, IPCON, IPSHIELD
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM
@@ -469,7 +468,6 @@ C
 #include "dgroup.h"
 #include "dcborb.h"   
 #include "dcbbas.h"   
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
@@ -649,7 +647,6 @@ C***********************************************************************
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NFSYM, NZ
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBXQ, NCMOTQ, NISH, NOCC, NORB, NORBT, NPSH
 !      use dcbbas_mod, only: NTBAS
-!      use dcbgen_mod, only: LUCOEF
 !      use dcbham_mod, only: SPINFR
 !      use dcbprp_mod, only: DOPCT, FULMAT, IPCON, IPSHIELD
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
@@ -666,13 +663,13 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: IPTAX
       use nuclei_mod, only: NUCDEP
+      use dcbgen_mod, only: LUCOEF
 #include "implicit.h"
       INTEGER :: I
 C
 #include "dgroup.h"
 #include "dcborb.h"   
 #include "dcbbas.h"   
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
@@ -1113,7 +1110,7 @@ C  Written by Miro Ilias, august 2003, Odense
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: LUCOEF
+      use dcbgen_mod, only: LUCOEF
 !      use dcborb_mod, only: ICMOQ, N2ORBXQ, NORB, NORBT
 !      use dcbham_mod, only: SPINFR
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
@@ -1123,7 +1120,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1= 1.0D0
-#include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbxpr.h"
@@ -1897,11 +1893,10 @@ C
 C*****************************************************************************
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dcbham_mod, only: SPINFR
-!      use dcbgen_mod, only: LUCOEF
+      use dcbgen_mod, only: LUCOEF
 #include "implicit.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "dcbgen.h"
 C
       DIMENSION WORK(*)
 
@@ -1962,7 +1957,10 @@ C*****************************************************************************
 #if defined (VAR_MPI)
       use blocks_mod, only: NLRGBL, NSMLBL
 #endif
-!      use dcbgen_mod, only: PARCAL, RELCAL
+      use dcbgen_mod, only: RELCAL
+#if defined (VAR_MPI)
+      use dcbgen_mod, only: PARCAL
+#endif
 !      use dcbnmr_mod, only: INTNMR
 !      use dcbprp_mod, only: IPRPRP, LONDON
       use dcbsusc_mod, only: SUS2EL
@@ -1984,7 +1982,6 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "dgroup.h"
 C
-#include "dcbgen.h"
 #include "dcbnmr.h"
 #include "dcbprp.h"
 C
@@ -3096,7 +3093,6 @@ C
 C  Written by:  MI, jan.2003, based on TEC's routines
 C
 C*****************************************************************************
-!      use dcbgen_mod, only: CVAL
 !      use dcbprp_mod, only: BXLAO, BYLAO, BZLAO, IPCON, IPCON21, IPCON22, IPCON23, IPLONDON, IPMSUSC, IPRPRP, IPSHIELD, IP_BLAO, OPTROT, SHIELD, SYMCON
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
 #ifdef MOD_LAO_REARRANGED
@@ -3104,11 +3100,11 @@ C*****************************************************************************
 #endif
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
+      use dcbgen_mod, only: CVAL
 #include "implicit.h"
 C
       PARAMETER(DI2 = +0.5D00, DMI2 = -0.5D0, DM1 = -1.0D0,
      &          D2 = 2.0D0, D1 = 1.0D0)
-#include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
       CHARACTER PNAME*16, PLABEL(3)*8, LABELC*7

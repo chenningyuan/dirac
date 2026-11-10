@@ -8,7 +8,7 @@
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use dcbgen_mod, only: LU1INT
+      use dcbgen_mod, only: LU1INT
       use cbihr1_mod, only: IPRONE
 !      use dcbbas_mod, only: IBAS, IBBAS, N2BAS, N2BAST, N2BBASX, NBBAS, NFBAS, NNBBASX, NTBAS
 !      use dgroup_mod, only: JFSYM, NFSYM, NZ
@@ -21,7 +21,6 @@
       INTEGER :: I, J
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
-#include "dcbgen.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbham.h"

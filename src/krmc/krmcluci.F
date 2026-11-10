@@ -1972,12 +1972,11 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use dummy_mod, only: DUMMY
-!      use dcbgen_mod, only: LUKRM3
+      use dcbgen_mod, only: LUKRM3
 !      use dgroup_mod, only: NZ
 !      use parluci_mod, only: LUWRT
 #include "implicit.h"
 C
-#include "dcbgen.h"
 #include "dgroup.h"
       CHARACTER*6 CIRUN
       DIMENSION VPROP_KRCI(*), WORK(*)
@@ -2152,10 +2151,9 @@ C
 C     Last revision: S. Knecht           - March  2007
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dcbgen_mod, only: PARCAL
+      use dcbgen_mod, only: PARCAL
       use dirac_partask_mod, only: LUCIAREL_PAR
 #include "implicit.h"
-#include "dcbgen.h"
 !#include "parluci.h"
 C
 C     Send task code for parallel KRMC-LUCIAREL
@@ -2174,10 +2172,9 @@ C
 C     Last revision: S. Knecht           - March  2007
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dcbgen_mod, only: PARCAL
+      use dcbgen_mod, only: PARCAL
       use dirac_partask_mod, only: RELEASE_NODES
 #include "implicit.h"
-#include "dcbgen.h"
 C
       IF (.NOT.PARCAL) RETURN
 C
@@ -2207,7 +2204,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use noccn_inf_mod, only: NOOCCN_DENS_RUN
 !      use krciprop_mod, only: LXPRPKRCI, NPROP_KRCI, NPROP_ROOTS_KRCI, RUNXPROP
 !      use dcborb_mod, only: NASHT, NNASHX, NORBT
-!      use dcbgen_mod, only: PARCAL
+      use dcbgen_mod, only: PARCAL
 !      use dgroup_mod, only: NZ
       use memory_allocator
 C
@@ -2224,7 +2221,6 @@ C
 #include "krciprop.h"
 !#include "dcbopt.h"
 #include "dcborb.h"
-#include "dcbgen.h"
 #include "dgroup.h"
 
       real(8), allocatable :: WORK(:)

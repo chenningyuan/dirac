@@ -33,9 +33,9 @@
 !-----------------------------------------------------------------------------------------
 
 module include_dcbgen_h
+      use dcbgen_mod, only: IPRGEN
 implicit none
 private
-#include "dcbgen.h"
 !> specify public variables and public methods
 public :: get_IPRGEN
 contains

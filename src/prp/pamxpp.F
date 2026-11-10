@@ -188,7 +188,6 @@ C*****************************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2=2.0D0
 C
-!#include "dcbgen.h"
 #include "dcbxpp.h"
 !#include "dcbxlr.h"
 #include "dgroup.h"
@@ -352,7 +351,7 @@ C*****************************************************************************
       use priunit_mod, only: LUCMD, LUPRI
       use dummy_mod, only: DUMMY
       use mxcent_mod, only: MXCENT, MXCOOR
-!      use dcbgen_mod, only: INTGEN
+      use dcbgen_mod, only: INTGEN
 !      use dcbprp_mod, only: DOXPP
 !      use dcbxpp_mod, only: ANGPLOT, BEDCHK, BEDECD, CNVXPP, DOBED, DOLENR, DOVELR, GCLEAN, GCLEAN_FAC, GNOISE, GNOISE_FAC, IBDOFF, IEPOFF, IMPOFF, INTXPP, IPRXPP, ITRIPP, ITRXPP, IVPOFF, KEXCNV, KEXSIM, KEXSTV, KVAL_OSC, LPPAPU, MAXEXC, MAXLPP, MAX_KVAL, NBED, NPPAP, NPPAPT, NROTAV, ORBXPP, ORIENTED, RESXPP, THCPP, UPOL, UWAVE, XPPANA, XPPFIL, XPPNRM, XPP_E2CHEK, XPP_INDSTR, XPP_LSFG, XPP_RSPEXP, XPP_SKIPEE, XPP_SKIPEP, XPP_TRIPLET
 !      use dcbxlr_mod, only: MAXRM, MXLOAD
@@ -367,7 +366,6 @@ C*****************************************************************************
       INTEGER, PARAMETER :: NTABLE = 41
       REAL(dp), PARAMETER :: DRESFAC = 1.0D2
 C
-#include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxpp.h"
 #include "dcbxlr.h"

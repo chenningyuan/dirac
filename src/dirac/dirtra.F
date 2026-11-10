@@ -3582,7 +3582,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NESH, NORB, NPSH
-!      use dcbgen_mod, only: TWOCOMPBSS
+      use dcbgen_mod, only: TWOCOMPBSS
 !      use dcbbas_mod, only: I2BASX, I2TMT, N2BBASX, NFBAS, NTBAS, NZT
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbham_mod, only: BSS, SSMTRC, X2C
@@ -3591,7 +3591,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D1 = 1.00D00, D0 = 0.00D00
-#include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
 #include "dcbham.h"

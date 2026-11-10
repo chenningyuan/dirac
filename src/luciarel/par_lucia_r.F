@@ -10442,9 +10442,8 @@ C     Written by  S. Knecht         - June 16 2007  - on a saturday
 C     afternoon ...
 C
 C**********************************************************************
-!      use dcbgen_mod, only: PARCAL
+      use dcbgen_mod, only: PARCAL
 #include "implicit.h"
-#include "dcbgen.h"
       LOGICAL PARCAL_SAVE
 C
       IF( ISET .eq. 0 )THEN

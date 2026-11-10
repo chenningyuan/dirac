@@ -23,7 +23,6 @@ C
 C     Output module for DIRAC
 C
 C***********************************************************************
-!      use dcbgen_mod, only: DOLVC
 !      use dcbham_mod, only: E_PE, INTV1C, ONECAP, ONESYS, SOLVEN
 !      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: NESH, NPSH
@@ -45,10 +44,10 @@ C***********************************************************************
 
       use priunit_mod, only: LUPRI
       use frame_mod, only: CORRLV, POTNUC
+      use dcbgen_mod, only: DOLVC
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
@@ -660,11 +659,10 @@ C
 C***********************************************************************
 !      use dcbham_mod, only: ESHIFT
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "dcbgen.h"
 #include "dcbham.h"
       REAL(dp), PARAMETER :: D2=2.0D0
       DIMENSION EIG(NVAL)

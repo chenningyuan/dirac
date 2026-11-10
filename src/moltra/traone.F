@@ -31,13 +31,12 @@ C***********************************************************************
 !      use dcbtra_mod, only: IPRTRA, ITRA_INTFL2
 !      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
 !      use dcbbas_mod, only: N2BBASXQ
-!      use dcbgen_mod, only: PARCAL
+      use dcbgen_mod, only: PARCAL
 #include "implicit.h"
 C
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
-#include "dcbgen.h"
       LOGICAL TOBE,TRASAM
       real*8, intent(in) :: toterg
       DIMENSION WORK(*),NSTR(2,0:2,2),NSTRT(2),KQ(2,2),
@@ -205,7 +204,6 @@ C*****************************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
-!#include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbdhf.h"
 #include "dgroup.h"

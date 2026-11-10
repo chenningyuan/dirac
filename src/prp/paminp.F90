@@ -33,7 +33,6 @@
 !
 !***********************************************************************
 !      use dcbham_mod, only: BSS, GAUNT, IBSS, X2C
-!      use dcbgen_mod, only: TWOCOMP
 !      use dcbprp_mod, only: ABUND, BXLAO, BYLAO, BZLAO, DIPOLE, DOESR, DOEXCPRP, DOEXP, DOPCT, DOTPA, DOVDW, DOVER, DOXLR, DOXPP, DOXQR, DSO, EFFDE2, EFFDEN, EFG, EFN, EFT, EFTNTL, EPOLAR, ESRGTENS, ESR_HFCC, EXCPRPTYP, HDF5IO, IMAGOUT, IPRPRP, LONDON, MGRAD, MSUSCDIA, MSUSCP, MXPRP_WF, NOPCT, NPRP_WF, NQCC, NQCCCART, NSTDIA, OPTROT, PRP_WF, PVC, PVC_EFG, PVC_SHIELD, PVC_SPINRO, PVC_SPINSPIN, QUADRU, RHONUC, ROTG, SHIELD, SPINRO, SPNSPN
 !      use dcborb_mod, only: NASHT
 !      use dgroup_mod, only: NBSYM
@@ -54,12 +53,12 @@
       use nuclei_mod, only: NATOMS, NUCDEP
       use cbiher_mod, only: DSO, QUADRU
       use orgcom_mod, only: DIPORG, GAGORG, ORIGIN
+      use dcbgen_mod, only: TWOCOMP
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
       PARAMETER (NDIR = 11, NTABLE = 45)
 #include "dcbham.h"
-#include "dcbgen.h"
 !
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,      &
      &          WORD1*7, WRDSRC*7
@@ -1037,11 +1036,10 @@
 !
 !***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "dcbgen.h"
       CHARACTER*7 WORD
 !
       PARAMETER (NTABKW = 32)
@@ -1548,7 +1546,7 @@
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
 !      use dcbprl_mod, only: NPRPLBL, PDOINT, PRPLBL
 !      use dcbham_mod, only: BSS, LEVYLE, RDSUSLLMOD, ZORA, ZORA4
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
 #include "implicit.h"
       INTEGER :: I, J
       CHARACTER PNAME*16, PLABEL(NPCOMP)*8
@@ -1562,7 +1560,6 @@
 #include "dcbprl.h"
 #include "dcbham.h"
 !MI ... needs CVAL
-#include "dcbgen.h"
 
       CHARACTER*4 PCOMB, PCOMB_SAVE
 !     ... the four characters in PCOMB define inclusion of the
@@ -2994,12 +2991,11 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use mxcent_mod, only: MXCOOR
       use dcbgrd_mod, only: DONGRD, DOTRCK, IGRD_INTFLG, IPRGRD, RELGRD, SCRGRD
-!      use dcbgen_mod, only: INTGEN
+      use dcbgen_mod, only: INTGEN
 !      use dcbham_mod, only: LEVYLE
 #include "implicit.h"
 !
 !
-#include "dcbgen.h"
 #include "dcbham.h"
 !
 !     Initialize /CBIGRD/
@@ -3205,11 +3201,10 @@
 !
 !      use dcbxpr_mod, only: NPRPS
       use priunit_mod, only: LUCMD
-!      use dcbgen_mod, only: DOPRP
+      use dcbgen_mod, only: DOPRP
       use memory_allocator
 #include "implicit.h"
 #include "dcbxpr.h"
-#include "dcbgen.h"
 !
       real(8), allocatable :: WORK(:)
       LOGICAL FOPEN

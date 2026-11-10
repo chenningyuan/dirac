@@ -21,7 +21,6 @@ C  /* Deck herinp */
 C
 C --- General Input for HERMIT ---
 C
-!      use dcbgen_mod, only: DIRCAL, HRINPC, IPRUSR, RELCAL
 #ifndef PRG_DIRAC
       use gnrinf_mod, only: DIRCAL, HRINPC, IPRUSR, RELCAL
 #endif
@@ -36,6 +35,9 @@ C
       use iratdef_mod, only: IRAT
       use cbisol_mod, only: SOLVNT
       use kinds_mod, only: dp
+#ifdef PRG_DIRAC
+      use dcbgen_mod, only: DIRCAL, HRINPC, IPRUSR, RELCAL
+#endif
 #include "implicit.h"
 C
       PARAMETER (NDIR = 6, NTABLE = 80)
@@ -46,9 +48,7 @@ C
 C
 #ifdef PRG_DIRAC
 ! dcbham.h : ECPCALC, NONREL
-#include "dcbgen.h"
 #include "dcbham.h"
-#else
 #endif
 C
 C
@@ -1106,6 +1106,9 @@ C  /* Deck hr2inp */
 !      use infpar_mod, only: NUMNOD
       use cbiher_mod, only: IPRDEF, NOTWO
       use kinds_mod, only: dp
+#ifdef PRG_DIRAC
+      use dcbgen_mod, only: DIRCAL, PANAS, RELCAL, SEGBAS
+#endif
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
       PARAMETER (NTABLE = 10)
@@ -1113,10 +1116,6 @@ C
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
-#ifdef PRG_DIRAC
-#include "dcbgen.h"
-#else
-#endif
 ! infpar.h : NUMNOD
 #include "infpar.h"
       SAVE SET

@@ -29,7 +29,7 @@
       use priunit_mod, only: LUCMD, LUPRI
 !      use dgroup_mod, only: NZ
 !      use dcbham_mod, only: CAP, LEVYLE, SPINFR
-!      use dcbgen_mod, only: PARCAL
+      use dcbgen_mod, only: PARCAL
 !      use dcbtra_mod, only: ISTRAT
 !      use infpar_mod, only: MPARID, MYTID, NODE, NUMNOD
 !      use ccpar_mod, only: MASTER, MYPROC, NMPROC
@@ -40,7 +40,6 @@
 #include "dgroup.h"
 #include "dcbham.h"
 !#include "dcbpsi.h"
-#include "dcbgen.h"
 #include "../moltra/dcbtra.h"
 #include "infpar.h"
 #include "../relccsd/ccpar.inc"

@@ -31,9 +31,9 @@ C     Written by T.Saue Feb 1997
 C
 C*****************************************************************************
 
-!      use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dcbpsi_mod, only: DOKRCC, DOKRCI, DOKRMC
 !      use dgroup_mod, only: NFSYM
+      use dcbgen_mod, only: LUCOEF, LUKRMC
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NCMOTQ, NORBT
 !      use dcbbas_mod, only: NTBAS
@@ -43,7 +43,6 @@ C*****************************************************************************
 
 #include "implicit.h"
       INTEGER :: I,J
-#include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -177,13 +176,12 @@ C*****************************************************************************
 
 !      use dcbpsi_mod, only: DOKRCC, DOKRCI, DOKRMC
 !      use dcborb_mod, only: NCMOTQ, NORBT
-!      use dcbgen_mod, only: LUCOEF, LUKRMC
+      use dcbgen_mod, only: LUCOEF, LUKRMC
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: ATOMIC, NZ
       use memory_allocator
 
 #include "implicit.h"
-#include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -266,9 +264,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine get_title (stored_title)
       ! Retrieve title from common block
-!      use dcbgen_mod, only: TITLE
+      use dcbgen_mod, only: TITLE
 #include "implicit.h"
-#include "dcbgen.h"
       CHARACTER*50, intent(out) :: stored_title
       stored_title = title
       end
@@ -360,13 +357,12 @@ C*****************************************************************************
 !      use dcbbas_mod, only: NFBAS, NTBAS
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: NCMOTQ, NESH, NORBT, NPSH
-!      use dcbgen_mod, only: TITLE
+      use dcbgen_mod, only: TITLE
 #include "implicit.h"
       INTEGER :: I,J
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
-#include "dcbgen.h"
       CHARACTER TEXT*74
       DIMENSION CMO(NCMOTQ),EIG(NORBT),
      &          IBEIG(NORBT,2)
@@ -596,12 +592,11 @@ C     Written by T.Saue Sept 1 1995
 C
 C*****************************************************************************
 !      use dcbdhf_mod, only: NACSH
-!      use dcbgen_mod, only: TITLE
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
+      use dcbgen_mod, only: TITLE
 #include "implicit.h"
 C
 #include "dcbbas.h"
-#include "dcbgen.h"
 #include "dcbdhf.h"
       CHARACTER TEXT*74
       DIMENSION FOCK(N2BBASXQ*N)
@@ -679,13 +674,12 @@ C
 C     Written by T.Saue Oct 12 1995
 C
 C*****************************************************************************
-!      use dcbgen_mod, only: TITLE
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dcbdhf_mod, only: NACSH, NFMAT
+      use dcbgen_mod, only: TITLE
 #include "implicit.h"
 C
 #include "dcbbas.h"
-#include "dcbgen.h"
 #include "dcbdhf.h"
       CHARACTER TEXT*74
       DIMENSION DMAT(N2BBASXQ*NFMAT)
@@ -1632,7 +1626,7 @@ C  /* Deck acmout */
       SUBROUTINE ACMOUT()
 !      use dcbbas_mod, only: N2BBASX, NTBAS
 !      use dgroup_mod, only: NFSYM, NZC1
-!      use dcbgen_mod, only: LUCOEF, LUKRMC
+      use dcbgen_mod, only: LUCOEF, LUKRMC
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NCMOTQ, NORB, NORBT
       use checkpoint
@@ -1673,7 +1667,6 @@ C
 C*****************************************************************************
 #include "implicit.h"
 C
-#include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -2253,14 +2246,13 @@ C***********************************************************************
 !      use dcbrot_mod, only: ROTORB
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NCMOTQ, NORBT
-!      use dcbgen_mod, only: LUCOEF
+      use dcbgen_mod, only: LUCOEF
       use memory_allocator
       use dircmo
       use checkpoint
 
 #include "implicit.h"
 C
-#include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbreo.h"
 #include "dcbrot.h"
@@ -2317,16 +2309,15 @@ C
 C     Manipulation of CHECKPOINT after a wave function calculation
 C
 C***********************************************************************
-!      use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dcbbas_mod, only: NFBAS, NTBAS
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NORB, NORBT
 !      use dcbreo_mod, only: IMOORF, IREORF, LMOORF, MXREORD
+      use dcbgen_mod, only: LUCOEF, LUKRMC
       use priunit_mod, only: LUPRI
       use memory_allocator
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcbgen.h"
 #include "dcborb.h"
       LOGICAL TOBEK
       real(8), allocatable :: cmo(:)
@@ -2580,12 +2571,11 @@ C
 C***********************************************************************
 !      use dcbbas_mod, only: NTBAS
 !      use dgroup_mod, only: NFSYM
-!      use dcbgen_mod, only: LUCOEF
+      use dcbgen_mod, only: LUCOEF
       use priunit_mod, only: LUPRI
       use labeled_storage
 #include "implicit.h"
 C
-#include "dcbgen.h"
 !#include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -3266,7 +3256,7 @@ C  /* Deck acmoin */
       use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASX, NTBAS
 !      use dgroup_mod, only: IPQTOQ, IQDEF, NFSYM, NZ
-!      use dcbgen_mod, only: IPRGEN, LUCOEF
+      use dcbgen_mod, only: IPRGEN, LUCOEF
 !      use dcborb_mod, only: NORBT
       use labeled_storage
       use dircmo
@@ -3281,7 +3271,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 C
-#include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -3706,13 +3695,12 @@ C***********************************************************************
 !      use dcbbas_mod, only: I2TMT, N2TMT, NTBAS, NZT
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NFSYM, NZ
-!      use dcbgen_mod, only: LUCOEF, LUTMAT
+      use dcbgen_mod, only: LUCOEF, LUTMAT
       use memory_allocator
       use checkpoint
       use dircmo
 #include "implicit.h"
 C
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -3879,13 +3867,12 @@ C
 C***********************************************************************
 !      use dgroup_mod, only: NZ
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0
 C
-#include "dcbgen.h"
 !#include "dcbham.h"
 #include "dgroup.h"
       DIMENSION CMO(NBAS,NORB,NZ),EIG(NORB),

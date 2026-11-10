@@ -182,7 +182,7 @@ C***********************************************************************
 !      use dcbopt_mod, only: IPROPT, KZCONF, NZCONF, OPT_CIPROGRAM
 !      use dcborb_mod, only: NASHT
 !      use dgroup_mod, only: IPQTOQ, NZ
-!      use dcbgen_mod, only: LUKRM3
+      use dcbgen_mod, only: LUKRM3
 #include "implicit.h"
       INTEGER :: I
 C
@@ -191,7 +191,6 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbgen.h"
 C
       DIMENSION CREF(NZCONF,*), GCI(NZCONF,*), FCAC(*), H2AC(*)
       DIMENSION WORK(*), EMC(2)

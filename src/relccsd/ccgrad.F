@@ -1109,13 +1109,12 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NASHT, NESHT, NORBT
 !      use dgroup_mod, only: LINEAR, NZ
-!      use dcbgen_mod, only: LUCOEF, LUKRMC
+      use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dcbham_mod, only: SPINFR
 !      use infpar_mod, only: MPARID, MYTID
 #include "implicit.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "infpar.h"
 C

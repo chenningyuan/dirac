@@ -16,7 +16,6 @@ contains
       use maxorb_mod, only: MXCORB, MXSHEL
       use blocks_mod, only: NLRGBL, NSMLBL
 #include "implicit.h"
-!#include "dcbgen.h"
 !#include "dcbdhf.h"
 !#include "dcbbas.h"
     logical, intent(in) :: is_parallel
@@ -73,7 +72,6 @@ contains
       use maxorb_mod, only: MXCORB, MXSHEL
       use blocks_mod, only: NLRGBL, NSMLBL
 #include "implicit.h"
-!#include "dcbgen.h"
 !#include "dcbdhf.h"
 !#include "dcbbas.h"
     integer, intent(in) :: i2typ

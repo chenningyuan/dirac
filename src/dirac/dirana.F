@@ -245,8 +245,8 @@ C     Last revision: April 27 1996 - tsaue
 C
 C***********************************************************************
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
-!      use dcbgen_mod, only: LUKRMC
 !      use dcbpop_mod, only: ADDSML, DONETP, DO_SCFPOP, ILABDF, IPRPOP, LABDEF, NPOPLAB, VECPOP, VECPOP_SAVE
+      use dcbgen_mod, only: LUKRMC
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NFSYM
@@ -260,7 +260,6 @@ C
 C Used from COMMON blocks:
 C  DCBBAS: N2BBASX
 C  LABELS: NLAB
-#include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbpop.h"
@@ -668,7 +667,6 @@ C  DCBBAS:
 C  DGROUP: NZ
 C  DCBDHF: NOPEN
 C
-!#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbpop.h"
 #include "dcborb.h"
@@ -2092,7 +2090,7 @@ C     Last revision: tsaue - Jan 9 1997
 C     Vector analysis for KRMC added: T. Fleig, Oct 2003
 C
 C***********************************************************************
-!      use dcbgen_mod, only: LUKRMC
+      use dcbgen_mod, only: LUKRMC
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NFSYM
 !      use dcbvec_mod, only: ILABDF, IPRCMP, IPRVEC, VECPRI
@@ -2102,7 +2100,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcbgen.h"
 #include "dcbvec.h"
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -2924,14 +2921,13 @@ C
 C     Write header for formatted Gaussian cube file
 C
 C***********************************************************************
-!      use dcbgen_mod, only: TITLE
 !      use dcbrho_mod, only: NCUBE
+      use dcbgen_mod, only: TITLE
       use nuclei_mod, only: NUCDEP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "dcbgen.h"
 #include "dcbrho.h"
 C
       DIMENSION CUBE(3,0:3),ATOMS(4,NUCDEP)
@@ -3144,13 +3140,12 @@ C***********************************************************************
 !      use dcbprj_mod, only: IPRPRJ, NPROJNUC, NREFS, REFFIL, VECREF
 !      use dgroup_mod, only: NFSYM, NZ
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: LUCOEF
+      use dcbgen_mod, only: LUCOEF
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -3894,17 +3889,16 @@ C
 C***********************************************************************
 !      use dcbprj_mod, only: IPRPRJ, MAXREF, NREFS, PATOMS, REFFIL, VECREF
 !      use dcbham_mod, only: SSMTRC
-!      use dcbgen_mod, only: LUCOEF
 !      use dcborb_mod, only: IOCC
 !      use dgroup_mod, only: FREP, IPQTOQ, IQDEF, NFSYM, NZ, NZC1
 !      use dcbbas_mod, only: N2BAST, N2BBASX, NTBAS
+      use dcbgen_mod, only: LUCOEF
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0
 C
-#include "dcbgen.h"
 #include "dcbprj.h"
 #include "dgroup.h"
 #include "dcbham.h"

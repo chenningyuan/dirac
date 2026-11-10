@@ -3829,12 +3829,11 @@ C
       use optinf_mod
       use cbirea_mod, only: BASIS
       use maxorb_mod, only: MXCORB
+#ifdef PRG_DIRAC
+      use dcbgen_mod, only: DOHUCKEL, HRINPC, NEWSYM, RDINPC, RDMLIN
+#endif
 #include "implicit.h"
       INTEGER :: I,II,J
-#ifdef PRG_DIRAC
-#include "dcbgen.h"
-#else
-#endif
 #include "cbiwlk.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS
       CHARACTER FILENM*10, TMPLN*80

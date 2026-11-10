@@ -58,7 +58,7 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: LUITFO, LUKRMC
+      use dcbgen_mod, only: LUITFO, LUKRMC
 !      use dcbopt_mod, only: CPUOPT, EMCSCF, E_LVCORR_MC, IOPT_STATE, IOPT_SYMMETRY, IPROPT, JMCMIN, KZCONF, MCTYPE, MOPT_MXMACRO, NZCONF, NZCONFQ, OPT_CIPROGRAM, THRPCI, WLLOPT
 !      use dcborb_mod, only: N2ASHXQ, NCMOTQ, NORBT
       use frame_mod, only: POTNUC
@@ -67,7 +67,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcbgen.h"
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"

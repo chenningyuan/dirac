@@ -284,14 +284,13 @@ C
       use inforb_mod, only: N2BASX, NNBASX
       use priunit_mod, only: LUPRI
       use twocom_mod, only: SCRTHR
+#if (defined (PRG_DIRAC))
+      use dcbgen_mod, only: NEWBAS, PARCAL
+#endif
 #include "implicit.h"
 C
 C dirac_partask.h : symbols for DIRAC_PARCTL codes
 C
-#if defined (PRG_DIRAC)
-#include "dcbgen.h"
-#else
-#endif
 #include "infpar.h"
 C
 !     DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), WORK(LWORK),
@@ -487,13 +486,12 @@ C
       use priunit_mod, only: LUPRI
       use task_distribution_state, only: reset_task_order,
      &   task_order_is_valid, mark_task_order_valid
+#if (defined (PRG_DIRAC))
+      use dcbgen_mod, only: NEWBAS, RELCAL
+#endif
 #include "implicit.h"
       INTEGER :: I
 #include "infpar.h"
-#if defined (PRG_DIRAC)
-#include "dcbgen.h"
-#else
-#endif
 C
       INTEGER INDEX_IJ(MTOTTK), NPOS(MTOTTK)
       REAL*8  TIMES(MTOTTK)
@@ -571,7 +569,6 @@ C  /* Deck sdinit */
 C
 C     Written by Henrik Koch and Paal Dahle
 C
-!      use dcbgen_mod, only: PANAS, RELCAL, TWOCOMP
       use aovec_mod, only: MXAOVC
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbham_mod, only: ECPCALC, HFXATT, HFXFAC, HFXMU, INTV1C, LEVYLE, NONREL, ONECAP, SMLV1C, SPINFR
@@ -599,14 +596,18 @@ C
 #endif
       use abainf_mod, only: DOSYM
       use blocks_mod, only: MAXSHL, NSYMBL
+#if (defined (PRG_DIRAC))
+      use dcbgen_mod, only: RELCAL, TWOCOMP
+#if defined (VAR_MPI)
+      use dcbgen_mod, only: PANAS
+#endif
+#endif
 #include "implicit.h"
 C
       INTEGER :: I
 #if defined (PRG_DIRAC)
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
-#else
 #endif
 C
 #include "infpar.h"
@@ -1287,7 +1288,6 @@ CMI called from DIRNOD,DIRNOD2 (main/dirac.F)
 C
 CMI  TEC changes for LAO (2003,2006)
 
-!      use dcbgen_mod, only: RELCAL
 #ifdef PRG_DIRAC
       use dcbgrd_mod, only: GRADEE
 #endif
@@ -1303,15 +1303,14 @@ CMI  TEC changes for LAO (2003,2006)
       use energy_mod, only: GRADEE
 #endif
       use inforb_mod, only: N2BASX, NNBASX
+#if (defined (PRG_DIRAC))
+      use dcbgen_mod, only: RELCAL
+#endif
 #include "implicit.h"
 C
 C
 C
 #include "infpar.h"
-#if defined (PRG_DIRAC)
-#include "dcbgen.h"
-#else
-#endif
 C
       DIMENSION DINTSKP(14*3*3)
       LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH
@@ -1448,7 +1447,6 @@ C
 !      use infpar_mod, only: IPRPAR, MPARID, NODES, NTASK, TIMING
       use symmet_mod, only: MAXREP
       use maxorb_mod, only: MXCORB
-!      use dcbgen_mod, only: PANAS, RDINPC, RELCAL, TWOCOMP
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMDEP, NAMDPX, NAMEX,
      &  NAMN, NATOMS, NUCDEP, NUCIND
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1473,16 +1471,20 @@ C
       use gnrinf_mod, only: PANAS, RDINPC, RELCAL
 #endif
       use abainf_mod, only: DOSYM
+#if (defined (PRG_DIRAC))
+      use dcbgen_mod, only: RDINPC, RELCAL, TWOCOMP
+#if defined (VAR_MPI)
+      use dcbgen_mod, only: PANAS
+#endif
+#endif
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
       INTEGER :: I
 C
 #if defined (PRG_DIRAC)
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
-#else
 #endif
 #include "infpar.h"
 C

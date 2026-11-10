@@ -18,6 +18,7 @@
 
 module london_direct_hb
 
+      use dcbgen_mod, only: PARCAL, RELCAL
       use blocks_mod, only: NLRGBL, NSMLBL
       use cbihr2_mod, only: IPRNTA, IPRNTB, IPRNTC, IPRNTD, TKTIME
       use dirac_partask_mod, only: FDE_PAR, HERFCK_PAR, XCINT_PAR
@@ -55,7 +56,6 @@ module london_direct_hb
    integer :: ifock_type(nr_mat*max_nr_xyz_comp)
    integer :: irepdm(nr_mat*max_nr_xyz_comp)
 
-#include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbnmr.h"

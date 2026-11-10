@@ -31,14 +31,13 @@ C***********************************************************************
 !
       use dirac_partask_mod, only: FINISH_PAR_SIGNAL, RELEASE_NODES
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: PARCAL
+      use dcbgen_mod, only: PARCAL
 !      use infpar_mod, only: MAX_OMP_THREADS, MPARID, MYTID, NUMNOD, PARHER, SLAVE
       implicit none
 
       integer IPARCAL, IMYTID, IMPARID, INUMNOD
 
 
-#include "dcbgen.h"
 
 #include "infpar.h"
 !#include "dgroup.h"
@@ -108,7 +107,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirctl */
       SUBROUTINE DIRCTL()
 
-!      use dcbgen_mod, only: DOHRM, INPTES, OPTIMI
 !      use dcbham_mod, only: BSS, X2C
 !      use dgroup_mod, only: NBSYM
 !      use dcbdhf_mod, only: NOPEN
@@ -124,10 +122,10 @@ C  /* Deck dirctl */
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCOOR
       use dcbgrd_mod, only: DONGRD
+      use dcbgen_mod, only: DOHRM, INPTES, OPTIMI
       implicit none
 
 ! dcbgrd.h : DONGRD
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
@@ -232,15 +230,14 @@ C
 C     Written by T. Saue - November 1994
 C     Last revision : Sep 11 1995 - tsaue
 C***********************************************************************
-!      use dcbgen_mod, only: DOANA, DOPRP, DOPSI
 !      use dcbpsi_mod, only: DOKRMC
+      use dcbgen_mod, only: DOANA, DOPRP, DOPSI
       use fde_mod
       use dirac_cfg
       use visual
 
 #include "implicit.h"
 C
-#include "dcbgen.h"
 #include "dcbpsi.h"
 C
       CALL QENTER('PAMDRV')
@@ -297,7 +294,8 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: HFXMU
-!      use dcbgen_mod, only: DOACIN, DOACUT, DOANA, DOPSI, DOPUT, DORKBIMP, DOTRA, IPRGEN
+      use dcbgen_mod, only: DOACIN, DOACUT, DOANA, DOPSI, DOPUT,
+     &  DORKBIMP, DOTRA, IPRGEN
 !      use dcbpsi_mod, only: DOADC, DOCASCI, DOCASPT2, DOCCM, DOCIM, DOCOSCI, DOEXACC, DOHSCC, DOHSFS, DOIVO, DOKRCC, DOKRCI, DOKRMC, DOLAPLCE, DOLUCT, DOMP2, DOMP2NO, DOMVO, DOPOLPRP, DORES, DOROSE, L1ORBM, L2ORBM
 !      use dcbdhf_mod, only: MAXITR, MAXITR2, NOQCDHF
 !      use dcbimp_mod, only: DOIMPMOS
@@ -307,7 +305,6 @@ C***********************************************************************
 C
       LOGICAL   WFCONV
 C
-#include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbdhf.h"
 #include "dcbimp.h"
@@ -1228,7 +1225,6 @@ C     Written by L.Visscher July 1997
 C     Last revision: July 29 1996
 C
 C***********************************************************************
-!      use dcbgen_mod, only: PARCAL
 !      use infpar_mod, only: MAX_OMP_THREADS, MPARID, MYTID, NUMNOD, PARHER, SLAVE
       use interface_to_mpi
       use iso_c_binding
@@ -1246,6 +1242,7 @@ C***********************************************************************
       use pelib_dirac_interface, only : pelib_ifc_slave
 #endif
       use priunit_mod, only: LUPRI
+      use dcbgen_mod, only: PARCAL
       implicit none
 
 #if defined (VAR_SLEEPING_SLAVES)
@@ -1263,7 +1260,6 @@ C***********************************************************************
 #endif
 
 !#include "dcbdhf.h"
-#include "dcbgen.h"
 #include "infpar.h"
       INTEGER :: ISTAT(df_mpi_status_size)
       LOGICAL :: NEWTASK
@@ -1609,7 +1605,6 @@ C***********************************************************************
       !use visual_dirac, only : visual_initialize_nodes
 #include "implicit.h"
 !#include "dcbdhf.h"
-!#include "dcbgen.h"
 C
 #include "infpar.h"
       LOGICAL NEWTASK
@@ -1764,10 +1759,12 @@ C  /* Deck getbasdir */
       SUBROUTINE GETBASDIR()
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-!      use dcbgen_mod, only: BASDIR, PARCAL
+      use dcbgen_mod, only: BASDIR
+#if defined (VAR_MPI)
+      use dcbgen_mod, only: PARCAL
+#endif
 #include "implicit.h"
 !#include "infpar.h"
-#include "dcbgen.h"
 C
 C     Check environment variable BASDIR
 C

@@ -1087,7 +1087,7 @@ C***********************************************************************
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use pgroup_mod, only: REP
 !      use dcborb_mod, only: I2ORBT, ICMOQ, IORB, N2ORBTQ, NCMOTQ, NOCC, NORB, NORBT
-!      use dcbgen_mod, only: LUTMAT
+      use dcbgen_mod, only: LUTMAT
 #include "implicit.h"
       INTEGER :: I, J
 C
@@ -1095,7 +1095,6 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbgen.h"
 C
       DIMENSION CMO(*)
       DIMENSION IBOSYM(*), IBEIG(*)
@@ -2161,7 +2160,7 @@ C***********************************************************************
 !      use dcbopt_mod, only: CHCKPT_WRT, CINT_LOWSRT, CINT_REORD, CINT_SPLIT, CPBLCK_FILE, CSHMEMO, EMY, IDENSLR_STATE, IDOPARIO, IMEMFAC, IOPT_MK2DEL, IOPT_MK2REF, IOPT_SYMMETRY, IPROPT, IRESTRK, ISHMEM_TYPE, MAXCIT, MOPT_MXMACRO, MXCIV, NATOLCR, NCIROOT, NMAX_SYM, OPT_CIPROGRAM, OPT_THRECI, OPT_THRGRD, OPT_UCIBOS
 !      use dcborb_mod, only: IORB, MXGAS, NASH, NGASSP, NGAS_DC, NGSH, NGSHT, NISH, NORBT, NPSH
 !      use dcbham_mod, only: LEVYLE, SPINFR
-!      use dcbgen_mod, only: LUCOEF, LUKRMC
+      use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dcbbos_mod, only: IBOSYM
 !      use mxpdim_mod, only: IMAXLBLKSZ, MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXROOT
 !      use cstate_mod, only: IDC, IREFL, IREFML, IREFPA, IREFSM, IROOT, NMAX_SYM_CI, NROOT, PLSIGN, PSSIGN
@@ -2186,7 +2185,6 @@ C***********************************************************************
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbham.h"
-#include "dcbgen.h"
 #include "dcbbos.h"
 #include "../luciarel/mxpdim.inc"
 #include "../luciarel/cstate.inc"

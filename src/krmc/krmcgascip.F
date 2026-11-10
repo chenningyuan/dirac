@@ -1343,14 +1343,13 @@ C     Extracted from GASCIP_STARTVEC July 2002 /hjaaj.
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: LUKRMC
+      use dcbgen_mod, only: LUKRMC
 !      use dcbham_mod, only: LEVYLE, SPINFR
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NAELEC, NASHT, NNASHX, NORBT
 !      use dgroup_mod, only: LINEAR, NZ, NZ_IN_CI
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -2152,7 +2151,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NASHT
 !      use dgroup_mod, only: NZ_IN_CI
-!      use dcbgen_mod, only: PARCAL
+      use dcbgen_mod, only: PARCAL
 #include "implicit.h"
       INTEGER :: I, J
 C
@@ -2161,7 +2160,6 @@ C
 !#include "dcbgascip.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbgen.h"
 C
 !     output
       REAL*8    P1MAT_CI(N_P1MAT_CI,N_P1MAT_CI,*)
@@ -2618,7 +2616,7 @@ C     Last revision :  Hans Jorgen A. Jensen - Oct 2010/parallel Aug 2014
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: LUKRMC, PARCAL
+      use dcbgen_mod, only: LUKRMC, PARCAL
 !      use dcbham_mod, only: LEVYLE, SPINFR
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NAELEC, NASHT, NCMOTQ, NNASHX, NORBT
 !      use dgroup_mod, only: IPQTOQ, LINEAR, NZ, NZ_IN_CI
@@ -2629,7 +2627,6 @@ C Used from include files:
 C  dcbgen.h : PARCAL, ...
 C  dcborb.h : NASHT,NCMOTQ,...
 C
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -4115,10 +4112,9 @@ C     Written by J. Thyssen - Jan 23 2001
 C     Last revision :
 C
 C***********************************************************************
-!      use dcbgen_mod, only: LUKRMC
+      use dcbgen_mod, only: LUKRMC
 #include "implicit.h"
 C
-#include "dcbgen.h"
 C
       DIMENSION BVEC(*), WORK(*)
 C
@@ -5645,7 +5641,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       use dirac_partask_mod, only: GASCIP_PAR
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: PARCAL
+#ifdef VAR_MPI
+      use dcbgen_mod, only: PARCAL
+#endif
 !      use infpar_mod, only: MPARID
 !      use dcbgascip_mod, only: I1_DCI_GASCIP, I2_DCI_GASCIP
 !      use dcborb_mod, only: I1_DCBORB, I2_DCBORB
@@ -5656,7 +5654,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 #include "implicit.h"
 C
-#include "dcbgen.h"
 #include "infpar.h"
 C
 C send info to slaves with MPI_BCAST from these common blocks:
@@ -5716,15 +5713,16 @@ C     master: release slaves from GASCIP tasks
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-!      use dcbgen_mod, only: PARCAL
 !      use infpar_mod, only: MPARID
+#ifdef VAR_MPI
+      use dcbgen_mod, only: PARCAL
+#endif
       use dirac_partask_mod, only: RELEASE_NODES
 #ifdef VAR_MPI
       use interface_to_mpi
 
 #include "implicit.h"
 C
-#include "dcbgen.h"
 #include "infpar.h"
 C
       IF (PARCAL) THEN

@@ -61,6 +61,9 @@ C  /* Deck pr1dr1 */
      &                  INTREP,NOPTYP,NBAST,NELMNT,ANTI,IORDER,DOATOM,
      &                  WEIGHT,ABSCIS,TRIANG,NATOM,INTADR,NSHINT,SQUARE,
      &                  DOINT,IPRINT)
+#ifdef PRG_DIRAC
+      use dcbgen_mod, only: DOHUCKEL
+#endif
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use onecom_mod
@@ -89,10 +92,6 @@ C
       DIMENSION SOINT(NELMNT,NOPTYP), WORK(LWORK), INTREP(NOPTYP),
      &          WEIGHT(NPOINT), ABSCIS(NPOINT), INTADR(*)
 C
-#ifdef PRG_DIRAC
-#include "dcbgen.h"
-#else
-#endif
 C
 C
       TOLS   = THRS*THRS
@@ -770,6 +769,9 @@ C  /* Deck pr1so1 */
      &                  ISHELB,IORBA,IORBB,KAB,CORBX0,CORBY0,CORBZ0,
      &                  CORCX,CORCY,CORCZ,JCENTC,JSYMC,GEXP,TOLOG,TOLS,
      &                  DONUC1,DOMOM1,MULTA,MULTB,ncentc)
+#ifdef PRG_DIRAC
+      use dcbgen_mod, only: DOHUCKEL
+#endif
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
@@ -791,10 +793,6 @@ C
      &          INTADR(*), JSYMC(*), JCENTC(*), GEXP(*)
       integer :: ncentc(*)
 C
-#ifdef PRG_DIRAC
-#include "dcbgen.h"
-#else
-#endif
 C
       XYZ(I,J) = PT(IAND(ISYMAX(I,1),J))
 C

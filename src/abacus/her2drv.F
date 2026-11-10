@@ -2722,10 +2722,6 @@ C
       DIMENSION IPRVOR(KMAX), IPRVPR(KMAX),
      *          JORBSH(KMAX,MXAOVC), KORBSH(KMAX,MXAOVC)
 
-#ifdef PRG_DIRAC
-#include "dcbgen.h"
-#else
-#endif
 C
 C
       MXAOSH = 0

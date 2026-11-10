@@ -52,8 +52,8 @@ contains
 !      use dcbbas_mod, only: I2BASX, N2BASTQ, NFBAS, NTBAS, NZT
 !      use dcbham_mod, only: IMFCH, IPRHAM, ISORDER_AMFI_X2C, MDIRAC, NOAMFI, ONESYS, SPINFR
 !      use dcborb_mod, only: NCMOTQ, NESH, NFORB, NORB, NPSH
-!      use dcbgen_mod, only: BNCRON, CVAL, INTGEN, INTGEN_SAVE, LU1INT, LUX2C
 !      use dgroup_mod, only: ATOMIC, IPQTOQ, IQDEF, IQTOPQ, IRQMAT, JBTOF, JM4POS, JQBAS, LINEAR, NFSYM, NZ
+      use dcbgen_mod, only: BNCRON, CVAL, INTGEN, INTGEN_SAVE, LU1INT, LUX2C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: CHARGE, NBAS_ATOMTYPE, NONT, NONTYP, NUCDEG, NUCDEP
       use maxaqn_mod, only: MXQN
@@ -68,7 +68,6 @@ contains
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
@@ -349,14 +348,13 @@ contains
 !**********************************************************************
   subroutine renew_x2c_cb_orb_shell_dim(ham_lvl_x2c)
 
-!      use dcbgen_mod, only: INTGEN
 !      use dcbham_mod, only: I2COFK, MC, SPINFR, SSMTRC, SSMTRC_SAVE, SUB_BL
 !      use dcborb_mod, only: ID_SUB_BL, NBORB, NESH, NISH, NOCC, NORB, NORB_SUB, NPSH, NTMO_SUB, N_SUB_BL
 !      use dcbdhf_mod, only: I2TMOT, INTDEF, INTDEF_SAVE, N2TMO, N2TMOTQ, NESHMF, NISHMF, NOCCMF, NPSHMF, NTMO
 !      use dcbbas_mod, only: I2TMT, N2TMT, NFBAS, NZT
 !      use dgroup_mod, only: LINEAR, NFSYM, NZ
+      use dcbgen_mod, only: INTGEN
   use x2cmod_cfg
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dcbdhf.h"

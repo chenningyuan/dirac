@@ -2465,7 +2465,7 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: LUKRM3
+      use dcbgen_mod, only: LUKRM3
 !      use dcborb_mod, only: MXGAS, N2ASHX, NASH, NASHT
 !      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM, NZ
       use pgroup_mod, only: REP
@@ -2476,7 +2476,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcbgen.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbxpr.h"

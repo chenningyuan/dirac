@@ -5605,10 +5605,10 @@ C     written by Luuk Visscher, August 1997
 C     LUCITA version by Stefan Knecht, Feb. 06
 C    
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use dcbgen_mod, only: PARCAL
       use dirac_partask_mod, only: LUCITA_PAR
 #include "implicit.h"
 #include "parluci.h"
-#include "dcbgen.h"
 C
 C     Send task code for parallel LUCITA
 C
@@ -5631,9 +5631,9 @@ C     written by Luuk Visscher, August 1997
 C     LUCITA version by Stefan Knecht, Feb. 06
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use dcbgen_mod, only: PARCAL
       use dirac_partask_mod, only: RELEASE_NODES
 #include "implicit.h"
-#include "dcbgen.h"
 #include "infpar.h"
 #include "parluci.h"
 C

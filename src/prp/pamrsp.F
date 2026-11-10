@@ -140,7 +140,6 @@ C
      &          IBTYP(2,NREDM), IBCVC(NREDM),IBEVC(NREDM),IBPVC(NREDM),
      &          RCNV(*),EVALR(*),EVECR(*),WORK(*)
 C
-!#include "dcbgen.h"
 #include "dcbxrs.h"
 C
       CHARACTER*1 TTYPEG, TTYPSG
@@ -351,7 +350,7 @@ C     Last revision: July 30 1996 - tsaue
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: IDFLAG, LUKRM4
+      use dcbgen_mod, only: IDFLAG, LUKRM4
 !      use dcbxrs_mod, only: BVTYP, E2CHEK, FKRMC, GPTNRM, ICRED, IERED, INTBUF, INTDEF, INTFLG, IPRED, IPRXRS, ITMIC, IZRED, JSYMOP, JTIMOP, KBCI, KBOE, KBOP, KCONV, LINEQ, LOFFTY, LUBCI, LUBOE, LUBOP, LUCYCL, LURSP, LUSCI, LUSOE, LUSOP, MAXITR, MAXSIM, NCRED, NCSIM, NDAMP, NERED, NESIM, NEVEC, NFREQ, NOSIM, NPRED, NPSIM, NREDM, NTSIM, NVPAR, NZCONF, NZCONFQ, NZRED, NZVARQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, THCXRS, TKNORM, UNCOUP, XRS_INTTYP
       use cbihr2_mod, only: SCRFCK, USRSCR
 !      use dcbbas_mod, only: N2BBAST, N2BBASXQ
@@ -362,7 +361,6 @@ C***********************************************************************
 C
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
-#include "dcbgen.h"
 #include "dcbxrs.h"
 !#include "dgroup.h"
 #include "dcbbas.h"
@@ -1901,14 +1899,13 @@ C***********************************************************************
       use dummy_mod, only: DUMMY
       use consts_mod, only: D1, DP5
 !      use dcbxrs_mod, only: CNVINT, GPTNRM, IMX, INTBUF, INTDEF, INTFLG, IPRXRS, IPX, ITMIC, ITRINT, JTIMOP, LINEQ, LUBCI, LUBOE, LUBOP, LUCYCL, LURSP, LUSCI, LUSOE, LUSOP, N2REDM, NEVEC, NFOCKMAT, NFREQ, NREDM, NVPAR, NZCONF, NZCONFQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, XRS_INTTYP
-!      use dcbgen_mod, only: LUKRMC
+      use dcbgen_mod, only: LUKRMC
 !      use dcborb_mod, only: NASHT, NISHT
 #include "implicit.h"
 C
 C
 C
 #include "dcbxrs.h"
-#include "dcbgen.h"
 #include "dcborb.h"
       DIMENSION WORK(*),REDGP(*), REDS(*), REDE(*),
      &          GPCI(*),GPOE(*),GPOP(*),
@@ -3338,11 +3335,10 @@ C     Written by J. Thyssen - Nov 21 2000
 C
 C***********************************************************************
 !      use dcbxrs_mod, only: NZCONF
-!      use dcbgen_mod, only: LUKRM3
+      use dcbgen_mod, only: LUKRM3
 #include "implicit.h"
 C
 #include "dcbxrs.h"
-#include "dcbgen.h"
 C
       DIMENSION HCDIAG(*)
       CALL QENTER('E2CDIA')
@@ -3375,7 +3371,7 @@ C     Written by T.Saue Dec 1 1996
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
 !      use dcbxrs_mod, only: FKRMC, IPRXRS, NFOCKMAT, NZXOPE, NZXOPP, STERNC, STERNH
 !      use dcbbas_mod, only: N2BBASXQ
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NORBT
@@ -3385,7 +3381,6 @@ C***********************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: DM4 = -4.0D0
 C
-#include "dcbgen.h"
 #include "dcbxrs.h"
 #include "dcbbas.h"
 #include "dcborb.h"

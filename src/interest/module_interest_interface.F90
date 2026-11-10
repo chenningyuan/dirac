@@ -118,10 +118,9 @@ CONTAINS
       use shells_mod, only: NCENT, NHKT, NLRGSH, NRCO
       use aovec_mod, only: MXCONT
       use primit_mod, only: PRICCF, PRIEXP
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
       use cbihr2_mod, only: SCRFCK
 !#include "dcbdhf.h"
-#include "dcbgen.h"
 
     !local variables
        integer :: i

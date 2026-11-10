@@ -1900,7 +1900,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NCMOTQ
-!      use dcbgen_mod, only: LUCOEF
+      use dcbgen_mod, only: LUCOEF
 #include "implicit.h"
 !
       LOGICAL FILEX
@@ -1911,7 +1911,6 @@
       DIMENSION XMO2(*)
 !
 #include "dcborb.h"
-#include "dcbgen.h"
 !
       CALL QENTER('LAGTRA')
 !

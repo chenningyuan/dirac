@@ -559,14 +559,13 @@ C***********************************************************************
 !      use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, N2TMT, NFBAS, NTBAS, NZT
       use priunit_mod, only: LUPRI
 !      use dcbdhf_mod, only: I2TMOT, NTMO
-!      use dcbgen_mod, only: LUTMAT
+      use dcbgen_mod, only: LUTMAT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
 C
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2=2.0D0, D1 = 1.0D00
 C
-#include "dcbgen.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbdhf.h"

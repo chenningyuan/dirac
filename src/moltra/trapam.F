@@ -52,7 +52,6 @@ C***********************************************************************
 !      use dcbbas_mod, only: N2BBASXQ, NFBAS
 !      use dcborb_mod, only: ICMOQ, IORB, NAOCC, NAOCCT, NAVIR, NAVIRT, NCMOTQ, NESH, NIOCC, NIOCCT, NIVIR, NIVIRT, NOCC, NORB, NORBT, NPSH
 !      use dgroup_mod, only: ATOMIC, LINEAR, NBSYM, NFSYM, NZ
-!      use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dcbham_mod, only: SPINFR
       Use memory_allocator
       Use moltra_labeling
@@ -62,6 +61,7 @@ C***********************************************************************
 
       use priunit_mod, only: LUPRI
       use dummy_mod, only: DUMMY
+      use dcbgen_mod, only: LUCOEF, LUKRMC
 #include "implicit.h"
       INTEGER :: I, J, K
 C
@@ -70,7 +70,6 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbgen.h"
 
 ! until the KRMCSCF/KRMCOLD issue with IBEIG has been fixed...
 #include "dcbham.h"
@@ -643,7 +642,7 @@ C***********************************************************************
 !      use dcbbas_mod, only: N2BBASXQ, NFBAS
 !      use dcborb_mod, only: ICMOQ, IORB, NESH, NOCC, NORB, NORBT, NPSH, NSSH
 !      use dgroup_mod, only: ATOMIC, NBSYM, NFSYM, NZ
-!      use dcbgen_mod, only: LUCOEF
+      use dcbgen_mod, only: LUCOEF
       use memory_allocator
 
 #include "implicit.h"
@@ -654,7 +653,6 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbgen.h"
       LOGICAL TOBE,TRANOP
       DIMENSION NSTR(2,0:2,4),KVEC(2,2),KQ(2,4),KIBE(2,4),
      &          NR(2),IR(2,2),NQ(2),KE(2,4)
@@ -932,7 +930,7 @@ C***********************************************************************
 !      use dcbbas_mod, only: N2BBASXQ, NFBAS
 !      use dcborb_mod, only: ICMOQ, IORB, NAVIR, NCMOTQ, NESH, NIOCC, NOCC, NORB, NORBT, NPSH, NSSH
 !      use dgroup_mod, only: ATOMIC, NBSYM, NFSYM, NZ
-!      use dcbgen_mod, only: LUCOEF
+      use dcbgen_mod, only: LUCOEF
 !      use mp1stpr_mod, only: MPR_INDSTR
 #include "implicit.h"
       INTEGER :: I
@@ -942,7 +940,6 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbgen.h"
 #include "mp1stpr.h"
       CHARACTER*24 DAYTID
       LOGICAL TOBE,TRASAM,ACTIVE
@@ -1615,13 +1612,12 @@ C     Written by Luuk Visscher 05-11-1996.
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: LUCOEF
+      use dcbgen_mod, only: LUCOEF
 !      use dcbbas_mod, only: NFBAS
 !      use dcbham_mod, only: SMLV1C
 !      use dgroup_mod, only: FREP, NFSYM
 #include "implicit.h"
       INTEGER :: I, J
-#include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dgroup.h"
@@ -3455,7 +3451,7 @@ C
 C***********************************************************************
       use dirac_partask_mod, only: EXIT_NODEMENU, HERFCK_PAR
       use dummy_mod, only: DUMMY
-!      use dcbgen_mod, only: PARCAL
+      use dcbgen_mod, only: PARCAL
 !      use dcbtra_mod, only: RCORBS
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbbas_mod, only: N2BBASXQ
@@ -3464,7 +3460,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: J
 C
-#include "dcbgen.h"
 #include "dcbtra.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -3722,7 +3717,6 @@ C*****************************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
-!#include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -3857,7 +3851,7 @@ C***********************************************************************
 !      use dcborb_mod, only: ICMOQ, IORB, NAELEC, NASH, NGAS_DC, NISH, NORB, NORBT, NPSH
 !      use dgroup_mod, only: ATOMIC, NBSYM, NFSYM, NZ
 !      use dcbres_mod, only: INTRES, IPRRES, ISTRES, RESOUT, SCRRES
-!      use dcbgen_mod, only: LUCOEF, PARCAL
+      use dcbgen_mod, only: LUCOEF, PARCAL
 !      use dcbdhf_mod, only: NACSH, NOPEN
       Use memory_allocator
       Use moltra_labeling
@@ -3871,7 +3865,6 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbres.h"
-#include "dcbgen.h"
 #include "dcbdhf.h"
       CHARACTER DAYTID*24,SECTID*12,CPUTID*12
       LOGICAL TOBE,TRANOP,SKPONE,SKPTWO
@@ -4196,7 +4189,7 @@ C***********************************************************************
 !      use dcborb_mod, only: NAELEC, NASH, NISH, NORBT
 !      use dgroup_mod, only: ATOMIC, NBSYM, NFSYM, NZ
 !      use dcbres_mod, only: IPRRES, ISTRES, RESOUT, SCRRES
-!      use dcbgen_mod, only: LUCOEF
+      use dcbgen_mod, only: LUCOEF
 !      use dcbdhf_mod, only: NACSH, NOPEN
 !      use cossya_mod, only: SYA_IELC, SYA_MAXE, SYA_NOPEN
       use memory_allocator
@@ -4210,7 +4203,6 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbres.h"
-#include "dcbgen.h"
 #include "dcbdhf.h"
 !
 !     ...SYA_MAXE
@@ -4738,7 +4730,7 @@ C
       use aovec_mod, only: MXAOVC
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use dcbgen_mod, only: MP2ORG
+      use dcbgen_mod, only: MP2ORG
 !      use dcborb_mod, only: I1_DCBORB, I2_DCBORB
 !      use dcbham_mod, only: I1_DCLHAM, I2_DCLHAM, QED
 !      use dcbtra_mod, only: IPRTRA, ISAME, NDCBTRI, NDCBTRL, NDCBTRR, SCRTRA, THROUT, TRA_ANTIS
@@ -4759,7 +4751,6 @@ C
 C
 #include "infpar.h"
 C
-#include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbtra.h"
@@ -5075,7 +5066,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
 !      use infpar_mod, only: MPARID, PARHER
-!      use dcbgen_mod, only: MP2ORG
+      use dcbgen_mod, only: MP2ORG
 !      use dcbtra_mod, only: ISTRAT
       use memory_allocator
       use interface_to_mpi
@@ -5084,7 +5075,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 #include "infpar.h"
 C
-#include "dcbgen.h"
 #include "dcbtra.h"
 !#include "dcbtr3.h"
       LOGICAL   ANTIS,LMP2

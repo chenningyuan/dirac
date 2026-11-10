@@ -165,7 +165,6 @@ C***********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: GPTHRS = 1.0D-9, D0 = 0.0D0, D2=2.0D0
 C
-!#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbxlr.h"
 #include "dcborb.h"
@@ -409,7 +408,6 @@ C     Written by T.Saue and H.J.Aa.Jensen 1996
 C     Last revision: June 14 1996 - tsaue
 C
 C***********************************************************************
-!      use dcbgen_mod, only: INTGEN
 !      use dcbprp_mod, only: DOPCT, DOVDW, DOXLR
 !      use dcbxlr_mod, only: ALLCMB, BFREQ, CNVXLR, DMPFRLR, INTXLR, IPRXLR, ITRILR, ITRXLR, LLRAPU, LLRBPU, MAXFLR, MAXLLR, MAXRM, MXLOAD, NBFREQ, NLRAP, NLRAPT, NLRBP, NLRBPT, NOSPIA, NOSPIB, RESXLR, THCLR, THRCOM, TRIAB, XLRANA, XLRDIH, XLRNRM, XLR_ANATHR, XLR_E2CHEK, XLR_IMFREQ, XLR_INDSTR, XLR_LSFG, XLR_RSPEXP, XLR_RSPIMP, XLR_SKIPEE, XLR_SKIPEP, XLR_TRIPLET, XLR_UNCOUP, XLR_XVCFIL, XSTERN, XSTERNC
 !      use dcbham_mod, only: BSS, FREEPJ, GAUNT, LEVYLE, QED, SPINFR, VEXTPJ, X2C, X2CMMF
@@ -428,13 +426,13 @@ C***********************************************************************
       use mxcent_mod, only: MXCENT, MXCOOR
       use dummy_mod, only: DUMMY
       use codata_mod, only: XTNM
+      use dcbgen_mod, only: INTGEN
 #include "implicit.h"
       INTEGER :: I, J
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
       INTEGER, PARAMETER :: NTABLE = 45
       REAL(dp), PARAMETER :: DRESFAC = 1.0D2
 C
-#include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
 !#include "dcborb.h"

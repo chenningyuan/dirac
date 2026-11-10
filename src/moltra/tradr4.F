@@ -56,7 +56,6 @@ C***********************************************************************
       use dirac_partask_mod, only: EXIT_NODEMENU, MOLTRA_PAR
       use priunit_mod, only: LUPRI
 !      use infpar_mod, only: NODES
-!      use dcbgen_mod, only: PARCAL
 !      use dcbtra_mod, only: IPAR4BS, ISAME, LUMLF2, NFPCK12, NFPCK12T, NFPCK34, NFPCK34T, NOMDCINT, SCRTRA
       use comdis_mod, only: ISHLA
 #if defined (VAR_MPI)
@@ -65,6 +64,7 @@ C***********************************************************************
 !      use dgroup_mod, only: NFSYM
       use interface_to_mpi
       use kinds_mod, only: dp
+      use dcbgen_mod, only: PARCAL
 #include "implicit.h"
       INTEGER :: I, J
       REAL(dp), PARAMETER :: D0=0.0D0
@@ -72,7 +72,6 @@ C***********************************************************************
       INTEGER   ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
 #endif
 #include "infpar.h"
-#include "dcbgen.h"
 #include "dcbtra.h"
 #include "dgroup.h"
       LOGICAL ANTIS,LMP2,TRIAN(2),LBIT
@@ -946,13 +945,14 @@ C     - Q4           Coefficients for index 4
 C
 C     Output is written directly in the MOLFDIR-type file MDCINT
 C
-!      use dcbgen_mod, only: PARCAL
 !      use infpar_mod, only: MPARID, MYTID
 !      use dgroup_mod, only: NBSYM, NFSYM, NZ
 !      use dcbtra_mod, only: MDCSCAT, NFPCK34, NOMDCINT
+#if defined (VAR_MPI)
+      use dcbgen_mod, only: PARCAL
+#endif
       use interface_to_mpi
 #include "implicit.h"
-#include "dcbgen.h"
 #include "infpar.h"
       INTEGER   NSTR3(2),NSTR4(2)
       DIMENSION WORK(*)

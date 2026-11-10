@@ -1116,7 +1116,6 @@ C
 !      use dcbstex_mod, only: STEX_NHOLES, STEX_NPARAM, STEX_NR_OP, STEX_NVIRT
 #include "implicit.h"
       INTEGER :: I, II
-!#include "dcbgen.h"
 !#include "dcbham.h"
 !#include "dgroup.h"
 !#include "dcbxpr.h"

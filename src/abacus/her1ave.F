@@ -1363,7 +1363,6 @@ C
      &  SIGNBY, SIGNBZ
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
-!      use dcbgen_mod, only: CVAL
 #ifdef PRG_DIRAC
       use dcbgrd_mod, only: GRADKN
 #endif
@@ -1371,11 +1370,11 @@ C
       use dorps_mod, only: DOREPS
       use symmet_mod, only: IPTCNT
       use kinds_mod, only: dp
+      use dcbgen_mod, only: CVAL
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.00D00, D2 = 2.00D00
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(KHKTAB,4),STDER1(KCKTAB,6,2)
-#include "dcbgen.h"
 C
 C     Multiply densities with integrals, scale with c
 C
@@ -1459,7 +1458,6 @@ C
 C     jth 1997/04/24
 C     Based on AVEKFS by tuh
 C
-!      use dcbgen_mod, only: CVAL
 #ifdef PRG_DIRAC
       use dcbgrd_mod, only: GRADKN
 #endif
@@ -1471,11 +1469,11 @@ C
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use kinds_mod, only: dp
+      use dcbgen_mod, only: CVAL
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.00D00, DM2 = -2.0D00
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(KHKTAB,4), STDER1(KCKTAB,6,2)
-#include "dcbgen.h"
 C
 C     Multiply densities with integrals, scale with -2c^2
 C

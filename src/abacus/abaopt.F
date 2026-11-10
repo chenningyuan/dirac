@@ -29,18 +29,17 @@ C  /* Deck opinpu */
 #endif
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
-!      use dcbgen_mod, only: NEWSYM, OPTIMI
       use priunit_mod, only: LUCMD, LUPRI
       use kinds_mod, only: dp
 #ifndef PRG_DIRAC
       use gnrinf_mod, only: NEWSYM
 #endif
       use optinf_mod
+#ifdef PRG_DIRAC
+      use dcbgen_mod, only: NEWSYM, OPTIMI
+#endif
 #include "implicit.h"
 #include "cbiwlk.h"
-#ifdef PRG_DIRAC
-#include "dcbgen.h"
-#endif
       INTEGER, PARAMETER :: NTABLE = 68, ITRMX = 25, MXREJ = 3
       REAL(dp), PARAMETER :: D0 = 0.0D0, DEFTHE = 1.0D-6,
      &                       DEFTH2 = 1.0D-4, DEFDSP = 1.0D-3
@@ -1257,17 +1256,15 @@ C  /* Deck optmin */
 #endif
       use cbiher_mod, only: TSTINP
       use mxcent_mod, only: MXCENT
-!      use dcbgen_mod, only: HRINPC, IPRUSR
+#ifdef PRG_DIRAC
+      use dcbgen_mod, only: HRINPC, IPRUSR
+#endif
       use memory_allocator
       use interface_to_mpi
 
       use optinf_mod, only: DELINT, FINDRE, ICRTCR, IINTCR, INMDHS,
      &  INRDHS, IPRINT, NENECALCS, NEWTON, REDINT, VISUAL
 #include "implicit.h"
-#ifdef PRG_DIRAC
-#include "dcbgen.h"
-#else
-#endif
       LOGICAL TSTIN
 
       real(8), parameter   :: WRKDLM = -123456789.0D0
@@ -1352,7 +1349,9 @@ C  /* Deck runopt */
 #endif
       use nuclei_mod, only: CORD
       use maxorb_mod, only: MXCORB
-!      use dcbgen_mod, only: IPRUSR, RDINPC, RDMLIN, USRIPR
+#if (defined (PRG_DIRAC))
+      use dcbgen_mod, only: IPRUSR, RDINPC, RDMLIN, USRIPR
+#endif
       use optinf_mod
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
@@ -1361,9 +1360,7 @@ C  /* Deck runopt */
       use memory_allocator
 #include "implicit.h"
 #include "cbiwlk.h"
-#if defined (PRG_DIRAC)
-#include "dcbgen.h"
-#else
+#if !defined (PRG_DIRAC)
 #include "molde.h"      
 #endif
       LOGICAL EXHER, EXSIR, EXABA, MINEND, INDXOK, STATPO, ACTIVE
@@ -6028,7 +6025,6 @@ C
 C     If the step is acceptable, the geometry is updated
 C     and written to file.
 C
-!      use dcbgen_mod, only: HRINPC, RDINPC, RDMLIN
 #ifndef PRG_DIRAC
       use gnrinf_mod, only: HRINPC, RDINPC, RDMLIN
 #endif
@@ -6036,11 +6032,10 @@ C
       use priunit_mod, only: LUPRI
       use optinf_mod
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-#include "implicit.h"
-#if defined (PRG_DIRAC)
-#include "dcbgen.h"
-#else
+#if (defined (PRG_DIRAC))
+      use dcbgen_mod, only: HRINPC, RDINPC, RDMLIN
 #endif
+#include "implicit.h"
       DIMENSION CSTEP(MXCOOR), EGRAD(MXCOOR)
       DIMENSION COONEW(3,MXCENT), COOOLD(3,MXCENT)
       DIMENSION GEINFO(0:ITRMAX,6)
@@ -6281,13 +6276,11 @@ C
       use optinf_mod
       use nuclei_mod, only: CORD, ISTBNU, NONT, NONTYP, NUCIND, NUCNUM
       use molinp_mod, only: MLINE, NCLINE, NMLAU, NMLINE
-!      use dcbgen_mod, only: DOHUCKEL, HRINPC, NEWSYM, RDINPC, RDMLIN
+#ifdef PRG_DIRAC
+      use dcbgen_mod, only: DOHUCKEL, HRINPC, NEWSYM, RDINPC, RDMLIN
+#endif
       use trkoor_mod, only: NTRREP
 #include "implicit.h"
-#ifdef PRG_DIRAC
-#include "dcbgen.h"
-#else
-#endif
 #include "cbiwlk.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS
       CHARACTER FILENM*10, TMPLN*80
@@ -6560,14 +6553,12 @@ C  /* Deck inipre */
       use optinf_mod, only: DOPRE, IPRE, ITRNMR, PREBTX, VRML
       use molinp_mod, only: MLINE
       use mxcent_mod, only: MXCENT, MXCOOR
-!      use dcbgen_mod, only: RDINPC, RDMLIN
+#if (defined (PRG_DIRAC))
+      use dcbgen_mod, only: RDINPC, RDMLIN
+#endif
       use inftap_mod, only: LUONEL
       use memory_allocator
 #include "implicit.h"
-#if defined (PRG_DIRAC)
-#include "dcbgen.h"
-#else
-#endif
       CHARACTER TMPLIN*80
       real(8), allocatable :: WORK(:)
       call legacy_lwork_get(LWORK)
@@ -6632,17 +6623,15 @@ C
       use molinp_mod, only: MLINE, NMLAU
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: IPTCNT, MAXOPR, NAXREP, NCRREP
-!      use dcbgen_mod, only: HRINPC, NEWSYM, RDINPC, RDMLIN
+#if (defined (PRG_DIRAC))
+      use dcbgen_mod, only: HRINPC, NEWSYM, RDINPC, RDMLIN
+#endif
       use maxorb_mod, only: MXCORB
       use nuclei_mod, only: NUCNUM
       use optinf_mod, only: ENERGY, ERGOLD, FINPRE, GECONV, INDHES,
      &  IPRE, ITRBRK, KEEPHE, NUMPRE, NWSYMM, PREBTX
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-#if defined (PRG_DIRAC)
-#include "dcbgen.h"
-#else
-#endif
       CHARACTER TMPLIN*80
       LOGICAL EXHER, EXSIR, EXABA
 C
@@ -6867,18 +6856,16 @@ C  /* Deck spnrgy */
 C
 C     Calculates single point energy with another basis if requested.
 C
-!      use dcbgen_mod, only: HRINPC, NEWSYM, RDINPC, RDMLIN
 #ifndef PRG_DIRAC
       use gnrinf_mod, only: HRINPC, NEWSYM, RDINPC, RDMLIN
 #endif
       use molinp_mod, only: MLINE
       use mxcent_mod, only: MXCENT
       use optinf_mod, only: ENERGY, ITRMAX, ITRNMR, SPBSTX
-#include "implicit.h"
-#if defined (PRG_DIRAC)
-#include "dcbgen.h"
-#else
+#if (defined (PRG_DIRAC))
+      use dcbgen_mod, only: HRINPC, NEWSYM, RDINPC, RDMLIN
 #endif
+#include "implicit.h"
       DIMENSION GEINFO(0:ITRMAX,6)
       LOGICAL EXHER,EXSIR,EXABA,REJGEO
       EXHER  = .FALSE.
@@ -7439,6 +7426,9 @@ C
       use optinf_mod, only: CHGRDT, DISPLA, GRDTHR, IPRINT, NCART,
      &  THRERG, THRSTP, THRSYM
       use codata_mod, only: XTANG
+#ifdef PRG_DIRAC
+      use dcbgen_mod, only: RDINPC
+#endif
 #include "implicit.h"
 C
       PARAMETER (DP5 = 0.50D0, D100=100.0D0)
@@ -7449,10 +7439,8 @@ C numder.h : NOMOVE
 C
 #ifdef PRG_DIRAC
 #include "dcbdhf.h"
-#include "dcbgen.h"
 #include "dcbmp2.h"
 #include "dcbpsi.h"
-#else
 #endif
       real(8), allocatable :: STPSYM1(:),STPCAR1(:)
       real(8), allocatable :: COOR(:,:)
@@ -7688,6 +7676,7 @@ C
 
 C     Write an XYZ file
 C
+      use dcbgen_mod, only: TITLE
       use codata_mod, only: XTANG
       use nuclei_mod, only: ISTBNU, NAMN, NUCDEP, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
@@ -7697,7 +7686,6 @@ C
       use hermodules, only: unit_conversion, unit_conversion_set
 #include "implicit.h"
       DIMENSION UNIQUE_CORD(3,MXCENT),XYZ(3)
-#include "dcbgen.h"
 C
 !     XYZ files are written in Angstroms (default) or a user-specified Unit
 !

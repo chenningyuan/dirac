@@ -419,6 +419,7 @@ C     call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
 * Don't think just do
 * Much is a copy paste from KRCI_CALC and KRCI_CALC1
 *
+      use dcbgen_mod, only: LUCOEF, LUKRMC
       use consts_mod, only: D0
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
@@ -431,7 +432,6 @@ C
 #include "../krmc/dcbnrt.h"
 #include "dcbpsi.h"
 #include "dcbkrmc_itinfo.h"
-#include "dcbgen.h"
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"

@@ -4,10 +4,9 @@
 !     Calculate rotationally averaged oscillator strengths
 !
 !***********************************************************************
-!      use dcbgen_mod, only: CVAL
 !      use dgroup_mod, only: NBSYM
 !      use dcbxpp_mod, only: IPRXPP, KEXCNV, MAXEXC, NPPAPT
-#include "dcbgen.h"
+      use dcbgen_mod, only: CVAL
 #include "dgroup.h"
 #include "dcbxpp.h"
       real*8 :: FOSC(MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
@@ -169,10 +168,9 @@
 !
 !     written by Martin van Horn 2022
 !***********************************************************************     
-!      use dcbgen_mod, only: CVAL
 !      use dgroup_mod, only: NBSYM
 !      use dcbxpp_mod, only: IPRXPP, KEXCNV, MAXEXC, NPPAPT
-#include "dcbgen.h"
+      use dcbgen_mod, only: CVAL
 #include "dgroup.h"
 #include "dcbxpp.h"
       real*8 :: FOSC(4,MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
@@ -448,10 +446,9 @@
       END SUBROUTINE ROTFAC_VPOL
      
       SUBROUTINE GENOSC_MPOL(K,FOSC,ATMPPF,OMEGA)
-!      use dcbgen_mod, only: CVAL
 !      use dgroup_mod, only: NBSYM
 !      use dcbxpp_mod, only: IPRXPP, KEXCNV, MAXEXC, NPPAPT
-#include "dcbgen.h"
+      use dcbgen_mod, only: CVAL
 #include "dgroup.h"
 #include "dcbxpp.h"
       real*8 :: FOSC(4,MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
@@ -701,13 +698,12 @@
 !     Calculated oscillator strength for oriented sample
 !
 !***********************************************************************
-!      use dcbgen_mod, only: CVAL
 !      use dgroup_mod, only: NBSYM
 !      use dcbxpp_mod, only: KEXCNV, MAXEXC, NPPAPT, UPOL
+      use dcbgen_mod, only: CVAL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: K
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
       real*8              :: FOSC(MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
@@ -889,13 +885,12 @@
 !
 !     written by Martin van Horn 2021
 !***********************************************************************        
-!      use dcbgen_mod, only: CVAL
 !      use dgroup_mod, only: NBSYM
 !      use dcbxpp_mod, only: KEXCNV, MAXEXC, NPPAPT, UPOL
+      use dcbgen_mod, only: CVAL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: K
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
       real*8              :: FOSC(4,MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
@@ -971,13 +966,12 @@
 !
 !     written by Martin van Horn 2021
 !***********************************************************************        
-!      use dcbgen_mod, only: CVAL
 !      use dgroup_mod, only: NBSYM
 !      use dcbxpp_mod, only: KEXCNV, MAXEXC, NPPAPT, UPOL
+      use dcbgen_mod, only: CVAL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: K
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
       real*8              :: FOSC(4,MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
@@ -1066,13 +1060,12 @@
 
 
       SUBROUTINE OSC_MPOL(K,FOSC,ATMPPF,OMEGA)
-!      use dcbgen_mod, only: CVAL
 !      use dgroup_mod, only: NBSYM
 !      use dcbxpp_mod, only: KEXCNV, MAXEXC, NPPAPT, UPOL
+      use dcbgen_mod, only: CVAL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: K
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
       real*8              :: FOSC(4,MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)

@@ -24,6 +24,7 @@ set(MODULE_SOURCES
     crossd.F90
     crsdir.F90
     csym1.F90
+    dcbgen.F90
     dcbgrd.F90
     dcbibt.F90
     dcbsusc.F90

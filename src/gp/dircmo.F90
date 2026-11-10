@@ -216,7 +216,7 @@ module dircmo
 
       subroutine select_mobasis(mobasis,section,prefer_x2c_mobasis,group,use_x2c_mobasis)
 
-!      use dcbgen_mod, only: TWOCOMP
+      use dcbgen_mod, only: TWOCOMP
       use checkpoint
       use fermi_level, only: set_mosection
       implicit none
@@ -231,7 +231,6 @@ module dircmo
       character(len=:), allocatable :: selected_mosection
       character(len=:), allocatable :: selected_section
 
-#include "dcbgen.h"
 
       selected_section = 'scf'
       if (present(section)) selected_section = trim(section)

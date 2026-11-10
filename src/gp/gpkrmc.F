@@ -203,7 +203,6 @@ C
       use quaternion_algebra
 #include "implicit.h"
 #include "dcborb.h"
-!#include "dcbgen.h"
 #include "dgroup.h"
       integer orb_info_array(2,norbt,norbt)
       dimension ibeig(*)

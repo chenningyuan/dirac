@@ -34,10 +34,9 @@ module fde_input_dirac
       subroutine fde_dirac_input(word,echo_input)
 !   ----------------------------------------------------------------------------
       use priunit_mod, only: LUCMD
-!      use dcbgen_mod, only: DOPRP
+      use dcbgen_mod, only: DOPRP
          use dirac_cfg
 #include "implicit.h"
-#include "dcbgen.h"
       PARAMETER (NTABLE = 8)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, line*80
  

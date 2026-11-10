@@ -32,7 +32,6 @@ C     whereas Cauchy-Schwarz integrals must be provided externally
 C
 C*****************************************************************************
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, NZ
-!      use dcbgen_mod, only: LUPMAT
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dcbham_mod, only: HFXATT, HFXFAC, HFXMU, MDIRAC, ONECAP, SMLV1C, ZORA, ZORA4
       use quaternion_algebra
@@ -41,11 +40,11 @@ C*****************************************************************************
 #endif
       use kinds_mod, only: dp
       use priunit_mod, only: LUPRI
+      use dcbgen_mod, only: LUPMAT
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -1538,8 +1537,8 @@ C  /* Deck twoge1 */
 C*****************************************************************************
 C
 C*****************************************************************************
-!      use dcbgen_mod, only: IDFLAG, INTGEN, OPTIMI
 !      use dcbham_mod, only: INTV1C, ONECAP
+      use dcbgen_mod, only: IDFLAG, INTGEN, OPTIMI
       use priunit_mod, only: LUPRI
       use cbihr2_mod, only: IPRTWO
       use maxaqn_mod, only: MXQN
@@ -1550,7 +1549,6 @@ C*****************************************************************************
       INTEGER IREPA(*), LWORK
       REAL(8) WORK(LWORK)
 C
-#include "dcbgen.h"
 #include "dcbham.h"
       LOGICAL LBIT,TOBE,REGO
       real(8) :: TIMSTR(2), TIMEND(2)
@@ -3399,7 +3397,7 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
       use symmet_mod, only: MAXREP
-!      use dcbgen_mod, only: IDFLAG, PARCAL
+      use dcbgen_mod, only: IDFLAG, PARCAL
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZC1
       use aovec_mod, only: MXAOVC
@@ -3422,7 +3420,6 @@ C   CCOM  : THRS,NHTYP,KHK
 C   SHELLS: KMAX
 C   symmet.h : MAXREP
 C
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #if defined (VAR_MPI)
@@ -3674,11 +3671,10 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASX, NTBAS
-!      use dcbgen_mod, only: IDFLAG
+      use dcbgen_mod, only: IDFLAG
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 C
@@ -4033,7 +4029,7 @@ C*****************************************************************************
       use dirac_partask_mod, only: HERFCK_PAR
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use dcbgen_mod, only: IDFLAG, PARCAL, TWOCOMP, TWOCOMPBSS
+      use dcbgen_mod, only: IDFLAG, PARCAL, TWOCOMP, TWOCOMPBSS
       use maxaqn_mod, only: MXQN
       use ccom_mod, only: THRS
       use priunit_mod, only: LUPRI
@@ -4048,7 +4044,6 @@ C*****************************************************************************
      &                       D0=0.0D0
 C
 #include "dgroup.h"
-#include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcbham.h"
 #if defined (VAR_MPI)
@@ -4363,7 +4358,7 @@ C     Written by T. Saue Sep 5 2006
 C
 C***********************************************************************
 !      use dcbham_mod, only: GAUNT, HFXFAC
-!      use dcbgen_mod, only: IDFLAG
+      use dcbgen_mod, only: IDFLAG
       use cbihr2_mod, only: SOFOCK
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -4373,7 +4368,6 @@ C***********************************************************************
 
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
-#include "dcbgen.h"
 #include "dcbham.h"
 C
       real(8) :: TIMSTR(2), TIMEND(2)

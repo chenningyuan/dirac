@@ -30,7 +30,7 @@ C***********************************************************************
 !      use dcbtra_mod, only: LUMLF1, NOPAIR, PRPSYA, TRA2_INDPRP, TRA2_INDSTR
 !      use dcborb_mod, only: I2ORBX, ICMOQ, IORB, N2ORBXQ, NCMOTQ, NESH, NORB, NORBT, NPSH
 !      use dgroup_mod, only: JBTOF, NFSYM, NZ
-!      use dcbgen_mod, only: LUCOEF, LUKRMC
+      use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
 !      use dcbtrp_mod, only: IPRTRP, LTRPP, NTRPP
 #include "implicit.h"
@@ -39,7 +39,6 @@ C
 #include "dcbtra.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbgen.h"
 #include "dcbxpr.h"
 #include "dcbtrp.h"
       LOGICAL TOBE,TOBEK,TRASAM

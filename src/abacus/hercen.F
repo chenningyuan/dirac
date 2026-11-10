@@ -76,7 +76,6 @@
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       LOGICAL GENERATE
       DIMENSION IBLCK(MXBSETS)
-#include "dcbgen.h"
 !
 !     Initialize variables that regard the whole basis set
 !     e.g. whether it is contracted or not.
@@ -224,7 +223,6 @@
       PARAMETER (DSM = 1.0D-30)
 
 ! cbirea.h : UNCONT
-#include "dcbgen.h"
 
       GENERATE = .FALSE.
       CNTBAS = .FALSE.
@@ -529,7 +527,6 @@
       CHARACTER*80 BASREF(10)
       CHARACTER*20 BSFIL(NFILES)
       LOGICAL GENERATE
-#include "dcbgen.h"
 !     Scratch arrays needed for MULTIBASIS option
 !     Should changed into allocatable arrays (either using fortran 90 allocate or
 !     from work).

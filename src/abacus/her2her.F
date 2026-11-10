@@ -31,15 +31,14 @@ C
 #endif
       use twosta_mod, only: LWTOT, MWRJ00, MWTOT
       use maxaqn_mod, only: MXQN
+#ifdef PRG_DIRAC
+      use dcbgen_mod, only: PANAS
+#endif
 #include "implicit.h"
       LOGICAL NOINT, ONECEN
       DIMENSION HERINT(NUABCD,NTUV), INDHER(*), IODDHR(*),
      &          COOR12(*), COOR34(*), EXP12(*), EXP34(*), FAC12(*),
      &          FAC34(*), SIGNT(*), WORK(LWORK)
-#ifdef PRG_DIRAC
-#include "dcbgen.h"
-#else
-#endif
       CALL QENTER('HR2DRV')
       KWORK = 1
       KFREE = KWORK

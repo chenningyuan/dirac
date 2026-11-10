@@ -342,7 +342,6 @@ C***********************************************************************
 #include "dgroup.h"
 #include "dcbxqr.h"
 #include "dcbxrs.h"
-!#include "dcbgen.h"
 C
       LOGICAL EXST
       DIMENSION WORK(*)
@@ -528,7 +527,6 @@ C***********************************************************************
 #include "dcbxqr.h"
 #include "dcbxpr.h"
 !#include "dcbxrs.h"
-!#include "dcbgen.h"
 #include "dgroup.h"
 C
       REAL(dp), PARAMETER :: D0=0.0D0
@@ -668,7 +666,6 @@ C***********************************************************************
 #include "dcbxqr.h"
 #include "dcbxpr.h"
 #include "dcbxrs.h"
-!#include "dcbgen.h"
 #include "dgroup.h"
 C
       PARAMETER ( LUCMO = 22, D0 = 0.0D0, D2R3 = (2.0D0/3.0D0),

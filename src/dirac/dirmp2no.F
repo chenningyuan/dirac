@@ -30,12 +30,11 @@ C***********************************************************************
 !      use dcbpsi_mod, only: DOMP2NO
 !      use dgroup_mod, only: FREP, NFSYM
 !      use dcbmp2no_mod, only: IAOMOSCHEME, IF2MP2NO, INTMP2NO, IPRMP2NO, MP2NATPOP, MP2NATPOP2, SELPOPNAT, VECMP2NO, VECNOSEL
-!      use dcbgen_mod, only: INTGEN, IPRGEN
+      use dcbgen_mod, only: INTGEN, IPRGEN
       use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dgroup.h"
 #include "dcbmp2no.h"
@@ -273,12 +272,11 @@ C
 C***********************************************************************
 !      use dcbmp2no_mod, only: RUN_CCMOD, SKIP_ITRAFO, SKIP_MP2DEN
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: LUKRMC
+      use dcbgen_mod, only: LUKRMC
 #include "implicit.h"
 C
 C
 C
-#include "dcbgen.h"
 #include "dcbmp2no.h"
 C
       LOGICAL SAVEFLAGS(4), TOBE, FNDLAB
@@ -335,7 +333,7 @@ C
 C***********************************************************************
 
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: LUKRMC
+      use dcbgen_mod, only: LUKRMC
 !      use infpar_mod, only: ICOUNT, IF, MPARID, MYTID
 !      use dcborb_mod, only: NASHT, NCMOTQ, NESH, NESHT, NORBT
 !      use dcbmp2no_mod, only: IF2MP2NO, IMO_NAT, IOCC_NAT, LUNATORB, MP2NATPOP, MP2NATPOP2, NACTMP2NO, SKIP_MP2DEN, VECNOSEL
@@ -347,7 +345,6 @@ C***********************************************************************
       INTEGER :: I,J
 C
 #include "dcborb.h"
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbmp2no.h"
 !#include "dcbham.h"
@@ -569,10 +566,10 @@ C
 C     written by S. Knecht - June 2008, Odense
 C
 C***********************************************************************
-!      use dcbgen_mod, only: INTGEN
 !      use dgroup_mod, only: NBSYM, NFSYM, NZ
 !      use dcbdhf_mod, only: NASH_DHF, NFRO_DHF, NISH_DHF, NOPEN
 !      use dcbbas_mod, only: N2BBASXQ
+      use dcbgen_mod, only: INTGEN
       use dummy_mod, only: DUMMY
       use priunit_mod, only: LUPRI
 !      use dcbmp2no_mod, only: IAOMOSCHEME, IPRMP2NO, SKIP_ITRAFO
@@ -594,7 +591,6 @@ C
 #include "../moltra/dcbtr3.h"
 #include "../relccsd/freeze.inc"
 C
-#include "dcbgen.h"
 
       CHARACTER DAYTID*24, VECMP2NO_occ(2)*400, TEMP_TRA4_INDSTR*400
       LOGICAL   TOBE,TOBEK,TRASAM,ACTIVE
@@ -1172,10 +1168,9 @@ C
 C***********************************************************************
 !      use dcborb_mod, only: NCMOTQ, NESHT, NORBT
 !      use dgroup_mod, only: LINEAR, NFSYM
-!      use dcbgen_mod, only: LUKRMC
+      use dcbgen_mod, only: LUKRMC
 #include "implicit.h"
 #include "dcborb.h"
-#include "dcbgen.h"
 #include "dgroup.h"
       DIMENSION CMO(*), EIG(*), EIG_NAT(*),ibeig(*)
       character(len=8) :: label
@@ -1221,7 +1216,6 @@ C***********************************************************************
 C
 #include "dcbbas.h"
 #include "dcborb.h"
-!#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbmp2no.h"
       DIMENSION CMO(*), CMO_NAT(nasht,nasht,NZ)

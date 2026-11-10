@@ -39,6 +39,7 @@ module london_reorth_hb
       use aovec_mod, only: MXAOVC
       use symmet_mod, only: ISYMAX
       use dirac_partask_mod, only: FDE_PAR, XCINT_PAR
+      use dcbgen_mod, only: PARCAL
   implicit none
 
   public london_reort_hb
@@ -48,7 +49,6 @@ module london_reorth_hb
 
   private
 
-#include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbnmr.h"

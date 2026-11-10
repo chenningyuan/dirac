@@ -17,8 +17,8 @@
 subroutine scf_energy_analysis(work, lwork)
 
 !      use dcbham_mod, only: INTV1C, ONECAP, SMLV1C
-!      use dcbgen_mod, only: DOLVC
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ
+      use dcbgen_mod, only: DOLVC
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZ
 !      use dcbdhf_mod, only: AOC, DF, DHFERG, E1PART, E2PART, ELERGY, IFCKOP, IHRMOP, INTFLG, ISYMOP, LUDENS, LUFCK1, MFMAT, MXOPEN, NFMAT, NOPEN
@@ -34,7 +34,6 @@ subroutine scf_energy_analysis(work, lwork)
 #include "dgroup.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
-#include "dcbgen.h"
 
   logical :: density_exists
   logical :: lvcon
@@ -266,7 +265,6 @@ subroutine scf_energy_extensions(dmat_buf, work, lwork, jprint, lvcon, fmt, basi
 #include "dgroup.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
-!#include "dcbgen.h"
 
   integer, intent(in) :: jprint
   integer, intent(in) :: lwork

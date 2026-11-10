@@ -2221,6 +2221,9 @@ contains
 
 
    subroutine twofck_ks(n, D, F)
+#if defined (PRG_DIRAC) && defined (VAR_MPI)
+      use dcbgen_mod, only: PARCAL
+#endif
       use xcint_main
       use num_grid_gen
       integer,      intent(in)    :: n
@@ -2237,7 +2240,6 @@ contains
       real(8)              :: sum_norm
       real(8), allocatable :: container(:, :, :, :)
       integer              :: ones(200), nr_dmat, nz, order
-#include "dcbgen.h"
 #endif
 
       if (.not. do_dft()) then

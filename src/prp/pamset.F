@@ -108,7 +108,6 @@ C
 C     Written by T.Saue, Sep 16 1996
 C
 C***********************************************************************
-!      use dcbgen_mod, only: PARCAL
 !      use dcbdhf_mod, only: ESOLVE, ESOLVN, IFCKOP, IHRMOP, INTDEF, INTFLG, ISYMOP, NFMAT
 !      use dcbham_mod, only: IPRSOL, SOLVEN, SPINFR
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
@@ -130,11 +129,13 @@ C***********************************************************************
 
       use priunit_mod, only: LUPRI
       use dirac_partask_mod, only: FDE_PAR, XCINT_PAR
+#if defined (VAR_MPI)
+      use dcbgen_mod, only: PARCAL
+#endif
 #include "implicit.h"
       INTEGER :: I
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0, DP5 = 0.50D00,D2=2.0D0)
 C
-#include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
 #include "dgroup.h"

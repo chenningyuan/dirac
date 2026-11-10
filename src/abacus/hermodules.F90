@@ -249,13 +249,12 @@
 
         SUBROUTINE READ_BASIS(filenum,linelen,lupri)
       use codata_mod, only: XTANG
+      use dcbgen_mod, only: KCHARG
         implicit none
-!      use dcbgen_mod, only: KCHARG
 !      use dgroup_mod, only: NONATM
 #include "dgroup.h" 
 
 ! using OPTIMI
-#include "dcbgen.h"
 
 !     JHS050707 Reads basis names and possibly the coefficients typed in the DIRAC.INP file.
 !               Reads also Charges, nuclear exponents and the units of the XYZ file.
@@ -722,7 +721,9 @@
 !               .MOL files, the main difference is the split between reading the files
 !               and writing them to the common blocks
 
-!      use dcbgen_mod, only: TWOCOMP
+#ifdef PRG_DIRAC
+      use dcbgen_mod, only: TWOCOMP
+#endif
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NONT, NONTYP, NOORBT, NUCDEP
       use symmet_mod, only: MAXREP
@@ -779,7 +780,6 @@
       integer blk
 !
 #ifdef PRG_DIRAC
-#include "dcbgen.h"
 #include "dgroup.h"
 #else
       LOGICAL LINEAR, ATOMIC

@@ -56,7 +56,7 @@ C***********************************************************************
       use dummy_mod, only: DUMMY
 !      use maxash_mod, only: MAXASH
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use dcbgen_mod, only: DOLVC, INTGEN, IPRGEN, LVNEW
+      use dcbgen_mod, only: DOLVC, INTGEN, IPRGEN, LVNEW
 !      use dcbopt_mod, only: ISHMEM_TYPE
       use nuclei_mod, only: NUCIND
 !      use krciprop_mod, only: DODIPMOM_KRCI, DOEEDM_KRCI, DOENSPS_KRCI, DOGENP_KRCI, DOJZEXP, DOMHYP_KRCI, DONMQM_KRCI, DOOSCILLST, DOPROP_KRCI, ISYMOPPRP_KRCI, LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI, RUNXPROP, VKRCI_NUCMAGMOM, VKRCI_NUCSPIN, XREPEIG
@@ -81,7 +81,6 @@ C
       DIMENSION WORK(LWORK)
       INTEGER IKWSET(NTABLE)
 C
-#include "dcbgen.h"
 #include "dcbopt.h"
 #include "krciprop.h"
 #include "dcborb.h"
@@ -1465,7 +1464,7 @@ C***********************************************************************
 !      use dcborb_mod, only: MXGAS, NCMOTQ
 !      use dgroup_mod, only: LINEAR
 !      use dcbopt_mod, only: E_LVCORR_MC, IOPT_INTDEF, IOPT_SYMMETRY, IPROPT, JGAS, MCTYPE, NCIROOT, NOPEN_MC, NZCONF, NZCONFQ, OPT_CIPROGRAM, OPT_THRGRD, SPINFR_KRMC
-!      use dcbgen_mod, only: DOLVC, LUKRM3, LUKRM5
+      use dcbgen_mod, only: DOLVC, LUKRM3, LUKRM5
 !      use dcbkrci_mod, only: DKRCI_THRGCI, NKRCI_CIROOTS, NKRCI_MAX_SYM, XPSINTERFACE_KRCI
 !      use krciprop_mod, only: DOPROP_KRCI, RUNXPROP, XREPEIG
 !      use dcbham_mod, only: INTV1C, ONECAP
@@ -1485,7 +1484,6 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbopt.h"
-#include "dcbgen.h"
 #include "dcbkrci.h"
 #include "krciprop.h"
 #include "dcbham.h"
@@ -1887,11 +1885,11 @@ C     Last revision :
 C
 C***********************************************************************
 !      use dcbdhf_mod, only: LUFCK1
-!      use dcbgen_mod, only: DOTRA, LUITFO, LUKRM1, LUKRM2, LUKRM3, LUKRM4, LUKRM5
 !      use dcbpsi_mod, only: DOKRMC
+      use dcbgen_mod, only: DOTRA, LUITFO, LUKRM1, LUKRM2, LUKRM3,
+     &  LUKRM4, LUKRM5
 #include "implicit.h"
 #include "dcbdhf.h"
-#include "dcbgen.h"
 #include "dcbpsi.h"
 C
       LOGICAL EX
@@ -1976,13 +1974,12 @@ C     Generate FCI dump file
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: LUKRMC
+      use dcbgen_mod, only: LUKRMC
 !      use dcbham_mod, only: LEVYLE, SPINFR
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NNASHX, NORBT
 !      use dgroup_mod, only: LINEAR, NZ, NZ_IN_CI
 #include "implicit.h"
 C
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dgroup.h"

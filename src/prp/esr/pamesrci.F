@@ -29,13 +29,12 @@ C     Author: Hans Joergen Aa. Jensen
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: LUKRMC
+      use dcbgen_mod, only: LUKRMC
 !      use dcbdhf_mod, only: NOPEN
 !      use dcbopt_mod, only: IOPT_IFCKOP, IOPT_IHRMOP, IOPT_ISYMOP, IOPT_SYMMETRY, IPROPT, LZXOPE, LZXOPP, NZHOPE, NZXOPE, NZXOPP
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbopt.h"
 !#include "dgroup.h"
@@ -136,7 +135,7 @@ C     (Based on GASCIP_STARTVEC by Joern Thyssen June 2000)
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: LUKRMC
+      use dcbgen_mod, only: LUKRMC
 !      use dcbham_mod, only: HFXFAC, HFXMU
 !      use dcborb_mod, only: NORBT
 !      use dcbopt_mod, only: IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ITRINT, IPROPT, JTRLVL, KZCONF, NZCONF, NZCONFQ, OPT_CNVINT, OPT_INTTYP, OPT_NOPFQ
@@ -152,7 +151,6 @@ C
 C dcbham.h : HFXFAC, HFXMU
 C dcbesr.h : THR_CIESR, THR_CVEC_ESR
 C dcbgascip.h : IMK2(), NMK2(), MINMK2, MAXMK2
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dcbopt.h"

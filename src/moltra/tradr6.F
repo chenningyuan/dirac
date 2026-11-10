@@ -59,7 +59,7 @@ C***********************************************************************
       use dirac_partask_mod, only: EXIT_NODEMENU
       use priunit_mod, only: LUPRI
 !      use infpar_mod, only: MPARID, MYTID
-!      use dcbgen_mod, only: PARCAL
+      use dcbgen_mod, only: PARCAL
 !      use dcbtra_mod, only: NFPCK12, NFPCK12T, NFPCK34T, NOMDCINT, SCRTRA
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
 !      use dgroup_mod, only: NFSYM
@@ -71,7 +71,6 @@ C***********************************************************************
 #if defined (VAR_MPI)
       DIMENSION IBUFMPI(5)
 #endif
-#include "dcbgen.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dgroup.h"

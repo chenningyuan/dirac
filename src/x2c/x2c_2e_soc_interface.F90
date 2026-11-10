@@ -35,9 +35,9 @@ module x2c_2e_soc_interface
   use x2cmod_cfg, only: x2c_intgen_2c
 
       use cbirea_mod, only: IPREAD
+      use dcbgen_mod, only: RDINPC, TWOCOMP, TWOCOMPBSS
   implicit none
 
-#include "dcbgen.h"
 #include "dcbcls.h"
 
   public x2c_add_2e_so_corrections

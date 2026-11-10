@@ -18,6 +18,7 @@
 
 program dirac_program
 
+      use dcbgen_mod, only: CDIRNOD, LENDND, PARCAL
       use priunit_mod, only: LUPRI
   use os_utils
   use dft_cfg
@@ -46,7 +47,6 @@ interface
 end interface
 
 #include "infpar.h"
-#include "dcbgen.h"
 #include "dcbpsi.h"
 
 

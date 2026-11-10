@@ -464,10 +464,10 @@ C
 C***********************************************************************
 !      use dcborb_mod, only: N2ASHX, N2ASHXQ, N2ORBXQ, NASHT, NNASHX, NORBT
 !      use dcbham_mod, only: LEVYLE, SPINFR
-!      use dcbgen_mod, only: LUKRMC
 !      use dcbbas_mod, only: N2BBASXQ
 !      use dgroup_mod, only: LINEAR, NZ
 !      use dcbxrs_mod, only: FKRMC, IPRXRS, LSVCFG, LUBCI, NCSIM, NESIM, NOSIM, NPSIM, NZCONF, NZCONFQ, NZXOPE, NZXOPP, XRS_NOFQX, XRS_NOPFQ
+      use dcbgen_mod, only: LUKRMC
       use orbital_rotation_indices
 
       use kinds_mod, only: dp
@@ -481,7 +481,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dcbham.h"
-#include "dcbgen.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
@@ -3942,7 +3941,7 @@ C***********************************************************************
 !      use dcbbas_mod, only: N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: ICMOQ, NASHT, NCMOTQ, NORB, NORBT
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
-!      use dcbgen_mod, only: LUKRMC
+      use dcbgen_mod, only: LUKRMC
 #include "implicit.h"
       INTEGER :: I
 C
@@ -3951,7 +3950,6 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbgen.h"
 C
       DIMENSION FMO(*), DV(*), DVT(*)
       DIMENSION BEVEC(*), BPVEC(*)
@@ -4062,7 +4060,6 @@ C***********************************************************************
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NISHT, NORBT
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcbham_mod, only: IPRSOL, SOLVEN, SPINFR
-!      use dcbgen_mod, only: PARCAL
 #ifdef MOD_LAO_REARRANGED
         use london_helper
 #endif
@@ -4088,6 +4085,9 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use dirac_partask_mod, only: FDE_PAR, XCINT_PAR
       use cbihr2_mod, only: IPRTWO
+#if defined (VAR_MPI)
+      use dcbgen_mod, only: PARCAL
+#endif
 #include "implicit.h"
       INTEGER :: I
 C
@@ -4096,7 +4096,6 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#include "dcbgen.h"
 C
 !gosia testing #include "dcbxlr.h"
       DIMENSION FMO(N2ORBXQ,*), DV(*), DVT(*), CMO(*),IBEIG(*)

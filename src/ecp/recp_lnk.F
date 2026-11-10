@@ -605,7 +605,6 @@
       use nuclei_mod, only: NONTYP
       USE RECP_NTR
 #include "implicit.h"
-!#include "dcbgen.h"
       INTEGER   KATOM,KANG,KBLOCK,KPRIM
       DIMENSION IQM(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
@@ -770,7 +769,9 @@
       use gnrinf_mod, only: BASDIR
 #endif
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: BASDIR
+#if (defined (PRG_DIRAC))
+      use dcbgen_mod, only: BASDIR
+#endif
 #include "implicit.h"
       INTEGER :: J
 C*********************************************************
@@ -791,9 +792,6 @@ C     long because contains the full dir-path
       INTEGER INTQ0
       CHARACTER SLASH
       LOGICAL WIN
-#if defined (PRG_DIRAC)
-#include "dcbgen.h"
-#endif
 #if defined (SYS_WINDOWS)
       WIN = .TRUE.
 #else

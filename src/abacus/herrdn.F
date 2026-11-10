@@ -319,12 +319,11 @@ C******************************************************************************
         USE HERMODULES, ONLY: READ_XYZ
         use memory_allocator
         use codata
+#ifdef PRG_DIRAC
+      use dcbgen_mod, only: DOHUCKEL, RDINPC
+#endif
 #include "implicit.h"
 C
-#ifdef PRG_DIRAC
-#include "dcbgen.h"
-#else
-#endif
 C
       CHARACTER(LEN=8) :: moltype
       LOGICAL          :: HERMIT,NEWFILE,SET,FEXIST
@@ -513,6 +512,9 @@ C******************************************************************************
       USE RECP_NTR
       use ccom_mod, only: DOCART, DOSPHE, THRS
       use codata_mod, only: XTANG
+#ifdef PRG_DIRAC
+      use dcbgen_mod, only: ISPHTR, KCHARG, TWOCOMP, TWOCOMPBSS
+#endif
 #include "implicit.h"
       PARAMETER (THRMIN = 1.D-15)
       REAL(KIND=8):: WORK(LWORK)
@@ -544,9 +546,7 @@ C     JHS The following variables come from a common block and are thus kept in 
       LOGICAL   ANG, ADDSYM
 
 #include "infpar.h"
-#ifdef PRG_DIRAC
-#include "dcbgen.h"
-#else
+#ifndef PRG_DIRAC
       LOGICAL LINEAR, ATOMIC
 #endif
 #include "dgroup.h"
@@ -895,6 +895,7 @@ C
 C       Read orbital and geometry input data
 C
 C***********************************************************************
+      use dcbgen_mod, only: DOHUCKEL, TWOCOMP
       use ccom_mod, only: NHTYP
       use cbirea_mod, only: BASIS, DIRAC, FAMPAR, INPTST, IPREAD,
      &  LCMMAX, NFAMEXP, UNCONT
@@ -920,7 +921,6 @@ C***********************************************************************
       CHARACTER SPDCAR*1,BSET*5,ZMATL*1,BASFIL*20,AUXFIL*20,BSKEYWORD*14
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       DIMENSION IBLOCK(MXBSETS)
-#include "dcbgen.h"
 #include "dcbham.h"
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
@@ -2086,6 +2086,7 @@ C       Process orbital and geometry input data
 C
 C*****************************************************************************
 C
+      use dcbgen_mod, only: DOHUCKEL
       use cbirea_mod, only: IPREAD
       use huckel_mod, only: NHUCBA
       use fitprimit_mod, only: NPLSH_FIT, NPSHEL_FIT, NPSSH_FIT
@@ -2101,7 +2102,6 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "dcbgen.h"
 C
       DIMENSION WORK(LWORK)
       LOGICAL SEG,DOOWN
@@ -2332,6 +2332,7 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
+      use dcbgen_mod, only: TWOCOMP, TWOCOMPBSS
       use ccom_mod, only: DOCART, NHTYP, THRS
       use cbirea_mod, only: DIRAC, IPREAD
       use aosotr_mod, only: IAOAO
@@ -2342,7 +2343,6 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "dcbgen.h"
       DIMENSION WORK(LWORK)
       LOGICAL   SEG,HERMIT,NRMPRI
       DIMENSION IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
@@ -3488,6 +3488,9 @@ C******************************************************************************
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
       use ccom_mod, only: KCK, KHK, SPH
+#ifdef PRG_DIRAC
+      use dcbgen_mod, only: SEGBAS
+#endif
 #include "implicit.h"
 C
       PARAMETER (D0 = 0.0D0)
@@ -3498,7 +3501,6 @@ C
      &          SEG(KBLOCK),ALPHA(KPRIM,KBLOCK),
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
 #ifdef PRG_DIRAC
-#include "dcbgen.h"
 #else
 #endif
 C
@@ -5829,6 +5831,9 @@ C
       use priunit_mod, only: LUPRI
       use ccom_mod, only: DOCART, NHTYP, THRS
       use codata_mod, only: XTANG
+#ifdef PRG_DIRAC
+      use dcbgen_mod, only: KCHARG
+#endif
 #include "implicit.h"
       PARAMETER (DSM = 1.0D-30)
       PARAMETER (AR=PI/180.0D+00)
@@ -5844,10 +5849,6 @@ C
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2), CHNON(MXCENT)
       CHARACTER SPDCAR*1, NAVNK*4, CRT*1
       CHARACTER*80 BASREF(10,KATOM), BASNAM
-#ifdef PRG_DIRAC
-#include "dcbgen.h"
-#else
-#endif
     1 FORMAT(/'   Internal coordinates (Z matrix)'/)
     2 FORMAT(I5,62X,F15.5)
     3 FORMAT(I5,I5,F14.7,43X,F15.5)

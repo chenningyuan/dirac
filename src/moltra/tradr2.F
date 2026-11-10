@@ -28,7 +28,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
-!      use dcbgen_mod, only: MP2ORG, PARCAL
+      use dcbgen_mod, only: MP2ORG
+#if defined (VAR_MPI)
+      use dcbgen_mod, only: PARCAL
+#endif
 !      use dgroup_mod, only: NFSYM
       use blocks_mod, only: MAXSHL, NSYMBL
 !      use dcbtra_mod, only: SCRTRA
@@ -41,7 +44,6 @@ C
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
@@ -271,11 +273,10 @@ C     Written by T.Saue Sep 18 1998
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: PARCAL
+      use dcbgen_mod, only: PARCAL
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcbgen.h"
       LOGICAL LMP2
       DIMENSION TIM1(7,NDIM)
 C
@@ -2603,7 +2604,6 @@ C***********************************************************************
 C
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "infpar.h"
-!#include "dcbgen.h"
 !#include "dcborb.h"
 !#include "dcbtra.h"
 #include "dcbtr3.h"
@@ -2947,7 +2947,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0=0.0D0
 C
 #include "infpar.h"
-!#include "dcbgen.h"
 !#include "dcborb.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
@@ -3183,7 +3182,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0=0.0D0
 C
 #include "infpar.h"
-!#include "dcbgen.h"
 !#include "dcborb.h"
 !#include "dcbtra.h"
 #include "dcbtr3.h"

@@ -27,7 +27,7 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUCMD, LUPRI
       use dummy_mod, only: DUMMY, IDUMMY
-!      use dcbgen_mod, only: INTGEN, MP2ORG
+      use dcbgen_mod, only: INTGEN, MP2ORG
 !      use dcbpsi_mod, only: DOMP2
 !      use dcborb_mod, only: NOCC
 !      use dcbbas_mod, only: NFBAS
@@ -45,7 +45,6 @@ C
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*2 WS
 C
-#include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -442,7 +441,7 @@ C*****************************************************************************
 ! connection between the scheme of moltra and relccsd       
       use priunit_mod, only: LUCMD, LUPRI
       use dummy_mod, only: IDUMMY
-!      use dcbgen_mod, only: INTGEN, PARCAL
+      use dcbgen_mod, only: INTGEN, PARCAL
 !      use dcbpsi_mod, only: DOHSCC
 !      use dcbbas_mod, only: NFBAS
 !      use dgroup_mod, only: FREP, NFSYM
@@ -461,7 +460,6 @@ C
       CHARACTER*7 LINE
       DIMENSION WORK(LWORK),IR(2,2),NTVEC(4)
 C
-#include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1392,7 +1390,7 @@ C     Last changes: Miro Ilias, Aug.2016 (for DFT-COSCI)
 C
 C*****************************************************************************
       use priunit_mod, only: LUCMD, LUPRI
-!      use dcbgen_mod, only: INTGEN, PARCAL
+      use dcbgen_mod, only: INTGEN, PARCAL
 !      use dcbpsi_mod, only: DORES
 !      use dcbres_mod, only: COREDENS, INTRES, IPRRES, ISTRES, NOVXC, RESOUT, SCRRES
 !      use dcbham_mod, only: BSS, DO4C2C, LEVYLE, X2C
@@ -1408,7 +1406,6 @@ C
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*2 WS
 C
-#include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbres.h"
 #include "dcbham.h"

@@ -38,7 +38,6 @@ contains
 
 #include "dcbbas.h"
 #include "dcborb.h"
-!#include "dcbgen.h"
 #include "dcbdhf.h"
 
       call interface_mo_clear()

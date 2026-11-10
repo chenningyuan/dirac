@@ -522,12 +522,11 @@ module fde_evaluators_dirac
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZ
 !      use dcbdhf_mod, only: NFMAT
-!      use dcbgen_mod, only: LUCOEF
+      use dcbgen_mod, only: LUCOEF
 !      use dcborb_mod, only: NCMOTQ
 !#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
-#include "dcbgen.h"
 #include "dcborb.h"
 ! Passed/recovered variables
       character(len=4) :: level
@@ -659,11 +658,13 @@ module fde_evaluators_dirac
       subroutine fde_get_pertden(level,grid,gf)
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NCMOTQ
-!      use dcbgen_mod, only: LUCOEF, PARCAL
+      use dcbgen_mod, only: LUCOEF
+#if defined (VAR_MPI)
+      use dcbgen_mod, only: PARCAL
+#endif
 !      use dcbham_mod, only: SPINFR
   use memory_allocator 
 #include "dcborb.h"
-#include "dcbgen.h"
 #include "dcbham.h"
 !   ----------------------------------------------------------------------------
       type(grid_function), intent(inout) :: gf
@@ -1186,12 +1187,11 @@ module fde_evaluators_dirac
 !   ----------------------------------------------------------------------------
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dgroup_mod, only: NBSYM
-!      use dcbgen_mod, only: LUCOEF
+      use dcbgen_mod, only: LUCOEF
 #include "implicit.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 !#include "dcbdhf.h"
-#include "dcbgen.h"
 
          nba_orb = ntbas(0)
          nba = nba_orb

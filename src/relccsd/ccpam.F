@@ -146,10 +146,9 @@ C     Written by Luuk Visscher, August 1997
 C     Call the slaves if we run in parallel
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dcbgen_mod, only: PARCAL
+      use dcbgen_mod, only: PARCAL
       use dirac_partask_mod, only: RELCC_PAR
 #include "implicit.h"
-#include "dcbgen.h"
 C
 C     Send task code for parallel RELCCSD
 C

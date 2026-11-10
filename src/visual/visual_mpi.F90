@@ -56,10 +56,11 @@ contains
   end function
 
   function mpi_get_nr_proc()
-!      use dcbgen_mod, only: PARCAL
+#if defined (VAR_MPI)
+      use dcbgen_mod, only: PARCAL
+#endif
     integer:: mpi_get_nr_proc
     integer :: nr_proc
-#include "dcbgen.h"
     mpi_get_nr_proc = 1
 #ifdef VAR_MPI
     if (parcal) then

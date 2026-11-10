@@ -1061,7 +1061,7 @@ C***********************************************************************
       use nuclei_mod, only: NAMN, NUCDEG, NUCDEP, NUCIND
       use pgroup_mod, only: REP
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
 !      use dcbprp_mod, only: ABUND, IPSPNSPN
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT, TRIAB
       use chrxyz_mod, only: CHRXYZ
@@ -1070,7 +1070,6 @@ C***********************************************************************
       INTEGER :: I
 C
 !#include "dgroup.h"
-#include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
       LOGICAL DOATOM(NUCIND),SAME
@@ -3675,7 +3674,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: DM1 = -1.0D0
 C
 !#include "dgroup.h"
-!#include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbexp.h"
       LOGICAL DOATOM(NUCIND),SAME
@@ -4069,7 +4067,6 @@ C
 C   2002,2003/MI&HJAaJ - added TEC's changes for London atomic orbitals
 C
 C***********************************************************************
-!      use dcbgen_mod, only: CVAL
 !      use dcbprp_mod, only: DOESR, DOEXP, ESRGTENS, ESR_HFCC, IPESR, IPRNST, IPSHIELD, LONDON, NNSTIN, SHIELD
 !      use dcbesr_mod, only: IPSIGMA, LESRP, MAXESR, NESRP
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
@@ -4088,10 +4085,10 @@ C***********************************************************************
       use nuclei_mod, only: NAMN, NUCDEP, NUCIND
       use pgroup_mod, only: REP
       use codata_mod, only: G1FAC
+      use dcbgen_mod, only: CVAL
 #include "implicit.h"
       INTEGER :: I
 !#include "dgroup.h"
-#include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbesr.h"
 #include "dcbxlr.h"
@@ -4464,7 +4461,6 @@ C***********************************************************************
       INTEGER :: II
 C
 !#include "maxash.h"
-!#include "dcbgen.h"
 !#include "dcbprp.h"
 !#include "dcbxpr.h"
 #include "krciprop.h"
@@ -4550,7 +4546,6 @@ C***********************************************************************
       INTEGER :: II
 C
 !#include "maxash.h"
-!#include "dcbgen.h"
 !#include "dcbprp.h"
 !#include "dcbxpr.h"
 #include "krciprop.h"
@@ -4592,13 +4587,12 @@ C     and Malaya K. Nayak, Dec 2019
 C
 C***********************************************************************
       use consts_mod, only: D0
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
 !      use dcbxpr_mod, only: PRPNAM
 !      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
 #include "implicit.h"
 C
 !#include "maxash.h"
-#include "dcbgen.h"
 !#include "dcbprp.h"
 #include "dcbxpr.h"
 #include "krciprop.h"
@@ -4656,7 +4650,6 @@ C***********************************************************************
 #include "implicit.h"
 C
 !#include "maxash.h"
-!#include "dcbgen.h"
 !#include "dcbprp.h"
 #include "dcbxpr.h"
 #include "krciprop.h"
@@ -4773,7 +4766,6 @@ C***********************************************************************
       use chrnos_mod, only: CHRNOS
 #include "implicit.h"
 !#include "maxash.h"
-!#include "dcbgen.h"
 !#include "dcbprp.h"
 #include "krciprop.h"
 !#include "dgroup.h"
@@ -5009,7 +5001,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use nuclei_mod, only: GAUNUC, ISTBNU, NAMDEP, NUCDEP, NUCIND,
      &  NUCPRE
       use symmet_mod, only: IPTCNT, IPTNUC, MAXREP
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
 !      use dcbprp_mod, only: IP_PVC_SHIELD
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
       use chrnos_mod, only: CHRNOS
@@ -5019,7 +5011,6 @@ C
 C
       integer I,J
 C
-#include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
 C
@@ -5239,7 +5230,7 @@ C=======================================================================
      &  NUCIND, NUCPRE
       use pgroup_mod, only: REP
       use symmet_mod, only: IPTCNT, IPTNUC, ISYMAX, MAXREP
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
 !      use dcbprp_mod, only: IP_PVC_SPINSPIN
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
       use chrxyz_mod, only: CHRXYZ
@@ -5248,7 +5239,6 @@ C=======================================================================
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C-----------------------------------------------------------------------
 !#include "dgroup.h"
-#include "dcbgen.h"
 #include "dcbprp.h"
 !#include "dcbesr.h"
 #include "dcbxlr.h"
@@ -5417,7 +5407,6 @@ C
 C
 #include "dcbprp.h"   ! common block for expectation values
 #include "dcbxlr.h"   ! common block for linear reponse
-!#include "dcbgen.h"
 !#include "dcbexp.h"
 C
       INTEGER IPRINT,IATOM,IXYZ,NATOM,
@@ -5633,7 +5622,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
 !#include "dgroup.h"
-!#include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbexp.h"
       LOGICAL DOATOM(NUCIND),SAME
@@ -5726,7 +5714,7 @@ C
 C****************************************************************************
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
 !      use dcbxpr_mod, only: PRPNAM
 !      use dcbprp_mod, only: DOEXP, IMAGOUT, IPLONDON, IPMSUSC, IPRPRP, LONDON, MSUSCDIA
@@ -5737,7 +5725,6 @@ C****************************************************************************
 C
       PARAMETER(DI2 = 0.5D0, DI4 = 0.25D0, DM1 = -1.0D0,
      &           D2 = 2.0D0, DM2 = -2.0D0,  D1 = 1.0D0)
-#include "dcbgen.h"
 
 #include "dcbxlr.h"
 #include "dcbxpr.h"
@@ -8861,7 +8848,7 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
 !      use dcbprp_mod, only: IPROTG
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
 !      use rotg_mod, only: LINDET
@@ -8872,7 +8859,6 @@ C
 C
       integer I
 C
-#include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "rotg.h"
@@ -9671,7 +9657,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use maxaqn_mod, only: MXQN
 !      use dgroup_mod, only: NZ
 !      use dcbbas_mod, only: NTBAS
-!      use dcbgen_mod, only: LUBSS
+      use dcbgen_mod, only: LUBSS
 !      use dcbxpr_mod, only: IPRPSYM, NPRPS, PRPNAM
       use ccom_mod, only: DOSPHE
 #include "implicit.h"
@@ -9680,7 +9666,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !#include "dcborb.h"
 #include "dcbbas.h"
 !#include "dcbexp.h"
-#include "dcbgen.h"
 #include "dcbxpr.h"
 !#include "dcbprp.h"
 !#include "dcbprl.h"
@@ -9784,7 +9769,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
       use codata_mod, only: G1FAC
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
 !      use dcbprp_mod, only: IPEPOLAR, IPSHIELD, LONDON
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
       use kinds_mod, only: dp
@@ -9793,7 +9778,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: DM1 = -1.0D0, DMI2 = -0.5D0
 C
 !#include "dgroup.h"
-#include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
 !#include "dcbexp.h"
@@ -10007,7 +9991,6 @@ C
       PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
      &          DI2 = +0.5D00,DM1 = - 1.0D0)
 !#include "dgroup.h"
-!#include "dcbgen.h"
 #include "dcbprp.h"
 !#include "dcbesr.h"
 !#include "dcbxlr.h"
@@ -10342,10 +10325,9 @@ C
 C     Written by Martin van Horn July 16 2021
 C***********************************************************************
       use chrnos_mod, only: CHRNOS
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
 #include "implicit.h"
       INTEGER :: I, II
-#include "dcbgen.h"
       DIMENSION IPVPOL(*), PFAC(2)
       REAL CARPOW(3,3)
       CHARACTER PNAME*16, PLABEL(2)*8,COMPLAB(3)*2  
@@ -10477,10 +10459,9 @@ C
 C     Written by Trond Saue March 29 2013
 C***********************************************************************
       use chrnos_mod, only: CHRNOS
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
 #include "implicit.h"
       INTEGER :: II
-#include "dcbgen.h"
       DIMENSION IPMPOL(*),PFAC(2)
       CHARACTER PNAME*16, PLABEL(2)*8
 C
@@ -10580,10 +10561,9 @@ C
 C     Written by Trond Saue October 5 2018
 C***********************************************************************
       use chrnos_mod, only: CHRNOS
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
 #include "implicit.h"
       INTEGER :: I, II
-#include "dcbgen.h"
       DIMENSION IPBEDCON(*)
       CHARACTER PNAME*16, PLABEL*8
 C
@@ -10832,7 +10812,6 @@ C***********************************************************************
       INTEGER :: II
 C
       REAL(dp), PARAMETER :: DP5=0.5D0
-!#include "dcbgen.h"
 #include "dgroup.h"
       CHARACTER PNAME*16
       character (len=8),  allocatable   :: LABINT(:)
@@ -10905,7 +10884,6 @@ C***********************************************************************
       INTEGER :: II
 C
       REAL(dp), PARAMETER :: DP5=0.5D0
-!#include "dcbgen.h"
 #include "dgroup.h"
       CHARACTER PNAME*16
       character (len=8),  allocatable   :: LABINT(:)
@@ -10987,7 +10965,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbexp_mod, only: IPEFN, LEXPP, MAXEXP, NEXPP
 !      use dcbprp_mod, only: IPSPINRO
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
 !      use spinro_mod, only: LINDET
       use consts_mod, only: D0, D1
       use chrnos_mod, only: CHRNOS
@@ -11001,7 +10979,6 @@ C
 #include "dcbexp.h"
 #include "dcbprp.h"   ! common block for expectation values
 #include "dcbxlr.h"   ! common block for linear reponse
-#include "dcbgen.h"
 #include "spinro.h"
 C
       INTEGER IPRINT,NATOM,IATOM,IATOM1,
@@ -12424,7 +12401,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dgroup_mod, only: LINEAR
 !      use dcbprp_mod, only: IP_PVC_SPINRO
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
 !      use spinro_mod, only: LINDET
       use consts_mod, only: D0, D3, D4
       use codata_mod, only: GFAC
@@ -12439,7 +12416,6 @@ C
 #include "dgroup.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"     ! Common block for linear reponse
-#include "dcbgen.h"
 #include "spinro.h"
 C
       INTEGER IPRINT,NATOM,IATOM,ICOOR,INDXPR,

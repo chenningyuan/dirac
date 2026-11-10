@@ -3,6 +3,7 @@
 
 module dirac_interface
 
+      use dcbgen_mod, only: INTGEN, PARCAL, TWOCOMP
       use dcbgrd_mod, only: GRADNN
       use dipole_mod, only: DDIPN, DIPMN
       use dirac_partask_mod, only: XCINT_PAR
@@ -80,7 +81,6 @@ module dirac_interface
 
 #include "../abacus/cbinuc.h"
 #include "dcbbas.h"
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dgroup.h"

@@ -1023,6 +1023,9 @@ C/* Deck find_element */
       use gnrinf_mod, only: BASDIR
 #endif
       use priunit_mod, only: LUPRI
+#if (defined (PRG_DIRAC))
+      use dcbgen_mod, only: BASDIR
+#endif
 #include "implicit.h"
 !      use infpar_mod, only: IF, MPARID, MYTID
       INTEGER :: J
@@ -1046,10 +1049,6 @@ C
       LOGICAL EXST, EXST2, USE_BASNAM
 ! infpar.h : MYTID, MPARID
 #include "infpar.h"
-#if defined (PRG_DIRAC)
-#include "dcbgen.h"
-#else
-#endif
 
 #if defined (SYS_WINDOWS)
       CHARACTER, PARAMETER :: SLASH = '\\' ! Specify trailing slash: \\ for Windows
@@ -1277,6 +1276,9 @@ C/* Deck find_nqd */
 #endif
       use priunit_mod, only: LUPRI
       use dummy_mod, only: DUMMY, IDUMMY
+#if (defined (PRG_DIRAC))
+      use dcbgen_mod, only: BASDIR, LENBAS
+#endif
 #include "implicit.h"
       INTEGER :: J
 C*********************************************************
@@ -1296,10 +1298,6 @@ C
       DIMENSION ALPHA(KPRIM,KAOVEC), CPRIMU(KPRIM,KPRIM,KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC), NUC(KAOVEC), NRC(KAOVEC),
      &          SEG(KAOVEC)
-#if defined (PRG_DIRAC)
-#include "dcbgen.h"
-#else
-#endif
 C
 C     Determine primitive basis
 C

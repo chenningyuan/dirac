@@ -62,7 +62,7 @@ C***********************************************************************
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 !      use dcbprl_mod, only: IPRLTYP
 !      use dcbham_mod, only: NONREL, X2C
-!      use dcbgen_mod, only: KCHARG, LUX2C
+      use dcbgen_mod, only: KCHARG, LUX2C
       use labeled_storage
       use checkpoint
       use dircmo
@@ -75,7 +75,6 @@ C
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "dcbham.h"
-#include "dcbgen.h"
       DIMENSION EXPVAL(*)
       CHARACTER MXFORM*6,FMT*6
       CHARACTER WF*4
@@ -547,7 +546,7 @@ C***********************************************************************
 !      use dcborb_mod, only: I2ORBX, ICMOQ, NASHT, NCMOTQ, NOCC, NORB, NORBT
 !      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcbexp_mod, only: IPREXP, LEXPP, NEXPP, ORBANA, PRJANA, PRPCAN
-!      use dcbgen_mod, only: LUCOEF
+      use dcbgen_mod, only: LUCOEF
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 !      use dcbdhf_mod, only: AOC, DF
 !      use dcbprj_mod, only: NREFS
@@ -559,7 +558,6 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbexp.h"
-#include "dcbgen.h"
 #include "dcbxpr.h"
 #include "dcbdhf.h"
 #include "dcbprj.h"
@@ -1404,9 +1402,9 @@ C
 C***********************************************************************
 !      use dcbbas_mod, only: I2BASX, NFBAS
 !      use dcborb_mod, only: ICMOQ, IORB, NCMOTQ, NISH, NORB, NORBT
-!      use dcbgen_mod, only: LUCOEF
 !      use dcbxpr_mod, only: PRPNAM
 !      use dgroup_mod, only: NFSYM, NZ
+      use dcbgen_mod, only: LUCOEF
        use dircmo
        use labeled_storage
       use kinds_mod, only: dp
@@ -1415,7 +1413,6 @@ C***********************************************************************
 C
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbgen.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
       DIMENSION PAO(*),CMO(*),WORK(*)

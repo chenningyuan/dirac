@@ -36,7 +36,7 @@ C***********************************************************************
       use cbirea_mod, only: INPTST
       use molinp_mod, only: MLINE, NMLINE
       use maxaqn_mod, only: MXQN
-!      use dcbgen_mod, only: BASDIR
+      use dcbgen_mod, only: BASDIR
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
       use gencon_mod, only: MXCON_PARAM
@@ -60,7 +60,6 @@ C     variable for slash in paths (/ or \\)
       CHARACTER SLASH
 C     Check if we work on Linux or on Windows
       LOGICAL WIN
-#include "dcbgen.h"
 #include "dcbham.h"
 C
       DATA SZ / 'LARGE', 'SMALL' /

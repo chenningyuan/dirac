@@ -33,7 +33,7 @@ C***********************************************************************
 
 !      use dcbdhf_mod, only: DHFCONV, ERGCNV, ERGCNV2, EVCCNV, EVCCNV2, FCKCNV, FCKCNV2, I2TMOT, INTDEF, IPRSCF, MAXITR, MAXITR2, NACSH, NESHMF, NFMAT, NOCCMF, NTMO, SCFCNV, SCFCNV2
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: INTGEN, INTGEN_SAVE
+      use dcbgen_mod, only: INTGEN, INTGEN_SAVE
 !      use dcbham_mod, only: BSS, DO2C4C, DO4C2C, IF, INI2C, ONESYS, SSMTRC, SSMTRC_SAVE, X2C
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
          use memory_allocator
@@ -45,7 +45,6 @@ C***********************************************************************
 
 #include "implicit.h"
 C
-#include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -243,7 +242,6 @@ C*****************************************************************************
 !      use dcborb_mod, only: I2ORBT, ICMOQ, NELECT, NESH, NISH, NISHT, NORB, NPSH, NSSH
 !      use dcbpsi_mod, only: PHCOEF
 !      use dcbham_mod, only: CONT2C, DO4C2C, IF, IPRHAM, IPRSOL, ONECAP, ONESYS, RESTFCK, SMLV1C, SOLVEN, SPINFR
-!      use dcbgen_mod, only: BARNUC, BNCRON, BNSPON, DOHUCKEL, DOTSC, LUCOEF, PARCAL
 !      use dcbdhf_mod, only: AOC, ATHUCK, ATOMST, CACC, DHFCONV, DHFERG, DHFEXIT, DHF_INTTYP, DOLEVEL, ERGVAL, ESOLVE, ESOLVN, EVCVAL, FCKVAL, FIXDIF, I2TMOT, IFCKOP, IHRMOP, INIOCC, INTFLG, IPRSCF, ISYMOP, LUCMOS, LUCYCL, LUDENS, LUEVEC, LUFCK1, LUFCK2, LUFCKT, LUFOCK, MXDIIS, MXOPEN, N2TMOTQ, NACSH, NELECT_DHF, NESHMF, NFMAT, NISH_BOS, NITER, NOCCMF, NOPEN, NTMO, SCFPOP, TDF2, TRIFCK, TRIVEC
       use dirac_cfg
       use interface_mo_specific
@@ -261,12 +259,16 @@ C*****************************************************************************
       use kinds_mod, only: dp
       use priunit_mod, only: LUPRI
       use dirac_partask_mod, only: FDE_PAR, XCINT_PAR
+      use dcbgen_mod, only: BARNUC, BNCRON, BNSPON, DOHUCKEL, DOTSC,
+     &  LUCOEF
+#if defined (VAR_MPI)
+      use dcbgen_mod, only: PARCAL
+#endif
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D1 = 1.0D0, DM1 = -1.0D0, D0 = 0.0D0,
      &                       D4 = 4.00D00, D2 = 2.0D0, DP5=0.5D0
 C
-#include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
@@ -819,11 +821,10 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: DO4C2C, IF, IPRHAM, RESTFCK
       use dummy_mod, only: DUMMY
-!      use dcbgen_mod, only: LUBSS, LUCOEF, LUTMAT
+      use dcbgen_mod, only: LUBSS, LUCOEF, LUTMAT
 !      use dcbdhf_mod, only: AOC, DIISAO, DOMOFREEZE, I2TMOT, NACSH, NESHMF, NFMAT, NOCCMF, NTMO, TRIVEC
 #include "implicit.h"
 C
-#include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -958,14 +959,13 @@ C*****************************************************************************
 !      use dcborb_mod, only: I2ORBT, ICMOQ, IORB, NASH, NESH, NFRO, NFROT, NISH, NORB, NPSH, NSSH
 !      use dcbdhf_mod, only: AUTOCC, DHFERG, DHFEXIT, DIISAO, DOBOSSEL, DOCCNV, DYNSEL, I2TMOT, INIOCC, IPRSCF, LUCMOS, N2TMOTQ, NACSH, NESHMF, NFMAT, NOCCMF, NTMO, TDDG
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: LUCOEF, LUTMAT
+      use dcbgen_mod, only: LUCOEF, LUTMAT
 !      use dcbham_mod, only: WORK
       use dircmo
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -1238,7 +1238,6 @@ C*****************************************************************************
 !      use dcbbas_mod, only: N2BBASXQ
 #include "implicit.h"
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*), WORK(LWORK)
-!#include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
       CALL QENTER('SCFCYC')
@@ -1277,7 +1276,6 @@ C*****************************************************************************
 !      use dcbham_mod, only: ECPCALC, IF, IPRSOL, ONECAP, ONECNV, ONECOFF, SMLV1C, SOLVEN
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dgroup_mod, only: NZ
-!      use dcbgen_mod, only: DOTSC, LUCOEF, PARCAL
       use dirac_cfg
       use fde_mod
       use num_grid_gen
@@ -1293,11 +1291,14 @@ C*****************************************************************************
       use kinds_mod, only: dp
       use priunit_mod, only: LUPRI
       use dirac_partask_mod, only: FDE_PAR, XCINT_PAR
+      use dcbgen_mod, only: DOTSC, LUCOEF
+#if defined (VAR_MPI)
+      use dcbgen_mod, only: PARCAL
+#endif
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DM1=-1.0D0, D1=1.0D0,
      &                       DP5 = 0.50D00, D2 = 2.00D00
 C
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
@@ -1765,7 +1766,6 @@ C
 C*****************************************************************************
 
 !      use dgroup_mod, only: NZ
-!      use dcbgen_mod, only: DOLVC
 !      use dcbham_mod, only: E_PE, IF, INTV1C, ONECAP, SOLVEN
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dcbdhf_mod, only: AOC, DA, DF, DHFERG, E1PART, E2PART, ELERGY, ERGBUF, ESOLVE, ESOLVN, I2TMOT, INTFLG, IPRSCF, MXOPEN, NACSH, NESHMF, NFMAT, NOCCMF, NOPEN, NTMO
@@ -1787,6 +1787,7 @@ C*****************************************************************************
       use kinds_mod, only: dp
       use priunit_mod, only: LUPRI
       use frame_mod, only: CORRLV, POTNUC
+      use dcbgen_mod, only: DOLVC
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2=2.0D0, DP5 = 0.5D00,
      &                       DP25 = 0.25D00
@@ -1795,7 +1796,6 @@ C
 #include "dgroup.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
-#include "dcbgen.h"
       LOGICAL LVCON, XAMFI_CORRECTIONS, XAMFI_VXC_
       CHARACTER M(4)*2,FMT*6,MXFORM*6
       DIMENSION F1(N2BBASX,NZ),F2(N2BBASX,NZ,NFMAT),
@@ -2434,7 +2434,6 @@ C Used from COMMON blocks:
 C
 #include "dcborb.h"
 #include "dgroup.h"
-!#include "dcbgen.h"
 #include "dcbdhf.h"
 C
 C     KNORB = NORB(IFRP)
@@ -3348,7 +3347,6 @@ C***********************************************************************
 C
 #include "dcbbas.h"
 C
-!#include "dcbgen.h"
 C
       real(8), allocatable :: WORK(:)
 C
@@ -3388,7 +3386,7 @@ C***********************************************************************
 !      use dcbham_mod, only: WORK
 !      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: I2ORBT, ICMOQ, IORB, NCMO, NISH, NOCC, NORB, NPSH, NSSH
-!      use dcbgen_mod, only: LUCOEF
+      use dcbgen_mod, only: LUCOEF
       use priunit_mod, only: LUPRI
 !      use dcbmvo_mod, only: ADDREP, IF2MVO, INTMVO, IONMVO, IPRMVO, MVOWEIGHT
       use dircmo
@@ -3400,7 +3398,6 @@ C***********************************************************************
 C
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbmvo.h"
 #include "dcbham.h"
@@ -3653,14 +3650,13 @@ C***********************************************************************
 !      use dcbham_mod, only: DO4C2C, IF, ONESYS, RESTFCK
 !      use dcborb_mod, only: I2ORBT, NASHT, NISH, NPSH, NSSH
       use dummy_mod, only: DUMMY
-!      use dcbgen_mod, only: BARNUC, BNCRON, BNSPON, DOHUCKEL
+      use dcbgen_mod, only: BARNUC, BNCRON, BNSPON, DOHUCKEL
 !      use dcbdhf_mod, only: ATHUCK, ATOMST, CACC, CNVINT, DHFERG, DHF_INTTYP, DIISON, DODAMP, DODIIS, DODSCF, ERGVAL, EVCVAL, FCKVAL, I2TMOT, INTBUF, INTDEF, INTFLG, ITDIIS, ITRINT, KITER, LUCYCL, LUDIIS, MXDIIS, NACSH, NELMBM, NESHMF, NITER, NOCCMF, NTMO, TRIFCK, TRIVEC
       use priunit_mod, only: LUPRI
       use num_grid_cfg
       use checkpoint
 
 #include "implicit.h"
-#include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dcbham.h"
@@ -3873,7 +3869,7 @@ C     using the build-up principle.
 C
 C***********************************************************************
 !      use dcborb_mod, only: I2ORBT, IORB, NASH, NESHT, NISH, NOCC, NORBT, NPSH, NSSH
-!      use dcbgen_mod, only: KCHARG
+      use dcbgen_mod, only: KCHARG
       use priunit_mod, only: LUPRI
 !      use dcbdhf_mod, only: AOC, I2TMOT, NACSH, NAELEC_DHF, NASH_DHF, NASHMFT, NELECT_DHF, NESHMF, NISH_DHF, NOCCMF, NTMO
 !      use dgroup_mod, only: NFSYM
@@ -3882,7 +3878,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dcbdhf.h"
-#include "dcbgen.h"
 #include "dgroup.h"
 C
       DIMENSION EIG(*)
@@ -4334,13 +4329,12 @@ C***********************************************************************
 !      use dcbham_mod, only: IPRHAM, SPINFR, SUB_BL, ZORA
 !      use dcbbas_mod, only: N2BBASXQ
 !      use dcborb_mod, only: I2ORBT, IORB, NESH, NISH, NORB, NORBT, NPSH, NSSH, N_SUB_BL, NTMO_SUB
-!      use dcbgen_mod, only: DOJACO, DOQJACO
+      use dcbgen_mod, only: DOJACO, DOQJACO
       use dummy_mod, only: IDUMMY
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,JJ,K
 C
-#include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -4876,13 +4870,12 @@ C
 C***********************************************************************
 
 !      use dcborb_mod, only: I2ORBT, NFROT, NISH, NPSH, NSSH
-!      use dcbgen_mod, only: LUTMAT
 !      use dcbdhf_mod, only: I2TMOT, NACSH, NESHMF, NOCCMF, NOPEN, NTMO
 !      use dgroup_mod, only: NFSYM
+      use dcbgen_mod, only: LUTMAT
          use memory_allocator
 #include "implicit.h"
 C
-#include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -5158,7 +5151,7 @@ C**********************************************************************
 !      use dcbbas_mod, only: N2TMT, NFBAS, NZT
 !      use dcbpsi_mod, only: L1ORBM
 !      use dcborb_mod, only: I2ORBT, NISH, NPSH, NSSH
-!      use dcbgen_mod, only: LUTMAT
+      use dcbgen_mod, only: LUTMAT
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbdhf_mod, only: I2TMOT, LUCMOS, N2TMOTQ, NACSH, NESHMF, NOCCMF, NTMO, OVLSEL
@@ -5167,7 +5160,6 @@ C**********************************************************************
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
 #include "dcbpsi.h"
-#include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -5300,7 +5292,6 @@ C***********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
-!#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
@@ -6154,10 +6145,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GO2C4C()
 C***********************************************************************
 C***********************************************************************
-!      use dcbgen_mod, only: BNCRON, BNSPON, INTGEN, TWOCOMP
 !      use dcbham_mod, only: BSS, IF, INI2C, MC, RESTFCK, SSMTRC, X2C
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dcbdhf_mod, only: DHFCONV, DHFEXIT, I2TMOT, INTDEF, IPRSCF, MAXITR, NACSH, NESHMF, NFMAT, NOCCMF, NTMO
+      use dcbgen_mod, only: BNCRON, BNSPON, INTGEN, TWOCOMP
       use priunit_mod, only: LUPRI
          use memory_allocator
          use dirac_cfg
@@ -6165,7 +6156,6 @@ C***********************************************************************
 
 #include "implicit.h"
 C
-#include "dcbgen.h"
 #include "dcbdhf.h"      
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -6291,10 +6281,10 @@ C
 C     Go from 4c to 2c mode
 C      
 C***********************************************************************
-!      use dcbgen_mod, only: BNCRON, BNSPON, TWOCOMP, TWOCOMPBSS
 !      use dcbdhf_mod, only: DHFCONV, DHFEXIT, I2TMOT, IPRSCF, NACSH, NESHMF, NFMAT, NOCCMF, NTMO
 !      use dcbham_mod, only: BSS, CMPEIG, CONT2C, IF, RESTFCK, START2C, X2C
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
+      use dcbgen_mod, only: BNCRON, BNSPON, TWOCOMP, TWOCOMPBSS
       use priunit_mod, only: LUPRI
       use memory_allocator
       use dirac_cfg
@@ -6302,7 +6292,6 @@ C***********************************************************************
 
 #include "implicit.h"
 C
-#include "dcbgen.h"
 #include "dcbdhf.h"      
 #include "dcbham.h"
 #include "dcbbas.h"

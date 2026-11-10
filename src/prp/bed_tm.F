@@ -14,7 +14,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use codata_mod, only: CVEL
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
       use pgroup_mod, only: REP
 !      use dgroup_mod, only: JM4, JM4REP, MCMP, NBSYM, NZ
 !      use dcbxrs_mod, only: JSYMOP, JTIMOP, LUBOE, LUBOP, NESIM, NEXCNV, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
@@ -29,7 +29,6 @@ C
       INTEGER :: I, II
 C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0,D4=4.0D0)
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"
@@ -710,7 +709,7 @@ C
 C                                                                      
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use chrxyz_mod, only: CHRXYZ
       use pgroup_mod, only: REP
@@ -728,7 +727,6 @@ C
       INTEGER :: II
 C
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, D1=1.0D0
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"
@@ -985,7 +983,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use codata_mod, only: CVEL
-!      use dcbgen_mod, only: CVAL
+      use dcbgen_mod, only: CVAL
       use chrxyz_mod, only: CHRXYZ
       use pgroup_mod, only: REP
 !      use dgroup_mod, only: JM4, JM4REP, NBSYM, NZ
@@ -1008,7 +1006,6 @@ C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0,D4=4.0D0)
 !#include "maxash.h"
 C
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"
@@ -1514,9 +1511,6 @@ c TODO added due to NESH
 C TODO commented out due to dcborb.hç
 #include "infpar.h"                                        
 #include "dcbxpp.h"
-#if defined (PRG_DIRAC)                                    
-!#include "dcbgen.h"                                        
-#endif                                                     
 C
 C                                                          
       DIMENSION DINTSKP(14*3*3)                            
@@ -1743,13 +1737,13 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use maxash_mod, only: MAXASH
 !      use dcborb_mod, only: ICMO, ICMOQ, IORB, N2ORB, N2ORBT, N2ORBX, NASH, NCMO, NCMOQ, NCMOT, NCMOTQ, NESH, NFRO, NISH, NORB, NORBT, NPSH
-!      use dcbgen_mod, only: CVAL, LU1INT
 !      use dcbbas_mod, only: I2BAST, I2BASX, IBBAS, MXFBAS, N2BBASX, N2BBASXQ, NBBAS, NFBAS, NNBBASX, NTBAS
 !      use dgroup_mod, only: NFSYM
 !      use dcbxrs_mod, only: INDSTR, JOPSY, NEXCNV, NREDM, NZHOPE, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, SKIPEE, SKIPEP
 !      use dcbxpp_mod, only: ANGPLOT, BEDECD, DOBED, MAXEXC
 !      use dcbxpr_mod, only: IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
 !      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
+      use dcbgen_mod, only: CVAL, LU1INT
       use codata_mod, only: CVEL
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IFSMO, IOBTYP
@@ -1765,7 +1759,6 @@ C
 #include "maxash.h"
 #include "dcborb.h"
 C
-#include "dcbgen.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbxrs.h"

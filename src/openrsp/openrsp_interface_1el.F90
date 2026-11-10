@@ -1,5 +1,6 @@
 module openrsp_interface_1el
 
+      use dcbgen_mod, only: CVAL, LU1INT
       use symmet_mod, only: ISYMAX
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -22,7 +23,6 @@ module openrsp_interface_1el
 
 #include "dcbbas.h"
 #include "dcbcls.h"
-#include "dcbgen.h"
 #include "dcbprl.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
