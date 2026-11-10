@@ -7350,9 +7350,9 @@ C        IREFSPC = IREFSPCS
 * Routine to transfer info from dirac common blocks to KRCC *
 *                                                           *
 *************************************************************
+      use pgroup_mod, only: GROUP
 #include "implicit.h"
 C Dirac common blocks
-#include "pgroup.h"
 C KRCC common blocks
 #include "mxpdim.inc"
 #include "lucinp.inc" 

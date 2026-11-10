@@ -1763,7 +1763,6 @@ C***********************************************************************
       INTEGER :: I, II
 C
 C
-!#include "pgroup.h"
 C
       DIMENSION KSOP(0:7),KBUF(0:7)
       DO I = 0,7
@@ -3878,10 +3877,9 @@ C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use codata_mod, only: XTANGM10, XTHZ, XTJ, XTKAYS
+      use codata_mod, only: XTANGM10, XTHZ, XTJ, XTKAYS
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "codata.h"
 C
       REAL(dp), PARAMETER :: DM1 = -1.0D0, D1 = 1.0D0, D2 = 2.0D0
       DIMENSION C(NP)
@@ -3912,9 +3910,8 @@ C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use codata_mod, only: XTKAYS
+      use codata_mod, only: XTKAYS
 #include "implicit.h"
-#include "codata.h"
 C
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0,D4=4.0D0)
 C
@@ -3953,11 +3950,10 @@ C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use codata_mod, only: XTANG
+      use codata_mod, only: XTANG
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "codata.h"
 C
       REAL(dp), PARAMETER :: DM1 = -1.0D0, D1 = 1.0D0, D2=2.0D0
       DIMENSION X(NP)
@@ -4002,10 +3998,9 @@ C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use codata_mod, only: XKJMOL, XTEV, XTKAYS
+      use codata_mod, only: XKJMOL, XTEV, XTKAYS
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "codata.h"
 C
       REAL(dp), PARAMETER :: D2=2.0D0, D4=4.0D0
 C
@@ -4037,10 +4032,9 @@ C     Written by T. Saue Nov 17 2008
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI, LUSTDIN
-!      use codata_mod, only: XTANG
+      use codata_mod, only: XTANG
 #include "implicit.h"
       INTEGER :: I
-#include "codata.h"
 C
       DIMENSION X(NP),Y(NP),A(NP,*),B(NP),C(NP),D(NP)
 C
@@ -4104,10 +4098,9 @@ C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use codata_mod, only: XTANG
+      use codata_mod, only: XTANG
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "codata.h"
 C
       REAL(dp), PARAMETER :: DTOL = 1.0D-4
 C

@@ -2468,7 +2468,7 @@ C***********************************************************************
 !      use dcbgen_mod, only: LUKRM3
 !      use dcborb_mod, only: MXGAS, N2ASHX, NASH, NASHT
 !      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM, NZ
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
 !      use krciprop_mod, only: DODIPMOM_KRCI, DOOSCILLST, ISYMOPPRP_KRCI, LPROP_KRCI, NPROP_KRCI
 !      use dcbkrci_mod, only: NKRCIAELEC, NKRCI_CIROOTS
@@ -2479,7 +2479,6 @@ C
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcbxpr.h"
 !#include "dcbprl.h"
 #include "krciprop.h"

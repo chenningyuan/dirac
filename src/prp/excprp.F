@@ -849,18 +849,16 @@ C
 C     Written by Erik Tellgren
 C
 C***********************************************************************
-!      use codata_mod, only: XTEV
+      use codata_mod, only: XTEV
       use priunit_mod, only: LUPRI
 !      use dcbxqr_mod, only: EXCIT, IEXCOFF, LAQROP, LQROP, LSTATE, MAXFQR, MAXLQR, MAXQR, NAQROP, NQRHYP, NQROP, QRFREQ, RSTATE
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
 !      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 #include "implicit.h"
-#include "codata.h"
 #include "dcbxqr.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
-#include "pgroup.h"
 C
       PARAMETER ( LUCMO = 22, D0 = 0.0D0, D2R3 = (2.0D0/3.0D0),
      &            D2 = 2.0D0, D4 = 4.0D0 )

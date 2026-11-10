@@ -119,6 +119,9 @@ C  /* Deck oneso1 */
       use cbisol_mod, only: LMNTOT, SOLVNT
       use quaternion_algebra
       use kinds_mod, only: dp
+#ifndef PRG_DIRAC
+      use energy_mod, only: GRADFS, GRADKE, GRADNA
+#endif
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0
@@ -145,8 +148,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 !#include "dcbham.h"
-#else
-#include "energy.h"
 #endif 
       ITRI(I,J) = MAX(I,J)*(MAX(I,J) - 1)/2 + MIN(I,J)
 #ifdef PRG_DIRAC

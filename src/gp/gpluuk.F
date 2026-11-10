@@ -428,11 +428,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRT_EV (LUPRI,N_IRPS,N_EV,REPNA,E_OFF,ECCIM,IRCW,EV,
      &                   ISIZE,INDX,IRPS,IND,esels,indsel)
 C
-!      use codata_mod, only: XTEV, XTKAYS
+      use codata_mod, only: XTEV, XTKAYS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "codata.h"
 C
 C---------------Description--------------------------------------------
 C
@@ -721,11 +720,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                       IRSEC1,IRSEC2,IRSEC12,REPNAO,NACTV,
      &                       TSHOLD)
 C
-!      use codata_mod, only: XTEV, XTKAYS
+      use codata_mod, only: XTEV, XTKAYS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "codata.h"
 C
 C---------------Description--------------------------------------------
 C

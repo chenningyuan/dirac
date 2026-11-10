@@ -216,10 +216,10 @@ C***********************************************************************
       use mxcent_mod, only: MXCENT
 !      use dcbbas_mod, only: I2BAST, I2BASX, IBAS, IBBAS, MXBBAS, MXFBAS, N2BAS, N2BASQ, N2BAST, N2BASTQ, N2BBAST, N2BBASX, N2BBASXQ, NBBAS, NFBAS, NNBBAST, NNBBASX, NTBAS
       use maxorb_mod, only: MXCORB
-!      use inftap_mod, only: LUINTR
+      use inftap_mod, only: LUINTR
 !      use dcbham_mod, only: MDIRAC
       use maxaqn_mod, only: MXAQN, MXQN
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 !      use dcbgen_mod, only: LU1INT, LUCOEF, LUKRMC, LUOVLP, LUPMAT, LUTMAT
 #include "implicit.h"
       INTEGER :: I,J
@@ -227,9 +227,7 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbbas.h"
-#include "pgroup.h"
 #include "dgroup.h"
-#include "inftap.h"
       CHARACTER COMP(2)*1
 C
       IF(IPRINT.GE.2) CALL TITLER('Output from SETDC1','*',103)
@@ -444,7 +442,6 @@ C
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-!#include "pgroup.h"
 #include "dgroup.h"
       CHARACTER COMP(2)*1
 C
@@ -1003,7 +1000,6 @@ C***********************************************************************
 C
 #include "dcblab.h"
 #include "dgroup.h"
-!#include "pgroup.h"
 #include "dcbbas.h"
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
       DIMENSION ICLAB(*),GROSS(*),SCQ(*)
@@ -1130,7 +1126,6 @@ C***********************************************************************
 C
 #include "dcblab.h"
 #include "dgroup.h"
-!#include "pgroup.h"
 #include "dcbbas.h"
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
       DIMENSION ICLAB(*),GROSS(*),QLC(*)

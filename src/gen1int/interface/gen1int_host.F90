@@ -577,7 +577,7 @@
   subroutine gen1int_host_cube_init(io_input, io_viewer, word)
     ! module of generating cube files
       use maxorb_mod, only: MXCORB
-!      use infinp_mod, only: DO_CUBE, TYPE
+      use infinp_mod, only: DO_CUBE
     use gen1int_cube
     ! to decode the string of MOs (in Gen1Int library)
     use str_decode
@@ -587,7 +587,6 @@
     character*(*), intent(inout) :: word
 ! uses MXCORB
 ! uses DO_CUBE
-#include "infinp.h"
     character(MAX_LEN_STR) key_word  !key words read from standard input
     type(decode_str_t) str_idx_mo    !string of indices of MOs
     integer ixyz                     !incremental recorder along XYZ directions
@@ -693,7 +692,7 @@
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: CHARGE, CORD, NUCDEP
 !      use inforb_mod, only: NBAST, NCMOT, NOCCT
-!      use inftap_mod, only: LUSIFC
+      use inftap_mod, only: LUSIFC
     use london_ao
     use gen1int_matrix
     use gen1int_api
@@ -708,7 +707,6 @@
 ! uses NCMOT
 #include "inforb.h"
 ! uses LUSIFC
-#include "inftap.h"
     integer num_points                                !number of points in cube file
     real(REALK), allocatable :: grid_points(:,:)      !XYZ coordinates of points in cube file
     integer ipoint                                    !incremental recorder over points
@@ -1742,7 +1740,7 @@
   !> \return ao_dens is the AO density matrix
   subroutine gen1int_host_get_dens(ao_dens, len_work, wrk_space)
 !      use inforb_mod, only: N2BASX, NBAST, NCMOT, NNASHX
-!      use inftap_mod, only: LUSIFC
+      use inftap_mod, only: LUSIFC
     use gen1int_matrix
     implicit none
     type(matrix), intent(inout) :: ao_dens
@@ -1751,7 +1749,6 @@
 ! uses NCMOT, NBAST, NNASHX, N2BASX
 #include "inforb.h"
 ! uses LUSIFC
-#include "inftap.h"
     integer start_dv_mo     !start of active part of one-electron density matrix (MO) in the workspace
     integer start_dv_ao     !start of active part of one-electron density matrix (AO) in the workspace
     integer start_ao_dens   !start of AO density matrix

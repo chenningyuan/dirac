@@ -1247,10 +1247,9 @@ C     Luuk Visscher, Mar 18 1997
 C
 C***********************************************************************
 !      use dgroup_mod, only: NBSYM
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 #include "implicit.h"
 #include "dgroup.h"
-#include "pgroup.h"
 C
       CHARACTER*4 REPA(64)
       CHARACTER*1 REPAS(8)

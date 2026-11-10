@@ -478,7 +478,7 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, MAXREP, NAOS, NPARSU
 !      use inforb_mod, only: NNBAST, NNBASX
-!      use energy_mod, only: GRADFS, GRADKE, GRADNA
+      use energy_mod, only: GRADFS, GRADKE, GRADNA
       use priunit_mod, only: LUPRI
       use abainf_mod, only: NWNABA
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -488,7 +488,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       LOGICAL NODC, NODV, DNULL
-#include "energy.h"
 #include "inforb.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D100 = 100.0D0
       DIMENSION WORK(LWORK)

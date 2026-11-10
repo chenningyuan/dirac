@@ -248,9 +248,8 @@
         END SUBROUTINE MAKE_ATOMTYPES
 
         SUBROUTINE READ_BASIS(filenum,linelen,lupri)
+      use codata_mod, only: XTANG
         implicit none
-#include "codata.h"
-!       use codata_mod, only: XTANG
 !      use dcbgen_mod, only: KCHARG
 !      use dgroup_mod, only: NONATM
 #include "dgroup.h" 

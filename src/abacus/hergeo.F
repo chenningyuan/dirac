@@ -202,12 +202,11 @@ C
       use priunit_mod, only: LUPRI
       use facang_mod, only: FACANG
       use maxorb_mod, only: MXCORB
-!      use codata_mod, only: XTANG
+      use codata_mod, only: XTANG
       use nuclei_mod, only: ISTBNU, IZATOM, NAMDPX, NUCDEP, NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "codata.h"
       PARAMETER (MAXANG = 20)
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
       LOGICAL SKIP, DIF, PRINT, PUNCH

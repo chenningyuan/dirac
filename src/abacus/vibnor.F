@@ -2,7 +2,7 @@
      &                  EVAL,EVEC,EVECS,WRK,LWRK,
      &                  NCORD,NINTRN,NNEG,NOTALL,IPRINT)
       use mxcent_mod, only: MXCENT
-!      use codata_mod, only: XFAMU
+      use codata_mod, only: XFAMU
       use symmet_mod, only: MAXREP
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -10,7 +10,6 @@
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J
-#include "codata.h"
 C
 C     Find normal coordinates in DNORCR and normal frequences in FREQ
 C     for projected Hessian eigenvalue problem

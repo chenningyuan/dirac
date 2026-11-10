@@ -2706,14 +2706,13 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
       use symmet_mod, only: ICOS
       use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH, NSTRT
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
 C
-#include "pgroup.h"
 !#include "dgroup.h"
       LOGICAL DONRM
       CHARACTER COMP(2)*1
@@ -2989,7 +2988,7 @@ C***********************************************************************
       use maxmom_mod, only: MXAQNM
       use aovec_mod, only: MXCONT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
       use sphtrm_mod, only: CSP, ISPADR
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2997,7 +2996,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D2=2.0D0
 C
 C
-#include "pgroup.h"
 !#include "dgroup.h"
       LOGICAL DONRM,LRKB
       CHARACTER COMP(2)*1
@@ -3459,7 +3457,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: MC
 !      use dcbbas_mod, only: NBBAS, NTBAS
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3468,7 +3466,6 @@ C***********************************************************************
 C
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcbham.h"
       DIMENSION CMO(NB,NO,4),IBUF(NO,2)
       DIMENSION TMP(2),NBF(2),III(2),WB(4,8,2),IB(64,4)

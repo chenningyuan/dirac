@@ -1965,7 +1965,7 @@ C*****************************************************************************
 !      use dcbgen_mod, only: PARCAL, RELCAL
 !      use dcbnmr_mod, only: INTNMR
 !      use dcbprp_mod, only: IPRPRP, LONDON
-!      use dcbsusc_mod, only: SUS2EL
+      use dcbsusc_mod, only: SUS2EL
       use quaternion_algebra
       use dirac_cfg
       use dft_cfg
@@ -1988,7 +1988,6 @@ C
 #include "dcbnmr.h"
 #include "dcbprp.h"
 C
-#include "dcbsusc.h"
 C
       DIMENSION CMO(*),IBEIG(*),WORK(*)
       DIMENSION ISYMOP(6),IHRMOP(6),IFCKOP(6),MTOTTK(3)
@@ -2375,7 +2374,7 @@ C*****************************************************************************
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBXQ, NISH, NOCC, NORB, NORBT, NPSH
 !      use dcbprp_mod, only: DOPCT, IPCON23, IPRPRP
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM
-!      use dcbsusc_mod, only: SUSFS
+      use dcbsusc_mod, only: SUSFS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -2384,7 +2383,6 @@ C*****************************************************************************
 #include "dcborb.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
-#include "dcbsusc.h"
 
       DIMENSION CMO(*),IBEIG(*),WORK(*)
       LOGICAL HERM,AH,DOPCTRA_SAVE
@@ -2540,7 +2538,7 @@ C*****************************************************************************
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
 !      use dcbprp_mod, only: DOPCT, IPCON21, IPCON22, IPLONDON, IPRPRP, SYMCON
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM
-!      use dcbsusc_mod, only: SUSFSY
+      use dcbsusc_mod, only: SUSFSY
       use dirac_cfg
       use memory_allocator
       use num_grid_gen
@@ -2557,7 +2555,6 @@ C*****************************************************************************
 #include "dgroup.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
-#include "dcbsusc.h"
 C
       DIMENSION CMO(*),IBEIG(*),WORK(*)
       LOGICAL HERM,AH,DOPCTRA_SAVE

@@ -1085,7 +1085,7 @@ C***********************************************************************
       use consts_mod, only: D0, D1
 !      use dcbbas_mod, only: I2TMT, N2TMT, NFBAS, NZT
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 !      use dcborb_mod, only: I2ORBT, ICMOQ, IORB, N2ORBTQ, NCMOTQ, NOCC, NORB, NORBT
 !      use dcbgen_mod, only: LUTMAT
 #include "implicit.h"
@@ -1094,7 +1094,6 @@ C
 C
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 C
@@ -2156,7 +2155,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use parluci_mod, only: CHECKPOINT_LUCIX, CKRCIONLY, CPBLCK_FILE_LUCIX, IC_SHL, IIOMOD_REL, ISMEMFAC, IT_SHL, LEVEL_SM, LOWSRT_IJKL, MASTER, MYPROC, NO_CDIAF, REORD_IJKL, SHARED_M, SPLIT_IJKL
-!      use pgroup_mod, only: GROUP
+      use pgroup_mod, only: GROUP
 !      use dgroup_mod, only: LINEAR, NBSYM, NFSYM
       use maxorb_mod, only: MXCORB
 !      use dcbopt_mod, only: CHCKPT_WRT, CINT_LOWSRT, CINT_REORD, CINT_SPLIT, CPBLCK_FILE, CSHMEMO, EMY, IDENSLR_STATE, IDOPARIO, IMEMFAC, IOPT_MK2DEL, IOPT_MK2REF, IOPT_SYMMETRY, IPROPT, IRESTRK, ISHMEM_TYPE, MAXCIT, MOPT_MXMACRO, MXCIV, NATOLCR, NCIROOT, NMAX_SYM, OPT_CIPROGRAM, OPT_THRECI, OPT_THRGRD, OPT_UCIBOS
@@ -2183,7 +2182,6 @@ C***********************************************************************
       INTEGER ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
-#include "pgroup.h"
 #include "dgroup.h"
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -2892,7 +2890,6 @@ C     DIAPAR.1
       use symmetry_setup_krci
 #include "implicit.h"
       INTEGER :: I, II
-!#include "pgroup.h"
 #include "dgroup.h"
 #include "../luciarel/mxpdim.inc"
 #include "../luciarel/cstate.inc"

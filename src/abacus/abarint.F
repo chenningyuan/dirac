@@ -152,10 +152,9 @@ C
       use optinf_mod, only: CONOPT, ICNSTR, INTCRD, IPRINT
       use pi_mod, only: PI
       use mxcent_mod, only: MXCENT
-!      use codata_mod, only: XTANG
+      use codata_mod, only: XTANG
 #include "implicit.h"
       INTEGER :: I
-#include "codata.h"
       DIMENSION VALINT(ICRD)
       CHARACTER CRDTXT*22, EMPTXT*8, MARK*1, UNTTXT*5
       LOGICAL REMCRD
@@ -220,11 +219,10 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use optinf_mod, only: DELINT, ICRTCR, IINTCR, INTCRD, IPRINT,
      &  IREDIC, REDINT, STPSYM
-!      use codata_mod, only: XFAMU
+      use codata_mod, only: XFAMU
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: II,J
-#include "codata.h"
 C
 C
       DIMENSION EVEC(NCORD,NCORD), IFRQCM(NCORD)
@@ -4295,11 +4293,10 @@ C     nuclei - as Roland also notes in his paper;
 C     with covalent/metallic radii we should get reasonable
 C     r_ref for all bonds)
 C
-!      use codata_mod, only: XTANG
+      use codata_mod, only: XTANG
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I,J
-#include "codata.h"
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION ALFA(3,3), DIST(3,3), VEC(3)
       LOGICAL   ORIG_LINDH

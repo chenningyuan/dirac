@@ -41,7 +41,6 @@
 #include "dcbham.h"
 #include "dcbprp.h"
 #include "dgroup.h"
-!#include "pgroup.h"
 !#include "dcbxpr.h"
 !
       REAL(dp), PARAMETER :: D1=1.0D0, D0=0.0D0
@@ -888,7 +887,7 @@
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 !      use dcbxrs_mod, only: JOPSY, JSYMOP, JTIMOP, NCRED, NERED, NEXCNV, NEXSIM, NEXSTV, NFREQ, NPRED, NREDM, NZCONF, NZCONFQ, NZRED, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, STATIC
 !      use dcbxqr_mod, only: IEXCOFF, IPRXQR, LQROP, NQROP, QRFREQ, XQR_INDSTR, XQR_SKIPEE, XQR_SKIPEP
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 !      use dgroup_mod, only: JBTOF
       use orbital_rotation_indices
 
@@ -898,7 +897,6 @@
 #include "dcbxpr.h"
 #include "dcbxrs.h"
 #include "dcbxqr.h"
-#include "pgroup.h"
 #include "dgroup.h"
 !
       REAL(dp), PARAMETER :: D0 = 0.0D0

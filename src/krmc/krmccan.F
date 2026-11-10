@@ -1604,7 +1604,7 @@ C         Introduced .NMQM flag programmed by MKN
 C         Introduced a general property module for .OPERATOR technique
 C
 C***********************************************************************
-!      use codata_mod, only: DEBYE, EFAUMKSA, XFMP, XTEV, XTKAYS
+      use codata_mod, only: DEBYE, EFAUMKSA, XFMP, XTEV, XTKAYS
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: MXGAS, NAELEC
 !      use dcbgen_mod, only: CVAL
@@ -1618,7 +1618,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "codata.h"
       REAL(dp), PARAMETER :: XTHRESH = 1.0D-7
       REAL(dp), PARAMETER :: DEGEN   = 1.0D-10
 C

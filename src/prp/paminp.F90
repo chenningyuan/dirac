@@ -2514,14 +2514,13 @@
 !      use dcbprl_mod, only: IPRLREP, IPRLTYP, PDOINT, PRPLBL
 !      use dcbxpr_mod, only: IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP
 !      use dgroup_mod, only: JM4, JM4REP, JM4TIM, MCMP, NOPTYP
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 #include "implicit.h"
 !
 !
 #include "dcbprl.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
-#include "pgroup.h"
 !
       LOGICAL DIFSYM,DIFTIM, SKIP_JM4
       DIMENSION ICREP(3),ICTIM(3)
@@ -2681,7 +2680,7 @@
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, PRPNAM
 !      use dcbprl_mod, only: IPRLTYP, PDOINT, PRPLBL
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 !      use dgroup_mod, only: MCMP
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2690,7 +2689,6 @@
 !
 #include "dcbxpr.h"
 #include "dcbprl.h"
-#include "pgroup.h"
 #include "dgroup.h"
       CHARACTER MXFORM*6,FMT*6,OPTYPE*12,TTYP(-1:1)*2
       SAVE TTYP

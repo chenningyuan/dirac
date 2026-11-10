@@ -966,12 +966,11 @@ C     LAST VERSION: July 23 1994
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: J
       REAL(dp), PARAMETER :: D0=0.0D0
-#include "pgroup.h"
 C
       DIMENSION EIG(*),IBEIG(*)
       CHARACTER FMT*6,MXFORM*6
@@ -1043,8 +1042,8 @@ C***********************************************************************
 !      use dcbham_mod, only: LEVYLE, SPINFR, SUB_BL
 !      use dgroup_mod, only: ATOMIC, NBSYM, NFSYM
 !      use dcbdhf_mod, only: DF, MXOPEN, NOPEN
-!      use pgroup_mod, only: WORK
 !      use dcborb_mod, only: ID_SUB_BL, IORB, MAX_SUB_BL, NESH, NISH, NORBT, NPSH, N_SUB_BL
+      use pgroup_mod, only: REP
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1052,7 +1051,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
       PARAMETER(NCOL=16)
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
@@ -1541,7 +1539,7 @@ C     Written by J. Thyssen - 26 Aug 1999
 C
 C***********************************************************************
 !      use dcborb_mod, only: IORB, NESH, NOCC, NPSH, NSSH
-!      use pgroup_mod, only: WORK
+      use pgroup_mod, only: REP
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: LEVYLE, SPINFR
 !      use dgroup_mod, only: NFSYM
@@ -1555,7 +1553,6 @@ C
       CHARACTER CLUMO*3,CHOMO*3
 C
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcborb.h"
 #include "dcbham.h"
 C

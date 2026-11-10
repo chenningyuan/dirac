@@ -5402,8 +5402,6 @@ C***********************************************************************
 !      use dcb_ashift_mod, only: AREFFIL, ASHIFT_NVAL, ASHIFT_PAR, AVECREF, MAXAVAL
 !      use dcbxpr_mod, only: WT1IN
 !      use dcb_effqed_mod, only: EFFQED_IPAR, EFFQED_NKAP, EFFQED_PAR, MAXKAP, MAXREF, REFFIL, VECREF
-!      use pgroup_mod, only: GROUP, GROUPS, SYMOP
-!      use codata_mod, only: XTANG
 !      use dcbdhf_mod, only: NFRAG, PRJFIL, PRJTHR, VCPROJ
 !      use dcbgen_mod, only: CVAL, DIRSET, DOLVC, DOPRP, DORKBIMP, IDFLAG, IGTDIR, ILLDIR, INTGEN, INTGEN_SAVE, IPRGEN, ISLDIR, ISPHTR, ISSDIR, LVNEW, TWOCOMP, TWOCOMPBSS
 !      use dcbbas_mod, only: NFBAS
@@ -5432,6 +5430,8 @@ C***********************************************************************
       use dummy_mod, only: IDUMMY
       use nuclei_mod, only: NAMDEP, NAMN, NONT, NONTYP, NUCDEP
       use orgcom_mod, only: DIPORG, GAGORG, GAGORG_SET, ORIGIN
+      use pgroup_mod, only: GROUP, GROUPS, SYMOP
+      use codata_mod, only: XTANG
 #include "implicit.h"
       INTEGER :: I,J
       PARAMETER (NTABLE = 76,NDIR = 16)
@@ -5446,9 +5446,7 @@ C
 #include "dcbbas.h"
 #include "dcbdhf.h"
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcbxpr.h"
-#include "codata.h"
 C
       LOGICAL  SYMSTP,TRSSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
      &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE, find_keyword,INTFLG_CHANGE

@@ -128,15 +128,15 @@ C
 #endif
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEP, NUCIND, NUCNUM
       use priunit_mod, only: LUPRI
+#ifndef PRG_DIRAC
+      use energy_mod, only: GRADNN
+#endif
 #include "implicit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0,
      *           THREE = 3.0D0)
       LOGICAL SECOND
       DIMENSION HESSNN(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
 #include "cbinuc.h"
-#ifndef PRG_DIRAC
-#include "energy.h"
-#endif
 #include "past.h"
 C
 C     This subroutine calculates the nuclear repulsion contributions

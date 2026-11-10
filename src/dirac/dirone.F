@@ -3835,7 +3835,7 @@ C*****************************************************************************
 !      use dcborb_mod, only: NFRO
 !      use dcbgen_mod, only: ISPHTR, STOL, TWOCOMP
 !      use dcbham_mod, only: MDIRAC
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -3845,7 +3845,6 @@ C
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcbbas.h"
       LOGICAL LBIT
       CHARACTER COMP(2)*1
@@ -5301,7 +5300,6 @@ C  DGROUP:
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-!#include "pgroup.h"
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
       LOGICAL, intent(in) :: SLGROUP,LSYMAD
@@ -5921,13 +5919,12 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcbham.h"
       LOGICAL DONRM
       CHARACTER COMP(2)*1
@@ -6035,14 +6032,13 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
 C
 #include "dgroup.h"
-#include "pgroup.h"
       LOGICAL DONRM
       CHARACTER COMP(2)*1
       DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),TMAT(NCAR,NCAR),
@@ -7298,7 +7294,6 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 !#include "dgroup.h"
-!#include "pgroup.h"
 #include "dcbbas.h"
       DIMENSION STOT(LDM,LDM),PTOT(LDM,LDM)
       DIMENSION WORK(*)
@@ -10260,7 +10255,7 @@ C***********************************************************************
       use cbihr1_mod, only: IPRONE
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: FREEPJ, IPRHAM, VEXTPJ
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -10269,7 +10264,6 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
@@ -10463,7 +10457,7 @@ C***********************************************************************
 !      use dcbham_mod, only: IPRHAM, SPINFR, SUB_BL
 !      use dcbbas_mod, only: I2TMT, N2TMT, NFBAS, NZT
 !      use dcbdhf_mod, only: MFRAG, N2TMOTQ
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0
@@ -10472,7 +10466,6 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"

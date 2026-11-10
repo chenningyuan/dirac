@@ -126,11 +126,11 @@ C      DIPDER = .true.
 
       subroutine GRADNN_ifc(n,G)
       !ajt Used in prop_contribs.f90
+      use energy_mod, only: GRADNN
       use mxcent_mod, only: MXCOOR
 #ifndef PRG_DIRAC
 #include "cbinuc.h"
 #endif /* ifndef PRG_DIRAC */
-#include "energy.h"
       integer n
       real(8) G(3*n)
       IPRINT = 0; MAXDIF = 1
@@ -145,7 +145,6 @@ C     ajt aug09 Used in prop_integrals.f90
 #ifndef PRG_DIRAC
 #include "cbinuc.h"
 #endif /* ifndef PRG_DIRAC */
-#include "energy.h"
       integer na, i, j
       real(8) H(3*na,3*na)
 #ifndef PRG_DIRAC
@@ -165,8 +164,8 @@ C     ajt This might come out with halved diagonal
 
 
       subroutine WRITE_HOTFCHT_SPECTRA(STRING,NATOMS)
+      use codata_mod, only: XTANG
 #include "hotfccom.h"
-#include "codata.h"
       CHARACTER STRING*(*)
       LOGICAL OptionA,ANGSTROM
       INTEGER IDUMMY,LUINFO,IPOS,IPOS2,numbertypes,atomtypes,J

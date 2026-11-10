@@ -429,7 +429,7 @@ C     Note that the ESR property matrix ESRVAL is complex,
 C     also when NZ=1.
 C
 C***********************************************************************
-!      use codata_mod, only: GFAC, XTKAYS
+      use codata_mod, only: GFAC, XTKAYS
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbxpr_mod, only: PRPNAM
@@ -441,7 +441,6 @@ C***********************************************************************
 !      use dcbopt_mod, only: NZCONF
 #include "implicit.h"
       INTEGER :: I, II, J, K
-#include "codata.h"
 C     for PRQMAT print of complex matrices:
       integer, parameter ::NZCMPLX = 2, IQINDX(2) = (/ 1,2 /)
       integer, parameter ::max_MULTIPESR = 9 ! corresponding to max S_eff = 4
@@ -2375,11 +2374,10 @@ C
 C     April 2000 A. Noerager
 C
 C***********************************************************************
-!      use codata_mod, only: ALPHAC, XFMP, XTHZ
+      use codata_mod, only: ALPHAC, XFMP, XTHZ
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I, J
-#include "codata.h"
 C
       REAL*8    TMAT(3,3), AVETOT, RATINF(3,*)
       INTEGER   IATINF(3), IPRINT

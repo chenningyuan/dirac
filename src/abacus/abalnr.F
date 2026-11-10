@@ -261,6 +261,7 @@ C
       END
 C  /* Deck lnraba */
       SUBROUTINE LNRABA(POLDD,POLDQ,POLDL,POLDA,WORK,LWORK,PASS)
+      use inftap_mod, only: LUSIFC
       use dummy_mod, only: DUMMY, IDUMMY
       use symmet_mod, only: ISYMAX
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -282,7 +283,6 @@ C
 #include "infvar.h"
 #include "infdim.h"
 #include "inforb.h"
-#include "inftap.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
 #include "infsop.h"
@@ -927,10 +927,9 @@ C Calculate the difference differential scattering cross section
 C in depolarized rightangle scattering =
 C DELTAZ = 4/c ( 6*BETAGM - 2*BETAA)
 C
-!      use codata_mod, only: CVEL
+      use codata_mod, only: CVEL
       use consts_mod, only: D2, D4, D6
       implicit none
-#include "codata.h"
       REAL*8    DELTAZ,BETAGM,BETAA
 C
       DELTAZ = D4 / CVEL * (D6 * BETAGM - D2 * BETAA)
@@ -943,12 +942,11 @@ C
 C Calculate the difference differential scattering cross section
 C in polarized rightangle scattering =
 C DELTAX = 4/c ( 45*ALFAMN*GMMN+7*BETAGM+BETAA)
-!      use codata_mod, only: CVEL
+      use codata_mod, only: CVEL
       use consts_mod, only: D0, D4, D7
       use kinds_mod, only: dp
 C
       implicit none
-#include "codata.h"
       REAL(dp) :: DELTAX,ALFAMN,GMMN,BETAGM,BETAA
       REAL(dp), PARAMETER :: D45 = 45.0D0
 C
@@ -963,11 +961,10 @@ C Calculate the difference differential scattering cross section
 C in forward scattering with no analyzer =
 C DELTA0 = 4/c (180*ALFAMN*GMMN+4*BETAGM-4*BETAA)
       use consts_mod, only: D1, D4
-!      use codata_mod, only: CVEL
+      use codata_mod, only: CVEL
       use kinds_mod, only: dp
 C
       implicit none
-#include "codata.h"
       REAL(dp) :: DELTA0,ALFAMN,GMMN,BETAGM,BETAA
       REAL(dp), PARAMETER :: D180 = 18.0D1
 C
@@ -982,11 +979,10 @@ C Calculate the difference differential scattering cross section
 C in backward scattering with no analyzer =
 C DELTAB = 4/c ( 24*BETAGM+8*BETAA)
       use consts_mod, only: D0, D4, D8
-!      use codata_mod, only: CVEL
+      use codata_mod, only: CVEL
       use kinds_mod, only: dp
 C
       implicit none
-#include "codata.h"
       REAL(dp) :: DELTAB,BETAGM,BETAA
       REAL(dp), PARAMETER :: D24 = 24.0D0
 C
@@ -1019,11 +1015,10 @@ C  /* Deck boltzk */
 C
 C Calculate the Boltzmann factor for Spectra simulation
 C BOLTZK = 1/(1-EXP(-h*freq/k/T)), FREQ is in Hartree = 2Pi*freq
-!      use codata_mod, only: AUTK
+      use codata_mod, only: AUTK
       use kinds_mod, only: dp
 C 
       implicit none
-#include "codata.h"
       REAL(dp) :: BOLTZK,FREQ
       REAL(dp), PARAMETER :: TSTAND = 298.15D0
 C
@@ -1039,11 +1034,10 @@ C Combined with the freq. factor out of PLACZEK approximation
 C B = SQRT(1/(4Pi*freq))
 C CROSSK = K*B**2
 C ****************** FREQ is in Hartree = 2Pi*freq
-!      use codata_mod, only: CVEL
+      use codata_mod, only: CVEL
       use kinds_mod, only: dp
 C  
       implicit none
-#include "codata.h"
       REAL(dp) :: CROSSK,FRVAL,FREQ
       REAL(dp), PARAMETER :: D180 = 18.0D1
 C
@@ -1054,6 +1048,7 @@ C
 C  /* Deck lnrout */
       SUBROUTINE LNROUT(POLDD,POLDL,POLDA,IPRINT)
 C
+      use codata_mod, only: XFMOL, XTANG, XTKAYS, XTNM
       use nuclei_mod, only: ISOTOP, ISTBNU, IZATOM, NOORBT, NUCIND
       use pi_mod, only: PI
       use symmet_mod, only: MAXOPR
@@ -1067,7 +1062,6 @@ C
       PARAMETER ( D3 = 3.0D0)
       PARAMETER ( CM_TO_AU = 4.556333D-6, AU_TO_EV=27.2114 )
 #include "cbilnr.h"
-#include "codata.h"
       DIMENSION POLDD(2,3,3,MXFR), POLDL(2,3,3,MXFR), POLDA(2,3,3,MXFR),
      &          BETANL(2), BETAL(2), ALPHNL(2), ALPHAL(2)
       DOUBLE PRECISION FACTOR

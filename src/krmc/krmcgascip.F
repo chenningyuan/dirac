@@ -58,7 +58,7 @@ C***********************************************************************
 !      use dcbopt_mod, only: IOPT_MAXMK2, IOPT_MINMK2, IOPT_MK2DEL, IOPT_MK2REF
 !      use dcborb_mod, only: IASH, NAELEC, NASH, NASHT
 !      use dcbgascip_mod, only: IPTA2O, IPTB2O, IPTO2A, IPTO2B, IRP, IRPAMO, IRRP, MAXASH_GASCIP, MAXMK2, MINMK2, MK2DEL, MK2REF, MULTB, NREP, REPNA
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 #include "implicit.h"
       INTEGER :: I, II, J
 #include "maxash.h"
@@ -77,7 +77,6 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbgascip.h"
-#include "pgroup.h"
 C
 C
       CALL QENTER('GASCIP_SETUP')
@@ -295,7 +294,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbgascip_mod, only: IEL_STR, IMK2, IRP, IRRP, MAXASH_GASCIP, MAXMK2, MINMK2, NEL_STR, NEL_STR_T, NMK2, REPNA
 !      use dcborb_mod, only: MXGAS, NAELEC, NASH, NASHT, NGASSP, NGAS_DC, NGSH, NISH
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 !      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I, J, K
@@ -306,7 +305,6 @@ C  dcborb.h : NAELEC,NASHT, NGSH(), ?
 C
 #include "dcbgascip.h"
 #include "dcborb.h"
-#include "pgroup.h"
 #include "dgroup.h"
 C
       INTEGER   NA(MAXASH_GASCIP), NB(MAXASH_GASCIP)
@@ -5191,7 +5189,7 @@ C
       use priunit_mod, only: LUCMD, LUPRI
 !      use dcbham_mod, only: LEVYLE, SPINFR
 !      use dgroup_mod, only: NBSYM, NFSYM, NZ
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 !      use dcborb_mod, only: MXGAS
 !      use dcbgascip_mod, only: GASCIP_UCIBOS, IGASCIP_MAXMK2, IGASCIP_MINMK2, IGASCIP_MK2DEL, IGASCIP_MK2REF, IGASCIP_NAELEC, IGASCIP_NASH, IGASCIP_NASHT, IGASCIP_NGAS, IGASCIP_NGASSP, IGASCIP_NGSH, IGASCIP_NISH, IGASCIP_REP, IGASCIP_STATE, IRRP, MAXASH_GASCIP, NREP, REPNA
 #include "implicit.h"
@@ -5206,7 +5204,6 @@ C
 !
 #include "dcbham.h"
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcborb.h"
 #include "dcbgascip.h"
 !

@@ -35,14 +35,14 @@ C
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use kinds_mod, only: dp
+#ifndef PRG_DIRAC
+      use energy_mod, only: ENERNA
+#endif
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.00D00, D1 = 1.00D00, D2 = 2.00D00
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOCX, DOCY, DOCZ
       DIMENSION ADER(KCKTAB,NATOMC,*), DSHELL(KHKTAB,4), NCENTC(*),
      &          JCENTC(*), SIGNC(3,*), JSYMC(*)
-#ifndef PRG_DIRAC
-#include "energy.h"
-#endif
 C
 C
       NAX = 3*NCENTA - 2
@@ -246,6 +246,7 @@ C     tuh 1984
 C
 C     modified for symmetry tuh Jul 5 1988
 C
+      use energy_mod, only: ENERKE, GRADFS, GRADKE
       use dorps_mod, only: DOREPS
       use onecom_mod, only: KCKTAB, KHKTAB, NCENTA, NCENTB, SIGNBX,
      &  SIGNBY, SIGNBZ
@@ -258,7 +259,6 @@ C
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(KHKTAB), FSHELL(KHKTAB),
      &          STDER0(KCKTAB,2), STDER1(KCKTAB,3,2), STDER2(KCKTAB,6,2)
-#include "energy.h"
 C
 C     Multiply densities and Fock elements with integrals
 C
@@ -535,15 +535,15 @@ C
       use ader_mod
       use dorps_mod, only: DOREPS
       use kinds_mod, only: dp
+#ifndef PRG_DIRAC
+      use energy_mod, only: ENERNA
+#endif
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.00D00, D1 = 1.00D00, D2 = 2.00D00
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ,
      &        DOCX, DOCY, DOCZ
       DIMENSION ADER(KCKTAB,NATOMC,*), DSHELL(KHKTAB,4), NCENTC(*),
      &          JCENTC(*), SIGNC(3,*), JSYMC(*)
-#ifndef PRG_DIRAC
-#include "energy.h"
-#endif
 C
 C
       NAX = 3*NCENTA - 2

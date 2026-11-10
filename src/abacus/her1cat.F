@@ -302,6 +302,9 @@ C*****************************************************************************
       use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
       use maxorb_mod, only: MXCORB, MXSHEL
       use kinds_mod, only: dp
+#ifndef PRG_DIRAC
+      use energy_mod, only: ENERNA, GRADNA
+#endif
 #include "implicit.h"
       INTEGER :: I,J
       PARAMETER (LUTEMP = 48)
@@ -312,9 +315,6 @@ C
      &          WORK(LWORK), COORC(3,NCENTC),
      &          SIGNC(3,NCENTC), JSYMC(NCENTC),
      &          JCENTC(NCENTC), GEXP(NCENTC)
-#ifndef PRG_DIRAC
-#include "energy.h"
-#endif
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from CATDR1','*',103)
 C
@@ -638,6 +638,9 @@ C*****************************************************************************
       use onecom_mod
       use quaternion_algebra
       use kinds_mod, only: dp
+#ifndef PRG_DIRAC
+      use energy_mod, only: GRADNA
+#endif
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0
@@ -651,8 +654,6 @@ C
 #ifdef PRG_DIRAC
 !#include "dgroup.h"
 #include "dcbbas.h"
-#else
-#include "energy.h"
 #endif 
       ITRI(I,J) = MAX(I,J)*(MAX(I,J) - 1)/2 + MIN(I,J)
 #ifdef PRG_DIRAC

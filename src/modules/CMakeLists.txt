@@ -17,6 +17,7 @@ set(MODULE_SOURCES
     chrnos.F90
     chrsgn.F90
     chrxyz.F90
+    codata.F90
     comdis.F90
     consts.F90
     cotabs.F90
@@ -25,6 +26,7 @@ set(MODULE_SOURCES
     csym1.F90
     dcbgrd.F90
     dcbibt.F90
+    dcbsusc.F90
     dcbwav.F90
     derzer.F90
     dipole.F90
@@ -35,6 +37,7 @@ set(MODULE_SOURCES
     doxyz.F90
     dummy.F90
     efield.F90
+    energy.F90
     expcom.F90
     frame.F90
     gamcom.F90
@@ -45,6 +48,9 @@ set(MODULE_SOURCES
     hrunit.F90
     huckel.F90
     ibtpar.F90
+    infinp.F90
+    infinp_dalton.F90
+    inftap.F90
     iratdef.F90
     lmns.F90
     maxaqn.F90
@@ -61,6 +67,7 @@ set(MODULE_SOURCES
     onecom.F90
     optinf.F90
     orgcom.F90
+    pgroup.F90
     pi.F90
     pincom.F90
     precision.F90

@@ -364,7 +364,6 @@ C
 C
 #include "dcbgen.h"
 #include "dcbxrs.h"
-!#include "pgroup.h"
 !#include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbkrmc_itinfo.h"
@@ -4242,10 +4241,9 @@ C     Written by T.Saue and P.Norman Aug 23 2000
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 #include "implicit.h"
 C
-#include "pgroup.h"
       CHARACTER*16 LAB1,LAB2,XLAB1,XLAB2
       CHARACTER*2 TYP1,TYP2,XTYP1,XTYP2
       DIMENSION RSPVEC(LEN)

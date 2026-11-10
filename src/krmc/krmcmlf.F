@@ -1735,7 +1735,7 @@ C
 !      use dcbham_mod, only: SPINFR
 !      use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dgroup_mod, only: LINEAR, NFSYM, NZ_IN_CI
-!      use pgroup_mod, only: GROUP
+      use pgroup_mod, only: GROUP
       use mospinor_info
       use symmetry_setup_krci
 #include "implicit.h"
@@ -1745,7 +1745,6 @@ C
 #include "dcbham.h"
 #include "dcbgen.h"
 #include "dgroup.h"
-#include "pgroup.h"
 C
       DIMENSION  VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
       DIMENSION  hcore(2*NASHT,2*NASHT,*)

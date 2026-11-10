@@ -335,6 +335,10 @@ C  /* Deck twolop */
      &                  ADISTR,I2TYP,ICEDIF,SCREEN,
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,GENCNT)
 C
+#ifndef PRG_DIRAC
+      use energy_mod, only: GRADEE, GRADFS, GRADKE, GRADNA, GRADNN
+#endif
+      use dcbsusc_mod, only: SUS2EL
       use blocks_mod
       use maxaqn_mod, only: MXAQN, MXQN
 !      use inforb_mod, only: NBAST
@@ -359,10 +363,7 @@ C
      &        DMRAO(*),DMRSO(*),DINTSKP(*),WORK(LWORK)
 #ifdef PRG_DIRAC
 #include "dcbham.h"
-#else
-#include "energy.h"
 #endif
-#include "suscpt.h"
 #include "inforb.h"
 C
       CALL QENTER('TWOLOP')
@@ -784,10 +785,6 @@ C
      &        SOFOCK, RELCAL, GENCNT
       DIMENSION DMAT(*), FMAT(*), GMAT(*), IREPDM(*), IFCTYP(*),
      &        INDHSQ(*), IODDHR(*), INDHER(*), WORK(LWORK)
-#ifdef PRG_DIRAC
-#else
-#include "energy.h"
-#endif
 C
       CALL QENTER('TWODSA')
       KWORK = 1
@@ -1121,8 +1118,6 @@ C
       SAVE IDIS
 #ifdef PRG_DIRAC
 #include "dcbham.h"
-#else
-#include "energy.h"
 #endif
 C
       CALL QENTER('DISLOP')
@@ -1775,6 +1770,9 @@ C  /* Deck symlop */
       use doxyz_mod, only: DOXYZ
       use kinds_mod, only: dp
       USE AOINT_ZERO
+#ifndef PRG_DIRAC
+      use energy_mod, only: GRADEE
+#endif
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0, DP25 = 0.25D00,
@@ -1813,8 +1811,6 @@ CMI ... added missing declarations (as in GABDR2)
       DIMENSION COEFAB(*),COEFCD(*)
 #ifdef PRG_DIRAC
 #include "dcbham.h"
-#else
-#include "energy.h"
 #endif
       IBTAXO(I,J) = IAND(I,IEOR(I,J))
       XAND(I)     = PT(IAND(ISYMAX(1,1),I))

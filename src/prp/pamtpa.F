@@ -140,7 +140,6 @@ C***********************************************************************
 #include "dcbxqr.h"
 #include "dcbxrs.h"
 #include "dgroup.h"
-!#include "pgroup.h"
 #include "dcbxpr.h"
 C
       DIMENSION WORK(*)
@@ -208,13 +207,12 @@ C***********************************************************************
 !      use dcbxqr_mod, only: EXCIT, IEXCOFF, IPRXQR, MAXFQR, XQR_INDSTR, XQR_SKIPEE, XQR_SKIPEP
 !      use dcbxrs_mod, only: JOPSY, JSYMOP, JTIMOP, NCRED, NERED, NEXSIM, NEXSTV, NFREQ, NPRED, NREDM, NZCONF, NZRED, NZXOPE, RSPLAB
 !      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 !      use dcbxpr_mod, only: PRPNAM
 #include "implicit.h"
 #include "dcbxqr.h"
 #include "dcbxrs.h"
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcbxpr.h"
 C
       DIMENSION RCNV(MAXFQR,NBSYM)
@@ -658,22 +656,20 @@ C
 C     Written by johhe 2002
 C
 C***********************************************************************
-!      use codata_mod, only: XTEV
+      use codata_mod, only: XTEV
       use priunit_mod, only: LUPRI
 !      use dcbxqr_mod, only: EXCIT, IEXCOFF, LAQROP, LQROP, MAXFQR, MAXLQR, MAXQR, NAQROP, NBQROP, NQROP, QRFREQ, TPACNV
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
 !      use dcbxrs_mod, only: JOPSY, JTIMOP
 !      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 #include "implicit.h"
       INTEGER :: I, J
-#include "codata.h"
 #include "dcbxqr.h"
 #include "dcbxpr.h"
 #include "dcbxrs.h"
 !#include "dcbgen.h"
 #include "dgroup.h"
-#include "pgroup.h"
 C
       PARAMETER ( LUCMO = 22, D0 = 0.0D0, D2R3 = (2.0D0/3.0D0),
      &            D2 = 2.0D0, D4 = 4.0D0 )

@@ -124,12 +124,12 @@ C  /* Deck troini */
 C
 C     Initialize /CBITRO/
 C
+      use infinp_DALTON_mod, only: NFIELD
       use abainf_mod, only: DIPDER, DOSYM, GDALL, IPRDEF, MOLGRD,
      &  MOLHES, VCD
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
 #include "cbitro.h"
-#include "infinp.h"
 C
       IPRINT = IPRDEF
       THRESH = 0.1D00
@@ -177,9 +177,6 @@ C
       DIMENSION WORK(LWORK)
 C
 #include "cbitro.h"
-#ifndef PRG_DIRAC
-#include "energy.h"
-#endif
 #include "infvar.h"
 #include "exeinf.h"
 C
@@ -1710,9 +1707,6 @@ C  NUCLEI: DCORGD, DCORD
 C
 #include "cbitro.h"
 #include "infvar.h"
-#ifndef PRG_DIRAC
-#include "inftap.h"
-#endif /* PRG_DIRAC */
 C
 C
 C     Run over vector types (gradient or solution vector)

@@ -1077,9 +1077,9 @@ contains
    end subroutine
 
    subroutine pnc_gradient(mol, S, D, F, nr_atoms)
+      use codata_mod, only: GFERMI, S2THETAW, XTHZ
       use nuclei_mod, only: CHARGE
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-#include "codata.h"
       type(prop_molcfg), intent(in)  :: mol
       type(matrix),      intent(in)  :: S
       type(matrix),      intent(in)  :: D

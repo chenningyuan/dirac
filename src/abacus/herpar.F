@@ -822,6 +822,12 @@ C
 !      use inforb_mod, only: N2BASX, NUMBER
       use interface_to_mpi
       use kinds_mod, only: dp
+#if defined (VAR_MPI)
+      use dcbsusc_mod, only: SUS2EL
+#endif
+#ifndef PRG_DIRAC
+      use energy_mod, only: GRADEE
+#endif
 #include "implicit.h"
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -829,10 +835,6 @@ C
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
       INTEGER :: I,J,K
-#ifndef PRG_DIRAC
-#include "energy.h"
-#endif
-#include "suscpt.h"
 #include "inforb.h"
 #include "infpar.h"
 
@@ -1203,6 +1205,9 @@ CMI  TEC changes for LAO (2003,2006)
 #ifndef PRG_DIRAC
       use gnrinf_mod, only: RELCAL
 #endif
+#ifndef PRG_DIRAC
+      use energy_mod, only: GRADEE
+#endif
 #include "implicit.h"
 C
 C
@@ -1212,7 +1217,6 @@ C
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
-#include "energy.h"
 #endif
 C
       DIMENSION DINTSKP(14*3*3)
@@ -1674,6 +1678,10 @@ CMI changes from TEC for LAO
 !      use suscpt_mod, only: SUSCEP, SUSCEP
       use interface_to_mpi
       use kinds_mod, only: dp
+      use dcbsusc_mod, only: SUS2EL
+#ifndef PRG_DIRAC
+      use energy_mod, only: GRADEE, GRADFS, GRADKE, GRADNA, GRADNN
+#endif
 #include "implicit.h"
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -1692,10 +1700,7 @@ CMI changes from TEC for LAO
 C
 #ifdef PRG_DIRAC
 #include "dcbham.h"
-#else
-#include "energy.h"
 #endif
-#include "suscpt.h"
 #include "infpar.h"
 C
 #include "inforb.h"
@@ -2085,12 +2090,14 @@ C
       use mxcent_mod, only: MXCOOR
 !      use infpar_mod, only: ICOUNT, IPRPAR, MPARID, TIMING
       use interface_to_mpi
+#if defined (VAR_MPI)
+      use dcbsusc_mod, only: SUS2EL
+#endif
+#ifndef PRG_DIRAC
+      use energy_mod, only: GRADEE
+#endif
 #include "implicit.h"
       INTEGER :: I
-#ifndef PRG_DIRAC
-#include "energy.h"
-#endif
-#include "suscpt.h"
 #include "infpar.h"
 C
       INTEGER   LFMAT, NUMGRA, MAXDIF, NUMHES, NUMSUS, ITYPE

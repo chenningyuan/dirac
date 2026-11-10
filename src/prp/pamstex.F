@@ -22,7 +22,7 @@ C           Phys.Rev.A 73(2006)022501
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE STEX_INPUT(WORD,RESET,WORK,LWORK)
-!      use codata_mod, only: XTEV
+      use codata_mod, only: XTEV
       use priunit_mod, only: LUCMD, LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: DOSTEX
@@ -30,11 +30,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbstex_mod, only: STEX_BATCHSIZE, STEX_COFACTOR, STEX_CUTOFF, STEX_DIAG, STEX_HOLES, STEX_IFSYM, STEX_MAX_HOLES, STEX_NCUBE, STEX_NHOLES, STEX_NO2E, STEX_NOCOUPLING, STEX_NR_OP, STEX_OP_IND, STEX_OP_SYM, STEX_OP_TIM, STEX_PRINT, STEX_SCRFCK
 #include "implicit.h"
       INTEGER :: I, II
-#include "codata.h"
 #include "dcbprp.h"
 !#include "dcbham.h"
 #include "dgroup.h"
-!#include "pgroup.h"
 !#include "dcbxpr.h"
 #include "dcbstex.h"
       PARAMETER (NTABLE = 6)
@@ -216,7 +214,6 @@ C
 #include "dcborb.h"
 !#include "dcbham.h"
 #include "dgroup.h"
-!#include "pgroup.h"
 !#include "dcbxpr.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"
@@ -804,7 +801,6 @@ c     TODO: optimize write below (one big block is better)
 #include "dcborb.h"
 !#include "dcbham.h"
 #include "dgroup.h"
-!#include "pgroup.h"
 !#include "dcbxpr.h"
 #include "dcbstex.h"
       DIMENSION FMAT(NORBT,NORBT,NZ), WORK(LWORK)
@@ -1123,7 +1119,6 @@ C
 !#include "dcbgen.h"
 !#include "dcbham.h"
 !#include "dgroup.h"
-!#include "pgroup.h"
 !#include "dcbxpr.h"
 #include "dcbstex.h"
       DOUBLE COMPLEX XMOM,PRPGRAD,DZDOT,REFGSOVL

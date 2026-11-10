@@ -195,7 +195,7 @@ C      Adapted for Dalton by T. Helgaker                               C
 C      Adapted for DIRAC by T.Saue                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use codata_mod, only: XTANG
+      use codata_mod, only: XTANG
       use priunit_mod, only: LUPRI
       use consts_mod, only: D0, D1
 !      use dftwrk_mod, only: NSCHEME, RADERR
@@ -211,7 +211,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "implicit.h" 
       INTEGER :: I, J
-#include "codata.h"
 
       LOGICAL SWITCH,ADDSML
       DIMENSION X8(IBIG),Y8(IBIG),Z8(IBIG),WT8(IBIG)
@@ -1279,13 +1278,12 @@ C     in one dimension, along bonds.
 C     Written by Olav Fossgaard - June 2003
 C
 C***********************************************************************
-!      use codata_mod, only: XTANG
+      use codata_mod, only: XTANG
       use priunit_mod, only: LUPRI
       use consts_mod, only: D0
 !      use dcbbas_mod, only: NTBAS
 #include "implicit.h"
       INTEGER :: I, K
-#include "codata.h"
 #include "dcbbas.h"
 C
       DIMENSION CHIMT(NAT,NAT),COORD(3,2),DMAT(NTBAS(0),NTBAS(0)),

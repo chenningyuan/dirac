@@ -1781,7 +1781,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-!#include "pgroup.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DSYM1R',-1)
 C
 C     Loop over all irreps in molecule
@@ -2020,12 +2019,11 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: CVAL
-!      use codata_mod, only: CVEL
+      use codata_mod, only: CVEL
       use dcbgrd_mod, only: GRADER, GRADKN, GRADNN, GRADNU, GRADRO
       use nuclei_mod, only: NUCDEP
 #include "implicit.h"
       INTEGER :: I
-#include "codata.h"
 C
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOLS

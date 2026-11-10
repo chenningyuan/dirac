@@ -1011,7 +1011,6 @@ module pelib_dirac_interface
 !
 !#include "infvar.h"
 !#include "inforb.h"
-!#include "inftap.h"
 !
 !      integer :: nwrk
 !      real*8 :: energy
@@ -1102,7 +1101,6 @@ module pelib_dirac_interface
 !
 !#include "infvar.h"
 !#include "inforb.h"
-!#include "inftap.h"
 !
 !      integer :: nwrk
 !      real*8, dimension(1) :: energy
@@ -1448,7 +1446,6 @@ module pelib_dirac_interface
 !
 !#include "wrkrsp.h"
 !#include "infrsp.h"
-!#include "inftap.h"
 !
 !        integer :: ncsim, nosim, nwrk
 !        real*8, dimension(*) :: bcvecs, bovecs
@@ -1489,7 +1486,6 @@ module pelib_dirac_interface
 !         implicit none
 !!
 !#include "infrsp.h"
-!#include "inftap.h"
 !#include "wrkrsp.h"
 !#include "inforb.h"
 !#include "qrinf.h"
@@ -1698,7 +1694,6 @@ module pelib_dirac_interface
 !#include "wrkrsp.h"
 !#include "inforb.h"
 !#include "infrsp.h"
-!#include "inftap.h"
 !
 !        integer :: nosim, ncsim, nwrk
 !        real*8, dimension(*) :: bovecs
@@ -1899,7 +1894,6 @@ module pelib_dirac_interface
 !#include "infvar.h"
 !#include "infdim.h"
 !#include "qrinf.h"
-!#include "inftap.h"
 !#include "infrsp.h"
 !#include "wrkrsp.h"
 !

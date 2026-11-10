@@ -941,14 +941,14 @@ C  /* Deck derout */
       use expcom_mod, only: DERONE, DERTWO, ICENT1, ICENT2, ICENT3,
      &  ICENT4, THRCEN, TWOCEN
       use nuclei_mod, only: NUCDEP
+#ifndef PRG_DIRAC
+      use energy_mod, only: GRADEE
+#endif
 #include "implicit.h"
       INTEGER :: I
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
       DIMENSION DERIV(NINTYP)
 C
-#ifndef PRG_DIRAC
-#include "energy.h"
-#endif
 C
       IF (IPRINT .GE.10) THEN
          WRITE (LUPRI, 1000)
@@ -1447,9 +1447,6 @@ C
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
       DIMENSION DERIV(NINTYP), expval(*)
 C
-#ifndef PRG_DIRAC
-#include "energy.h"
-#endif
 C
       IF (IPRINT .GE.10) THEN
          WRITE (LUPRI, 1000)
@@ -1622,6 +1619,7 @@ C  /* Deck lndout */
 C
 C     tuh Nov 24 92
 C
+      use dcbsusc_mod, only: SUS2EL
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
@@ -1635,7 +1633,6 @@ C
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G11(3,3), G22(3,3), G12(3,3)
       DIMENSION DIFAB(3), DIFCD(3)
-#include "suscpt.h"
 
       XAND(I) = PT(IAND(ISYMAX(1,1),I))
       YAND(I) = PT(IAND(ISYMAX(2,1),I))
@@ -2483,7 +2480,7 @@ C      the same as is in the older brother dalton
       use dorps_mod, only: DOREPS
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
-!      use codata_mod, only: DEBYE, XTANG
+      use codata_mod, only: DEBYE, XTANG
       use inirep_mod, only: IREPPI, NREPPI
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
@@ -2493,7 +2490,6 @@ C      the same as is in the older brother dalton
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "codata.h"
       REAL(dp), PARAMETER :: D1 = 1.0D00
       LOGICAL ALLREP, INERT, LARGE
       DIMENSION AMAT(3,3), IND(3)

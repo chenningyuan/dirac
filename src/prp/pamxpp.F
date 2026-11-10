@@ -181,7 +181,7 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxpp_mod, only: IPRXPP, KEXCNV, KEXSIM, KEXSTV, MAXEXC, NBED, NCLS_XPP, NPPAPT, ORBXPP, XPP_INDSTR, XPP_RSPEXP, XPP_SKIPEE, XPP_SKIPEP
 !      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 !      use dcbxrs_mod, only: JOPSY, JSYMOP, JTIMOP, LUXVC, NCRED, NERED, NEXCNV, NEXSIM, NEXSTV, NFREQ, NPRED, NREDM, NZCONF, NZRED, NZXOPEQ, RSPLAB
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -192,7 +192,6 @@ C
 #include "dcbxpp.h"
 !#include "dcbxlr.h"
 #include "dgroup.h"
-#include "pgroup.h"
 !#include "dcbxpr.h"
 #include "dcbxrs.h"
 C
@@ -359,7 +358,7 @@ C*****************************************************************************
 !      use dcbxlr_mod, only: MAXRM, MXLOAD
 !      use dcbham_mod, only: BSS, ECPCALC, FREEPJ, LEVYLE, QED, SPINFR, VEXTPJ, X2C
 !      use dgroup_mod, only: NBSYM, NFSYM
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 !      use dcbxpr_mod, only: MAXPRPS, NPRPS
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -374,7 +373,6 @@ C
 #include "dcbxlr.h"
 #include "dcbham.h"
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcbxpr.h"
 C
       LOGICAL SET, NEWDEF, RESET
@@ -1287,7 +1285,7 @@ C*****************************************************************************
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NORB
 !      use dcbbas_mod, only: NFBAS
 !      use dgroup_mod, only: JBTOF, JSPINR, LINEAR, NBSYM, NFSYM, NZ
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 !      use dcbxpr_mod, only: IPRPTIM, PRPNAM
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1301,7 +1299,6 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcbxpr.h"
       LOGICAL FIRST,TEST
       real(8), allocatable :: cmobuf(:)
@@ -1525,24 +1522,22 @@ C
 C     Written by H.J.Aa. Jensen 2000, based on XLROUT
 C
 C*****************************************************************************
-!      use codata_mod, only: ALPHAC, AUTIME, XTEV
+      use codata_mod, only: ALPHAC, AUTIME, XTEV
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
 !      use dgroup_mod, only: FREP, JFSYM, LINEAR, NBSYM, NFSYM, NZ
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 !      use dcbham_mod, only: SPINFR
 !      use dcbxpp_mod, only: JPPAP, KEXCNV, LPPAPS, LPPAPU, MAXEXC, NCLS_XPP, NPPAP, NPPAPT, ORBXPP, THCPP, XPP_SKIPEE, XPP_SKIPEP
       use symmet_mod, only: ISYMAX
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "codata.h"
 C
       PARAMETER ( D0 = 0.0D0, D2R3 = (2.0D0/3.0D0), D2 = 2.0D0 )
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcbham.h"
 #include "dcbxpp.h"
 !#include "dcbxlr.h"
@@ -2097,23 +2092,21 @@ C       of boson symmetry bsym
 C     Solution vectors are kept on unformatted file PAMXVC (open)
 C
 C***********************************************************************
-!      use codata_mod, only: XTEV
+      use codata_mod, only: XTEV
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
 !      use dgroup_mod, only: JFSYM, LINEAR, NBSYM, NFSYM, NZ
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 !      use dcbham_mod, only: SPINFR
 !      use dcbxpp_mod, only: BEDECD, DOBED, DOLENR, DOVELR, JPPAP, KEXCNV, KVAL_OSC, LPPAPS, LPPAPU, MAXEXC, NBED, NPPAP, NPPAPT, ORIENTED, UPOL, UWAVE, XPPERG
       use symmet_mod, only: ISYMAX, MAXREP
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 #include "implicit.h"
       INTEGER :: I, II
-#include "codata.h"
 C
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcbham.h"
 #include "dcbxpp.h"
 C

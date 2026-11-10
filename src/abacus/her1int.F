@@ -2537,12 +2537,11 @@ C
 C     K.Ruud, Nov. 1991. Based on TUH's subroutine CINT0, but modified
 C     for use in HERPRO.
 C
-!      use codata_mod, only: ALPHA2
+      use codata_mod, only: ALPHA2
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
 #include "implicit.h"
-#include "codata.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB)
       DOUBLE PRECISION ALPMVL,ALPMV2
@@ -4669,14 +4668,13 @@ C
       use symmet_mod, only: ISYMAX, MAXOPR, MAXREP, PT
       use maxaqn_mod, only: MXAQN, MXQN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-!      use codata_mod, only: GFAC
+      use codata_mod, only: GFAC
       use pi_mod, only: PI
       use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ,
      &  KCKTA, KCKTAB, KCKTB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "codata.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D0, D4 = 4.0D0, D3 = 3.0D0
       LOGICAL DOATOM(NUCIND)
@@ -5259,14 +5257,13 @@ C
      &  KCKTA, KCKTAB, KCKTB
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCIND
-!      use codata_mod, only: ALPHA2
+      use codata_mod, only: ALPHA2
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "codata.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D0
       DOUBLE PRECISION DWNFAC
@@ -5577,12 +5574,11 @@ C
       use maxaqn_mod, only: MXAQN
       use pi_mod, only: PI
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-!      use codata_mod, only: GFAC
+      use codata_mod, only: GFAC
       use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ,
      &  ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "codata.h"
       REAL(dp), PARAMETER :: D2 = 2.0D0, D3 = 3.0D0
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),AHGTF(*),
      &          CORCX(*), CORCY(*), CORCZ(*), SHLINT(KCKTAB,NOPTYP)
@@ -6429,7 +6425,6 @@ C***********************************************************************
       INTEGER T, U, V, NINTS
 ! onecom.h :  KCKTAB
 !#include "inforb.h"
-!#include "pgroup.h"
 #include "dgroup.h"
 C
 C

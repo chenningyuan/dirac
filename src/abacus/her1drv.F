@@ -262,7 +262,6 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, MULT,
      &  PT
-!      use energy_mod, only: ENERKE, ENERNA, NA
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod
 #ifdef PRG_DIRAC
@@ -282,6 +281,9 @@ C
       use maxorb_mod, only: MXCORB, MXSHEL
       use kinds_mod, only: dp
       use ccom_mod, only: THRS
+#ifndef PRG_DIRAC
+      use energy_mod, only: ENERKE, ENERNA, GRADFS, GRADKE, GRADNA
+#endif
 #include "implicit.h"
       PARAMETER (LUTEMP = 48)
       REAL(dp), PARAMETER :: D0 = 0.00D00
@@ -293,9 +295,6 @@ C
      &          FACINT(NUCDEP,*), WORK(LWORK), COORC(3,NUCDEP),
      &          SIGNC(3,NUCDEP), NCENTC(NUCDEP), JSYMC(NUCDEP),
      &          JCENTC(NUCDEP), GEXP(NUCDEP),TLMD(3*NUCDEP*LMNTOT,2)
-#ifndef PRG_DIRAC
-#include "energy.h"
-#endif
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEDR1','*',103)
 C

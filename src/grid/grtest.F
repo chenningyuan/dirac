@@ -1020,13 +1020,12 @@ C
 C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
-!      use codata_mod, only: XTANG
+      use codata_mod, only: XTANG
       use consts_mod, only: D0
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NATOMS
 !      use dcbwt1_mod, only: DSTEP
 #include "implicit.h"
-#include "codata.h"
 C
       DIMENSION COORD(3,2),WT(NATOMS)
 #include "dcbwt1.h"

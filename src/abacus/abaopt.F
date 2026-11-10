@@ -40,8 +40,6 @@ C  /* Deck opinpu */
 #include "cbiwlk.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
-#else
-#include "infinp.h"
 #endif
       INTEGER, PARAMETER :: NTABLE = 68, ITRMX = 25, MXREJ = 3
       REAL(dp), PARAMETER :: D0 = 0.0D0, DEFTHE = 1.0D-6,
@@ -1359,11 +1357,10 @@ C  /* Deck runopt */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use cbiwlk_mod, only: IPRWLK, THRLDP, TOLST
-!      use codata_mod, only: XKJMOL
+      use codata_mod, only: XKJMOL
       use memory_allocator
 #include "implicit.h"
 #include "cbiwlk.h"
-#include "codata.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
@@ -2181,13 +2178,12 @@ C
 C     Prints important information at the end of a
 C     geometry optimization.
 C
-!      use codata_mod, only: XTANG
+      use codata_mod, only: XTANG
       use nuclei_mod, only: CORD
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use optinf_mod, only: DOSPE, ITRBRK, ITRMAX, ITRNMR, NEWTON
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "codata.h"
 
       DIMENSION GEINFO(0:ITRMAX,6)
       CHARACTER NWSMRK*1,BRKMRK*1,REDMRK*1
@@ -2283,10 +2279,11 @@ C
       use siripc_mod, only: NEWGEO
       use optinf_mod, only: CHGRDT, ENERGY, GRDTHR, NENECALCS, THRERG,
      &  THRSTP, THRSYM
-#include "implicit.h"
 #ifndef PRG_DIRAC
-#include "infinp.h"
-#else /* PRG_DIRAC */
+      use infinp_DALTON_mod, only: DOMP2, THRGRD
+#endif
+#include "implicit.h"
+#ifdef PRG_DIRAC
 #include "dcbham.h"
 #include "dcbdhf.h"
 #include "dcbmp2.h"
@@ -2405,8 +2402,6 @@ C
 #include "implicit.h"
 
 #ifndef PRG_DIRAC
-#include "infinp.h"
-#include "inftap.h"
 #include "infpar.h"
 #include "pario.h"
 #include "pvibav.h"
@@ -6566,14 +6561,13 @@ C  /* Deck inipre */
       use molinp_mod, only: MLINE
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbgen_mod, only: RDINPC, RDMLIN
-!      use inftap_mod, only: LUONEL
+      use inftap_mod, only: LUONEL
       use memory_allocator
 #include "implicit.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
 #endif
-#include "inftap.h"
       CHARACTER TMPLIN*80
       real(8), allocatable :: WORK(:)
       call legacy_lwork_get(LWORK)
@@ -7444,6 +7438,7 @@ C
 #endif
       use optinf_mod, only: CHGRDT, DISPLA, GRDTHR, IPRINT, NCART,
      &  THRERG, THRSTP, THRSYM
+      use codata_mod, only: XTANG
 #include "implicit.h"
 C
       PARAMETER (DP5 = 0.50D0, D100=100.0D0)
@@ -7452,7 +7447,6 @@ C
 C
 C numder.h : NOMOVE
 C
-#include "codata.h"
 #ifdef PRG_DIRAC
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -7634,6 +7628,7 @@ CTROND      deallocate(STPCAR)
 
       SUBROUTINE write_xyz_fromcommon(group)
 
+      use codata_mod, only: XTANG
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMN, NUCDEP, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -7645,7 +7640,6 @@ C     Dump the coordinates sitting in common block nuclei.h to checkpoint file
 C     The argument group should define the appropriate group (e.g. '/input/molecule')
 C
 #include "implicit.h"
-#include "codata.h"
 
       character(len=*),intent(in) :: group
       real(8), allocatable        :: geometry(:),nuc_charge(:)
@@ -7694,6 +7688,7 @@ C
 
 C     Write an XYZ file
 C
+      use codata_mod, only: XTANG
       use nuclei_mod, only: ISTBNU, NAMN, NUCDEP, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -7702,7 +7697,6 @@ C
       use hermodules, only: unit_conversion, unit_conversion_set
 #include "implicit.h"
       DIMENSION UNIQUE_CORD(3,MXCENT),XYZ(3)
-#include "codata.h"
 #include "dcbgen.h"
 C
 !     XYZ files are written in Angstroms (default) or a user-specified Unit

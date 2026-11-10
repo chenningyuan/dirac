@@ -512,8 +512,8 @@ C******************************************************************************
       use priunit_mod, only: LUPRI
       USE RECP_NTR
       use ccom_mod, only: DOCART, DOSPHE, THRS
+      use codata_mod, only: XTANG
 #include "implicit.h"
-#include "codata.h"
       PARAMETER (THRMIN = 1.D-15)
       REAL(KIND=8):: WORK(LWORK)
 
@@ -1946,6 +1946,7 @@ C
 C     Read and process data about symmetry independent centers
 C
 C*****************************************************************************
+      use codata_mod, only: XTANG
       use cbirea_mod, only: INPTST
       use molinp_mod, only: LEN_MLINE, MLINE, NCLINE, NMLINE
       use argoscom_mod, only: ECPNUC
@@ -1955,7 +1956,6 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "codata.h"
       PARAMETER (CORMAX = 1.D5)
       PARAMETER (LUERR = 0)
 C
@@ -4393,6 +4393,7 @@ C
 C     Print routine for symmetry
 C
 C*****************************************************************************
+      use pgroup_mod, only: REP
       use ccom_mod, only: GTOTYP
       use cbirea_mod, only: DIRAC, IPREAD
       use aosotr_mod, only: CTRAN, IPCEN, IPTYP, ITRAN
@@ -4406,7 +4407,6 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
-#include "pgroup.h"
       CHARACTER COMP(2)*1
 C
 C*****************************************************************************
@@ -4595,6 +4595,8 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
+      use codata_mod, only: XTANG
+      use pgroup_mod, only: REP
       use cbirea_mod, only: IPREAD
       use frame_mod, only: POTNUC
       use chrsgn_mod, only: CHRSGN
@@ -4608,13 +4610,11 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "codata.h"
 C
       CHARACTER*4 NAME
       INTEGER NBASE(8), NSIGN(8)
       DIMENSION WORK(LWORK)
 C
-#include "pgroup.h"
 C
 C
       KWORK = 1
@@ -4880,9 +4880,9 @@ C     REHE Newsletter No. 13 (14. June 1995), L. Visscher and K. Dyall.
 C     For Charge.GT.109 Nuclear Mass = CHARGE*2.556.
 C                                      T. Saue and J.K. Laerdahl 12.02.1996
 C.......................................................................
+      use codata_mod, only: XTANG
       use nucdata_mod, only: NUCMASS
 #include "implicit.h"
-#include "codata.h"
       PARAMETER (DP3=1.0D0/3.0D0)
       PARAMETER (FAC=1.5D10,BF=0.836D0,CF=0.570D0)
       PARAMETER (FAC2=2.556D0)
@@ -5085,6 +5085,7 @@ C     Printing of symmetrized nuclear magnetic moments
 C
 C     tuh March 1991
 C
+      use pgroup_mod, only: REP
       use cbiher_mod, only: NMRISS
       use chrsgn_mod, only: CHRSGN
       use nuclei_mod, only: ISTBNU, NAMEX, NUCIND, NUCNUM
@@ -5098,7 +5099,6 @@ C
 C
       INTEGER NBASE(8), NSIGN(8), NRTREP(0:7)
 C
-#include "pgroup.h"
 C
 C
       IF (NMRISS .AND. MAXREP .GT. 0) THEN
@@ -5828,8 +5828,8 @@ C
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
       use ccom_mod, only: DOCART, NHTYP, THRS
+      use codata_mod, only: XTANG
 #include "implicit.h"
-#include "codata.h"
       PARAMETER (DSM = 1.0D-30)
       PARAMETER (AR=PI/180.0D+00)
       PARAMETER (CORMAX = 1.D5)

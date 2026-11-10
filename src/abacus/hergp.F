@@ -404,6 +404,7 @@ C  /* Deck molchr */
 C
 C     Calculates total charge of molecule
 C
+      use infinp_DALTON_mod, only: NACTEL
       use maxaqn_mod, only: MXAQN, MXQN
 !      use inforb_mod, only: NISHT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -415,7 +416,6 @@ C
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D00
 C
-#include "infinp.h"
 #include "inforb.h"
 C
 C     Nuclear charge
@@ -527,12 +527,11 @@ C       NJ Stone, TABLE OF NUCLEAR MAGNETIC DIPOLE AND ELECTRIC QUADRUPOLE MOMEN
 C       IAEA  International Nuclear Data Committee, INDC(NDS)-0658, February 2014
 C
       use priunit_mod, only: LUPRI
-!      use codata_mod, only: ECHARGE, PMASS, UMASS, XFAMU
+      use codata_mod, only: ECHARGE, PMASS, UMASS, XFAMU
       use pi_mod, only: PI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "codata.h"
       INTEGER, PARAMETER :: MAXISO = 6, MAXCHR = 138
       REAL(dp), PARAMETER :: D0 = 0.0D0, D4= 4.0D0
       REAL(dp), PARAMETER :: THRESH = 1.0D-10
@@ -1974,7 +1973,7 @@ C
      &  NCRREP
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: NAMDPX, NAMEX, NUCDEP, NUCIND
-!      use codata_mod, only: ALPHA2
+      use codata_mod, only: ALPHA2
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
@@ -1982,7 +1981,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,K
-#include "codata.h"
       REAL(dp), PARAMETER :: D1 = 1.D0, D10E6 = 1.D6
       LOGICAL DONE, CARTRA
       CHARACTER FIELD*1, KEY*(*)
@@ -2128,7 +2126,7 @@ C  /* Deck dp0pri */
 ! prints the nuclear dipole moment
 !
       use symmet_mod, only: ISYMAX, NAXREP
-!      use codata_mod, only: DEBYE
+      use codata_mod, only: DEBYE
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
@@ -2136,7 +2134,6 @@ C  /* Deck dp0pri */
       use chrxyz_mod, only: CHRXYZ
 #include "implicit.h"
       INTEGER :: I
-#include "codata.h"
 !#include "cbidip.h"
       DIMENSION DIPOLE(3)
       IF (NAXREP(0,1) .EQ. 0) THEN
@@ -2165,12 +2162,11 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
-!      use codata_mod, only: XFAMU
+      use codata_mod, only: XFAMU
       use orgcom_mod, only: CMXYZ
       use nuclei_mod, only: CORD, ISOTOP, ISTBNU, IZATOM, NATOMS, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
 #include "implicit.h"
-#include "codata.h"
       REAL*8    GEOM(3*NATOMS), AMASS(NATOMS)
       INTEGER   NATTYP(NATOMS), NUMIS(NATOMS)
 C
@@ -2210,12 +2206,11 @@ C  /* Deck vibmas */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use cbisol_mod, only: SOLVNT
       use priunit_mod, only: LUPRI
-!      use codata_mod, only: XTANG
+      use codata_mod, only: XTANG
       use nuclei_mod, only: NAMDEP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: K
-#include "codata.h"
 C
 C     Sets up masses and calculates total mass for an isotopic
 C     molecule
@@ -2277,7 +2272,6 @@ C     J. J. Aucar, 2024
       use memory_allocator
       IMPLICIT NONE
 
-!#include "codata.h"
 
 C     Variables Declaration
       INTEGER :: IATOM, ISYMOP

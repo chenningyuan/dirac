@@ -67,14 +67,13 @@
       END SUBROUTINE BEDLOOP
       
       SUBROUTINE ROTFAC_BED(indices,k2,iterm,jterm,FOSC,ATMPPF,OMEGA)
-!      use pgroup_mod, only: REP
 !      use dgroup_mod, only: NBSYM
 !      use dcbxpp_mod, only: IBDOFF, IPRXPP, KEXCNV, LPPAPU, MAXEXC, NPPAPT
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
+      use pgroup_mod, only: REP
       use kinds_mod, only: dp
 #include "implicit.h"        
       INTEGER :: J, K
-#include "pgroup.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
 #include "dcbxpr.h"      
@@ -256,14 +255,13 @@
 !
 !     written by Martin van Horn 2022
 !***********************************************************************  
-!      use pgroup_mod, only: REP
 !      use dgroup_mod, only: NBSYM
 !      use dcbxpp_mod, only: IBDOFF, IMPOFF, IPRXPP, IVPOFF, KEXCNV, LPPAPU, MAXEXC, NPPAPT
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
+      use pgroup_mod, only: REP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: J, K
-#include "pgroup.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
 #include "dcbxpr.h"      
@@ -517,14 +515,13 @@
       END SUBROUTINE MPOLLOOP
       
       SUBROUTINE ROTFAC_MPOL(indices,k2,iterm,jterm,FOSC,ATMPPF,OMEGA)
-!      use pgroup_mod, only: REP
 !      use dgroup_mod, only: NBSYM
 !      use dcbxpp_mod, only: IEPOFF, IMPOFF, IPRXPP, KEXCNV, LPPAPU, MAXEXC, NPPAPT
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
+      use pgroup_mod, only: REP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: J, K
-#include "pgroup.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
 #include "dcbxpr.h"      

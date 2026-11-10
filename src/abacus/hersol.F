@@ -1571,6 +1571,8 @@ C  /* Deck magso1 */
 C
 C     kr and kvm, Dec.-94
 C
+      use infinp_DALTON_mod, only: LSOLMX
+      use inftap_mod, only: FNSOL, LUSOL
       use cbisol_mod, only: EPDIEL, LCAVMX, LMTOT, RCAV
       use dummy_mod, only: IDUMMY
       use mxcent_mod, only: MXCENT
@@ -1586,8 +1588,6 @@ C
      &          WORK(LWORK)
 #include "mgsolt.h"
 #include "inforb.h"
-#include "infinp.h"
-#include "inftap.h"
 C
       DIMENSION CAVCNT(3)
       LOGICAL   FOUND
@@ -1765,6 +1765,8 @@ C     kr , Nov.-96
 C     Writes integrals to file in order to save memory
 C     Rewritten to save even more memory, May 4-97
 C
+      use infinp_DALTON_mod, only: LSOLMX
+      use inftap_mod, only: FNSOL, LUPROP, LUSOL
       use cbisol_mod, only: EPDIEL, LCAVMX, LMTOT, RCAV
       use chrnos_mod, only: CHRNOS
       use dummy_mod, only: DUMMY, IDUMMY
@@ -1786,8 +1788,6 @@ C
 C
 #include "mgsolt.h"
 #include "inforb.h"
-#include "infinp.h"
-#include "inftap.h"
 C
       DATA (LBL3(I), I = 1, 3) /'X ','Y ', 'Z '/
       DATA (LBL6(I), I = 1, 6) /'XX','XY','XZ','YY','YZ','ZZ'/

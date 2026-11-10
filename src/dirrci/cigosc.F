@@ -3637,12 +3637,11 @@ c#include "dcbbas.h"
 !     Last-update: S. Yamamoto - 2007.06.19, chukyo-u
 !     Called by:   CLTMOM2
 !-----------------------------------------------------------------------
-!      use codata_mod, only: DEBYE
+      use codata_mod, only: DEBYE
       use mxcent_mod, only: MXCOOR
       use dipole_mod, only: DIPMN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "codata.h"
 !
 !     ...for MXCOOR
 !     ...for DIPMN

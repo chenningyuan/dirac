@@ -36,7 +36,7 @@ C      Written by T.Saue - November 1994
 C      Last revision: Nov 23 1994 - tsaue
 C***********************************************************************
       use shells_mod, only: KMAX, LCLASS, NCENT, NHKT, NLRGSH
-!      use pgroup_mod, only: WORK
+      use pgroup_mod, only: REP
       use nuclei_mod, only: NAMN, NUCDEG
       use symmet_mod, only: ICOS, MAXREP
       use dcbibt_mod, only: IPACK
@@ -54,7 +54,6 @@ C***********************************************************************
 C
 #include "dcblab.h"
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcbbas.h"
       CHARACTER CLS(2)*1,DEG*2
       integer, allocatable :: kp(:)
@@ -707,7 +706,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-!#include "pgroup.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine MTSOAO',-1)
 C
 C     Loop over all irreps in molecule
@@ -802,7 +800,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION ASO(NBAST1,NBAST2), AAO(NBAST1,NBAST2)
       DIMENSION IR(2)
-!#include "pgroup.h"
       IF(IPRINT .GE. 10) 
      &  CALL HEADER('Subroutine MTSOAO_nonquadmatL',-1)
 C
@@ -932,7 +929,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-!#include "pgroup.h"
 
       CALL QENTER('MTAOSO')
 
@@ -1040,7 +1036,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-!#include "pgroup.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DTSOAO',-1)
 C
 C     Loop over all irreps in molecule
@@ -1131,7 +1126,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-!#include "pgroup.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DTAOSO',-1)
 C
 C     Loop over all irreps in molecule
@@ -1225,7 +1219,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1 = 1.0D0
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-!#include "pgroup.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine MTAOSO',-1)
 C
 C     Loop over all irreps in molecule
@@ -1304,7 +1297,6 @@ C***********************************************************************
       INTEGER :: I,J
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
       DIMENSION IR(2)
-!#include "pgroup.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine VTSOAO',-1)
 C
 C     Loop over all irreps in molecule
@@ -1366,7 +1358,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I,J
 C
-!#include "pgroup.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -1437,7 +1428,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I,J
 C
-!#include "pgroup.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -1513,7 +1503,6 @@ C***********************************************************************
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D1 = 1.0D0
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
-!#include "pgroup.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine WTAOSO',-1)
 C
 C     Loop over all irreps in molecule
@@ -1575,7 +1564,6 @@ C***********************************************************************
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D1 = 1.0D0
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
-!#include "pgroup.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine VTAOSO',-1)
 C
 C     Loop over all irreps in molecule
@@ -2846,7 +2834,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-!#include "pgroup.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine MMSOAO',-1)
 C
 C     Loop over all irreps in molecule
@@ -3739,7 +3726,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use nuclei_mod, only: NBASIS, NUCDEG
       use dcbibt_mod, only: IGET, JGET, KGET
-!      use pgroup_mod, only: WORK
+      use pgroup_mod, only: REP
       use aosotr_mod, only: CTRAN
       use symmet_mod, only: ICOS, MAXREP, NAOS, NCOS
       use chrsgn_mod, only: CHRSGN
@@ -3750,7 +3737,6 @@ C***********************************************************************
 C
 #include "dcbbas.h"
 #include "dcblab.h"
-#include "pgroup.h"
       DIMENSION ILAB(2,*)
 C
 C     Scan SO-labels

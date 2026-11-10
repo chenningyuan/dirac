@@ -655,7 +655,7 @@ C***********************************************************************
 !      use dcbham_mod, only: SPINFR
 !      use dgroup_mod, only: ATOMIC, LINEAR, NFSYM, NZ
       use maxorb_mod, only: MXCORB
-!      use pgroup_mod, only: WORK
+      use pgroup_mod, only: REP
       use priunit_mod, only: LUPRI
 !      use dcbdhf_mod, only: DF, NOPEN
       use kinds_mod, only: dp
@@ -674,7 +674,6 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcbdhf.h"
 C
       DIMENSION SMAT(NTBAS(0),NTBAS(0))
@@ -1761,7 +1760,7 @@ C***********************************************************************
 !      use dcbprj_mod, only: IPRPRJ, LWGPOP, MAXREF, NREFS, PROTHR, VECREF
 !      use dcbham_mod, only: SPINFR
       use priunit_mod, only: LUPRI
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1769,7 +1768,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0
 C
 #include "dcbprj.h"
-#include "pgroup.h"
 #include "dgroup.h"
 #include "dcbham.h"      
 C
@@ -2506,8 +2504,8 @@ C
 C***********************************************************************
 !      use dcbbas_mod, only: NTBAS
 !      use dcbham_mod, only: MC
-!      use codata_mod, only: XTANG
 !      use dcbrho1_mod, only: DSTEP
+      use codata_mod, only: XTANG
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0
@@ -2517,7 +2515,6 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcbrho1.h"
-#include "codata.h"
 C
 C     Calculate distance between centers
 C
@@ -2874,13 +2871,12 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEP, NUCIND
-!      use codata_mod, only: XTANG
+      use codata_mod, only: XTANG
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I,J
 C
 #include "dcbrho.h"
-#include "codata.h"
       DIMENSION CUBE(3,0:3),ATOMS(4,NUCDEP)
 C
 C

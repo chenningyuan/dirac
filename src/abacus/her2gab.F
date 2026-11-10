@@ -581,8 +581,6 @@ C  /* Deck Gabdr2 */
 C
 #ifdef PRG_DIRAC
 #include "dcbham.h"
-#else
-#include "energy.h"
 #endif
 C
       CHARACTER COMP(2)*1,SPDCAR*1

@@ -272,7 +272,6 @@ C
      &          EFDIR*1,TMPSTR*1
       DIMENSION INTREP(*), INTADR(*)
 C
-!#include "pgroup.h"
 !                   1          2          3          4
       DATA TABLE /'OVERLAP', 'DIPLEN ', 'DIPVEL ', 'QUADRUP',
 !                   5          6          7          8
@@ -2317,12 +2316,12 @@ C
 C     Solvent flag (22.01.91/HJAAJ+KM) (SOLVENT)
 C
 !      use dcbbas_mod, only: N2BBASX
-!      use pgroup_mod, only: REP
 #ifdef HAS_PELIB
       use pelib_dirac_interface, only: use_pelib, pelib_ifc_localfield,
      &                                 pelib_ifc_do_lf
 #endif
       use priunit_mod, only: LUPRI
+      use pgroup_mod, only: REP
 #include "implicit.h"
       PARAMETER (NTABLE = 54)
       PARAMETER (D2 = 2.D0)
@@ -2333,7 +2332,6 @@ C
      &          EFDIR*1,RTNLBL(2)*8
       DIMENSION WORK(LWORK), SOINT(NELMNT,NOPTYP), INTREP(*), INTADR(*)
 C
-#include "pgroup.h"
 #include "dcbbas.h"
       KLAST = 1
 C
@@ -4261,9 +4259,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CEXPINT_INFO(NINTS,INTREP,LABINT)
 C***********************************************************************
 !      use dgroup_mod, only: NBSYM, NFSYM
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 #include "implicit.h"
-#include "pgroup.h"
 #include "dgroup.h"
       DIMENSION INTREP(8)
       CHARACTER*8 LABINT(8)

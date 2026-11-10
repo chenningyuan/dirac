@@ -1151,9 +1151,6 @@ C
       DIMENSION SKLTON(MXCOOR,MXCOOR),
      &          INDEX(NUCIND,3,0:MAXREP), FACTOR(3*NUCDEP,0:MAXREP),
      &          IPOINT(3*NUCDEP,0:MAXREP)
-#ifndef PRG_DIRAC
-!#include "energy.h"
-#endif
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLEXP',-1)
 C

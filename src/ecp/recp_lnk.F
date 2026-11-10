@@ -274,7 +274,6 @@
       use argoscomch_mod, only: ITYPAG
       USE RECP_NTR
       IMPLICIT NONE
-!#include "pgroup.h"
 #include "inc_geninp.h"
       INTEGER I,J,RECPIN1,MAXREP,ND(8)
       RECPIN1 = 51
@@ -792,10 +791,8 @@ C     long because contains the full dir-path
       INTEGER INTQ0
       CHARACTER SLASH
       LOGICAL WIN
-!#include "inftap.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
-#else
 #endif
 #if defined (SYS_WINDOWS)
       WIN = .TRUE.

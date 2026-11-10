@@ -184,12 +184,11 @@ C*****************************************************************************
       use cbirea_mod, only: IPREAD
       use symmet_mod, only: IPAR, IXVAL, JSOP, MAXREP, NINVC, NREFL,
      &  NROTS, PT
-!      use pgroup_mod, only: GROUP, GROUPS, REP, SYMOP
+      use pgroup_mod, only: GROUP, GROUPS, REP, SYMOP
       use xmlout
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "pgroup.h"
       LOGICAL LSYMOP(0:7)
       DIMENSION IGEN(3),IROTS(3),IREFL(3),JPAR(0:7)
       CHARACTER*(*) CLASS
@@ -443,14 +442,13 @@ C*****************************************************************************
       use symmet_mod, only: ISYMAX, MAXREP, NINVC
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: DM1 = -1.0D0, D1 = 1.0D0
 C
-#include "pgroup.h"
 #include "dgroup.h"
 C
       LOGICAL LBUF(8)

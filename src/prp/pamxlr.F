@@ -140,7 +140,6 @@ C***********************************************************************
 !      use dcborb_mod, only: NCMOTQ, NORBT
 !      use dcbbas_mod, only: NTBAS
 !      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
-!      use pgroup_mod, only: REP
 !      use dcbxpr_mod, only: IPRPTIM, PRPNAM
 !      use dcbxrs_mod, only: GPTNRM, JOPSY, JSYMOP, JTIMOP, LUXVC, NCRED, NDAMP, NERED, NFREQ, NPRED, NREDM, NZCONF, NZCONFQ, NZRED, NZVAR, NZVARQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZXOPT, NZXOPTQ, RSPLAB
 !      use dcbprp_mod, only: LONDON, REGRAD
@@ -162,6 +161,7 @@ C***********************************************************************
       use kinds_mod, only: dp
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
+      use pgroup_mod, only: REP
 #include "implicit.h"
       REAL(dp), PARAMETER :: GPTHRS = 1.0D-9, D0 = 0.0D0, D2=2.0D0
 C
@@ -171,7 +171,6 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcbxpr.h"
 #include "dcbxrs.h"
 #include "dcbprp.h"
@@ -410,7 +409,6 @@ C     Written by T.Saue and H.J.Aa.Jensen 1996
 C     Last revision: June 14 1996 - tsaue
 C
 C***********************************************************************
-!      use codata_mod, only: XTNM
 !      use dcbgen_mod, only: INTGEN
 !      use dcbprp_mod, only: DOPCT, DOVDW, DOXLR
 !      use dcbxlr_mod, only: ALLCMB, BFREQ, CNVXLR, DMPFRLR, INTXLR, IPRXLR, ITRILR, ITRXLR, LLRAPU, LLRBPU, MAXFLR, MAXLLR, MAXRM, MXLOAD, NBFREQ, NLRAP, NLRAPT, NLRBP, NLRBPT, NOSPIA, NOSPIB, RESXLR, THCLR, THRCOM, TRIAB, XLRANA, XLRDIH, XLRNRM, XLR_ANATHR, XLR_E2CHEK, XLR_IMFREQ, XLR_INDSTR, XLR_LSFG, XLR_RSPEXP, XLR_RSPIMP, XLR_SKIPEE, XLR_SKIPEP, XLR_TRIPLET, XLR_UNCOUP, XLR_XVCFIL, XSTERN, XSTERNC
@@ -429,9 +427,9 @@ C***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
       use dummy_mod, only: DUMMY
+      use codata_mod, only: XTNM
 #include "implicit.h"
       INTEGER :: I, J
-#include "codata.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
       INTEGER, PARAMETER :: NTABLE = 45
       REAL(dp), PARAMETER :: DRESFAC = 1.0D2
@@ -442,7 +440,6 @@ C
 !#include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
-!#include "pgroup.h"
 #include "dcbxpr.h"
 C
       LOGICAL SET, NEWDEF, RESET, FINTER, FLIST, INTFLG_CHANGE
@@ -1269,7 +1266,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 !      use dcbxlr_mod, only: BFREQ, CNVXLR, DMPFRLR, INDBP, INTXLR, IPRXLR, ITRILR, ITRXLR, JLRAP, JLRBP, LLAPSU, LLBPSU, LLRAPU, LLRBPU, MAXRM, MXLOAD, NBFREQ, NLRAP, NLRAPT, NLRBP, NLRBPT, RESXLR, THCLR, XLRDIH, XLRNRM, XLR_E2CHEK, XLR_IMFREQ, XLR_INDSTR, XLR_LSFG, XLR_SKIPEE, XLR_SKIPEP, XLR_TRIPLET, XLR_UNCOUP, XLR_XVCFIL, XSTERN, XSTERNC
 !      use dcbxrs_mod, only: CNVINT, DAMPFREQ, DIAGHE, E2CHEK, IMFREQ, INTDEF, IPRXRS, ITRINT, IXRSTB, LINEQ, LOFFTY, LSVCFG, LURST, LUXVC, MAXITR, MAXSIM, N2REDM, NDAMP, NFREQ, NREDM, RESFAC, RSREST, STATIC, STERNC, STERNH, THCXRS, TKNORM, TRIPLET, UNCOUP
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
@@ -1279,7 +1276,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcbxlr.h"
 #include "dcbxrs.h"
 #include "dcbxpr.h"
@@ -1947,21 +1943,19 @@ C
 C     Written by T.Saue Oct 31 1996
 C
 C***********************************************************************
-!      use codata_mod, only: XTEV, XTKAYS
+      use codata_mod, only: XTEV, XTKAYS
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 !      use dcbxlr_mod, only: ALLCMB, BFREQ, INDBP, JLRAP, JLRBP, LLAPSU, LLBPSU, LLRAPU, LLRBPU, NBFREQ, NLRAP, NLRAPT, NLRBP, NLRBPT, THCLR
 !      use dcbxrs_mod, only: DAMPFREQ, IMFREQ, NDAMP, UNCOUP
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "codata.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D0
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcbxlr.h"
 #include "dcbxrs.h"
 #include "dcbxpr.h"
@@ -2349,7 +2343,7 @@ C***********************************************************************
 
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: FREP, IPQTOQ, NZ
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
       use overlap_diagnostic
       use dft_cfg
 
@@ -2358,7 +2352,6 @@ C***********************************************************************
       PARAMETER(DTOL=1.0D-12,DTOL2=1.0D-4,D0=0.0D0,D1=1.0D0,DM=1.0D2)
 C
 #include "dgroup.h"
-#include "pgroup.h"
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
       LOGICAL LFLAG(NVEC)
       DIMENSION BVEC(NBDIM,NZ,NVEC),FREQ(NVEC),RNORM(NVEC),IBTYP(NVEC),

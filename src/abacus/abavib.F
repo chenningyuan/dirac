@@ -456,7 +456,7 @@ C
       use dorps_mod, only: DOREPS
       use maxorb_mod, only: MXCORB
       use cbisol_mod, only: SOLVNT
-!      use codata_mod, only: XFAMU, XTANG, XTKAYS, XTKMML
+      use codata_mod, only: XFAMU, XTANG, XTKAYS, XTKMML
       use mxcent_mod, only: MXCENT, MXCOOR
       use iratdef_mod, only: IRAT
       use maxaqn_mod, only: MXAQN, MXQN
@@ -477,7 +477,6 @@ C
 C
 #include "cbivib.h"
 #include "cbilnr.h"
-#include "codata.h"
 C
       DIMENSION NMASS(36)
 C
@@ -706,10 +705,9 @@ C  /* Deck rotana */
       use cbisol_mod, only: SOLVNT
       use priunit_mod, only: LUPRI
       use inirep_mod, only: IREPPI, NREPPI
-!      use codata_mod, only: CCM, XFAMU, XTANG, XTHZ
+      use codata_mod, only: CCM, XFAMU, XTANG, XTHZ
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "codata.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, TSTLIN =1.D-4, DSMALL = 1.D-10,
      &                 D2 = 2.0D0
 C
@@ -839,11 +837,12 @@ C  /* Deck vibana */
      &                  IMAGIN,IREPS,INTENS,ROAAFQ,ROAGNQ,ROAGLQ,ROAAQ,
      &                  WORK,LWORK,NCORD,NOTALL,DOVCD,LINEAR,IPRINT)
 !      use hotfccom_mod, only: HOTFC, IHOTFC, IHOTFF
-!      use codata_mod, only: CCM, DEBYE, ECHARGE, EMASS, HBAR, XFAMU, XKCMOL, XKJMOL, XTANG, XTKAYS, XTKMML
+      use codata_mod, only: CCM, DEBYE, ECHARGE, EMASS, HBAR, XFAMU,
+     &  XKCMOL, XKJMOL, XTANG, XTKAYS, XTKMML
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
-!      use pgroup_mod, only: I
+      use pgroup_mod, only: REP
 !      use cbiwlk_mod, only: IMODE, NMODIF, V3CAL
       use gnrinf_mod, only: OPTNEW
       use taymol_mod, only: ERGMOL
@@ -859,7 +858,6 @@ C
 C     Carry out a propertry analysis including finding normal
 C     frequencies, normal coordinates and IR intensities
 C
-#include "codata.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0,
      &                 THRSH = 1.0D-8
 C
@@ -876,7 +874,6 @@ C
      &          ROAAFQ(*), ROAGNQ(*), ROAGLQ(*), ROAAQ(*)
 C
 #include "molde.h"
-#include "pgroup.h"
 #include "cbiwlk.h"
 #include "hotfccom.h"
 C
@@ -1281,12 +1278,11 @@ C
 C  /* Deck prtfun */
       SUBROUTINE PRTFUN(TOTMAS,AIMOM,BIMOM,CIMOM,EVAL,
      &                  LINEAR,NCORD,NUMMOD)
-!      use codata_mod, only: AUTK
+      use codata_mod, only: AUTK
       use priunit_mod, only: LUPRI
       use pi_mod, only: PI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "codata.h"
 C
 C     Calculate translational, rotational, and vibrational
 C     partition functions
@@ -1662,13 +1658,12 @@ C  /* Deck intern */
       use facang_mod, only: FACANG
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use codata_mod, only: DEBYE, XAJOUL, XTANG
+      use codata_mod, only: DEBYE, XAJOUL, XTANG
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.D0, D1 = 1.0D0, DM1 = - 1.0D0
 C
 #include "cbivib.h"
-#include "codata.h"
 C
       CHARACTER UNITC*3, UNITF*9, UNITD*5
       DIMENSION HESS(NCORD,NCORD), DGRAD(3,NCORD), CAAT(3,NCORD),
@@ -2142,15 +2137,14 @@ C  /* Deck getnos */
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use nuclei_mod, only: CORD, ISTBNU, IZATOM, NUCIND
       use taymol_mod, only: GRDMOL, HESMOL
+      use energy_mod, only: GRADNN
 #include "implicit.h"
 !      use aatens_mod, only: AATTOT
 !      use moldip_mod, only: DIPFLT
-!      use energy_mod, only: GRAD, GRADNN
       LOGICAL DIPDER, DOVCD,HESPUN
       DIMENSION ICHRG(NOATOM), GEOM(NCORD), GRAD(NCORD), GRDN(NCORD),
      &          HESS(NCORD,NCORD), WRK(LWRK),
      &          DGRAD(3,NCORD), CAAT(3,NCORD)
-#include "energy.h"
 #include "moldip.h"
 #include "aatens.h"
 C
@@ -2263,7 +2257,7 @@ C  /* Deck vibv3 */
 !      use cbiwlk_mod, only: DOCENT, DOTEMP, NMODIF, NTEMP
       use nuclei_mod, only: CORD, ISTBNU, NAMDEP, NUCDEP, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use codata_mod, only: AUTK, XFAMU
+      use codata_mod, only: AUTK, XFAMU
 !      use cbivib_mod, only: IPRINT
       use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use thrzer_mod, only: THRZER
@@ -2286,7 +2280,6 @@ C  /* Deck vibv3 */
 C
 #include "cbivib.h"
 #include "cbiwlk.h"
-#include "codata.h"
 C
       luwlk = 0
       CALL GPOPEN(LUWLK,'DALTON.WLK','OLD',
@@ -2675,7 +2668,7 @@ C  /* Deck vibro1 */
      &                  ROAGLD,ROAAD,ROAAFU,ROAGNU,ROAGLU,ROAAU)
       use abainf_mod, only: RAMAN, VROA
       use mxcent_mod, only: MXCENT, MXCOOR
-!      use codata_mod, only: ALPHAC, XFAMU, XTANG, XTKAYS, XTNM
+      use codata_mod, only: ALPHAC, XFAMU, XTANG, XTKAYS, XTNM
       use nuctap_mod, only: LUWLK
 !      use cbivib_mod, only: IPRINT
       use priunit_mod, only: LUPRI
@@ -2690,7 +2683,6 @@ C     Calculation of the final properties and output modified
 C     by G.Hangartner 20.11.1996
 C
 #include "cbilnr.h"
-#include "codata.h"
 C
       INTEGER F
       REAL(dp), PARAMETER :: DE3=1.0D3, DE13 = 1.0D13, D2=2.0D0,
@@ -2987,17 +2979,14 @@ C
 C     Determines the irep of a given normal coordinate, by comparing
 C     the results of symmetry operations with the character table.
 C
-!      use pgroup_mod, only: I
       use optinf_mod, only: VRVIBA
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use codata_mod, only: XFAMU
+      use codata_mod, only: XFAMU
       use maxaqn_mod, only: MXAQN, MXQN
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCIND
       use symmet_mod, only: ISOP, ISYMAX, IXVAL, MAXOPR, MAXREP, PT
 #include "implicit.h"
-#include "pgroup.h"
-#include "codata.h"
 C
       DIMENSION EVEC(NCORD,NCORD), EVC1(NCORD), EVC2(NCORD)
       DIMENSION GVC1(NCORD), GVC2(NCORD), ATCHRG(NCORD), WORK(LWORK)
@@ -3180,6 +3169,8 @@ C     This subroutine calculates vibrationally averaged molecular
 C     properties assuming that the calculation is performed at the effective
 C     geometry. K.Ruud, San Diego, March 1999
 C
+      use codata_mod, only: ALPHA2, AUTK, PMASS, XFAMU, XFMOL, XTANG,
+     &  XTHZ, XTKAYS, XTNM
       use abainf_mod, only: MAGSUS, NQCC, POLAR, QUADRU, ROTG, SHIELD,
      &  SPINRO, SPNSPN
       use nuclei_mod, only: ISOTOP, ISTBNU, IZATOM, NAMDEP, NOORBT,
@@ -3195,7 +3186,6 @@ include "implicit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4= 4.0D0, THRESH = 1.0D-5)
 #include "cbilnr.h"
-#include "codata.h"
       DIMENSION EVAL(NUMMOD), DIPM0(3), DIPMF(3,NUMMOD), SUSTO0(3,3),
      &          SUSTF(3,3,NUMMOD), SUSAV(3,3), GFAC0(3,3), GFACAV(3,3),
      &          GFACF(3,3,NUMMOD), QUAD0(3,3), QUADF(3,3,NUMMOD),
@@ -3798,10 +3788,9 @@ C Juhani Lounila 21.1.1998
 C
 C ***************************************************************************
       use priunit_mod, only: LUPRI
-!      use codata_mod, only: AUTK, XFAMU
+      use codata_mod, only: AUTK, XFAMU
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "codata.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0
       LOGICAL LINEAR
       DIMENSION COOR(3,NATM), AMASS(NATM), CC(3), AINERT(6), U(3,3)
@@ -4029,6 +4018,7 @@ C     LIN2 linear bending. A-C-B distorted perpendicular to the plane.
 C     ABD - positive if A moves toward the vector cross product CD*CA.
 C     The linear bendings are A-C-B, i.e., the apex atom is third.
 C
+      use codata_mod, only: XTANG
       use nuclei_mod, only: NAMDEP
       use pi_mod, only: PI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -4040,7 +4030,6 @@ C
       CHARACTER TIPUS(7)*4, TYP*4, WE*1, TLAST*4
       CHARACTER*6 NAME1, NAME2, NAME3, NAME4
 #include "cbivib.h"
-#include "codata.h"
       DIMENSION QQ(*),
      &          IA(4), U(3), V(3), W(3), Z(3), X(3), UU(3), VV(3),
      &          WW(3), ZZ(3), UV(12),

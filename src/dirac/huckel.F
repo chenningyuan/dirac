@@ -233,10 +233,9 @@ C
       use huckel_mod, only: IPRHUC, NHUCAO
       use maxorb_mod, only: MXSHEL
       use priunit_mod, only: LUPRI
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
 #include "implicit.h"
       INTEGER :: I
-#include "pgroup.h"
 C
       LOGICAL   AUTO_OCC
       INTEGER   NOCCUP(8), NOCC_HUC(8)

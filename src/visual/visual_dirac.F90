@@ -416,8 +416,7 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine read_mol_from_dirac(mol, group)
-!      use codata_mod, only: XTANG
-#include "codata.h" !xtang
+      use codata_mod, only: XTANG
     type(mol_t), intent(out) :: mol
     character(len=*),intent(in) :: group
     real(8), allocatable :: temp(:)

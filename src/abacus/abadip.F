@@ -170,6 +170,7 @@ C  /* Deck dipct1 */
 C
 C     December 1989, tuh
 C
+      use inftap_mod, only: LUSIFC
       use abainf_mod, only: DIPDER
       use dorps_mod, only: DOREPS
       use dipole_mod, only: DDIPE, DDIPN, DDIPS, DIPME
@@ -193,11 +194,9 @@ C
 #include "cbidip.h"
 C
 #include "linaba.h"
-#include "inftap.h"
 #include "infvar.h"
 #include "inforb.h"
 #include "infdim.h"
-#include "infinp.h"
 #include "inflin.h"
       LOGICAL OLDDX
 C
@@ -338,6 +337,7 @@ C  /* Deck dipadd */
       END
 C  /* Deck polpri */
       SUBROUTINE POLPRI(AMAT,SPC,ITYPE1)
+      use codata_mod, only: DEBYE, XTANG
       use abainf_mod, only: DOSYM
       use dorps_mod, only: DOREPS
       use inirep_mod, only: IREPPI, NREPPI
@@ -348,13 +348,11 @@ C  /* Deck polpri */
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "codata.h"
       PARAMETER (D1 = 1.0 D00)
       LOGICAL ALLREP, INERT, LARGE
       DIMENSION AMAT(3,3), IND(3)
       CHARACTER*(*) SPC
       CHARACTER LAB(3)*2, CHRABC(3)*1
-#include "inftap.h"
 C
       DATA CHRABC /'A','B','C'/
 C

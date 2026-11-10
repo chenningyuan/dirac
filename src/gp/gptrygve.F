@@ -873,8 +873,10 @@ C  /* Deck gpioin */
 C
 C 1-Mar-2000 K.Ruud
 C
+      use inftap_mod, only: FNONEL, FNSIFC, FNSOL, FNSUPM, LBSIFC,
+     &  LUINTA, LUINTM, LUINTR, LUIT1, LUONEL, LUPROP, LUSIFC, LUSOL,
+     &  LUSUPM
       use priunit_mod, only: LUCMD, LUPRI
-#include "inftap.h"
 C
       LUCMD  = 0
       LUPRI  = 0

@@ -654,13 +654,12 @@ C************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbind_mod, only: IBIT1, NBITS, NIBUF
       use maxaqn_mod, only: MXAQN, MXQN
-!      use pgroup_mod, only: WORK
+      use pgroup_mod, only: REP
       use mxcent_mod, only: MXCENT
       use symmet_mod, only: MAXREP
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "pgroup.h"
 #include "dcbind.h"
       DIMENSION LTFIL(0:8),ICOUNT(0:7,0:1),NINTS(0:7,0:1)
       DIMENSION IBUF(NCHUNK,NIBUF),BUF(NCHUNK),IND(2,NCHUNK)
@@ -816,12 +815,11 @@ C************************************************************************
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use symmet_mod, only: MAXREP
-!      use pgroup_mod, only: WORK
+      use pgroup_mod, only: REP
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "pgroup.h"
 #include "dcbind.h"
       DIMENSION LTFIL(0:8),ICOUNT(0:7,0:1),NINTS(0:7,0:1)
       DIMENSION IBUF(NCHUNK,NIBUF),BUF(NCHUNK),IND(2,NCHUNK)
@@ -1000,7 +998,7 @@ C
 C     Written by T.Saue Feb 27 1995
 C     Last revision: Feb 27 1995
 C*****************************************************************************
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1010,7 +1008,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "pgroup.h"
 #include "dcbind.h"
       DIMENSION BUF(MAXBUF),IBUF(MAXBUF,NIBUF),IND(4,MAXBUF),
      &          CMAT(MAXBUF,2),ICMAT(MAXBUF,NIBUF,2),
@@ -1356,7 +1353,7 @@ C     Last revision : Feb 27 1995
 C
 C************************************************************************
       use symmet_mod, only: MAXREP
-!      use pgroup_mod, only: REP
+      use pgroup_mod, only: REP
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
@@ -1365,7 +1362,6 @@ C************************************************************************
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "pgroup.h"
 #include "dcbind.h"
       DIMENSION BUF(MAXBUF),IBUF(MAXBUF,NIBUF),IND(4,MAXBUF),
      &          AMAT(NSLDIM),IAMAT(NSLDIM),
@@ -3797,18 +3793,17 @@ C
 C*****************************************************************************
 !      use dgroup_mod, only: IHQMAT, IQTOPQ, JBTOF, NZC1
 !      use dcbham_mod, only: HFXATT, HFXFAC, HFXMU
-!      use pgroup_mod, only: REP
       use quaternion_algebra
 #ifdef MOD_SRDFT
       use srdft_cfg ! for MCSCF-srDFT calculations
 #endif
       use kinds_mod, only: dp
       use priunit_mod, only: LUPRI
+      use pgroup_mod, only: REP
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
-#include "pgroup.h"
 #include "dgroup.h"
 #include "dcbham.h"
 C     External variables

@@ -158,13 +158,12 @@ C  /* Deck mkvrv1 */
 C     
 C     Punch out geometry to VRML-file
 C
-!      use codata_mod, only: XTANG
+      use codata_mod, only: XTANG
       use optinf_mod, only: IPRINT, VRBOND
       use nuclei_mod, only: NUCDEP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "codata.h"
       DIMENSION GVEC(NCORD), EVEC(NCORD), ATCHRG(NCORD)
       DIMENSION ATMARR(MXCENT,8)
       CHARACTER*12 FILENM
@@ -266,11 +265,10 @@ C  /* Deck mkvrs1 */
 C     
 C     Punch out geometry to VRML-file
 C
-!      use codata_mod, only: XTANG
+      use codata_mod, only: XTANG
       use optinf_mod, only: VRBOND
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
-#include "codata.h"
       DIMENSION ATM(5,0:MXCENT)
       DIMENSION DRTAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
       DIMENSION ATMARR(MXCENT,8)
@@ -946,13 +944,13 @@ C  /* Deck atmini */
 
 C     Expand all symmetry-dependent atoms.
 C
+      use codata_mod, only: XTANG
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-#include "codata.h"
       DIMENSION ATMARR(MXCENT,8)
       LOGICAL BOHR
 C

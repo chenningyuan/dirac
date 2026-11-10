@@ -1291,6 +1291,7 @@ C
 C  /* Deck wlkscl */
       SUBROUTINE WLKSCL(SCAL,GRDCAR,HESCAR,DOREP,NCRTOT,N2CRT,ISCTYP,
      &                  IWKTYP,ISOTPS,IPRINT)
+      use codata_mod, only: XFAMU
       use nuclei_mod, only: CHARGE, IZATOM, NUCIND
       use symmet_mod, only: IPTCNT, MAXREP, NCRREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -1298,7 +1299,6 @@ C  /* Deck wlkscl */
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "codata.h"
       PARAMETER (D1 = 1.0D0)
 C
       LOGICAL DOREP(0:7), NOCHRG
@@ -1770,6 +1770,7 @@ C  /* Deck wlkrad */
 C
 C     Update trust radius
 C
+      use infinp_DALTON_mod, only: ISTATE
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
@@ -1777,7 +1778,6 @@ C
       PARAMETER (D1=1.0D0, D2=2.0D0, DP5 = 0.5D0, DP25=0.25D0,
      *           THDE=1.0D-10)
 C
-#include "infinp.h"
 #include "cbiwlk.h"
 C
 C     ****************************************
@@ -2019,8 +2019,6 @@ C  /MOLINP/: everything
 C  /NUCLEI/: NUCIND
 C  /CBISOL/: SOLVNT,NCNTCV
 C
-!#include "inftap.h"
-!#include "infinp.h"
 C
 C
 C Write new coordinates into MOLECULE input
@@ -2212,7 +2210,6 @@ C
      &          EFG0(3,3,MXCENT), EFGF(3,3,MXCENT,NCART), 
      &          SSJ0(MXCOOR,MXCOOR), SSJF(MXCOOR,MXCOOR,NCART)
 C
-#include "inftap.h"
 #include "cbilnr.h"
       DIMENSION ROAAFD(3,3,MXFR,MXCOOR), ROAGND(3,3,MXFR,MXCOOR), 
      &          ROAGLD(3,3,MXFR,MXCOOR), ROAAD(3,3,3,MXFR,MXCOOR),
@@ -2305,7 +2302,6 @@ C
      &          SSJ0(MXCOOR,MXCOOR), SSJF(MXCOOR,MXCOOR,NCART),
      &          WORK(LWORK)
 C
-#include "inftap.h"
 #include "cbilnr.h"
       DIMENSION ROAAFD(3,3,MXFR,MXCOOR), ROAGND(3,3,MXFR,MXCOOR), 
      &          ROAGLD(3,3,MXFR,MXCOOR), ROAAD(3,3,3,MXFR,MXCOOR),
@@ -2403,7 +2399,6 @@ C  /* Deck wlkir1 */
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-#include "inftap.h"
       DIMENSION COOR(MXCOOR), CGRAD(MXCOOR), CHESS(MXCOOR,MXCOOR),
      &          ISOTPS(NUCIND), DMASS(NUCDEP), CSTRA(*), SCTRA(*)
 C
@@ -2453,6 +2448,7 @@ C  /* Deck wlkres */
 C
 C     Print of results
 C
+      use codata_mod, only: AUTIME, XKCMOL, XKJMOL, XTANG
       use facang_mod, only: FACANG
       use nuclei_mod, only: CORD, IZATOM, NAMDEP, NAMEX, NUCDEG, NUCIND
       use dummy_mod, only: IDUMMY
@@ -2462,7 +2458,6 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "codata.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0, D100 =100.D0, D15 = 1.0D15,
      &           DM13 = 1.0D-13)
 C
@@ -3018,6 +3013,7 @@ C
 C     eu, Oslo 16.February 1989
 C     symmetrized tuh 13 April 90
 C
+      use codata_mod, only: XFAMU
       use nuclei_mod, only: CORD, ISTBNU, IZATOM, NUCIND
       use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -3031,7 +3027,6 @@ C
      *          QCMDIF(3)
 #include "cbiwlk.h"
 C
-#include "codata.h"
 C
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('PMCAR in WLKTRA',-1)
@@ -3199,6 +3194,7 @@ C  /* Deck wlknci */
 C
 C     Atomic displacements along normal modes for numerical differentiation
 C
+      use codata_mod, only: XFAMU
       use nuclei_mod, only: CORD, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -3209,7 +3205,6 @@ C
 C
       DIMENSION STPCAR(NCRIND), COOR(NCRIND), EVEC(NCART,NCART)
 C
-#include "codata.h"
 C
 C     ***** STPCAR *****
 C     Note: This only works without symmetry. If possible to include symmetry,
@@ -3638,6 +3633,9 @@ C     coordinates of the molecule at the effective molecular geometry.
 C
 C     K.Ruud, San Diego March 1999
 C
+      use codata_mod, only: ALPHA2, PMASS, XFAMU, XTHZ
+      use dcbsusc_mod, only: SUS2EL, SUSDIA, SUSFS, SUSFSY, SUSREL,
+     &  SUSTOT
       use abainf_mod, only: MAGSUS, NOLOND, NQCC, POLAR, QUADRU, ROTG,
      &  SHIELD, SPINRO, SPNSPN
       use chrsgn_mod, only: CHRSGN
@@ -3648,7 +3646,6 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "codata.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, DM1 = -1.0D0)
 C
       LOGICAL FINAL
@@ -3669,7 +3666,6 @@ C
 C
 C
 #include "moldip.h"
-#include "suscpt.h"
 #include "rotg.h"
 #include "quadru.h"
 #include "sigma.h"
@@ -4477,9 +4473,9 @@ C     4 - Newton step
 C     5 - Hessian eigenvector step to boundary
 C     6 - Intrinsic reaction path
 C
+      use codata_mod, only: XFAMU
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "codata.h"
       PARAMETER (D0 = 0.0 D0, DP5 = 0.5 D0)
 C
       LOGICAL KEEPSY, IMAGE, DONWTN
@@ -5387,9 +5383,9 @@ C
       END
 C  /* Deck wlkdyn */
       SUBROUTINE WLKDYN(TDET,Q,P,GRDDIA,EVAL,NCART,RADIUS,IPRINT)
+      use codata_mod, only: XFAMU
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "codata.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D10 = 10.0D0)
       PARAMETER (EFFZER = 1.0D-10)
       PARAMETER (MAXIT = 1000, D100 = 1.0D02)
@@ -5861,6 +5857,8 @@ C  /* Deck wlksav */
 C
 C     Save second-order MC prediction for found step
 C
+      use infinp_DALTON_mod, only: FLAG, POTNUC
+      use inftap_mod, only: LUIT1, LUSIFC
       use dummy_mod, only: DUMMY, IDUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -5881,7 +5879,6 @@ C   INFORB : N2BAST,NCMOT
 C   INFOPT : EMCSCF,EMCOLD,DEPRED,REJWMI,REJWMA, NREDL
 C
 #include "cbiwlk.h"
-#include "inftap.h"
 #include "infdim.h"
 #include "infvar.h"
 #include "inforb.h"
@@ -5889,7 +5886,6 @@ C
 C
 C     kludge to avoid tranformation to natural orbitals
 C     I must talk to HJJ / tuh Jun 92
-#include "infinp.h"
       flag(15) = .false.
 C
       CALL QENTER('WLKSAV')
@@ -6168,7 +6164,6 @@ C  INFDIM: NVARMA
 C
 #include "inflin.h"
 #include "cbiwlk.h"
-#include "inftap.h"
 #include "anrinf.h"
 #include "infvar.h"
 #include "infdim.h"
@@ -6422,6 +6417,7 @@ C  /* Deck wlkda1 */
      &                  AMASS,ACOR,AVEL,ACORR,AVELR,AVLROT,
      &                  BMASS,BCOR,BVEL,BCORR,BVELR,BVLROT)
 C
+      use codata_mod, only: XFAMU
       use nuclei_mod, only: CORD, ISTBNU, IZATOM, NUCIND
       use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -6431,7 +6427,6 @@ C
 #include "implicit.h"
       PARAMETER (D0 = 0.D0, DP5 = 0.5D0, D1 = 1.D0, D2 = 2.0D0,
      &           D100 = 100.0D0)
-#include "codata.h"
       INTEGER X, Y, Z
       LOGICAL TPLAN, APLAN, BPLAN, TLIN, ALIN, BLIN
 C
@@ -6988,6 +6983,7 @@ C  /* Deck wlkroa */
 C
 C     Numerical differentiation for Raman properties
 C
+      use codata_mod, only: ALPHAC, XTANG, XTNM
       use abainf_mod, only: RAMAN, VROA
       use chrsgn_mod, only: CHRSGN
       use nuclei_mod, only: NAMEX
@@ -6997,7 +6993,6 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "codata.h"
 C
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2=2.0D0,DE3=1.0D3)
 C
