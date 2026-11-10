@@ -97,7 +97,8 @@ C
       use interface_to_mpi
       use task_distribution_state, only: ensure_task_order_storage,
      &   task_order, task_class_offset, reset_task_order,
-     &   task_order_is_valid, mark_task_order_valid
+     &   task_order_is_valid, mark_task_order_valid,
+     &   master_computes, master_ndone
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -237,6 +238,46 @@ C-----------------------
 C     Start calculation.
 C-----------------------
 C
+      CALL DZERO(WORK(KTIMES),MTOTTK)
+C     Normally the master only hands out tasks to the workers.
+C     For direct Fock builds it also computes tasks itself (the
+C     TWOINT call below), so its core is not idle:
+C     - the task list is sorted from most to least expensive;
+C       workers get tasks from the front, the master takes them
+C       from the back (the cheapest ones);
+C     - while computing, the master keeps answering worker requests
+C       (HERPAR_MASTER_SERVE, called from PARLOP), so workers do not
+C       wait for it.
+C     Used only when:
+C     - tasks are handed out one at a time (NTASK = 1);
+C     - there are at most 8 MPI processes: with more workers, handing
+C       out tasks would keep the master busy full time;
+C     - ITYPE is 3 (Fock matrix in AO basis), 9 (Fock matrices in
+C       SO basis) or -5 with MAXDIF = 1 (London orbital Fock matrix
+C       derivatives).
+      master_computes = NTASK .EQ. 1 .AND. NODES+1 .LE. 8 .AND.
+     &                  (ITYPE .EQ. 3 .OR. ITYPE .EQ. 9 .OR.
+     &                  (ITYPE .EQ. -5 .AND. MAXDIF .EQ. 1))
+      IF (master_computes) THEN
+         CALL HERPAR_MASTER_INIT(WORK(KINDEX),MTOTTK)
+         JPRINT = 0
+         IPRNTA = 0
+         IPRNTB = 0
+         IPRNTC = 0
+         IPRNTD = 0
+         ISHLA  = 0
+         GMAT   = 0
+         PARHER = .TRUE.
+         CALL TWOINT(WORK(KFREE),LFREE,FMAT,DMAT,NDMAT,IREPDM,IFCTYP,
+     &        GMAT,IDUMMY,IDUMMY,ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,
+     &        TKTIME,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,ISHLA,
+     &        I2TYP,ICEDIF,SCREEN,GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,
+     &        .FALSE.,WORK(KINDEX),WORK(KTIMES))
+         PARHER = .FALSE.
+         IF (IPRPAR .GT. 0) WRITE(LUPRI,'(/5X,A,I8,A,I8)')
+     &      'HER_PARDRV: tasks computed by master:',master_ndone,
+     &      ' of',MTOTTK
+      END IF
       CALL DO_HERPAR(WORK(KINDEX),MTOTTK,NBATCH,WORK(KNSTAT))
       IF (IPRPAR.GT.0) CALL TIMER2('DO_HERPAR',TIMSTR,TIMEND)
 C.....Get results from nodes
@@ -252,6 +293,8 @@ C.....Get results from nodes
      &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
       END IF
       IF (IPRPAR.GT.0) CALL TIMER2('RVRES',TIMSTR,TIMEND)
+      master_computes = .FALSE.
+      master_ndone    = 0
 C
 C-------------------------------------
 C     Get timing results if requested.
@@ -650,6 +693,7 @@ C
 C     Written by Henrik Koch and Paal Dahle Nov-1993
 C
       use interface_to_mpi
+      use task_distribution_state, only: master_computes, master_nstat
 #include "implicit.h"
 #ifdef VAR_MPI
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -670,8 +714,14 @@ C
       NTEST  = 1
       NUMTSK = 0
       IPLACE = 0
+      NBLEFT = NBATCH
+C     ... all tasks already handed out while the master computed
+      IF (master_computes) THEN
+         NBLEFT = 0
+         NSTAT(1:NODES) = master_nstat(1:NODES)
+      END IF
 C
-      DO 100, I = 1,NBATCH
+      DO 100, I = 1,NBLEFT
 C
 C        Ready to receive request from any node.
 C
@@ -759,6 +809,7 @@ C
 C   MI: Added TEC changes....
 C
       use interface_to_mpi
+      use task_distribution_state, only: master_ndone
 #include "implicit.h"
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -810,7 +861,8 @@ C
      &        WORK, DINTSKP, LDINTSKP,
      &        op_MPI_SUM, MPARID, global_communicator)
          IF (TIMING) THEN
-            call dzero(WORK,MTOTTK)
+            ! TIMES holds the master's own task times, zero elsewhere
+            call dcopy(MTOTTK,TIMES,1,WORK,1)
             CALL interface_mpi_reduce_r1_work_f77(
      &        WORK, TIMES, MTOTTK,
      &        op_MPI_SUM, MPARID, global_communicator)
@@ -822,7 +874,7 @@ C---------------------------
 C     Start loop over nodes.
 C---------------------------
 C
-      ICOUNT = 0
+      ICOUNT = master_ndone
       DO 100 I = 1,NODES
 C
          CALL interface_mpi_RECV(ITASK,1,df_mpi_any_source,40,
@@ -1574,6 +1626,7 @@ C     Minor revisions Oct 1996 T.Saue
 C
 CMI changes from TEC for LAO
       use interface_to_mpi
+      use task_distribution_state, only: master_computes
 #include "implicit.h"
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -1689,17 +1742,24 @@ C
 #if defined (VAR_MPI)
   100 CONTINUE
 C
-      CAll interface_mpi_SEND(MYTID,1,MPARID,20,
+      IF (master_computes) THEN
+C        master: serve waiting workers, then take a task itself (NTASK=1)
+         CALL HERPAR_MASTER_NEXT(IJSHEL)
+         IF (IJSHEL(1) .EQ. 0) GOTO 300
+      ELSE
+         CAll interface_mpi_SEND(MYTID,1,MPARID,20,
      &              global_communicator)
 C
-      CAll interface_mpi_RECV(NTEST,1,MPARID,30,
+         CAll interface_mpi_RECV(NTEST,1,MPARID,30,
      &               global_communicator)
 C
-      IF (NTEST .EQ. -1) GOTO 300
+         IF (NTEST .EQ. -1) GOTO 300
+      END IF
 C
       DO 200 I = 1, NTASK
 C
-         CAll interface_mpi_RECV(IJSHEL,2,MPARID,30,
+         IF (.NOT. master_computes)
+     &   CAll interface_mpi_RECV(IJSHEL,2,MPARID,30,
      &                 global_communicator)
 C
 C        **************************************
@@ -1783,6 +1843,7 @@ C
          ICMAX = ISHELA
          IF (SPNORB.OR.I2TYP.EQ.2) ICMAX = MAXSHL
          DO 400 ISHELC = ICSTRT,ICMAX
+            IF (master_computes) CALL HERPAR_MASTER_SERVE()
 C
             ICC    = LCLASH(ISHELC)
             NHKTC  = NHKTSH(ISHELC)
@@ -1876,10 +1937,14 @@ C
          IF (TIMING) THEN
             CPUTK2 = SECOND()
             CPUTSK = CPUTK2 - CPUTK1
-            IPLACE = ICOUNT + I
-C
-            INDEX_IJ(IPLACE) = IJSHEL(2)
-            TIMES(IPLACE) = CPUTSK
+            IF (master_computes) THEN
+C              master: TIMES is indexed by task position
+               TIMES(IJSHEL(2)) = CPUTSK
+            ELSE
+               IPLACE = ICOUNT + I
+               INDEX_IJ(IPLACE) = IJSHEL(2)
+               TIMES(IPLACE) = CPUTSK
+            END IF
          END IF
  200  CONTINUE
 C
@@ -1970,6 +2035,89 @@ C
             WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
             CALL OUTPUT(FMAT(ISTR),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
   600    CONTINUE
+      END IF
+      RETURN
+      END
+C  /* Deck herpar_master_init */
+      SUBROUTINE HERPAR_MASTER_INIT(INDEX_IJ,MTOTTK)
+C
+C     Task queue for the master taking part in the Fock build.
+C     INDEX_IJ is the distribution order, most expensive task first.
+C
+      use task_distribution_state, only: master_queue, master_nstat,
+     &   master_head, master_tail, master_ndone
+#include "implicit.h"
+#include "infpar.h"
+      INTEGER INDEX_IJ(MTOTTK)
+C
+      IF (ALLOCATED(master_queue)) DEALLOCATE(master_queue)
+      IF (ALLOCATED(master_nstat)) DEALLOCATE(master_nstat)
+      ALLOCATE(master_queue(MTOTTK), master_nstat(NODES))
+      master_queue(1:MTOTTK) = INDEX_IJ(1:MTOTTK)
+      master_nstat(1:NODES)  = 0
+      master_head  = 0
+      master_tail  = MTOTTK
+      master_ndone = 0
+      RETURN
+      END
+C  /* Deck herpar_master_serve */
+      SUBROUTINE HERPAR_MASTER_SERVE()
+C
+C     Master taking part in the Fock build (NTASK = 1): give the next
+C     (most expensive) task to every worker that is waiting.
+C     Called between and also inside the master's own tasks (PARLOP),
+C     so workers do not wait for the master to finish a task.
+C
+      use interface_to_mpi
+      use task_distribution_state, only: master_queue, master_nstat,
+     &   master_head, master_tail
+#include "implicit.h"
+#include "infpar.h"
+#if defined (VAR_MPI)
+      INTEGER ISHELL(2), ISTAT(df_MPI_STATUS_SIZE)
+      LOGICAL PENDING
+C
+      NTEST = 1
+  100 CONTINUE
+      IF (master_head .LT. master_tail) THEN
+         CALL interface_mpi_iprobe(df_MPI_ANY_SOURCE,20,PENDING,
+     &        global_communicator,ISTAT)
+         IF (PENDING) THEN
+            CALL interface_mpi_RECV(NODE,1,df_MPI_ANY_SOURCE,20,
+     &           global_communicator)
+            CALL interface_mpi_SEND(NTEST,1,NODE,30,
+     &           global_communicator)
+            master_head = master_head + 1
+            ISHELL(1) = master_queue(master_head)
+            ISHELL(2) = master_head
+            CALL interface_mpi_SEND(ISHELL,2,NODE,30,
+     &           global_communicator)
+            master_nstat(NODE) = master_nstat(NODE) + 1
+            GO TO 100
+         END IF
+      END IF
+#endif
+      RETURN
+      END
+C  /* Deck herpar_master_next */
+      SUBROUTINE HERPAR_MASTER_NEXT(IJSHEL)
+C
+C     Serve waiting workers, then return the cheapest remaining task
+C     for the master in IJSHEL. IJSHEL(1) = 0 when no tasks are left.
+C
+      use task_distribution_state, only: master_queue,
+     &   master_head, master_tail, master_ndone
+#include "implicit.h"
+      INTEGER IJSHEL(2)
+C
+      CALL HERPAR_MASTER_SERVE()
+      IF (master_head .LT. master_tail) THEN
+         IJSHEL(1) = master_queue(master_tail)
+         IJSHEL(2) = master_tail
+         master_tail  = master_tail - 1
+         master_ndone = master_ndone + 1
+      ELSE
+         IJSHEL(1) = 0
       END IF
       RETURN
       END

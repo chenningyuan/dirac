@@ -940,6 +940,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
+#include "infpar.h"
       PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
      &            DM1 = -1.00D00, D2 = 2.00D00)
       LOGICAL DOSEL,DOLEV,FNDLAB
@@ -952,6 +953,9 @@ C
 #include "memint.h"
 
       CALL QENTER('DFSOLV')
+C     serial on the master (diagonalization, DIIS, transformations):
+C     use the cores of the idle MPI slaves for BLAS/OpenMP
+      if (parcal) call dirac_threads_push(numnod+1)
       IF (IPRSCF .GE. 3) call TIMER2('START',TIMSTR,TIMEND)
       TIMSTR_save = TIMSTR
 C
@@ -1123,6 +1127,7 @@ C
       IF (IPRSCF .GE. 3) call TIMER2('DFSOLV total',TIMSTR_save,TIMEND)
       CALL MEMREL('DFSOLV',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL FLSHFO(LUPRI)
+      if (parcal) call dirac_threads_pop()
       CALL QEXIT('DFSOLV')
       RETURN
 C

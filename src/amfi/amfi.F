@@ -1409,6 +1409,7 @@ cbs ##################################################################
       doff1=dffrac(index1-1,n13-1)*dffrac(n24+Lrun-1,n24-1)
       doff2=dffrac(index3-1,n24-1)*dffrac(n13+Lrun-1,n13-1)
       if (index1.eq.1) then 
+!$OMP PARALLEL DO PRIVATE(irun3,irun2,irun1,limit1,limit2,pow24inv)
                 do irun4=1,nprim4
                 do irun3=1,nprim3
                 if (l2.eq.l4) then          
@@ -1432,7 +1433,10 @@ cbs ##################################################################
       		enddo 
       		enddo 
       		enddo 
+!$OMP END PARALLEL DO
       else 
+!$OMP PARALLEL DO PRIVATE(irun3,irun2,irun1,limit1,limit2,k,
+!$OMP&  alpha24inv,pow24inv,a1324,alpha13,Cfunctx1,frac,fact)
                 do irun4=1,nprim4
                 do irun3=1,nprim3
                 if (l2.eq.l4) then          
@@ -1474,8 +1478,10 @@ cbs ##################################################################
 		enddo
 		enddo
 		enddo
+!$OMP END PARALLEL DO
       endif   
       if (index3.eq.1) then 
+!$OMP PARALLEL DO PRIVATE(irun3,irun2,irun1,limit1,limit2,pow24)
                 do irun4=1,nprim4
                 do irun3=1,nprim3
                 if (l2.eq.l4) then          
@@ -1500,7 +1506,10 @@ cbs ##################################################################
                 enddo 
                 enddo 
                 enddo 
+!$OMP END PARALLEL DO
       else
+!$OMP PARALLEL DO PRIVATE(irun3,irun2,irun1,limit1,limit2,k,
+!$OMP&  alpha24,pow24,a2413,Cfunctx2,frac,fact)
                 do irun4=1,nprim4
                 do irun3=1,nprim3
                 if (l2.eq.l4) then          
@@ -1543,6 +1552,7 @@ cbs ##################################################################
                 enddo 
                 enddo 
                 enddo 
+!$OMP END PARALLEL DO
       endif 
 cbs   make some mirroring for identical l-values
 cbs   for the case that l1=l3 
@@ -1572,6 +1582,7 @@ cbs   for the case that l2=l4
       enddo 
       endif 
 cbs   some factors which are the same for all cases 
+!$OMP PARALLEL DO PRIVATE(irun3,irun2,irun1)
       do irun4=1,nprim4
       do irun3=1,nprim3
       do irun2=1,nprim2
@@ -1585,6 +1596,7 @@ cbs   some factors which are the same for all cases
       enddo 
       enddo 
       enddo 
+!$OMP END PARALLEL DO
 cbs   
 cbs  look for additional factors, as the 
 cbs  coulomb integrals are calculated 

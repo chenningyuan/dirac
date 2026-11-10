@@ -29,6 +29,8 @@
              MKL_DYNAMIC     - set to "FALSE" if not defined and parallel dirac.x
              OMP_NUM_THREADS - set to 1 if not defined and parallel dirac.x
              OMP_DYNAMIC     - set to "FALSE" if not defined and parallel dirac.x
+             OMP_STACKSIZE   - set to "200M" if dirac.x has ExaCorr and none of OMP_STACKSIZE,
+                               GOMP_STACKSIZE, KMP_STACKSIZE is defined
 
     Environment variables set only by pam and used by DIRAC:
              BASDIR          - contains path for basis set directories
@@ -1294,6 +1296,17 @@ Options are also read from ~/.diracrc"""
         else:
             if self.verbose:
                 print('   Variabl.OMP_DYNAMIC=',os.environ.get('OMP_DYNAMIC'))
+        # with ExaCorr, the threadprivate arrays of InteRest/ExaCorr (~100 MB) are placed in
+        # the stack of every OpenMP/MKL thread: threads need a stack size larger than that
+        stack_vars = ('OMP_STACKSIZE', 'GOMP_STACKSIZE', 'KMP_STACKSIZE')
+        if "@ENABLE_EXATENSOR@".upper() in ('ON', 'TRUE', '1', 'YES') and \
+           not any(os.environ.get(v) for v in stack_vars):
+            os.environ['OMP_STACKSIZE'] = '200M'
+            if self.verbose:
+                print('   OMP_STACKSIZE = 200M')
+        else:
+            if self.verbose:
+                print('   Variabl.OMP_STACKSIZE = ',os.environ.get('OMP_STACKSIZE'))
 
     def set_environment(self):
         '''

@@ -273,117 +273,21 @@ module eti_ao_to_mo
 
 !This subroutine drives the generation of AO integrals by InteRest
 !
-         use exacorr_ao
-         use exacorr_global
-         use exacorr_eri
-
          implicit none
          integer, intent(in) :: nao           ! number of basis functions
-         integer             :: basis_angular ! 1=cartesian, 2=spherical
          complex(8),intent(out),optional :: ao_tens_complex(nao,nao,nao,nao)
          real(8),intent(out),optional    :: ao_tens_real(nao,nao,nao,nao)
 
-         integer :: i, j, k, l, ish, jsh, ksh, lsh, ioff, joff, koff, loff, ijkl, ijkl2
-         integer :: li,lj,lk,ll,ni,nj,nk,nl
-         real(8) :: xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
-         real(8) :: gout(21*21*21*21)
-         real(8), parameter :: fijkl = 1.0
-         integer            :: nshells                    ! number of AO shells
-         type(basis_func_info_t), allocatable :: gto(:)   ! array with basis function information
-         logical complex_output
-
-         if (present(ao_tens_complex)) then
-            complex_output = .true.
-         else if (present(ao_tens_real)) then
-            complex_output = .false.
-         else
-            call quit ('no output array given in compute_ao_integrals')
-         end if
-
-         basis_angular = get_basis_angular()
-         call get_gtos(1,nao,gto,nshells)
-
-         !OpenMP task-based parallelism defined by Eric does not work, deactivated [LV]
-         !deactivatedopenmp parallel
-         !deactivatedopenmp single
-         loff = 0
-         do lsh = 1, nshells
-            ll   =  gto(lsh)%orb_momentum
-            xl   =  gto(lsh)%coord(1)
-            yl   =  gto(lsh)%coord(2)
-            zl   =  gto(lsh)%coord(3)
-            nl   =  nfunctions(ll,basis_angular)
-            koff = 0
-            do ksh = 1, nshells
-               lk   =  gto(ksh)%orb_momentum
-               xk   =  gto(ksh)%coord(1)
-               yk   =  gto(ksh)%coord(2)
-               zk   =  gto(ksh)%coord(3)
-               nk   =  nfunctions(lk,basis_angular)
-               joff = 0
-               do jsh = 1, nshells
-                  lj   =  gto(jsh)%orb_momentum
-                  xj   =  gto(jsh)%coord(1)
-                  yj   =  gto(jsh)%coord(2)
-                  zj   =  gto(jsh)%coord(3)
-                  nj   =  nfunctions(lj,basis_angular)
-                  ioff = 0
-                  do ish = 1, nshells
-                     li   =  gto(ish)%orb_momentum
-                     xi   =  gto(ish)%coord(1)
-                     yi   =  gto(ish)%coord(2)
-                     zi   =  gto(ish)%coord(3)
-                     ni   =  nfunctions(li,basis_angular)
-!                    call interest and get the (LL|LL) type integrals
-!                    output order of eri is (c,d,a,b), so input k,l first and then i,j to get the order that we want
-
-                     ![eric]
-                     !deactivatedopenmp task
-                     call compute_eri('llll',fijkl,gout(1:ni*nj*nk*nl),&
-                                  lk,gto(ksh)%exponent,xk,yk,zk,gto(ksh)%coefficient,&
-                                  ll,gto(lsh)%exponent,xl,yl,zl,gto(lsh)%coefficient,&
-                                  li,gto(ish)%exponent,xi,yi,zi,gto(ish)%coefficient,&
-                                  lj,gto(jsh)%exponent,xj,yj,zj,gto(jsh)%coefficient )
-
-                     ijkl = 0
-                     ijkl2 = 1
-                     do l = 1, nl
-                        do k = 1, nk
-                           do j = 1, nj
-                              do i = 1, ni
-                                 ijkl = ijkl + 1
-                                 if (complex_output) then
-                                    ao_tens_complex(i+ioff,j+joff,k+koff,l+loff) = dcmplx(gout(ijkl),0.D0)
-                                 else
-                                    ao_tens_real(i+ioff,j+joff,k+koff,l+loff) = gout(ijkl)
-                                 end if
-!lv                              ao_tens(i+ioff,j+joff,k+koff,l+loff) = dcmplx(gout2(ijkl2),0.D0)
-!lv                              ijkl2 = ijkl2 + 5
-                              end do
-                           end do
-!lv                        ijkl2 = ijkl2 + ni*nj*5*4
-                        end do
-                     end do
-                     !deactivatedopenmp end task
-
-                     ioff = ioff + ni
-                  end do
-                  joff = joff + nj
-               end do
-               koff = koff + nk
-            end do
-            loff = loff + nl
-         end do
-         !deactivatedopenmp end single nowait
-         !deactivatedopenmp end parallel
-
-         deallocate(gto)
+         call compute_selected_ao_integrals ((/1,1,1,1/),(/nao,nao,nao,nao/), &
+                                             ao_tens_complex,ao_tens_real)
 
         end subroutine compute_ao_integrals
 
         subroutine compute_selected_ao_integrals (first_ao,nao,ao_tens_complex,ao_tens_real)
 
-!This subroutine drives the generation of AO integrals by InteRest
+!This subroutine drives the generation of AO integrals by InteRest.
+!The shell quartets are distributed over OpenMP threads: each quartet
+!writes its own block of the output, InteRest is initialized per thread.
 !
          use exacorr_ao
          use exacorr_global
@@ -396,13 +300,13 @@ module eti_ao_to_mo
          complex(8),intent(out),optional :: ao_tens_complex(nao(1),nao(2),nao(3),nao(4))
          real(8),intent(out),optional    :: ao_tens_real(nao(1),nao(2),nao(3),nao(4))
 
-         integer :: i, j, k, l, ish, jsh, ksh, lsh, ioff, joff, koff, loff, ijkl, ijkl2
+         integer :: i, j, k, l, ish, jsh, ksh, lsh, ijkl, nmax
          integer :: li,lj,lk,ll,ni,nj,nk,nl
-         integer :: index
          real(8) :: xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
-         real(8) :: gout(21*21*21*21)
+         real(8), allocatable :: gout(:)
          real(8), parameter :: fijkl = 1.0
          integer            :: nshells(4)                   ! number of AO shells
+         integer, allocatable :: off1(:), off2(:), off3(:), off4(:) ! first function of each shell - 1
          type(basis_func_info_t), allocatable :: gto1(:), gto2(:), gto3(:), gto4(:)   ! arrays with basis function information
          logical complex_output
 
@@ -419,40 +323,56 @@ module eti_ao_to_mo
          call get_gtos(first_ao(2),nao(2),gto2,nshells(2))
          call get_gtos(first_ao(3),nao(3),gto3,nshells(3))
          call get_gtos(first_ao(4),nao(4),gto4,nshells(4))
- 
-         loff = 0
+         call shell_offsets(gto1,nshells(1),off1)
+         call shell_offsets(gto2,nshells(2),off2)
+         call shell_offsets(gto3,nshells(3),off3)
+         call shell_offsets(gto4,nshells(4),off4)
+         nmax = 1
+         do ish = 1, nshells(1)
+            nmax = max(nmax,off1(ish+1)-off1(ish))
+         end do
+         do ish = 1, nshells(2)
+            nmax = max(nmax,off2(ish+1)-off2(ish))
+         end do
+         do ish = 1, nshells(3)
+            nmax = max(nmax,off3(ish+1)-off3(ish))
+         end do
+         do ish = 1, nshells(4)
+            nmax = max(nmax,off4(ish+1)-off4(ish))
+         end do
+
+!$OMP PARALLEL DEFAULT(SHARED) &
+!$OMP PRIVATE(i,j,k,l,ish,jsh,ksh,lsh,ijkl,li,lj,lk,ll,ni,nj,nk,nl, &
+!$OMP         xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl,gout)
+         call interest_initialize(.false.)
+         allocate(gout(nmax**4))
+!$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
          do lsh = 1, nshells(4)
-            ll   =  gto4(lsh)%orb_momentum
-            xl   =  gto4(lsh)%coord(1)
-            yl   =  gto4(lsh)%coord(2)
-            zl   =  gto4(lsh)%coord(3)
-            nl   =  nfunctions(ll,basis_angular)
-            koff = 0
             do ksh = 1, nshells(3)
+               ll   =  gto4(lsh)%orb_momentum
+               xl   =  gto4(lsh)%coord(1)
+               yl   =  gto4(lsh)%coord(2)
+               zl   =  gto4(lsh)%coord(3)
+               nl   =  off4(lsh+1) - off4(lsh)
                lk   =  gto3(ksh)%orb_momentum
                xk   =  gto3(ksh)%coord(1)
                yk   =  gto3(ksh)%coord(2)
                zk   =  gto3(ksh)%coord(3)
-               nk   =  nfunctions(lk,basis_angular)
-               joff = 0
+               nk   =  off3(ksh+1) - off3(ksh)
                do jsh = 1, nshells(2)
                   lj   =  gto2(jsh)%orb_momentum
                   xj   =  gto2(jsh)%coord(1)
                   yj   =  gto2(jsh)%coord(2)
                   zj   =  gto2(jsh)%coord(3)
-                  nj   =  nfunctions(lj,basis_angular)
-                  ioff = 0
+                  nj   =  off2(jsh+1) - off2(jsh)
                   do ish = 1, nshells(1)
                      li   =  gto1(ish)%orb_momentum
                      xi   =  gto1(ish)%coord(1)
                      yi   =  gto1(ish)%coord(2)
                      zi   =  gto1(ish)%coord(3)
-                     ni   =  nfunctions(li,basis_angular)
+                     ni   =  off1(ish+1) - off1(ish)
 !                    call interest and get the (LL|LL) type integrals
 !                    output order of eri is (c,d,a,b), so input k,l first and then i,j to get the order that we want
-
-                     ![eric]
-                     !deactivatedopenmp task
                      call compute_eri('llll',fijkl,gout(1:ni*nj*nk*nl),&
                                   lk,gto3(ksh)%exponent,xk,yk,zk,gto3(ksh)%coefficient,&
                                   ll,gto4(lsh)%exponent,xl,yl,zl,gto4(lsh)%coefficient,&
@@ -460,35 +380,48 @@ module eti_ao_to_mo
                                   lj,gto2(jsh)%exponent,xj,yj,zj,gto2(jsh)%coefficient )
 
                      ijkl = 0
-                     ijkl2 = 1
                      do l = 1, nl
                         do k = 1, nk
                            do j = 1, nj
                               do i = 1, ni
                                  ijkl = ijkl + 1
                                  if (complex_output) then
-                                    ao_tens_complex(i+ioff,j+joff,k+koff,l+loff) = dcmplx(gout(ijkl),0.D0)
+                                    ao_tens_complex(i+off1(ish),j+off2(jsh),k+off3(ksh),l+off4(lsh)) = &
+                                       dcmplx(gout(ijkl),0.D0)
                                  else
-                                    ao_tens_real(i+ioff,j+joff,k+koff,l+loff) = gout(ijkl)
+                                    ao_tens_real(i+off1(ish),j+off2(jsh),k+off3(ksh),l+off4(lsh)) = gout(ijkl)
                                  end if
                               end do
                            end do
                         end do
                      end do
-  
-                     ioff = ioff + ni
                   end do
-                  joff = joff + nj
                end do
-               koff = koff + nk
             end do
-            loff = loff + nl
          end do
- 
+!$OMP END DO
+         deallocate(gout)
+!$OMP END PARALLEL
+
          deallocate(gto1)
          deallocate(gto2)
          deallocate(gto3)
          deallocate(gto4)
+
+        contains
+
+         subroutine shell_offsets(gto,nsh,off)
+         type(basis_func_info_t), intent(in) :: gto(:)
+         integer, intent(in)                 :: nsh
+         integer, allocatable, intent(out)   :: off(:)
+         integer                             :: s
+
+         allocate(off(nsh+1))
+         off(1) = 0
+         do s = 1, nsh
+            off(s+1) = off(s) + nfunctions(gto(s)%orb_momentum,basis_angular)
+         end do
+         end subroutine shell_offsets
 
         end subroutine compute_selected_ao_integrals
 

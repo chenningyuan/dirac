@@ -408,6 +408,45 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck rsdiag */
+      SUBROUTINE RSDIAG(N,A,LRA,EIG,VEC,LRV,WORK,LWORK,IERR)
+C***********************************************************************
+C
+C     Eigenvalues (ascending order) and eigenvectors of the real
+C     symmetric matrix A with LAPACK DSYEVR, which is much faster than
+C     the default real case of QDIAG (EISPACK) and uses threaded LAPACK.
+C     A is destroyed.
+C
+C***********************************************************************
+#include "implicit.h"
+      DIMENSION A(LRA,N),EIG(N),VEC(LRV,N),WORK(LWORK)
+      CALL QENTER('RSDIAG')
+#include "memint.h"
+      DDUM = 0.0D0
+      IDUM = 0
+      WORKDUM = 0.0D0
+      IWORKDUM = 0
+C     eigval and eigvec
+c     first let lapack estimate memory use
+CMI ...  I have to initialize it for intel mkl-lapack
+      INFO = 0
+      IERR = 0
+      CALL DSYEVR('V','A','U',N,A,LRA,DDUM,DDUM,IDUM,IDUM,0.0D0,
+     &     M,EIG,VEC,LRV,IDUM,WORKDUM,-1,IWORKDUM,-1,INFO)
+      LLWORK = NINT(WORKDUM)
+      LILWORK = IWORKDUM
+      CALL MEMGET('REAL',KLWORK, LLWORK, WORK, KFREE, LFREE)
+      CALL MEMGET('INTE',KLIWORK, LILWORK, WORK, KFREE, LFREE)
+      CALL MEMGET('INTE',KISUPPZ, 2*N, WORK, KFREE, LFREE)
+      CALL DSYEVR('V','A','U',N,A,LRA,DDUM,DDUM,IDUM,IDUM,0.0D0,
+     &     M,EIG,VEC,LRV,WORK(KISUPPZ),WORK(KLWORK),LLWORK,
+     &     WORK(KLIWORK),LILWORK,IERR)
+C     DSYEVR does not guarantee a sorting order, but I have never seen it
+C     do anything other than ascending, so the sorting should be a noop.
+      CALL ORDER3(VEC,EIG,LRV,N,N,1)
+      CALL QEXIT('RSDIAG')
+      RETURN
+      END
 C  /* Deck qdiag */
       SUBROUTINE QDIAG(NZ,N,A,LRA,LCA,EIG,MATZ,VEC,LRV,LCV,
      &                 WORK,LWORK,IERR)
@@ -453,28 +492,7 @@ C
 #ifdef LAPACK_QDIAG
 C     Use the fast DSYEVR for real case
       IF (NZ.EQ.1.AND.MATZ.EQ.1) THEN
-            DDUM = 0.0D0
-            IDUM = 0
-            WORKDUM = 0.0D0
-            IWORKDUM = 0
-C     eigval and eigvec
-c     first let lapack estimate memory use
-CMI ...  I have to initialize it for intel mkl-lapack
-            INFO = 0
-            IERR = 0
-            CALL DSYEVR('V','A','U',N,A,LRA,DDUM,DDUM,IDUM,IDUM,0.0D0,
-     &           M,EIG,VEC,LRV,IDUM,WORKDUM,-1,IWORKDUM,-1,INFO)
-            LLWORK = NINT(WORKDUM)
-            LILWORK = IWORKDUM
-            CALL MEMGET('REAL',KLWORK, LLWORK, WORK, KFREE, LFREE)
-            CALL MEMGET('INTE',KLIWORK, LILWORK, WORK, KFREE, LFREE)
-            CALL MEMGET('INTE',KISUPPZ, 2*N, WORK, KFREE, LFREE)
-            CALL DSYEVR('V','A','U',N,A,LRA,DDUM,DDUM,IDUM,IDUM,0.0D0,
-     &           M,EIG,VEC,LRV,WORK(KISUPPZ),WORK(KLWORK),LLWORK,
-     &           WORK(KLIWORK),LILWORK,IERR)
-C     DSYEVR does not guarantee a sorting order, but I have never seen it
-C     do anything other than ascending, so the sorting should be a noop.
-            CALL ORDER3(VEC,EIG,LRV,N,N,1)
+            CALL RSDIAG(N,A,LRA,EIG,VEC,LRV,WORK,LWORK,IERR)
             CALL QEXIT('QDIAG')
             RETURN
       ENDIF
