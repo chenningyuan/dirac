@@ -25,7 +25,7 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 !      use dcbham_mod, only: IPRHAM
-!      use inforb_mod, only: NBAST
+      use inforb_mod, only: NBAST
       use dft_cfg
       use memory_allocator
 
@@ -36,7 +36,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 !#include "dcbgen.h"
 #include "dcbham.h"
-#include "inforb.h"
 
       real(8), allocatable :: smat(:)
       real(8), allocatable :: gao(:)
@@ -463,7 +462,7 @@ C     Modified for grid testing by Olav Fossgaard July 2002.           C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-!      use inforb_mod, only: NBAST
+      use inforb_mod, only: NBAST
       use dft_cfg
       use dirac_ao_eval
 
@@ -472,7 +471,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
 
-#include "inforb.h"
 #include "functionals.h"
       
       DIMENSION SMAT(*)

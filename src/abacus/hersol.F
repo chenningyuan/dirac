@@ -1523,6 +1523,7 @@ C
 #ifndef PRG_DIRAC
 C  /* Deck magsol */
       SUBROUTINE MAGSOL(DERMAT,NCOMP,IPRINT,INTPRI,WORK,LWORK)
+      use inforb_mod, only: NNBASX
       use cbisol_mod, only: LCAVMX, LMTOT
       use iratdef_mod, only: IRAT
       use mxcent_mod, only: MXCENT
@@ -1530,7 +1531,6 @@ C  /* Deck magsol */
 #include "implicit.h"
 C
       DIMENSION DERMAT(*), WORK(LWORK)
-#include "inforb.h"
 C
 C
       CALL QENTER('MAGSOL')
@@ -1571,6 +1571,7 @@ C  /* Deck magso1 */
 C
 C     kr and kvm, Dec.-94
 C
+      use inforb_mod, only: N2BASX, NBAST, NNBASX
       use infinp_DALTON_mod, only: LSOLMX
       use inftap_mod, only: FNSOL, LUSOL
       use cbisol_mod, only: EPDIEL, LCAVMX, LMTOT, RCAV
@@ -1587,7 +1588,6 @@ C
      &          TRAMAT((LCAVMX + 1)*(LCAVMX + 2)*(2*LCAVMX + 1)/2),
      &          WORK(LWORK)
 #include "mgsolt.h"
-#include "inforb.h"
 C
       DIMENSION CAVCNT(3)
       LOGICAL   FOUND
@@ -1765,6 +1765,7 @@ C     kr , Nov.-96
 C     Writes integrals to file in order to save memory
 C     Rewritten to save even more memory, May 4-97
 C
+      use inforb_mod, only: N2BASX, NBAST, NNBASX
       use infinp_DALTON_mod, only: LSOLMX
       use inftap_mod, only: FNSOL, LUPROP, LUSOL
       use cbisol_mod, only: EPDIEL, LCAVMX, LMTOT, RCAV
@@ -1787,7 +1788,6 @@ C
       LOGICAL   FOUND
 C
 #include "mgsolt.h"
-#include "inforb.h"
 C
       DATA (LBL3(I), I = 1, 3) /'X ','Y ', 'Z '/
       DATA (LBL6(I), I = 1, 6) /'XX','XY','XZ','YY','YZ','ZZ'/

@@ -115,11 +115,13 @@ contains
 !      use gasstr_mod, only: MXNSTR
 !      use orbinp_mod, only: NTOOB
 !      use csm_mod, only: NSMST
+#ifndef PRG_DIRAC
+      use inforb_mod, only: NSYM
+#endif
 #ifdef PRG_DIRAC
 #include "dgroup.h"
 #else
 #include "infpar.h"
-#include "inforb.h"
 #endif
 #include "../lucita/mxpdim.inc"
 
@@ -164,10 +166,11 @@ contains
  
       subroutine helper_cb(nash_q,nfsym_q)
 !      use dcborb_mod, only: IASH, ICMO, IOCC, IORB, N2ASHX, N2ISHX, N2OCCT, N2OCCX, N2ORB, N2ORBT, N2ORBX, NASH, NASHT, NCMOT, NFRO, NISH, NISHT, NNASHX, NOCC, NOCCT, NORB, NORBT, NSSH, NSSHT
+#ifndef PRG_DIRAC
+      use inforb_mod, only: NASH
+#endif
 #ifdef PRG_DIRAC
 #include "dcborb.h"
-#else
-#include "inforb.h"
 #endif
         integer, intent(out) :: nash_q(nfsym_q)
         integer, intent(in)  :: nfsym_q

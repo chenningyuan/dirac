@@ -261,6 +261,7 @@ C
       END
 C  /* Deck lnraba */
       SUBROUTINE LNRABA(POLDD,POLDQ,POLDL,POLDA,WORK,LWORK,PASS)
+      use inforb_mod, only: N2ASHX, NASHT, NCMOT, NORBT, NSYM
       use inftap_mod, only: LUSIFC
       use dummy_mod, only: DUMMY, IDUMMY
       use symmet_mod, only: ISYMAX
@@ -282,7 +283,6 @@ C
 #include "inflin.h"
 #include "infvar.h"
 #include "infdim.h"
-#include "inforb.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
 #include "infsop.h"
@@ -700,13 +700,13 @@ C
 C  /* Deck lnrvar */
       SUBROUTINE LNRVAR(ISYM,IPRINT,WORK,LWORK)
 C
+      use inforb_mod, only: NASHT
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
       DIMENSION WORK(LWORK)
 #include "inflin.h"
 #include "infvar.h"
 #include "infrsp.h"
-#include "inforb.h"
 #include "wrkrsp.h"
 C
       LOGICAL TRIPLE
@@ -1049,6 +1049,7 @@ C  /* Deck lnrout */
       SUBROUTINE LNROUT(POLDD,POLDL,POLDA,IPRINT)
 C
       use codata_mod, only: XFMOL, XTANG, XTKAYS, XTNM
+      use inforb_mod, only: NSYM
       use nuclei_mod, only: ISOTOP, ISTBNU, IZATOM, NOORBT, NUCIND
       use pi_mod, only: PI
       use symmet_mod, only: MAXOPR
@@ -1058,7 +1059,6 @@ C
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "absorp.h"
-#include "inforb.h"
       PARAMETER ( D3 = 3.0D0)
       PARAMETER ( CM_TO_AU = 4.556333D-6, AU_TO_EV=27.2114 )
 #include "cbilnr.h"

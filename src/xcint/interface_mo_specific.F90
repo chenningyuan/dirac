@@ -185,8 +185,7 @@ contains
 #ifdef VAR_DALTON
    subroutine interface_mo_write_dalton()
 
-!      use inforb_mod, only: NASHT, NISHT, NSSHT
-#include "inforb.h"
+      use inforb_mod, only: NASHT, NISHT, NSSHT
 
       call interface_mo_clear()
 

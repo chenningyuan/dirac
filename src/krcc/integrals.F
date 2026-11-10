@@ -435,7 +435,6 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
-C#include "inforb.h"
 #include "krciprop.h"
 #include "mxpdim.inc"
 #include "ctcc.inc"

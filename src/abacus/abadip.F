@@ -127,6 +127,7 @@ C
 C     tuh 1985
 C     Rewritten for symmetry January 1990, tuh
 C
+      use inforb_mod, only: N2ASHX, N2BASX, NCMOT, NNASHX, NNBASX
       use nuclei_mod, only: NUCDEP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
@@ -134,7 +135,6 @@ C
       LOGICAL PASS
       DIMENSION WORK(LWORK)
 #include "cbidip.h"
-#include "inforb.h"
 #include "infdim.h"
 C
       IF (SKIP) RETURN
@@ -170,6 +170,7 @@ C  /* Deck dipct1 */
 C
 C     December 1989, tuh
 C
+      use inforb_mod, only: NASHT, NBAST, NCMOT, NNASHX, NNBASX
       use inftap_mod, only: LUSIFC
       use abainf_mod, only: DIPDER
       use dorps_mod, only: DOREPS
@@ -195,7 +196,6 @@ C
 C
 #include "linaba.h"
 #include "infvar.h"
-#include "inforb.h"
 #include "infdim.h"
 #include "inflin.h"
       LOGICAL OLDDX

@@ -234,6 +234,7 @@ C ORVAL  =  contains MO coefficients
 C itask  =  1 print everything to file
 C           2 save orbital energies in ORVAL
 
+      use inforb_mod, only: IORB, NBAST, NOCC, NORB, NORBT, NSYM
       use pgroup_mod, only: REP
       use aosotr_mod, only: CTRAN, IPCEN, ITRAN
       use chrsgn_mod, only: CHRSGN
@@ -244,7 +245,6 @@ C           2 save orbital energies in ORVAL
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 #include "molde.h"
-#include "inforb.h"
     
       LOGICAL WRTELEM,WRTZERO
       DIMENSION ORVAL(*), OCCUP(*)

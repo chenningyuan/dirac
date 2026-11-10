@@ -691,7 +691,7 @@
 #endif
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: CHARGE, CORD, NUCDEP
-!      use inforb_mod, only: NBAST, NCMOT, NOCCT
+      use inforb_mod, only: NBAST, NCMOT, NOCCT
       use inftap_mod, only: LUSIFC
     use london_ao
     use gen1int_matrix
@@ -705,7 +705,6 @@
 ! uses MXCENT, etc.
 ! uses NUCDEP, CHARGE, CORD
 ! uses NCMOT
-#include "inforb.h"
 ! uses LUSIFC
     integer num_points                                !number of points in cube file
     real(REALK), allocatable :: grid_points(:,:)      !XYZ coordinates of points in cube file
@@ -1739,7 +1738,7 @@
   !> \param wrk_space is the Dalton/Dirac workspace
   !> \return ao_dens is the AO density matrix
   subroutine gen1int_host_get_dens(ao_dens, len_work, wrk_space)
-!      use inforb_mod, only: N2BASX, NBAST, NCMOT, NNASHX
+      use inforb_mod, only: N2BASX, NBAST, NCMOT, NNASHX
       use inftap_mod, only: LUSIFC
     use gen1int_matrix
     implicit none
@@ -1747,7 +1746,6 @@
     integer, intent(in) :: len_work
     real(REALK), intent(inout) :: wrk_space(len_work)
 ! uses NCMOT, NBAST, NNASHX, N2BASX
-#include "inforb.h"
 ! uses LUSIFC
     integer start_dv_mo     !start of active part of one-electron density matrix (MO) in the workspace
     integer start_dv_ao     !start of active part of one-electron density matrix (AO) in the workspace

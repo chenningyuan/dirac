@@ -48,7 +48,6 @@
 #include "general.h"
 #include "functionals.h"
 #ifdef PRG_DIRAC
-#include "inforb.h"
 #include "dcbham.h"
 #endif
 

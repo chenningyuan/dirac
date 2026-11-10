@@ -111,6 +111,108 @@ C
 #endif
       end module parint_mod
 C
+C
+C     Field-by-field MPI broadcast of COMMON /INFORB/ (inforb_mod), which
+C     was sent as one block of integers from I1_INFORB to I2_INFORB.
+C     Master and slaves call the same routine, so the order always matches.
+C
+      module inforb_bcast_mod
+      implicit none
+      private
+#if defined (VAR_MPI)
+      public :: inforb_bcast
+      contains
+      subroutine inforb_bcast(ROOT)
+      use inforb_mod
+      use interface_to_mpi, only: interface_mpi_bcast,
+     &                            global_communicator
+      integer, intent(in) :: ROOT
+      call bcast_a(MULD2H, size(MULD2H))
+      call bcast_a(NRHF, size(NRHF))
+      call bcast_a(NVIR, size(NVIR))
+      call bcast_a(NFRO, size(NFRO))
+      call bcast_a(NISH, size(NISH))
+      call bcast_a(NASH, size(NASH))
+      call bcast_a(NSSH, size(NSSH))
+      call bcast_a(NOCC, size(NOCC))
+      call bcast_a(NORB, size(NORB))
+      call bcast_a(NBAS, size(NBAS))
+      call bcast_a(NNORB, size(NNORB))
+      call bcast_a(NNBAS, size(NNBAS))
+      call bcast_a(N2ORB, size(N2ORB))
+      call bcast_a(N2BAS, size(N2BAS))
+      call bcast_a(IISH, size(IISH))
+      call bcast_a(IASH, size(IASH))
+      call bcast_a(ISSH, size(ISSH))
+      call bcast_a(IOCC, size(IOCC))
+      call bcast_a(IORB, size(IORB))
+      call bcast_a(IBAS, size(IBAS))
+      call bcast_a(IIISH, size(IIISH))
+      call bcast_a(IIASH, size(IIASH))
+      call bcast_a(IIORB, size(IIORB))
+      call bcast_a(IIBAS, size(IIBAS))
+      call bcast_a(I2ORB, size(I2ORB))
+      call bcast_a(I2BAS, size(I2BAS))
+      call bcast_a(ICMO, size(ICMO))
+      call bcast_s(NSYM)
+      call bcast_s(NISHT)
+      call bcast_s(NASHT)
+      call bcast_s(NSSHT)
+      call bcast_s(NOCCT)
+      call bcast_s(NORBT)
+      call bcast_s(NBAST)
+      call bcast_s(NCMOT)
+      call bcast_s(NRHFT)
+      call bcast_s(NVIRT)
+      call bcast_s(N2ISHX)
+      call bcast_s(NNASHX)
+      call bcast_s(N2ASHX)
+      call bcast_s(NNASHY)
+      call bcast_s(NNOCCX)
+      call bcast_s(N2OCCX)
+      call bcast_s(NNORBT)
+      call bcast_s(NNORBX)
+      call bcast_s(N2ORBT)
+      call bcast_s(N2ORBX)
+      call bcast_s(NNBAST)
+      call bcast_s(N2BAST)
+      call bcast_s(NNBASX)
+      call bcast_s(N2BASX)
+      call bcast_s(NNRHFT)
+      call bcast_s(NNRHFX)
+      call bcast_s(N2RHFT)
+      call bcast_s(N2RHFX)
+      call bcast_s(NNVIRT)
+      call bcast_s(NNVIRX)
+      call bcast_s(N2VIRT)
+      call bcast_s(N2VIRX)
+      call bcast_a(NAS1, size(NAS1))
+      call bcast_a(NAS2, size(NAS2))
+      call bcast_a(NAS3, size(NAS3))
+      call bcast_s(NNOCCT)
+      call bcast_s(N2OCCT)
+      call bcast_s(NAS1T)
+      call bcast_s(NAS2T)
+      call bcast_s(NAS3T)
+C
+      contains
+C
+      subroutine bcast_s(X)
+      integer, intent(inout) :: X
+      call interface_mpi_bcast(X, 1, ROOT, global_communicator)
+      end subroutine bcast_s
+C
+      subroutine bcast_a(X, N)
+      integer, intent(in) :: N
+      integer, intent(inout) :: X(N)
+      call interface_mpi_bcast(X, N, ROOT, global_communicator)
+      end subroutine bcast_a
+C
+      end subroutine inforb_bcast
+#endif
+C
+      end module inforb_bcast_mod
+C
 C  /* Deck pardrv */
       SUBROUTINE HER_PARDRV(WORK,LWORK,FMAT,DMAT,NDMAT,IREPDM,IFCTYP,
      &                  ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,
@@ -179,7 +281,7 @@ C
       use dirac_partask_mod, only: EXIT_NODEMENU
       use mxcent_mod, only: MXCOOR
 !      use infpar_mod, only: IPRPAR, NODES, TIMING
-!      use inforb_mod, only: N2BASX, NNBASX
+      use inforb_mod, only: N2BASX, NNBASX
       use priunit_mod, only: LUPRI
       use twocom_mod, only: SCRTHR
 #include "implicit.h"
@@ -190,7 +292,6 @@ C
 #include "dcbgen.h"
 #else
 #endif
-#include "inforb.h"
 #include "infpar.h"
 C
 !     DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), WORK(LWORK),
@@ -473,7 +574,6 @@ C
 !      use dcbgen_mod, only: PANAS, RELCAL, TWOCOMP
       use aovec_mod, only: MXAOVC
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use inforb_mod, only: I1_INFORB, I2_INFORB, N2BASX
 !      use dcbham_mod, only: ECPCALC, HFXATT, HFXFAC, HFXMU, INTV1C, LEVYLE, NONREL, ONECAP, SMLV1C, SPINFR
       use priunit_mod, only: LUPRI
 !      use infpar_mod, only: IPRPAR, MPARID, NODES, NTASK, TIMING
@@ -484,8 +584,10 @@ C
       use parint_mod, only: parint_t
 #if defined (VAR_MPI)
       use parint_mod, only: parint_bcast
+      use inforb_bcast_mod, only: inforb_bcast
       use molinp_mod, only: NMLINE
       use cbirea_mod, only: MAXPRI, UNCONT
+      use inforb_mod, only: N2BASX
       use siripc_mod, only: NEWGEO
 #endif
       use interface_to_mpi
@@ -509,7 +611,6 @@ C
 C
 #include "infpar.h"
 C
-#include "inforb.h"
 C
       LOGICAL NODMAT,NOFMAT
       DIMENSION DMAT(*), IREPDM(NDMAT), IFCTYP(NDMAT),
@@ -587,13 +688,8 @@ C
          CAll interface_mpi_BCAST(NMLINE,1,MPARID,
      &       global_communicator)
 
-C........inforb.h
-         NUMELM=ICOMMSIZE(I1_INFORB,I2_INFORB)
-         CAll interface_mpi_BCAST(NUMELM,1,MPARID,
-     &               global_communicator)
-C........note that with icommsize COMMON blocks must be sent as integers...
-         CAll interface_mpi_BCAST(I1_INFORB,NUMELM,MPARID,
-     &                  global_communicator)
+C........inforb_mod (field by field)
+         CALL INFORB_BCAST(MPARID)
 C
          CAll interface_mpi_bcast_l0(UNCONT,1,MPARID,
      &                  global_communicator)
@@ -819,7 +915,6 @@ C
       use mxcent_mod, only: MXCOOR
       use priunit_mod, only: LUPRI
 !      use infpar_mod, only: ICOUNT, MPARID, NODES, TIMING
-!      use inforb_mod, only: N2BASX, NUMBER
       use interface_to_mpi
       use kinds_mod, only: dp
 #if defined (VAR_MPI)
@@ -828,6 +923,7 @@ C
 #ifndef PRG_DIRAC
       use energy_mod, only: GRADEE
 #endif
+      use inforb_mod, only: N2BASX
 #include "implicit.h"
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -835,7 +931,6 @@ C
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
       INTEGER :: I,J,K
-#include "inforb.h"
 #include "infpar.h"
 
 C
@@ -1192,7 +1287,6 @@ CMI called from DIRNOD,DIRNOD2 (main/dirac.F)
 C
 CMI  TEC changes for LAO (2003,2006)
 
-!      use inforb_mod, only: N2BASX, NNBASX
 !      use dcbgen_mod, only: RELCAL
 #ifdef PRG_DIRAC
       use dcbgrd_mod, only: GRADEE
@@ -1208,11 +1302,11 @@ CMI  TEC changes for LAO (2003,2006)
 #ifndef PRG_DIRAC
       use energy_mod, only: GRADEE
 #endif
+      use inforb_mod, only: N2BASX, NNBASX
 #include "implicit.h"
 C
 C
 C
-#include "inforb.h"
 #include "infpar.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
@@ -1354,7 +1448,6 @@ C
 !      use infpar_mod, only: IPRPAR, MPARID, NODES, NTASK, TIMING
       use symmet_mod, only: MAXREP
       use maxorb_mod, only: MXCORB
-!      use inforb_mod, only: I1_INFORB, N2BASX
 !      use dcbgen_mod, only: PANAS, RDINPC, RELCAL, TWOCOMP
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMDEP, NAMDPX, NAMEX,
      &  NAMN, NATOMS, NUCDEP, NUCIND
@@ -1365,8 +1458,10 @@ C
       use parint_mod, only: parint_t
 #if defined (VAR_MPI)
       use parint_mod, only: parint_bcast
+      use inforb_bcast_mod, only: inforb_bcast
       use molinp_mod, only: NMLINE
       use cbirea_mod, only: MAXPRI, UNCONT
+      use inforb_mod, only: N2BASX
 #endif
       use interface_to_mpi
       use kinds_mod, only: dp
@@ -1391,7 +1486,6 @@ C
 #endif
 #include "infpar.h"
 C
-#include "inforb.h"
 C
       DIMENSION WORK(*), DSEND(2), ISEND(2)
       CHARACTER*6 NAVN
@@ -1413,10 +1507,7 @@ C
       ELSE IF (NMLINE .GT. 0) THEN
 
 C........inforb.h
-         CAll interface_mpi_BCAST(NUMELM,1,MPARID,
-     &                  global_communicator)
-         CAll interface_mpi_BCAST(I1_INFORB,NUMELM,MPARID,
-     &                  global_communicator)
+         CALL INFORB_BCAST(MPARID)
 C........
          CAll interface_mpi_bcast_l0(UNCONT,1,MPARID,
      &                  global_communicator)
@@ -1669,7 +1760,6 @@ CMI changes from TEC for LAO
       use symmet_mod, only: MULT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use infpar_mod, only: ICOUNT, MPARID, MYTID, NTASK, TIMING
-!      use inforb_mod, only: NBAST
       use aovec_mod, only: MXAOVC
       use taymol_mod, only: GRDMOL, HESMOL
       use taysol_mod, only: GSOLNN, GSOLTT
@@ -1682,6 +1772,7 @@ CMI changes from TEC for LAO
 #ifndef PRG_DIRAC
       use energy_mod, only: GRADEE, GRADFS, GRADKE, GRADNA, GRADNN
 #endif
+      use inforb_mod, only: NBAST
 #include "implicit.h"
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -1703,7 +1794,6 @@ C
 #endif
 #include "infpar.h"
 C
-#include "inforb.h"
 C
       IF (JPRINT .GT. 5) CALL TITLER('Output from PARLOP','*',103)
 C

@@ -406,7 +406,7 @@ C     Calculates total charge of molecule
 C
       use infinp_DALTON_mod, only: NACTEL
       use maxaqn_mod, only: MXAQN, MXQN
-!      use inforb_mod, only: NISHT
+      use inforb_mod, only: NISHT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use infinp_mod, only: NACTEL
       use nuclei_mod, only: CHARGE, ISTBNU, NUCIND
@@ -416,7 +416,6 @@ C
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D00
 C
-#include "inforb.h"
 C
 C     Nuclear charge
 C

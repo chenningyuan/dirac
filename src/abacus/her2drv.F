@@ -341,7 +341,7 @@ C
       use dcbsusc_mod, only: SUS2EL
       use blocks_mod
       use maxaqn_mod, only: MXAQN, MXQN
-!      use inforb_mod, only: NBAST
+      use inforb_mod, only: NBAST
       use mxcent_mod, only: MXCENT, MXCOOR
       use symmet_mod, only: MULT
       use aovec_mod, only: MXAOVC
@@ -364,7 +364,6 @@ C
 #ifdef PRG_DIRAC
 #include "dcbham.h"
 #endif
-#include "inforb.h"
 C
       CALL QENTER('TWOLOP')
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWOLOP','*',103)

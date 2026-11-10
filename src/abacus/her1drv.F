@@ -750,9 +750,8 @@ C
       END
 C  /* Deck dsofso */
       SUBROUTINE DSOFSO(DSO,FSO,WORK,LWORK,IPRINT,NODC,NODV)
+      use inforb_mod, only: N2ORBT, NCMOT, NNASHX, NNBAST
 #include "implicit.h"
-#include "inforb.h"
-!      use inforb_mod, only: N2ORBT, NCMOT, NNASHX, NNBAST
       LOGICAL NODC, NODV
       DIMENSION DSO(NNBAST), FSO(NNBAST), WORK(LWORK)
 C
@@ -777,7 +776,7 @@ C     Symmetry included        880418  PRT & TUH
 C
       use priunit_mod, only: LUPRI
       use abainf_mod, only: CCSD
-!      use inforb_mod, only: N2ORBT, NASHT, NBAST, NCMOT, NISHT, NNASHX, NNASHY, NNORBT, NOCCT, NORBT, NSSHT, NSYM
+      use inforb_mod
       use iratdef_mod, only: IRAT
       use nuctap_mod, only: LUMC
       use kinds_mod, only: dp
@@ -789,7 +788,6 @@ C
 C Used from common blocks:
 C   ABAINF : CCSD
 C
-#include "inforb.h"
       INTEGER R, S, RS, U, V, UV
 C
 C

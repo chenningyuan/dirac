@@ -23,12 +23,12 @@ C
 C     PURPOSE : Driver routine for the test calculation of the
 C               two-electron part of the fock matrices.
 C
+      use inforb_mod, only: NBAST
       use iratdef_mod, only: IRAT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER (MAXDIS=500)
       DIMENSION DMAT(*), FMAT(*), WORK(LWORK)
-#include "inforb.h"
 C
       CALL TIMER('START ',TIMSTR,TIMEND)
       KGMAT = 1
@@ -82,12 +82,12 @@ C
 C
 C     PURPOSE : Calculate fock matrices using distributions.
 C
+      use inforb_mod, only: NBAST
 #include "implicit.h"
       PARAMETER (ONE=1.0D00, HALF=0.5D00, FOURTH=0.25D00)
       INTEGER   P,Q,R,S
       DIMENSION FMAT(NBAST,NBAST,NDMAT), DMAT(NBAST,NBAST,NDMAT)
       DIMENSION GMAT(NBAST,NBAST,NUMDIS), INDEX(NUMDIS)
-#include "inforb.h"
 C
       DO 100 I = 1,NUMDIS
 C
@@ -144,6 +144,7 @@ C                      *CALL SYMMET   from READIN
 C                      *CALL DORPS    from abatro.u
 C                       ( only DOREPS and DOCOOR used)
 C
+      use inforb_mod, only: NASHT, NBAST
       use dorps_mod, only: DOCOOR, DOREPS
       use iratdef_mod, only: IRAT
       use dummy_mod, only: DUMMY, IDUMMY
@@ -155,7 +156,6 @@ C
       LOGICAL ABA
       DIMENSION GMAT(NBAST,NBAST,MAXDIS), INDXAB(MAXDIS)
       DIMENSION WORK(LWORK)
-#include "inforb.h"
 #include "cbitwo.h"
 C
       CALL ABARUN(ABA)
@@ -246,11 +246,11 @@ C     routines instead of GETFCK.
 #else
       SUBROUTINE FCKTES(WORK,LWORK,MAXDIF,NODV,NOPV,NOCONT,TKTIME,
      &                  IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR)
+      use inforb_mod, only: N2BASX, NCMOT, NNASHX, NNBAST
 #include "implicit.h"
       PARAMETER (D1 = 1.0D0)
       LOGICAL NODV, NOPV, NOCONT, TKTIME, RETUR, DIRECT
       DIMENSION WORK(LWORK)
-#include "inforb.h"
 C
       IF (NODV) THEN
          NDMAT = 1
@@ -307,13 +307,13 @@ C
 C  /* Deck sqdens */
       SUBROUTINE SQDENS(DTSO,DMAT,IPRINT)
 C
+      use inforb_mod, only: IBAS, NBAS, NBAST, NSYM
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       DIMENSION DTSO(*), DMAT(NBAST,NBAST)
-#include "inforb.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from SQDENS','*',103)
       CALL DZERO(DMAT,NBAST*NBAST)
@@ -344,8 +344,8 @@ C  /* Deck sether */
       use mxcent_mod, only: MXCENT
       use symmet_mod, only: MAXREP, NAOS
       use cbirea_mod, only: IPREAD, LUMLCL
+      use inforb_mod, only: NBAS, NSYM
 #include "implicit.h"
-!      use inforb_mod, only: NBAS, NSYM
       INTEGER :: I
       DIMENSION WORK(LWORK)
 C
@@ -354,7 +354,6 @@ C  CBIREA: LUMLCL
 C  SYMMET: MAXREP,NAOS(8))
 C  INFORB: NSYM,NBAS(8)
 C
-#include "inforb.h"
 C
       LOGICAL SFIRST, RELCAL, TSTINP, HERMIT, NEWGEO
       SAVE    SFIRST
@@ -478,14 +477,13 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB
       use nuclei_mod, only: NBASIS
       use symmet_mod, only: ICOS, MAXREP, NAOS
-!      use inforb_mod, only: IBAS, N2BASX, NBAS, NBAST, NSYM
+      use inforb_mod, only: IBAS, N2BASX, NBAS, NBAST, NSYM
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 C
       INTEGER :: I
 C
-#include "inforb.h"
 C
       NSYM  = MAXREP + 1
       NBAST = NBASIS

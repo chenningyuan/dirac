@@ -50,6 +50,7 @@ set(MODULE_SOURCES
     ibtpar.F90
     infinp.F90
     infinp_dalton.F90
+    inforb.F90
     inftap.F90
     iratdef.F90
     lmns.F90

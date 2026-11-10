@@ -477,7 +477,7 @@ C
       use nuclei_mod, only: NUCDEP
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, MAXREP, NAOS, NPARSU
-!      use inforb_mod, only: NNBAST, NNBASX
+      use inforb_mod, only: NNBAST, NNBASX
       use energy_mod, only: GRADFS, GRADKE, GRADNA
       use priunit_mod, only: LUPRI
       use abainf_mod, only: NWNABA
@@ -488,7 +488,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       LOGICAL NODC, NODV, DNULL
-#include "inforb.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D100 = 100.0D0
       DIMENSION WORK(LWORK)
       IF (IPRINT .GE. 5) CALL HEADER('Output from SHDCHK',-1)

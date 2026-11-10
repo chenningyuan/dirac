@@ -4115,7 +4115,6 @@ C=======================================================================
       PARAMETER (NMOL = 2)
       PARAMETER (NTOT = NREF + NMOL)
 
-!#include "inforb.h"
 
       DIMENSION BVEC(NTOT,NMOL,NZ),
      &          PMAT(NTOT,NTOT,NZ),

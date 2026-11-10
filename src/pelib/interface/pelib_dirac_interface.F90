@@ -885,10 +885,9 @@ module pelib_dirac_interface
 
    subroutine pelib_ifc_london(fckmats)
 ! edh modify for DIRAC
-!      use inforb_mod, only: N2BASX, NBAS, NBAST, NNBASX
+      use inforb_mod, only: N2BASX, NBAS, NBAST, NNBASX
       use pelib, only: pelib_master
       implicit none
-#include "inforb.h"
       real*8, dimension(3*n2basx), intent(out) :: fckmats
       integer :: i, j, k, l, m
       real*8, dimension(:), allocatable :: fckmats_packed
@@ -1010,7 +1009,6 @@ module pelib_dirac_interface
 !      implicit none
 !
 !#include "infvar.h"
-!#include "inforb.h"
 !
 !      integer :: nwrk
 !      real*8 :: energy
@@ -1100,7 +1098,6 @@ module pelib_dirac_interface
 !      implicit none
 !
 !#include "infvar.h"
-!#include "inforb.h"
 !
 !      integer :: nwrk
 !      real*8, dimension(1) :: energy
@@ -1152,7 +1149,6 @@ module pelib_dirac_interface
 !
 !#include "inflin.h"
 !#include "infvar.h"
-!#include "inforb.h"
 !
 !      logical :: orblin
 !      integer :: ncsim, nosim, nwrk
@@ -1206,7 +1202,6 @@ module pelib_dirac_interface
 !
 !      implicit none
 !
-!#include "inforb.h"
 !#include "infvar.h"
 !#include "inflin.h"
 !#include "infdim.h"
@@ -1313,7 +1308,6 @@ module pelib_dirac_interface
 !
 !      implicit none
 !
-!#include "inforb.h"
 !#include "infvar.h"
 !#include "inflin.h"
 !
@@ -1487,7 +1481,6 @@ module pelib_dirac_interface
 !!
 !#include "infrsp.h"
 !#include "wrkrsp.h"
-!#include "inforb.h"
 !#include "qrinf.h"
 !#include "infvar.h"
 !!
@@ -1692,7 +1685,6 @@ module pelib_dirac_interface
 !        implicit none
 !
 !#include "wrkrsp.h"
-!#include "inforb.h"
 !#include "infrsp.h"
 !
 !        integer :: nosim, ncsim, nwrk
@@ -1890,7 +1882,6 @@ module pelib_dirac_interface
 !
 !         implicit none
 !
-!#include "inforb.h"
 !#include "infvar.h"
 !#include "infdim.h"
 !#include "qrinf.h"
@@ -2577,7 +2568,6 @@ module pelib_dirac_interface
 !
 !         implicit none
 !
-!#include "inforb.h"
 !#include "infvar.h"
 !#include "infrsp.h"
 !#include "infdim.h"
@@ -2693,7 +2683,6 @@ module pelib_dirac_interface
 !
 !         implicit none
 !
-!#include "inforb.h"
 !#include "infvar.h"
 !#include "infrsp.h"
 !#include "infdim.h"

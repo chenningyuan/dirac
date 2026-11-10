@@ -6424,7 +6424,6 @@ C***********************************************************************
      &     SHLINT(KCKTAB,NINTS),TMPARR(KCKTAB,8)
       INTEGER T, U, V, NINTS
 ! onecom.h :  KCKTAB
-!#include "inforb.h"
 #include "dgroup.h"
 C
 C

@@ -969,7 +969,6 @@ C  /* Deck mgtst2 */
       use maxaqn_mod, only: MXQN
       use nuclei_mod, only: NBASIS, NUCIND
 #include "implicit.h"
-!#include "inforb.h"
 C
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABEL, LABELT(3)
@@ -1203,7 +1202,6 @@ C  /* Deck hdbtst */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 #include "implicit.h"
-!#include "inforb.h"
 C
       DIMENSION WORK(LWORK), INTREP(9*MXCENT), INTRE2(9*MXCENT),
      &          ORIGIN(3)
@@ -1408,7 +1406,6 @@ C  /* Deck sustst */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NBASIS, NUCIND
 #include "implicit.h"
-!#include "inforb.h"
 C
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABEL(3), LABELT(6)
@@ -1616,7 +1613,6 @@ C  /* Deck ns1tst */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 #include "implicit.h"
-!#include "inforb.h"
 C
       DIMENSION WORK(LWORK), INTREP(9*MXCENT), INTRE2(9*MXCENT)
       CHARACTER*8 LABEL(9*MXCENT), LABELT(9*MXCENT)
@@ -1848,7 +1844,6 @@ C  /* Deck nstst2 */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 #include "implicit.h"
-!#include "inforb.h"
 C
       DIMENSION WORK(LWORK), INTREP(9*MXCENT), INTRE2(9*MXCENT)
       CHARACTER*8 LABEL(9*MXCENT), LABELT(9*MXCENT)
@@ -2069,7 +2064,6 @@ C  /* Deck nstst3 */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 #include "implicit.h"
-!#include "inforb.h"
 C
       DIMENSION WORK(LWORK), INTREP(9*MXCENT), INTRE2(9*MXCENT)
       CHARACTER*8 LABEL(9*MXCENT), LABELT(9*MXCENT), LABELS(9*MXCENT)
@@ -2204,7 +2198,6 @@ C
       INTEGER :: I,J
       REAL(dp), PARAMETER :: PRTHRS = 1D-13
       PARAMETER (LUPROP = 19)
-!#include "inforb.h"
 C
       LOGICAL DIFFER, FNDLAB
       DIMENSION WORK(LWORK)
@@ -2274,7 +2267,6 @@ C
       use nuclei_mod, only: NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-!#include "inforb.h"
 C
       DIMENSION WORK(LWORK)
 C
