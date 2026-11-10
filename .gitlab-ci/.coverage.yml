@@ -17,8 +17,9 @@ coverage:
     - !reference [.restrict-UCX, script]
     - export avoid_tests="f90mod"
 #   Serial build for coverage 
-    - export DIRAC_MPI_COMMAND=''
     - !reference [.define-cores, script]
+    - export DIRAC_MPI_COMMAND=''
+    - echo "DIRAC_MPI_COMMAND was changed to $DIRAC_MPI_COMMAND" (serial running)
     - python setup --coverage build-serial
     - cd build-serial
     - make -j $N_PROC
