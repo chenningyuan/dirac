@@ -28,7 +28,6 @@ coverage:
     - ctest -j$N_PROC --output-on-failure -L "short|medium|long|verylong" -E "(${avoid_tests})" --timeout 3000
     - cd ..
 #   Parallel build for coverage
-    - export DIRAC_MPI_COMMAND='mpiexec -n 1' #Faster and more reliable for coverage
     - !reference [.define-cores, script]
     - python setup --mpi --coverage build-mpi
     - cd build-mpi
