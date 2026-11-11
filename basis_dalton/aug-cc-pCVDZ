@@ -793,14 +793,15 @@ Element Al   13
     4.03000000
   p  1  1
     1.52900000
-  d  2  2
+  d  2  1
     4.72500000
-    0.53500000
- Level 1 Lmax 1 diffuse
+ Level 1 Lmax 2 diffuse
   s  0  1
     0.02310000
   p  1  1
     0.01530000
+  d  2  1
+    0.05350000
 
 Element Si   14
  Level 0 Lmax 2 3s 3p
