@@ -115,6 +115,7 @@ module xcint_main
    integer                      :: nr_dmat
    real(8), pointer             :: dmat(:, :, :, :)
    real(8), allocatable, target :: dmat_container(:, :, :, :)
+   real(8), allocatable, target :: dmat_empty(:, :, :, :)
 
    integer                      :: nr_fmat
    real(8), pointer             :: fmat(:, :, :, :)
@@ -382,6 +383,11 @@ contains
                dmat => xc_dmat
             end if
          end if
+      else
+!        no perturbed density matrices: associate dmat with a zero-sized array
+!        so it is never a null pointer when passed to non-pointer dummies
+         allocate(dmat_empty(mat_dim, mat_dim, nz, 0))
+         dmat => dmat_empty
       end if
 
       nullify(fmat)
@@ -401,12 +407,11 @@ contains
          allocate(default_fmat_pg_sym(nr_fmat))
          default_fmat_pg_sym = 1
       end if
-      if (nr_dmat > 0) then
-         allocate(default_dmat_pg_sym(nr_dmat))
-         allocate(default_dmat_ih_sym(nr_dmat))
-         default_dmat_pg_sym = 1
-         default_dmat_ih_sym = 0
-      end if
+
+      allocate(default_dmat_pg_sym(nr_dmat))
+      allocate(default_dmat_ih_sym(nr_dmat))
+      default_dmat_pg_sym = 1
+      default_dmat_ih_sym = 0
 
       nullify(fmat_pg_sym)
       nullify(dmat_pg_sym)
@@ -417,12 +422,11 @@ contains
             allocate(fmat_pg_sym_container(nr_fmat))
             fmat_pg_sym => fmat_pg_sym_container
          end if
-         if (nr_dmat > 0) then
-            allocate(dmat_pg_sym_container(nr_dmat))
-            allocate(dmat_ih_sym_container(nr_dmat))
-            dmat_pg_sym => dmat_pg_sym_container
-            dmat_ih_sym => dmat_ih_sym_container
-         end if
+
+         allocate(dmat_pg_sym_container(nr_dmat))
+         allocate(dmat_ih_sym_container(nr_dmat))
+         dmat_pg_sym => dmat_pg_sym_container
+         dmat_ih_sym => dmat_ih_sym_container
       else
          if (present(xc_fmat_pg_sym)) then
             fmat_pg_sym => xc_fmat_pg_sym
@@ -665,6 +669,12 @@ contains
          if (do_london_susc2el_der2 .and. .not. dft_cfg_no_sdft) then
             call xc_mpi_reduce(susc2el_xc_integrated_sdft)
          end if
+#ifdef PRG_DIRAC
+!        the other processes (woken by DIRAC_PARCTL(XCINT_PAR)) are done and
+!        go back to their menu by themselves. Tell it to the thread control, so
+!        that the master can use their cores again in its serial parts
+         if (xc_mpi_is_master()) call dirac_threads_slaves(0)
+#endif
       end if
 #endif
 
@@ -824,6 +834,10 @@ contains
          deallocate(default_dmat_ih_sym)
       end if
 
+      if (allocated(dmat_empty)) then
+         deallocate(dmat_empty)
+      end if
+
    end subroutine
 
    subroutine scale_density_matrices(f)
@@ -916,8 +930,6 @@ contains
       logical :: ugs_above_threshold
       logical :: utn_above_threshold
       logical :: uts_above_threshold
-      logical :: us_lao_above_threshold
-      logical :: ugs_lao_above_threshold
 
       real(8), allocatable :: ao(:, :)
       real(8), allocatable :: buffer(:, :)
@@ -1665,54 +1677,14 @@ contains
                                 ao(1, ao_off_g1_m0(3, 0) + 1))
              end if
 
-!radovan: this code does not seem to be covered by any test, is this true?
-!gosia: tested in 'london_properties_symmetry'
-
-             us_lao_above_threshold = .false.
-             if (maxval((/dabs(u%s_lao(1, im)), &
-                          dabs(u%s_lao(2, im)), &
-                          dabs(u%s_lao(3, im))/)) > tiny(0.0d0)) then
-                us_lao_above_threshold = .true.
-             end if
-
-             ugs_lao_above_threshold = .false.
-             if (maxval((/dabs(u%gs_lao(1, 1, im)), &
-                          dabs(u%gs_lao(1, 2, im)), &
-                          dabs(u%gs_lao(1, 3, im)), &
-                          dabs(u%gs_lao(2, 1, im)), &
-                          dabs(u%gs_lao(2, 2, im)), &
-                          dabs(u%gs_lao(2, 3, im)), &
-                          dabs(u%gs_lao(3, 1, im)), &
-                          dabs(u%gs_lao(3, 2, im)), &
-                          dabs(u%gs_lao(3, 3, im))/)) > tiny(0.0d0)) then
-                ugs_lao_above_threshold = .true.
-             end if
-
-             if (ugs_lao_above_threshold) then
-!               F_pq(im) +=   u%s_lao(j, im)   \chi_p* \Sigma_j \chi_q
-!                        + 2 u%gs_lao(:, j, im) \chi_p* \Sigma_j \nabla_i \chi_q
-                call nabla_omega_imag(fmat,                &
-                                      im,                  &
-                                      fmat_pg_sym(im) - 1, &
-                                      mat_dim,             &
-                                      nz,                  &
-                                      u%s_lao(1, im),      &
-                                      u%gs_lao(1, 1, im),  &
-                                      ao)
-             else
-                if (us_lao_above_threshold) then
-!                  F_pq(im) += u%s_lao(j, im) \chi_p* \Sigma_j \chi_q
-                   call omega_imag(fmat,                &
-                                   im,                  &  ! in order: Bx, By, Bz
-                                   fmat_pg_sym(im) - 1, &  ! irep of property gradient
-                                   mat_dim,             &
-                                   nz,                  &
-                                   u%s_lao(1, im),      &
-                                   ao)
-                end if
-             end if
-
           end do
+
+!         london direct spin-density contribution (u%s_lao, u%gs_lao, all im at once)
+!         gosia: tested in 'london_properties_symmetry'
+          if (do_london_rhs_direct_der2) then
+             call lao_spin_buffer_add(fmat, fmat_pg_sym, mat_dim, nz, nr_fmat, &
+                                      u%s_lao, u%gs_lao, use_gga, ao)
+          end if
 
           time_matrix_dist = time_matrix_dist + second() - time_matrix_dist_start
 
@@ -1826,6 +1798,10 @@ contains
 
       end if !if (n_0(1) > dft_cfg_tinydens) then
     end do !do ipoint = 1, nr_points_on_this_proc
+
+    if (do_london_rhs_direct_der2) then
+       call lao_spin_buffer_flush(fmat, fmat_pg_sym, mat_dim, nz, nr_fmat)
+    end if
 
     deallocate(ao)
     deallocate(buffer)

@@ -1,5 +1,27 @@
 :orphan:
 
+- Parallel efficiency (MPI and MPI+threads):
+  - Up to 8 MPI processes, the master also computes the Fock tasks of HER_PARDRV
+    (SCF, response, London Fock derivatives) instead of only dispatching them.
+  - Idle MPI slaves sleep instead of busy-waiting; in serial phases (Lowdin, X2C, AMFI,
+    ExaCorr with TALSH) the master uses their cores for threaded BLAS/LAPACK and OpenMP,
+    also in hybrid MPI x threads runs. The integral code (TWOINT) always runs with one
+    BLAS thread, as threaded BLAS made it several times slower.
+  - Lowdin orthonormalization with LAPACK DSYEVR; AMFI contraction with DGEMM and OpenMP.
+  - SCF: the serial part of each iteration (DIIS, diagonalization, transformations)
+    also uses the cores of the idle MPI slaves. The same for linear response (property
+    gradients, reduced equations, response functions).
+  - DFT with London orbitals (shielding, magnetizability): the XC reorthonormalization
+    term uses the blocked linear-response integrator, and the direct spin-density term
+    is evaluated and distributed with DGEMM (these XC terms were most of the run time).
+  - ExaCorr: OpenMP-parallel AO integrals.
+  - Builds with ExaCorr: pam sets OMP_STACKSIZE=200M if none of OMP_STACKSIZE,
+    GOMP_STACKSIZE, KMP_STACKSIZE is defined. The threadprivate arrays of InteRest/ExaCorr
+    (~100 MB) are placed in the stack of every OpenMP/MKL thread, so with the default
+    stack size any extra thread crashes. Without a stack size the master does not use
+    extra threads.
+  - Contributor: J. J. Aucar
+
 - VISUAL: visualization of molecular spinor components:
   - Added the spinor_components grid function for exporting the real and
     imaginary parts of the large- and small-component alpha and beta spinor
@@ -19,9 +41,16 @@
 - Orbital localization code ROSE integrated into DIRAC:
   - Allows for subsystem calculations with orthogonal localized orbitals
   - Contributor: L. Visscher
-  - References: B. Senjean, S. Sen, M. Repisky, G. Knizia, L. Visscher, JCTC 17, 1337–1354 (2021).
-                S. Sen, B. Senjean, L. Visscher, JCP 158, 054115 (2023).
-                S. Khandavilli, A. Förster, L. Visscher, JCP 164, 094111 (2026).
+  - References: B. Senjean, S. Sen, M. Repisky, G. Knizia, L. Visscher, JCTC 17, 1337–1354 (2021);
+    S. Sen, B. Senjean, L. Visscher, JCP 158, 054115 (2023);
+    S. Khandavilli, A. Förster, L. Visscher, JCP 164, 094111 (2026).
+
+- Bugfix for correlated ground-state densities (RELCCSD .GRADIENT) with spinfree Hamiltonians
+  (.SPINFREE, .LEVY-LEBLOND). Calculations in point groups with complex or quaternion
+  algebra crashed or gave wrong expectation values, as did all point groups with inversion
+  symmetry (e.g. D2h); energies were not affected. The global NZ is no longer modified.
+  Closes issue #22.
+  - Contributor: Maxime Lee, L. Visscher
 
 26.1
 ----
@@ -100,6 +129,7 @@ Basis set library:
    - Reference: `M. L. Reitsma, E. H. Prinsen, J. D. Polet, A. Borschevsky, and K. G. Dyall, Relativistic quintuple-zeta basis sets for the s block Available to Purchase, J. Chem. Phys. 163, 144116 (2025). <https://doi.org/10.1063/5.0297009>`__
 - Corrections to Dyall basis sets:
    - Fixed 9 f-block exponents for Hg in v4z, av4z, cv4z, acv4z, ae4z, and aae4z.
+
 -----------------------------------------------------------------------------------------------------
 
 25.0

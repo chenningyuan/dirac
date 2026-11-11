@@ -1153,6 +1153,8 @@ cbs   to(i,j,k,l)=to(i,j,k,l)+fact*from(i,k,j,l)
       dimension from(ndim1,ndim2,ndim3,ndim4),
      *to(ndim1,ndim3,ndim2,ndim4)
       if (fact.eq.0d0) return 
+!$OMP PARALLEL DO PRIVATE(irun3,irun2,irun1)
+!$OMP&  IF(ndim1*ndim2*ndim3*ndim4 .gt. 32768)
       do irun4=1,ndim4
       do irun3=1,ndim3
       do irun2=1,ndim2
@@ -1163,6 +1165,7 @@ cbs   to(i,j,k,l)=to(i,j,k,l)+fact*from(i,k,j,l)
       enddo
       enddo
       enddo
+!$OMP END PARALLEL DO
       return   
       end 
 

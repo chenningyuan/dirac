@@ -469,6 +469,21 @@ contains
                             xc_dmat_ih_sym      = ihrmop,      &
                             xc_do_london_rhs_ro = .true.,      &       
                             xc_london_reorth_export = .true.)       
+      else if (reorth_is_antihermitian() .and. .not. (dft_cfg_saop_is_active .or. dft_cfg_grac_is_active)) then
+!        for an antihermitian tb_dmat the reorthonormalization term is the
+!        ordinary linear-response xc kernel contribution: use the blocked
+!        (BLAS3) integrator instead of the pointwise london code
+         call integrate_xc(xc_mat_dim           = ntbas(0),     &
+                            xc_nz                = nz,          &
+                            xc_dmat_0            = dmat,        &
+                            xc_nr_dmat           = nr_xyz_comp, &
+                            xc_nr_fmat           = nr_xyz_comp, &
+                            xc_dmat              = tb_dmat,     &
+                            xc_fmat              = fao,         &
+                            xc_fmat_pg_sym       = isymop,      &
+                            xc_dmat_pg_sym       = isymop,      &
+                            xc_dmat_ih_sym       = ihrmop,      &
+                            xc_response_order_mo = 1)
       else
          call integrate_xc(xc_mat_dim          = ntbas(0),     &
                             xc_nz               = nz,          &
@@ -596,6 +611,15 @@ contains
   end subroutine get_gtb
              
              
+  logical function reorth_is_antihermitian()
+!   getmdm projects tb_dmat onto its antihermitian part, except with .LAOMOD
+#ifdef MOD_LAO_REARRANGED
+    reorth_is_antihermitian = .not. lao_lr_rearrange
+#else
+    reorth_is_antihermitian = .true.
+#endif
+  end function
+
   subroutine do_ao_to_mo(fmo, fao, cmo, ibeig)
 !-----------------------------------------------------------------------
     real(8), intent(inout) :: fmo(n2orbxq , *)

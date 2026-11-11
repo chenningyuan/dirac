@@ -29,6 +29,7 @@ contains
 !     --------------------------------------------------------------------------
       real(8) :: dummy
       integer :: i
+      integer :: n_mo(2)
       character(len=:), allocatable :: mobasis
 !     --------------------------------------------------------------------------
 
@@ -41,17 +42,13 @@ contains
 
       call select_mobasis(mobasis=mobasis)
 
-      call checkpoint_query (mobasis//'/eigenvalues',mo_eigenvalues_available)
-      if (mo_eigenvalues_available) then
-         allocate(mo_eigenvalues(norbt*2))
-         call checkpoint_read  (mobasis//'/eigenvalues',rdata=mo_eigenvalues)
-      end if
+      call checkpoint_query (mobasis//'eigenvalues',mo_eigenvalues_available)
 
-      call checkpoint_query (mobasis//'/orbitals',mo_coef_available)
+      call checkpoint_query (mobasis//'orbitals',mo_coef_available)
       if (mo_coef_available) then
          allocate(mo_coef(n2bbasxq))
          mo_coef = 0.0  ! initialize the array to make valgrind happy
-         call checkpoint_read  (mobasis//'/orbitals',rdata=mo_coef)
+         call checkpoint_read  (mobasis//'orbitals',rdata=mo_coef)
       end if
 
 !     always regenerate this file
@@ -77,12 +74,14 @@ contains
       nr_mo_gerade_negative_secondary = npsh(1)
       nr_mo_gerade_positive_inactive  = nish(1)
       nr_mo_gerade_positive_active    = nash(1)
-      nr_mo_gerade_positive_secondary = nesh(1) - nr_mo_gerade_positive_inactive
+      nr_mo_gerade_positive_secondary = nesh(1) - nr_mo_gerade_positive_inactive &
+                                        - nr_mo_gerade_positive_active
 
       nr_mo_ungerade_negative_secondary = npsh(2)
       nr_mo_ungerade_positive_inactive  = nish(2)
       nr_mo_ungerade_positive_active    = nash(2)
-      nr_mo_ungerade_positive_secondary = nesh(2) - nr_mo_ungerade_positive_inactive
+      nr_mo_ungerade_positive_secondary = nesh(2) - nr_mo_ungerade_positive_inactive &
+                                          - nr_mo_ungerade_positive_active
 
       if (aoc) then
          nr_open_shells = nopen
@@ -128,7 +127,21 @@ contains
                      + nr_mo_ungerade_positive_secondary
       nr_mo = nr_mo_gerade + nr_mo_ungerade
 
+!     only pass on eigenvalues if the stored MO basis matches the current orbital dimensions
+!     (e.g. not at start-up with .RKBIMP, where the stored RKB orbitals are not yet expanded)
       if (mo_eigenvalues_available) then
+         n_mo = 0
+         call checkpoint_read  (mobasis//'n_mo',idata=n_mo)
+         if (sum(n_mo) /= nr_mo) then
+            write(*,'(a,i6,a,i6,a)') ' interface_mo_write: MO eigenvalues not written, ', &
+               sum(n_mo),' MOs on checkpoint but', nr_mo, ' in current orbital space'
+            mo_eigenvalues_available = .false.
+         end if
+      end if
+
+      if (mo_eigenvalues_available) then
+         allocate(mo_eigenvalues(nr_mo))
+         call checkpoint_read  (mobasis//'eigenvalues',rdata=mo_eigenvalues)
          write(interface_file_unit, '(4x, a)') 'mo_eigenvalues'
          do i = 1, nr_mo
             write(interface_file_unit, '(4x, i6, e26.16)') i, mo_eigenvalues(i)

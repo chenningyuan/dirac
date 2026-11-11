@@ -2,7 +2,7 @@
      &               DIAG12, DIAG34, DIAC12, DIAC34,
      &               GEN12, GEN34, NOCNT, SPIORB, DC10, DC1E, DC2H,
      &               DC2E, CROSS, PATH1, RPRI12, RPRI34, RCNT12, RCNT34,
-     &               SPHR1, SPHR2, SPHR3, SPHR4, SPHR12, SPHR34
+     &               SPHR1, SPHR2, SPHR3, SPHR4, SPHR12, SPHR34, AOASGN
       COMMON /TWOAO/ NHKT1, NHKT2, NHKT3, NHKT4,
      &               KCKT1, KCKT2, KCKT3, KCKT4, KCKT12, KCKT34, KCKMX,
      &               KHKT1, KHKT2, KHKT3, KHKT4, KHKT12, KHKT34,
@@ -20,4 +20,5 @@
      &               IDERIV, JM1234, IPATH, NU1234, NTUV34, KTUV34,
      &               SPIORB, DC10, DC1E, DC2H, DC2E, CROSS, PATH1,
      &               NCCPP, NC1234, RPRI12, RPRI34, RCNT12, RCNT34,
-     &               SPHR1, SPHR2, SPHR3, SPHR4, SPHR12, SPHR34
+     &               SPHR1, SPHR2, SPHR3, SPHR4, SPHR12, SPHR34,
+     &               AOASGN

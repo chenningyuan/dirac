@@ -179,6 +179,14 @@ deactivated by default. However, the program will still try to do
 an automatic initial occupation if neither
 :ref:`SCF_.CLOSED SHELL` nor :ref:`SCF_.OPEN SHELL` is given.
 
+For a neutral, single-center atom, DIRAC uses a tabulated ground-state
+occupation when no occupation or orbital-selection keyword is specified.
+In spin-orbit calculations with atomic supersymmetry, the corresponding
+:math:`\kappa` selection is applied automatically. Explicit occupation or
+selection input, including :ref:`SCF_.CLOSED SHELL`,
+:ref:`SCF_.OPEN SHELL`, :ref:`SCF_.AUTOCC`, and :ref:`SCF_.KPSELE`, always
+takes precedence over the tabulated occupation.
+
 Trial function
 ==============
 
@@ -778,4 +786,3 @@ that should be added to the coefficient array after diagonalization of the Fock 
 in orthonormal basis. To do so, the user must, for each fermion irrep, give an :ref:`orbital_strings`
 giving the position of the eliminated orbital in the coefficient array. If the value zero
 is given, it means that this eliminated orbital is definitely out and not kept frozen.
-

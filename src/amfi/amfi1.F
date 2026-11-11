@@ -1470,76 +1470,34 @@ cbs   makes the transformation for the ich-th index
       dimension coeffs(idim1,idim2),           
      *array1(nolds1,nolds2,nolds3,nolds4),
      *array2(nnew1,nnew2,nnew3,nnew4)
-c     write(6,*) 'begin trans ' ,ich 
-c     write(6,'(8I5)') nolds1,nolds2,nolds3,nolds4,
-c    *nnew1,nnew2,nnew3,nnew4
+C     One-index transformation as matrix products (DGEMM): all other
+C     indices have the same dimension in array1 and array2.
+      if (ich.eq.1) then
+      call dgemm('T','N',nnew1,nnew2*nnew3*nnew4,nolds1,1d0,
+     *coeffs,idim1,array1,nolds1,0d0,array2,nnew1)
+      elseif (ich.eq.2) then
+!$OMP PARALLEL DO COLLAPSE(2) PRIVATE(ind3,ind4)
       do ind4=1,nnew4
       do ind3=1,nnew3
-      do ind2=1,nnew2
-      do ind1=1,nnew1
-      array2(ind1,ind2,ind3,ind4)=0d0
+      call dgemm('N','N',nnew1,nnew2,nolds2,1d0,
+     *array1(1,1,ind3,ind4),nolds1,coeffs,idim1,0d0,
+     *array2(1,1,ind3,ind4),nnew1)
       enddo
       enddo
-      enddo
-      enddo
-      if (ich.eq.1) then 
+!$OMP END PARALLEL DO
+      elseif (ich.eq.3) then
+!$OMP PARALLEL DO PRIVATE(ind4)
       do ind4=1,nnew4
-      do ind3=1,nnew3
-      do ind2=1,nnew2
-      do ind5=1,nnew1  
-      do ind1=1,nolds1
-      array2(ind5,ind2,ind3,ind4)=array2(ind5,ind2,ind3,ind4)+
-     *coeffs(ind1,ind5)*array1(ind1,ind2,ind3,ind4)
+      call dgemm('N','N',nnew1*nnew2,nnew3,nolds3,1d0,
+     *array1(1,1,1,ind4),nolds1*nolds2,coeffs,idim1,0d0,
+     *array2(1,1,1,ind4),nnew1*nnew2)
       enddo
-      enddo
-      enddo
-      enddo
-      enddo
-      elseif (ich.eq.2) then 
-c     write(6,*) 'transform second index '
-      do ind4=1,nnew4
-      do ind3=1,nnew3
-      do ind5=1,nnew2  
-      do ind2=1,nolds2
-      coeff=coeffs(ind2,ind5)
-      do ind1=1,nnew1
-      array2(ind1,ind5,ind3,ind4)=array2(ind1,ind5,ind3,ind4)+
-     *coeff*array1(ind1,ind2,ind3,ind4)
-      enddo
-      enddo
-      enddo
-      enddo
-      enddo
-c     write(6,*) 'end  to transform second index '
-      elseif (ich.eq.3) then 
-      do ind4=1,nnew4
-      do ind5=1,nnew3  
-      do ind3=1,nolds3
-      coeff=coeffs(ind3,ind5)
-      do ind2=1,nnew2
-      do ind1=1,nnew1
-      array2(ind1,ind2,ind5,ind4)=array2(ind1,ind2,ind5,ind4)+
-     *coeff*array1(ind1,ind2,ind3,ind4)
-      enddo
-      enddo
-      enddo
-      enddo
-      enddo
-      elseif (ich.eq.4) then 
-      do ind5=1,nnew4  
-      do ind4=1,nolds4
-      coeff=coeffs(ind4,ind5)
-      do ind3=1,nnew3
-      do ind2=1,nnew2
-      do ind1=1,nnew1
-      array2(ind1,ind2,ind3,ind5)=array2(ind1,ind2,ind3,ind5)+
-     *coeff*array1(ind1,ind2,ind3,ind4)
-      enddo
-      enddo
-      enddo
-      enddo
-      enddo
-      endif  
+!$OMP END PARALLEL DO
+      elseif (ich.eq.4) then
+      call dgemm('N','N',nnew1*nnew2*nnew3,nnew4,nolds4,1d0,
+     *array1,nolds1*nolds2*nolds3,coeffs,idim1,0d0,
+     *array2,nnew1*nnew2*nnew3)
+      endif
 c     write(6,*) 'end  trans ' 
       return
       end
