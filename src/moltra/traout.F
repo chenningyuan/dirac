@@ -156,13 +156,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: LUASCII, LUMLF2, THROUT, TRA_ASCII
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
       Use moltra_labeling
 
 #include "implicit.h"
       INTEGER :: I, J, K, KK
 #include "dcbtra.h"
-#include "dgroup.h"
       INTEGER RCW
       DIMENSION NSTR3(2),NSTR4(2)
       DIMENSION FMAT(NFM,RCW),INDK(*),INDL(*)
@@ -365,11 +364,10 @@ C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbham_mod, only: SPINFR
-!      use dgroup_mod, only: IPQTOQ, JBTOF, LINEAR, NBSYM, NZ
+      use dgroup_mod, only: IPQTOQ, JBTOF, LINEAR, NBSYM, NZ
 #include "implicit.h"
       INTEGER :: I
 #include "dcbham.h"
-#include "dgroup.h"
       INTEGER NSTR3(2),NSTR4(2)
       DIMENSION FMAT(NKL,NZ,NZ,*)
       DIMENSION IREPIJB(2),IREPKLB(2,NKL)
@@ -537,10 +535,9 @@ C
 C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I, J
-#include "dgroup.h"
       LOGICAL TRIAN
       INTEGER NSTR(2,0:2,2)
       DIMENSION INDXKR(2,*)
@@ -585,11 +582,10 @@ C     Modified by HJAaJ Aug 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbtra_mod, only: LUMLF3, NFPCK12, NFPCK34, NQQCLASS
-!      use dgroup_mod, only: NBSYM, NFSYM, NZ
+      use dgroup_mod, only: NBSYM, NFSYM, NZ
       use memory_allocator
 #include "implicit.h"
 #include "dcbtra.h"
-#include "dgroup.h"
       LOGICAL   FEXIST
       CHARACTER*10 FNODE,LFNAM,FNAM*5
       Real(8), Allocatable :: FTMAT(:)
@@ -721,11 +717,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use infpar_mod, only: MPARID, MYTID
 !      use dcbtra_mod, only: LUMLF3, MDCSCAT, NOMDCINT
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
 #include "infpar.h"
 #include "dcbtra.h"
-#include "dgroup.h"
 C
       DO IREPIJ = 1, NFSYM
          IF (.NOT. NOMDCINT .OR.                         ! delete if using MDCINT
@@ -755,11 +750,10 @@ C    Written by Luuk Visscher, April 1997
 C    Last modification, Februari 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM
+      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM
       use quaternion_algebra
 #include "implicit.h"
       INTEGER :: I, J
-#include "dgroup.h"
       LOGICAL TRIAN
       INTEGER NSTR(2,0:2,2)
       DIMENSION IBE11(*),IBE21(*),IBE12(*),IBE22(*)

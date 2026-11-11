@@ -94,7 +94,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use mxcent_mod, only: MXCENT
 !      use dcbham_mod, only: LEVYLE, MC, SSMTRC
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NFBAS, NTBAS
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use maxorb_mod, only: MXCORB
 !      use dcblab_mod, only: IATTR, IPLAB, PLABEL
       use maxaqn_mod, only: MXAQN, MXQN
@@ -118,7 +118,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &     RERRAV,RERRAB,RERRMX,SMATDF, SMATAN, SMATFR
 
 #include "dcbham.h"
-#include "dgroup.h"
 #include "dcblab.h"
 
       DIMENSION SMAT(NTBAS(0),NTBAS(0),2),ICLAB(NTBAS(0))
@@ -529,7 +528,7 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 !      use dcbham_mod, only: MC
-!      use dgroup_mod, only: NBSYM
+      use dgroup_mod, only: NBSYM
       use dcbbas_mod, only: IBBAS, NBBAS, NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -538,7 +537,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0
 
 #include "dcbham.h"
-#include "dgroup.h"
 
       DIMENSION GAO(NTBAS(0)),EXCMAT(NTBAS(0),NTBAS(0))
       

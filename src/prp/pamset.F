@@ -30,12 +30,11 @@ C***********************************************************************
 !      use dcbham_mod, only: SPINFR
       use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NCMOTQ, NORBT
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
 C
 #include "dcbham.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       LOGICAL TOBE
       DIMENSION FMO(*),WORK(*)
@@ -109,8 +108,8 @@ C
 C***********************************************************************
 !      use dcbdhf_mod, only: ESOLVE, ESOLVN, IFCKOP, IHRMOP, INTDEF, INTFLG, ISYMOP, NFMAT
 !      use dcbham_mod, only: IPRSOL, SOLVEN, SPINFR
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcborb_mod, only: I2ORBX, ICMOQ, IORB, N2ORBXQ, NASHT, NORB, NORBT
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
        use dirac_cfg
        use dft_cfg
        use xcint_main
@@ -140,7 +139,6 @@ C***********************************************************************
 C
 #include "dcbdhf.h"
 #include "dcbham.h"
-#include "dgroup.h"
 #include "dcborb.h"
       type(fde_import) :: itmp
 CTOBS: Note the use of dcbdhf ! Should be generalized !!!
@@ -428,13 +426,12 @@ C     bit 3 of IREDJOB: reduction in e-p orbital rotations
 C                    
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, II, J
       REAL(dp), PARAMETER :: D0 = 0.0D0, DC = 100.0D0
 C
-#include "dgroup.h"
       DIMENSION GPCI(*),GPOE(*),GPOP(*),WORK(*),
      &          JXOPE(2,NZXOPE),JXOPP(2,NZXOPP)
       LOGICAL LBIT
@@ -622,12 +619,11 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IORB, NESH, NORBT, NPSH
       use dcbbas_mod, only: MXFBAS, NFBAS
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I, II, J
 C
 #include "dcborb.h"
-#include "dgroup.h"
       CHARACTER INDSTR(3,2)*72
       DIMENSION IORBCL(4,NORBT),IND(MXFBAS),
      &          NIND(2,3,2),WORK(KFREE)
@@ -711,12 +707,11 @@ C                 May 2003 MI
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: FREP, NFSYM
+      use dgroup_mod, only: FREP, NFSYM
 !      use dcborb_mod, only: NASH, NESH, NISH, NOCC, NORB, NPSH, NSSH
 #include "implicit.h"
       INTEGER :: I, J
 C
-#include "dgroup.h"
 #include "dcborb.h"
 C
       CHARACTER*72 INDSTR(3,2)
@@ -886,7 +881,7 @@ C
 C***********************************************************************
 
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 !      use dcborb_mod, only: NORBT
 !      use dcbxrs_mod, only: INDSTR, JOPSY, NZCONF, NZCONFQ, NZHOPE, NZVAR, NZVARQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZXOPT, NZXOPTQ, SKIPEE, SKIPEP
       use orbital_rotation_indices, only: setxop
@@ -896,7 +891,6 @@ C***********************************************************************
 
       integer, intent(in) :: iprint
 C
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbxrs.h"
 C
@@ -974,7 +968,6 @@ C
 !      use dcbprp_mod, only: DOEXP, HDF5IO, MXPRP_WF, NPRP_WF, PRP_WF
 #include "implicit.h"
       INTEGER :: I
-!#include "dgroup.h"
 #include "dcbprp.h"
 
       character(4)  :: WF

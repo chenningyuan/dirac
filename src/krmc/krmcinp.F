@@ -34,7 +34,7 @@
 !      use dcborb_mod, only: MXGAS
 !      use dcbkrmc_mod, only: DKRMC_CNVINT, DKRMC_MVOFAC, DKRMC_THRGRD, DKRMC_THRPCI, IKRMC_INTBUF, IKRMC_INTDEF, IKRMC_INTFLG, IKRMC_ITRINT, IKRMC_MEMFAC, IKRMC_STATE, IKRMC_SVRONO, IKRMC_SYMMETRY, IPRKRMC, KRMC_CHCKJZ, KRMC_CIPROGRAM, KRMC_DELSTR, KRMC_FRZSTR, KRMC_FULL_CI, KRMC_NO1PDENS, KRMC_NOCI, KRMC_SAVE_REORDERED_NOS, KRMC_SKIPEE, KRMC_SKIPEP, KRMC_UCIBOS, MCFLAG, MKRMC_MAXBCK, MKRMC_MXMACRO, MKRMC_MXMICRO, NKRMCAELEC, NKRMCASH, NKRMCFRO, NKRMCGAS, NKRMCGSH, NKRMCGSP, NKRMCISH, NKRMCPSH, NKRMCSSH, NKRMC_MAXMK2, NKRMC_MINMK2, NKRMC_MK2DEL, NKRMC_MK2REF, NMCFLAG
       use dcbbas_mod, only: NFBAS
-!      use dgroup_mod, only: LINEAR, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: LINEAR, NBSYM, NFSYM, NZ
       use pgroup_mod, only: REP
 !      use krciprop_mod, only: XREPEIG
       use symmetry_setup_krci
@@ -55,7 +55,6 @@
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dcbkrmc.h"
-#include "dgroup.h"
 #include "krciprop.h"
 C
       character (len= 4)              :: symmetry_str

@@ -1776,7 +1776,6 @@ C
 #include "cossya.h"
 !
 !     ...for NZ
-!#include "dgroup.h"
 !
 !     ...for LUPRI
       DIMENSION WW(*)
@@ -1856,7 +1855,7 @@ C
 !***********************************************************************
 !      use goscom_mod, only: NDETMX, NELACT, NREP, NSPACT
 !      use cossya_mod, only: MSTATE, SYA_NTRDM
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "goscom.h"
@@ -1864,7 +1863,6 @@ C
 !     ...for MSTATE
 #include "cossya.h"
 !#include "cosbit.h"
-#include "dgroup.h"
       DIMENSION CL(NDETMX,NRIVEC,MSTATE)
       DIMENSION CR(NDETMX,NRIVEC,MSTATE)
       INTEGER DET_I(NDETMX),DET_J(NDETMX)
@@ -1986,7 +1984,6 @@ C
 #include "goscom.h"
 !
 !     ...for NZ
-!#include "dgroup.h"
       DIMENSION C(NDETMX,NRIVEC,MSTATE)
       DIMENSION IXDET(NDETMX)
       CHARACTER*11 VECFIL
@@ -2082,7 +2079,6 @@ C
 !#include "cosbit.h"
 !
 !     ...for NZ
-!#include "dgroup.h"
       DIMENSION CL(NDETMX,NRIVEC,MSTATE),CR(NDETMX,NRIVEC,MSTATE)
 !.s/sya,2007.0911
 !#    DIMENSION TRDM(NSPACT,NSPACT,NZ,MSTATE,MSTATE)
@@ -2149,7 +2145,6 @@ C
 #include "goscom.h"
 !
 !     ...for NZ
-!#include "dgroup.h"
       DIMENSION CL(NDETMX,NRIVEC,MSTATE),CR(NDETMX,NRIVEC,MSTATE)
 !.s/sya,2007.0911
 !#    DIMENSION TRDM(NSPACT,NSPACT,NZ,MSTATE,MSTATE)
@@ -2213,7 +2208,6 @@ C
 #include "goscom.h"
 !
 !     ...for NZ
-!#include "dgroup.h"
       DIMENSION CL(NDETMX,NRIVEC,MSTATE),CR(NDETMX,NRIVEC,MSTATE)
 !.s/sya,2007.0911
 !#    DIMENSION TRDM(NSPACT,NSPACT,NZ,MSTATE,MSTATE)
@@ -2273,14 +2267,13 @@ C
       use priunit_mod, only: LUPRI
 !      use goscom_mod, only: NSPACT, REPNA
 !      use cossya_mod, only: MSTATE
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: K
 #include "goscom.h"
 !
 !     ...for MSTATE
 #include "cossya.h"
-#include "dgroup.h"
 !.s/sya,2007.0911
 !#    DIMENSION TRDM(NSPACT,NSPACT,NZ,MSTATE,MSTATE)
       DIMENSION TRDM(NSPACT,NSPACT,NRIVEC,MSTATE,MSTATE)
@@ -2345,7 +2338,6 @@ C
       INTEGER :: I, J
 #include "goscom.h"
 #include "cossya.h"
-!#include "dgroup.h"
 !
 !.s/sya,2007.0911
 !#    DIMENSION TRDM(NSPACT,NSPACT,NZ,MSTATE,MSTATE)
@@ -2396,14 +2388,13 @@ C
 !     Called by:   CALTRDM
 !***********************************************************************
 !      use cossya_mod, only: MSTATE
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 !
 !     ...for MSTATE
 #include "cossya.h"
 !
 !     ...for NZ
-#include "dgroup.h"
 !     CHARACTER*6 TRDFIL/'TRDMSQ'/
       CHARACTER*6 TRDFIL          
       DATA KTDINF/5/
@@ -2478,12 +2469,11 @@ C
 !     Last-update: S. Yamamoto - May 17, 2007
 !     Called by:   CALTRDM
 !***********************************************************************
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I, J
 !
 !     ...for NZ
-#include "dgroup.h"
 !.s/sya,2007.0911
 !#    DIMENSION TRDM(NSPACT,NSPACT,NZ,MSTATE,MSTATE)
       DIMENSION TRDM(NSPACT,NSPACT,NRIVEC,MSTATE,MSTATE)
@@ -2701,13 +2691,12 @@ C
 !***********************************************************************
 !      use goscom_mod, only: NREP, NSPACT
 !      use cossya_mod, only: SYA_ACTIV, SYA_INACT
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
 #include "goscom.h"
 #include "cossya.h"
-#include "dgroup.h"
 !
 !     ...for NORB
 c#include "dcborb.h" 
@@ -2876,7 +2865,7 @@ c#include "dcborb.h"
 !     LUMLF1 = 75  (defined in dcbtra.h in moltra)
 !----------------------------------------------------------------------
 !      use goscom_mod, only: D, NSPACT
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I, J, K
@@ -2885,7 +2874,6 @@ c#include "dcborb.h"
 #include "goscom.h"
 !
 !     ...for NFSYM
-#include "dgroup.h"
 !
       DIMENSION TMOM(NRIVEC,N3DIM)
       DIMENSION TDLEN(NRIVEC,N3DIM)
@@ -3028,13 +3016,12 @@ c#include "dcborb.h"
 !       IOFFSP(1)=0
 !       IOFFSP(2)=10
 !----------------------------------------------------------------------
-!      use dgroup_mod, only: NFSYM
 !      use cossya_mod, only: SYA_ACTIV, SYA_INACT
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: K
 !
 !     ...for NFSYM
-#include "dgroup.h"
 !
 !     ...for SYA_INACT,SYA_ACTIV
 #include "cossya.h"
@@ -3228,13 +3215,12 @@ c#include "dcborb.h"
 !      1 2            3 4             5            6          (C)
 !                                                             IC2CA
 !----------------------------------------------------------------------
-!      use dgroup_mod, only: NFSYM
 !      use goscom_mod, only: NSPACT
 !      use cossya_mod, only: SYA_ACTIV, SYA_INACT
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
 !
 !     ...for NFSYM
-#include "dgroup.h" 
 !
 !     ...for NSPACT
 #include "goscom.h"
@@ -3289,14 +3275,13 @@ c#include "dcborb.h"
 !     Last-update: S. Yamamoto - 2007.09.13, chukyo-u
 !     Called by :  SY_TMOM
 !----------------------------------------------------------------------
-!      use dgroup_mod, only: NZ
 !      use goscom_mod, only: NREP, NSPACT
+      use dgroup_mod, only: NZ
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I, J
 !
 !     ...for NZ
-#include "dgroup.h"  
 !
 !     ...for MSTATE
 !#include "cossya.h"
@@ -3547,12 +3532,11 @@ c#include "dcborb.h"
 !  N.B. (sya, 2007.09.15)
 !     (a + bi) * (c + di) = ac - bd + (ad + bc)i
 !***********************************************************************
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 !
 !     ...for NZ
-#include "dgroup.h"  
 !
 !     ...for LUPRI
 !

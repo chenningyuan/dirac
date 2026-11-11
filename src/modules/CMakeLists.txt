@@ -31,6 +31,7 @@ set(MODULE_SOURCES
     dcbsusc.F90
     dcbwav.F90
     derzer.F90
+    dgroup.F90
     dipole.F90
     dirac_partask.F90
     dirprt.F90

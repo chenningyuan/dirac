@@ -419,7 +419,7 @@ C
 !      use param_mod, only: A1, AP5, D0
 !      use complex_mod, only: CARITH, RCW
 !      use symm_mod, only: NFOO, NFVO, NFVV, NO, NORBT, NREP, NV
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -451,7 +451,6 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "dgroup.h"
 C
 C---------------Local variables--------------------------------------
 C
@@ -942,7 +941,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 !      use complex_mod, only: CARITH, RCW
 !      use symm_mod, only: NFVO, NO, NORBT, NREP, NV
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -967,7 +966,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "complex.inc"
 #include "symm.inc"
-#include "dgroup.h"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1108,13 +1106,12 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NASHT, NESHT, NORBT
-!      use dgroup_mod, only: LINEAR, NZ
+      use dgroup_mod, only: LINEAR, NZ
       use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dcbham_mod, only: SPINFR
 !      use infpar_mod, only: MPARID, MYTID
 #include "implicit.h"
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbham.h"
 #include "infpar.h"
 C
@@ -1204,7 +1201,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IASH, IORB, NASH, NASHT, NESH, NIOCC, NORBT, NPSH
-!      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM, NZ
       use maxorb_mod, only: MXCORB
 !      use maxash_mod, only: MAXASH
 !      use dcbidx_mod, only: IDXU2G
@@ -1212,7 +1209,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, J
 #include "dcborb.h"
-#include "dgroup.h"
 #include "maxash.h"
 #include "dcbidx.h"
 C
@@ -1358,13 +1354,12 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IORB, NORBT, NPSH
 !      use dcbdhf_mod, only: NASH_DHF, NISH_DHF
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbtr3_mod, only: NDMOQC
 #include "implicit.h"
       INTEGER :: I
 #include "dcborb.h"
 #include "dcbdhf.h"
-#include "dgroup.h"
 #include "../moltra/dcbtr3.h"
 C
       DIMENSION DMO(NORBT,NORBT,*)
@@ -1425,7 +1420,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use files_mod, only: MCCDENS
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ORBTQ, NORBT
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use labeled_storage
 C
 C---------------Description--------------------------------------------
@@ -1445,7 +1440,6 @@ C
 #include "implicit.h"
 #include "files.inc"
 #include "dcborb.h"
-#include "dgroup.h"
 C
 C---------------Calling variables--------------------------------------
 C
@@ -1561,11 +1555,10 @@ C---------------Common Blocks--------------------------------------
 C
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ORBTQ, NORBT
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
 C---------------Calling variables--------------------------------------
 C
@@ -1736,10 +1729,9 @@ C---------------Common Blocks--------------------------------------
 C
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NORBT
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
 C---------------Calling variables--------------------------------------
 C

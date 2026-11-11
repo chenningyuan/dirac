@@ -23,11 +23,10 @@ C
 C     Written by Luuk Visscher, Februari 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use dcbbas_mod, only: NFBAS
 #include "implicit.h"
       INTEGER :: I
-#include "dgroup.h"
       PARAMETER (MAXTSK=1)
       LOGICAL ANTIS,LMP2
       DIMENSION NSTR(2,0:2,4),NSTR1(2,0:2,4,MAXTSK)
@@ -94,14 +93,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbtra_mod, only: ISAME, NFPCK12, NFPCK12T, NFPCK34, NFPCK34T, SCRTRA
       use comdis_mod, only: ISHLA, ISHLB, NINSHA, NINSHB, NSPCK
 !      use dcborb_mod, only: NASHT
-!      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
 #include "dcbtra.h"
 #include "dcborb.h"
-#include "dgroup.h"
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
       DIMENSION NSTR(2,0:2,4),INDX(3,*),KQ(2,4),KE(2,4),KIBE(2,4)
       DIMENSION NDMOQR(2,2,4),ICMOQR(2,4)
@@ -362,7 +360,7 @@ C
 C     Luuk Visscher
 C
 C
-!      use dgroup_mod, only: JBTOF, NZ
+      use dgroup_mod, only: JBTOF, NZ
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -371,7 +369,6 @@ C
       use comdis_mod, only: ISPCK, NINSHA, NINSHB, NSPCK
       use dcbbas_mod, only: NBBAS
 #include "implicit.h"
-#include "dgroup.h"
 #include "dcbtra.h"
 C
       DIMENSION INDX(3,*),INDXAB(NINSHA,NINSHB,4)
@@ -472,7 +469,7 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS
-!      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 !      use dcbtra_mod, only: IFPCK34, NFPCK34
       use comdis_mod, only: NSPCK
       use kinds_mod, only: dp
@@ -484,7 +481,6 @@ C
       DIMENSION Q1(*),Q2(*),GMAT(*),HMAT(*)
       DIMENSION IJPAIRS(2)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2)
-#include "dgroup.h"
 #include "dcbtra.h"
 C
       CALL QENTER('MS4IN2')

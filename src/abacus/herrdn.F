@@ -498,6 +498,7 @@ C       ISHELL - runs over all shells
 C       IPRIM  - runs over all primitives
 C       NUCIND - runs over all symmetry independent centers
 C******************************************************************************
+      use dgroup_mod, only: ATOMIC, LINEAR
 #ifndef PRG_DIRAC
       use gnrinf_mod, only: KCHARG
 #endif
@@ -549,7 +550,6 @@ C     JHS The following variables come from a common block and are thus kept in 
 #ifndef PRG_DIRAC
       LOGICAL LINEAR, ATOMIC
 #endif
-#include "dgroup.h"
       KWORK = 1
       KFREE = KWORK
       LFREE = LWORK
@@ -3982,6 +3982,7 @@ C
 C     Process molecular data
 C
 C******************************************************************************
+      use dgroup_mod, only: ATOMIC, LINEAR, NONATM
       use cbirea_mod, only: IPREAD
       use frame_mod, only: POTNUC
       use nuclei_mod
@@ -3993,7 +3994,6 @@ C******************************************************************************
 #include "implicit.h"
 C
       DIMENSION WORK(LWORK)
-#include "dgroup.h"
 C     
 C
 C

@@ -185,13 +185,13 @@ contains
     ! Roberto Di Remigio, 2012
     subroutine pcm_oper_ao_driver(oper, charge_name, work, lwork)
 
+      use dgroup_mod, only: IPQTOQ, NZ
       use dcbbas_mod, only: NTBAS
         use pcm_integrals, only: get_electronic_mep
         use pcmmod_cfg
         use pcmsolver, only: pcmsolver_get_surface_function
 
 #include "dcborb.h"
-#include "dgroup.h"
 
         ! Passed variables
         ! oper(*) is just the PCM contribution in AO basis

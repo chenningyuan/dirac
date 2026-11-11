@@ -3,6 +3,7 @@
 
 module dirac_interface
 
+      use dgroup_mod, only: JBTOF, NFSYM, NZ
       use dcbbas_mod, only: NFBAS, NTBAS
       use dcbgen_mod, only: INTGEN, PARCAL, TWOCOMP
       use dcbgrd_mod, only: GRADNN
@@ -83,7 +84,6 @@ module dirac_interface
 #include "../abacus/cbinuc.h"
 #include "dcbham.h"
 #include "dcborb.h"
-#include "dgroup.h"
 
   real(8), pointer   :: f77_work(:)       ! Fortran 77 work array pointer
   integer, public    :: len_f77_work  = 0 ! Length of the work array

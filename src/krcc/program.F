@@ -137,6 +137,7 @@ C
 * Now master routine for general relativistic mr coupled cluster
 *
 *
+      use dgroup_mod, only: NZ
 #include "implicit.h"
       REAL*8 INPRDD
 #include "ipoist8.inc"
@@ -157,7 +158,6 @@ C
 #include "cintfo.inc"
 *
 * for real or complex groups
-#include "../include/dgroup.h"
       COMMON/CMXCJ/MXCJ
       CHARACTER*6 CCTYPE
       DIMENSION WORK(*)

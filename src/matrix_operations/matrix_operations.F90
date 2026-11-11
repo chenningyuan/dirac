@@ -39,9 +39,8 @@ module matrix_operations
 contains
 
    function get_common_nz()
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       integer :: get_common_nz
-#include "dgroup.h"
       get_common_nz = nz
    end function
 
@@ -192,7 +191,7 @@ contains
 !   C_{mn} = ... A_{mk} B_{kn} ...
 !   transa/transb: 'T' or 't' (transposed), 'N' or 'n' (normal)
 !   ----------------------------------------------------------------------------
-!      use dgroup_mod, only: IPQTOQ, NBSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NBSYM
     type(matrix), intent(in)    :: A, B
     character,    intent(in)    :: transa, transb
     real(8),      intent(in)    :: alpha, beta
@@ -202,7 +201,6 @@ contains
     character                   :: ta, tb
     integer                     :: iq(4) = (/1, 2, 3, 4/)
 !   ----------------------------------------------------------------------------
-#include "dgroup.h"
 
     if (nbsym > 1) then
       call iqpack(ipqtoq(1, A%irep), A%nz, &
@@ -262,14 +260,13 @@ contains
   subroutine mat_trans(A, B)
 
 !   ----------------------------------------------------------------------------
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ
     type(matrix), intent(in) :: A
     type(matrix)             :: B
 !   ----------------------------------------------------------------------------
     integer                  :: i, j, i_dim, j_dim, iz
     real(8)                  :: q
 !   ----------------------------------------------------------------------------
-#include "dgroup.h"
 
     if (B%nrow /= A%ncol .or. B%ncol /= A%nrow) then
       call quit('wrong dimensions in mat_trans')
@@ -318,7 +315,7 @@ contains
   function mat_trab(A, B) result(r)
 
 !   ----------------------------------------------------------------------------
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ
     type(matrix), intent(in) :: A, B
     real(8)                  :: r
 !   ----------------------------------------------------------------------------
@@ -326,7 +323,6 @@ contains
     real(8)                  :: q
     integer                  :: i_dim, j_dim, j, iz
 !   ----------------------------------------------------------------------------
-#include "dgroup.h"
 
     if (A%ncol /= B%nrow .or. A%nrow /= B%ncol) then
       call quit('wrong dimensions in mat_trab')

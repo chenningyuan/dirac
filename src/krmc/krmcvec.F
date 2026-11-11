@@ -125,11 +125,10 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: IPRXRS, JTIMOP, LUBOE, LUBOP, LUSCI, NCRED, NERED, NFREQ, NPRED, NREDM, NZCONF, NZXOPE, NZXOPP
 !      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 #include "dcbxrs.h"
 #include "dcbibn.h"
-#include "dgroup.h"
 C
       CHARACTER FILNAM*6,FILRSP*8,TYP*1,RSPTYP*5
       DIMENSION IBTYP(2,*),IBVEC(*),EVALR(*),EVECR(NREDM,*),

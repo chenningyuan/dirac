@@ -867,7 +867,7 @@ C
 C     Written by hjaaj & jkp   -   oct. 2001
 C
 C*****************************************************************************
-!      use dgroup_mod, only: WORK
+      use dgroup_mod, only: IPQTOQ
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBASX, NTBAS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -881,7 +881,6 @@ C
       LOGICAL DOINT(2,2),ADDQIC(2),LBIT,ICVTEST,DOLSQ
       CHARACTER*4 OMITVNUC
       DIMENSION WORK(LWORK),F1MAT(*),F2MAT(*),DMAT(*)
-#include "dgroup.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
 C

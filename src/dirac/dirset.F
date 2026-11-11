@@ -211,7 +211,7 @@ CMI are calculated in READIN
 C
 C***********************************************************************
       use symmet_mod, only: MAXREP, NAOS, NCOS
-!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: JFSYM, NBSYM, NFSYM, NZ
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
       use dcbbas_mod
@@ -226,7 +226,6 @@ C***********************************************************************
       INTEGER :: I,J
 C
 #include "dcbham.h"
-#include "dgroup.h"
       CHARACTER COMP(2)*1
 C
       IF(IPRINT.GE.2) CALL TITLER('Output from SETDC1','*',103)
@@ -430,9 +429,9 @@ C
 C     Written by T.Saue - November 1994
 C     Last revision: Nov 23 1994 - tsaue
 C***********************************************************************
-!      use dgroup_mod, only: FREP, NFSYM, NZ
 !      use dcborb_mod, only: I2ASHX, I2OCCX, I2ORBX, IASH, I_DCBORB_SET, IOCC, IORB, N2ASHT, N2ASHX, N2ASHXQ, N2ESHT, N2ESHX, N2ISHT, N2ISHX, N2OCCT, N2OCCX, N2ORBT, N2ORBTQ, N2ORBX, N2ORBXQ, N2PSHT, N2PSHX, N2SSHT, N2SSHX, NASHT, NCMOT, NCMOTQ, NESHT, NFORB, NFROT, NISHT, NNASHX, NOCC, NOCCT, NORB, NORBT, NPSHT, NSSHT, NTORB
 !      use dcbham_mod, only: URKBAL
+      use dgroup_mod, only: FREP, NFSYM, NZ
       use dcbbas_mod, only: NFBAS
       use priunit_mod, only: LUPRI
 #include "implicit.h"
@@ -440,7 +439,6 @@ C***********************************************************************
 C
 #include "dcbham.h"
 #include "dcborb.h"
-#include "dgroup.h"
       CHARACTER COMP(2)*1
 C
 C
@@ -619,7 +617,6 @@ C***********************************************************************
 #include "implicit.h"
 C
       INTEGER :: I
-!#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 C
@@ -984,7 +981,7 @@ C***********************************************************************
 
       use dcbibt_mod, only: JGET
       use maxorb_mod, only: MXCORB
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: JBTOF, NFSYM
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NFBAS, NTBAS
       use symmet_mod, only: MAXREP
 !      use dcblab_mod, only: IATTR, IPLAB
@@ -994,7 +991,6 @@ C***********************************************************************
       INTEGER :: I,J
 C
 #include "dcblab.h"
-#include "dgroup.h"
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
       DIMENSION ICLAB(*),GROSS(*),SCQ(*)
 C
@@ -1108,7 +1104,7 @@ C
 C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use dcblab_mod, only: IATTR, IPLAB
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: JBTOF, NFSYM
       use symmet_mod, only: MAXREP
       use maxaqn_mod, only: MXAQN, MXQN
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NFBAS, NTBAS
@@ -1118,7 +1114,6 @@ C***********************************************************************
       INTEGER :: I
 C
 #include "dcblab.h"
-#include "dgroup.h"
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
       DIMENSION ICLAB(*),GROSS(*),QLC(*)
 
@@ -1180,7 +1175,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use dgroup_mod, only: NBSYM
+      use dgroup_mod, only: NBSYM
       use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
       use dcbgen_mod, only: LU1INT
       use symmet_mod, only: FMULT
@@ -1188,7 +1183,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "dgroup.h"
 !#include "dcbham.h"
       DIMENSION QMAT(NUCDEP,NUCDEP,2,NMPOLOP),DMAT(*),WORK(LWORK)
       DIMENSION INDDIP(3)
@@ -1357,7 +1351,7 @@ C***********************************************************************
       use nuclei_mod, only: NUCIND, NUCNUM
       use maxorb_mod, only: MXCORB
 !      use dcblab_mod, only: IATTR, IPLAB
-!      use dgroup_mod, only: NBSYM
+      use dgroup_mod, only: NBSYM
       use dcbbas_mod, only: NTBAS
       use dcbibt_mod, only: JGET, KGET
 #include "implicit.h"
@@ -1365,7 +1359,6 @@ C
       INTEGER :: I
 C
 #include "dcblab.h"
-#include "dgroup.h"
       DIMENSION ICLAB(*)
       integer, allocatable :: IDEGN(:,:)
       allocate(IDEGN(NUCIND,NBSYM))
@@ -1445,7 +1438,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: I2TMT, N2TMT, NFBAS, NZT
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
 !      use dcbdhf_mod, only: N2TMOTQ, NACSH, NACSHMF, NESHMF, NISHMF, NOCCMF, NOPEN, NPSHMF, NTMO
 !      use dcborb_mod, only: ID_SUB_BL, NASH, NBORB, NESH, NFORB, NFRO, NISH, NORB, NORB_SUB, NPSH, N_SUB_BL
 !      use dcbham_mod, only: I2COFK, SUB_BL, URKBAL
@@ -1454,7 +1447,6 @@ C***********************************************************************
       INTEGER :: I,J
 C
 #include "dcbham.h"
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 C
@@ -1591,13 +1583,12 @@ C***********************************************************************
 !      use dcbdhf_mod, only: NACSH, NACSHMF, NESHMF, NISHMF, NOCCMF, NOPEN, NPSHMF, NTMO
 !      use dcborb_mod, only: ID_SUB_BL, NASH, NBORB, NESH, NFRO, NISH, NORB_SUB, NPSH, N_SUB_BL
 !      use dcbham_mod, only: I2COFK, SUB_BL, URKBAL
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
       use dcbbas_mod, only: NZT
       use dcbgen_mod, only: LUTMAT
 #include "implicit.h"
 C
       INTEGER :: J
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
@@ -1629,14 +1620,13 @@ C
       ! write point group symmetry information to checkpoint
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use symmet_mod, only: ISYMAX, MAXOPR
       use mxcent_mod, only: MXCENT
       use checkpoint
 
 #include "implicit.h"
 
-#include "dgroup.h"
 
       call checkpoint_write ('/result/symmetry/inversion',
      &     idata=nfsym)

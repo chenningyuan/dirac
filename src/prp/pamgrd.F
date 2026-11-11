@@ -32,11 +32,10 @@ C     Last revision: Jul 10 1996 - tsaue
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: JBTOF
+      use dgroup_mod, only: JBTOF
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
 #include "implicit.h"
 C
-#include "dgroup.h"
 #include "dcbxpr.h"
 C
       DIMENSION GPCI(*),GPOE(*),GPOP(*),JXOPE(*),JXOPP(*),
@@ -202,7 +201,7 @@ C                          previous MCSCF run.
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: IHQMAT, IPQTOQ, NZ
+      use dgroup_mod, only: IHQMAT, IPQTOQ, NZ
 !      use dcborb_mod, only: ICMOQ, N2ASHXQ, NASHT, NORB, NORBT
       use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
@@ -212,7 +211,6 @@ C***********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: DM1 = -1.0D0
 C
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
 #include "dcbham.h"
@@ -422,11 +420,10 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: N2BBASXQ
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dgroup.h"
 !#include "dcbxpr.h"
 C
       LOGICAL ONFILE
@@ -474,7 +471,7 @@ C     Dec 2005, MI - adapting for both triangular and square operators
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NTBAS
 !      use dcbham_mod, only: NOSPIN, SPINFR
 !      use dcborb_mod, only: IORB, NORB
@@ -485,7 +482,6 @@ C***********************************************************************
       INTEGER :: I, J
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
-#include "dgroup.h"
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
@@ -680,7 +676,7 @@ C
 C  MI,HJ (march 2003) - added routine calling for cumulationg the dH/dB prop.gradient with LAO
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: IPQTOQ, JBTOF, NZ
+      use dgroup_mod, only: IPQTOQ, JBTOF, NZ
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
       use dcbbas_mod, only: N2BBASXQ
 !      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
@@ -688,7 +684,6 @@ C***********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: DM1 = -1.0D0
 C
-#include "dgroup.h"
 #include "dcbxpr.h"
 #include "dcbibn.h"
        LOGICAL ONFILE
@@ -777,14 +772,13 @@ C     Last revision: Feb 17 2000 hjaaj (new parameter list for PRPMAT)
 C
 C     MI/2003,2004- add dH/dB prop.gradient accumulation when using LAO
 C***********************************************************************
-!      use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NZ
 !      use dcborb_mod, only: ICMOQ, N2ASHXQ, NASHT, NORB, NORBT
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
+      use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: DM1 = -1.0D0
 C
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
 C

@@ -223,7 +223,6 @@
       integer                          :: nr_words, nr_lines, idx
 !     --------------------------------------------------------------------------
 
-!#include "dgroup.h"
 ! orgcom.h : GAGORG
 
       call reset_available_kw_list()
@@ -1394,7 +1393,7 @@
 
    subroutine read_input_relcc(word, kw_section)
 
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use relcc_cfg
       use input_reader
 
@@ -1406,7 +1405,6 @@
       logical:: explicitly_set_energy = .false.
 !     --------------------------------------------------------------------------
 
-#include "dgroup.h"
 
       call reset_available_kw_list()
 
@@ -2054,7 +2052,7 @@
 
    subroutine read_input_ccfspc(word, kw_section)
 
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use relcc_cfg
       use input_reader
 
@@ -2067,7 +2065,6 @@
       integer                          :: i
 !     --------------------------------------------------------------------------
 
-#include "dgroup.h"
 
       call reset_available_kw_list()
 
@@ -2157,7 +2154,7 @@
 
    subroutine read_input_ccih(word, kw_section)
 
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use relcc_cfg
       use input_reader
 
@@ -2168,7 +2165,6 @@
       character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 
-#include "dgroup.h"
 
       call reset_available_kw_list()
 
@@ -2673,7 +2669,7 @@
 
    subroutine read_input_qcorr(word, kw_section)
 
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use input_reader
       use qcorr_cfg
 
@@ -2688,7 +2684,6 @@
       integer                          :: ios, islash, ibar
 !     --------------------------------------------------------------------------
 
-#include "dgroup.h"
 
       luci_cfg_qcorr = .true.
 

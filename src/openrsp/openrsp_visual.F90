@@ -42,6 +42,7 @@ contains
 
   subroutine openrsp_visual_driver(D)
 
+      use dgroup_mod, only: IPQTOQ, NZ
     type(matrix)                   :: D(:)
 !   ----------------------------------------------------------------------------
     type(grid_t)                   :: dft_grid
@@ -57,7 +58,6 @@ contains
     integer,           parameter   :: ncube = 80
     integer                        :: file_unit = 113
 
-#include "dgroup.h"
 
 
 !   scale matrices

@@ -26,13 +26,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUCMD, LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: DOSTEX
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 !      use dcbstex_mod, only: STEX_BATCHSIZE, STEX_COFACTOR, STEX_CUTOFF, STEX_DIAG, STEX_HOLES, STEX_IFSYM, STEX_MAX_HOLES, STEX_NCUBE, STEX_NHOLES, STEX_NO2E, STEX_NOCOUPLING, STEX_NR_OP, STEX_OP_IND, STEX_OP_SYM, STEX_OP_TIM, STEX_PRINT, STEX_SCRFCK
 #include "implicit.h"
       INTEGER :: I, II
 #include "dcbprp.h"
 !#include "dcbham.h"
-#include "dgroup.h"
 !#include "dcbxpr.h"
 #include "dcbstex.h"
       PARAMETER (NTABLE = 6)
@@ -199,7 +198,7 @@ C     .SCREEN
       SUBROUTINE STEX(WORK,LWORK)
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IORB, NASH, NCMOTQ, NISH, NORBT, NPSH, NSSH
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
       use dcbbas_mod, only: N2BBASXQ
 !      use dcbdhf_mod, only: DHFERG
 !      use dcbstex_mod, only: STEX_BATCHSIZE, STEX_COFACTOR, STEX_CUTOFF, STEX_HOLES, STEX_I2VIRX, STEX_IFSYM, STEX_LUINT, STEX_N2VIRX, STEX_N2VIRXQ, STEX_NHOLES, STEX_NPARAM, STEX_NR_OP, STEX_NVIR, STEX_NVIRT
@@ -213,7 +212,6 @@ C
       INTEGER :: I, II
 #include "dcborb.h"
 !#include "dcbham.h"
-#include "dgroup.h"
 !#include "dcbxpr.h"
 #include "dcbdhf.h"
 #include "dcbstex.h"
@@ -438,16 +436,15 @@ C     Calculate the Fock matrix and total energy of the CMO
 C     determinant (only inactive part). Assumes 1-e part is
 C     on disk in DFFCK1
 !      use dcborb_mod, only: NCMOTQ
-!      use dgroup_mod, only: NZ
 !      use dcbdhf_mod, only: DHFERG, IFCKOP, IHRMOP, INTFLG, ISYMOP, LUFCK1
 !      use dcbstex_mod, only: STEX_SCRFCK
+      use dgroup_mod, only: NZ
       use dcbbas_mod, only: N2BBASXQ, NTBAS
       use cbihr2_mod, only: SCRFCK
 #include "implicit.h"
       INTEGER :: II
 #include "dcborb.h"
 !#include "dcbham.h"
-#include "dgroup.h"
 #include "dcbdhf.h"
 #include "dcbstex.h"
       DIMENSION WORK(LWORK),FMAT(N2BBASXQ),CMO(NCMOTQ)
@@ -541,10 +538,9 @@ C     4 Virtual
 C     IORBI is the number of the orbital "in its symmetry and type"
 C     Example: CALL STEX_ORB_INDEX(IORBT,3,1,4) will put the index
 C     of the third gerade virtual orbital in IORBT.
-!      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: NASH, NISH, NORB, NPSH, NSSH
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
-#include "dgroup.h"
 #include "dcborb.h"
       IF (IFSYM.GT.NFSYM.OR.IORBTYP.LT.1.OR.IORBTYP.GT.4.OR.IORBI.LT.1)
      $     GOTO 666
@@ -615,12 +611,11 @@ C         3 -> -0.5*(  |i><j'| - |i'><j| )
 C         4 -> -0.5*(  |i><j'| + |i'><j| )
 C
 !      use dcborb_mod, only: NORBT
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
       use dcbbas_mod, only: N2BBASXQ, NTBAS
 #include "implicit.h"
       INTEGER :: II
 #include "dcborb.h"
-#include "dgroup.h"
       DIMENSION WORK(LWORK),CMO(NTBAS(0),NORBT,NZ),DAO(N2BBASXQ)
       DIMENSION CORB1(NTBAS(0),NZ),CORB2(NTBAS(0),NZ)
       CHARACTER OP
@@ -676,14 +671,13 @@ C     mo basis. put the result on unit STEX_LUINT in mo basis
 C
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NCMOTQ
-!      use dgroup_mod, only: ITOT, NZ
+      use dgroup_mod, only: ITOT, NZ
       use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dcbstex_mod, only: STEX_BATCHSIZE, STEX_HOLES, STEX_LUINT, STEX_N2VIRXQ, STEX_NHOLES, STEX_NVIRT
 !      use dcbdhf_mod, only: INTFLG
 #include "implicit.h"
       INTEGER :: II, JJ, KK
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbstex.h"
 #include "dcbdhf.h"
       DIMENSION WORK(*),CMO(NCMOTQ),
@@ -790,13 +784,12 @@ c     TODO: optimize write below (one big block is better)
 
       SUBROUTINE STEX_MOD_INTEGRALS(FMAT,WORK,LWORK)
 !      use dcborb_mod, only: NISHT, NORBT, NPSHT
-!      use dgroup_mod, only: NZ
 !      use dcbstex_mod, only: STEX_HOLES, STEX_LUINT, STEX_N2VIRX, STEX_N2VIRXQ, STEX_NHOLES, STEX_NVIRT
+      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I, II, J, JJ, K, KK
 #include "dcborb.h"
 !#include "dcbham.h"
-#include "dgroup.h"
 !#include "dcbxpr.h"
 #include "dcbstex.h"
       DIMENSION FMAT(NORBT,NORBT,NZ), WORK(LWORK)
@@ -849,11 +842,10 @@ C     Write out modified integrals
 C     Add the IZ part of FMAT, times FAC, to AMAT.
 C     perhaps this could be done with BLAS with the odense
 C     simplification (only virtual part stored on disk)
-!      use dgroup_mod, only: NZ
 !      use dcbstex_mod, only: STEX_NPARAM, STEX_NVIRT
+      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: II
-#include "dgroup.h"
 #include "dcbstex.h"
       DIMENSION AMAT(STEX_NPARAM,*), FMAT(STEX_NVIRT,STEX_NVIRT,NZ)
       DO II=1,STEX_NVIRT
@@ -870,7 +862,6 @@ C
 !      use dcbstex_mod, only: STEX_DIAG, STEX_LUINT, STEX_N2VIRXQ, STEX_NHOLES, STEX_NOCOUPLING, STEX_NPARAM, STEX_NVIRT
 #include "implicit.h"
       INTEGER :: II, JJ, KK
-!#include "dgroup.h"
 #include "dcbstex.h"
       DIMENSION WORK(LWORK),
      $     AMAT(STEX_NVIRT,4,STEX_NHOLES,STEX_NVIRT,4,STEX_NHOLES)
@@ -1014,11 +1005,10 @@ C     Out:
 C     XPRPTM(STEX_NVIRT,4) - in the order written above
 C
 !      use dcborb_mod, only: NISH, NORBT, NPSH
-!      use dgroup_mod, only: NFSYM, NZ
 !      use dcbstex_mod, only: STEX_HOLES, STEX_NVIR, STEX_NVIRT
+      use dgroup_mod, only: NFSYM, NZ
 #include "implicit.h"
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbstex.h"
       DOUBLE COMPLEX XPRPTM(STEX_NVIRT,4)
       DIMENSION AMO(NORBT,NORBT,NZ)
@@ -1113,7 +1103,6 @@ C
 #include "implicit.h"
       INTEGER :: I, II
 !#include "dcbham.h"
-!#include "dgroup.h"
 !#include "dcbxpr.h"
 #include "dcbstex.h"
       DOUBLE COMPLEX XMOM,PRPGRAD,DZDOT,REFGSOVL
@@ -1342,13 +1331,12 @@ C     tA*
 C     Compute <i|F|j>, where i are orbitals from CMO1 and j are obitals
 C     from CMO2
 !      use dcborb_mod, only: I2ORBX, ICMOQ, N2ORBX, N2ORBXQ, NORB, NORBT
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NTBAS
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
@@ -1418,10 +1406,9 @@ C     Place a complexified version of <i1|A|j2> in AC. i runs over
 C     all inactive orbitals, while j runs over inactive and virtual.
 C     AQ12 = sum j <i1|A|j1><j1|k2> = AQ*S
 !      use dcborb_mod, only: N2ORBXQ, NISH, NOCCT, NORB, NORBT, NPSH
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
 #include "dcborb.h"
-#include "dgroup.h"
       DOUBLE COMPLEX AC
       DIMENSION AC(*),AQ(N2ORBXQ),OVL(N2ORBXQ),WORK(LWORK)
       KWORK = 1
@@ -1592,13 +1579,12 @@ C     XPRPGRAD - the property gradient
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCOOR
 !      use dcborb_mod, only: ICMOQ, N2ORBXQ, NCMOTQ, NISH, NOCCT, NORB, NORBT, NPSH
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use dipole_mod, only: DIPMN
 !      use dcbstex_mod, only: STEX_HOLES, STEX_NHOLES, STEX_NR_OP, STEX_NVIRT, STEX_OP_IND
 #include "implicit.h"
       INTEGER :: II, JJ
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbstex.h"
       LOGICAL LOPEN
       DOUBLE COMPLEX XPRPGRAD,DETS,MOM,REFGSOVL
@@ -1735,13 +1721,12 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: ICMOQ, NISH, NORB, NPSH
       use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbstex_mod, only: STEX_I2VIRX, STEX_N2VIRXQ, STEX_NVIR, STEX_NVIRT
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbstex.h"
 
       REAL(dp), PARAMETER :: D0 = 0.0D0
@@ -1797,10 +1782,9 @@ C
 
 #ifdef NOTUSED
       SUBROUTINE ORBDENS(CMO,IIORB,DAO,WORK,LWORK)
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
       use dcbbas_mod, only: N2BBASXQ, NTBAS
 #include "implicit.h"
-#include "dgroup.h"
       DIMENSION WORK(LWORK),CMO(NTBAS(0),NORBT,NZ),DAO(N2BBASXQ)
       DIMENSION CORB1(NTBAS(0),NZ),CORB2(NTBAS(0),NZ)
       CHARACTER OP

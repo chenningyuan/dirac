@@ -97,10 +97,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine mk34bindex_offset(indxb34_offset,nstr,trian)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I, J
-#include "dgroup.h"
       logical trian
       integer nstr(2,0:2,2)
       integer indxb34_offset(2)
@@ -135,7 +134,7 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXT2G, IIDX3, IIDX4, NIDX3, NIDX4
 !      use dcborb_mod, only: NORBT
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: II, III, JJ, JJJ
 C
@@ -145,7 +144,6 @@ C
 #include "dcbidx.h"
 !#include "dcbopt.h"
 #include "dcborb.h"
-#include "dgroup.h"
       dimension indxb34_reod(2,*) 
       integer orb_info_array(2,norbt,norbt)
 
@@ -198,12 +196,11 @@ C
 !
 !***********************************************************************
 !      use dcborb_mod, only: IORB, NORB, NORBT
-!      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM
+      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM
       use memory_allocator
       use quaternion_algebra
 #include "implicit.h"
 #include "dcborb.h"
-#include "dgroup.h"
       integer orb_info_array(2,norbt,norbt)
       dimension ibeig(*)
       integer, allocatable  :: orb_sym_vec(:)
@@ -295,10 +292,9 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I, J
-#include "dgroup.h"
       DIMENSION vnz3(nkl,nz,3)
       DIMENSION IREPIJB(2),IREPKLB(2,NKL)
 C
@@ -1225,7 +1221,7 @@ C***********************************************************************
 !      use maxash_mod, only: MAXASH
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXE2G, IDXG2E, IDXG2I, IDXG2P, IDXG2S, IDXG2U, IDXI2G, IDXP2G, IDXS2G, IDXU2G, IFSMO, IOBTYP, JTACT, JTINAC, JTPOSI, JTSEC
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: NASH, NASHT, NESHT, NISH, NORBT, NPSH, NSSH
 !      use dcbopt_mod, only: IPROPT
 #include "implicit.h"
@@ -1233,7 +1229,6 @@ C***********************************************************************
 #include "maxash.h"
 C
 #include "dcbidx.h"
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 C

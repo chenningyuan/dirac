@@ -362,7 +362,6 @@ C
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
 #include "dcbxrs.h"
-!#include "dgroup.h"
 #include "dcbkrmc_itinfo.h"
 C
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
@@ -835,7 +834,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: DIAGHE, E2CHEK, FKRMC, KBCI, KBOE, KBOP, KBTOT, LINEQ, NCSIM, NDAMP, NESIM, NEXSTV, NFREQ, NOSIM, NPSIM, NREDM, NSTAT, NTSIM, NZCONF, NZCONFQ, NZRED, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, RSREST, UNCOUP
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -845,7 +844,6 @@ C***********************************************************************
      &          EVALR(*),EVECR(*),WORK(*)
 C
 #include "dcbxrs.h"
-#include "dgroup.h"
 C
       CALL QENTER('XRSST')
       KFRSAV = KFREE
@@ -1065,7 +1063,7 @@ C
 C***********************************************************************
 !      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
 !      use dcbxrs_mod, only: DIAGHE, KBCI, KBOE, KBOP, NCRED, NCSIM, NDAMP, NERED, NESIM, NPRED, NPSIM, NZCONF, NZRED, NZXOPE, NZXOPP
-!      use dgroup_mod, only: NZ, NZ_IN_CI
+      use dgroup_mod, only: NZ, NZ_IN_CI
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
@@ -1073,7 +1071,6 @@ C
 #include "dcbibn.h"
 C
 #include "dcbxrs.h"
-#include "dgroup.h"
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),EVALR(*),EVECR(*),
      &          GPCI(*),GPOE(*),GPOP(*),IEVEC(NDAMP,*),IPVEC(NDAMP,*),
      &          ICVEC(*),HEDIAG(*),HPDIAG(*),HCDIAG(*),
@@ -1705,7 +1702,7 @@ C***********************************************************************
       use consts_mod, only: D0, DM1
 !      use thrzer_mod, only: THRZER
 !      use dcbxrs_mod, only: E2CHEK, ICRED, IERED, IPRED, IPRXRS, IPX, IZRED, LINEQ, NCSIM, NESIM, NPSIM, NREDM, NTSIM, NZCONF, NZCONFQ, NZRED, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, STATIC, XRS_CIPROGRAM
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I, J
 c#include "ibndxdef.h"
@@ -1713,7 +1710,6 @@ C
 #include "thrzer.h"
 C
 #include "dcbxrs.h"
-#include "dgroup.h"
       DIMENSION REDGP(NREDM),REDE(NREDM,NREDM),REDS(NREDM,NREDM),
      &          GPCI(*),GPOE(*),GPOP(*),
      &          IBCVC(NREDM),IBEVC(NREDM),IBPVC(NREDM),IBTYP(2,NREDM),
@@ -2470,14 +2466,13 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: ICRED, IERED, IPRED, IPRXRS, JSYMOP, NCSIM, NESIM, NPSIM, NREDM, NZCONFQ, NZRED, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D4=4.0D0
 C
 #include "dcbxrs.h"
-#include "dgroup.h"
 C
       DIMENSION IBCVC(NREDM),IBEVC(NREDM),IBPVC(NREDM),IBTYP(2,NREDM),
      &          BCVEC(NZCONFQ,*),BEVEC(NZXOPEQ,*),BPVEC(NZXOPPQ,*),
@@ -2949,12 +2944,11 @@ C     Written by T.Saue Oct 24 1996
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcbxrs_mod, only: JSYMOP
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dgroup.h"
 #include "dcbxrs.h"
       DIMENSION BVEC(NBDIM,NZ,NBSIM)
 C
@@ -2978,12 +2972,11 @@ C     Written by T.Saue & S.Villaume Jan2011
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcbxrs_mod, only: JSYMOP
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dgroup.h"
 #include "dcbxrs.h"
       DIMENSION BVEC(NBDIM,NZ,NBSIM)
 C
@@ -3374,7 +3367,7 @@ C***********************************************************************
 !      use dcbxrs_mod, only: FKRMC, IPRXRS, NFOCKMAT, NZXOPE, NZXOPP, STERNC, STERNH
       use dcbbas_mod, only: N2BBASXQ
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NORBT
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -3382,7 +3375,6 @@ C***********************************************************************
 C
 #include "dcbxrs.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION HEDIAG(*),HPDIAG(*),JXOPE(2,*),JXOPP(2,*),
      &          SEDIAG(*),SPDIAG(*),WORK(*)
@@ -3498,7 +3490,7 @@ C
 C***********************************************************************
 !      use maxash_mod, only: MAXASH
 !      use dcborb_mod, only: NASHT, NORBT
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXG2U, IFSMO, IOBTYP, JTACT, JTINAC
       use kinds_mod, only: dp
@@ -3509,7 +3501,6 @@ C
       REAL(dp), PARAMETER :: D2 = 2.0D0, DP5 = 0.5D0
 C
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbidx.h"
 C
       DIMENSION HODIAG(NXOP)
@@ -3623,7 +3614,7 @@ C
 C***********************************************************************
 !      use maxash_mod, only: MAXASH
 !      use dcborb_mod, only: NASHT
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXG2U, IFSMO, IOBTYP, JTACT, JTINAC
       use kinds_mod, only: dp
@@ -3634,7 +3625,6 @@ C
       REAL(dp), PARAMETER :: D2 = 2.0D0
 C
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbidx.h"
 C
       DIMENSION SODIAG(NXOP),JXOP(2,NXOP),DV(NASHT,NASHT,NZ)
@@ -4136,11 +4126,10 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: NTBAS
 !      use dcborb_mod, only: NORBT
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "dgroup.h"
       LOGICAL FNDLAB16
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
       DIMENSION RSPVEC(LEN),JXOP(2,LEN)
@@ -4475,14 +4464,13 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: IMX, INDSTR, IPRXRS, IPX, NPRED, NREDM, NSTAT, NZXOPE, NZXOPEQ, SKIPEE, SKIPEP, STATIC
-!      use dgroup_mod, only: FREP, NZ
+      use dgroup_mod, only: FREP, NZ
 !      use dcbibn_mod, only: JBENDX
 !      use dcborb_mod, only: NORBT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, II, J, JJ
 #include "dcbxrs.h"
-#include "dgroup.h"
 #include "dcbibn.h"
 #include "dcborb.h"
       REAL(dp), PARAMETER :: D1=1.0D0

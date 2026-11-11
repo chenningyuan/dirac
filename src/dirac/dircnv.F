@@ -33,7 +33,7 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: DOLVC
 !      use dcbham_mod, only: DO4C2C, ONECAP, ONECNV, ONECOFF, START2C
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -43,7 +43,6 @@ C Used from COMMON blocks
 C   DGROUP: NZ
 C
 #include "dcbdhf.h"
-#include "dgroup.h"
 #include "dcbham.h"
       LOGICAL OLDFMO, DAMPON, roundv
       DIMENSION FMO(*), EVEC(*),FBUF(*),BMAT(*),TMAT(*),
@@ -339,10 +338,10 @@ C   Last revision:   971029-jth
 C                    Nov 2005 - MI
 C
 C*****************************************************************************
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbham_mod, only: SUB_BL, ZORA
 !      use dcbdhf_mod, only: AOC, DA, DF, DIISAO, EVCVAL, I2TMOT, IPRSCF, LUCMOS, N2TMOTQ, NACSHMF, NESHMF, NFMAT, NISHMF, NOCCMF, NOPEN, NPSHMF, NTMO
 !      use dcborb_mod, only: NOCC, NPSH, N_SUB_BL, NTMO_SUB
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, NFBAS, NTBAS, NZT
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
@@ -353,7 +352,6 @@ C*****************************************************************************
 C
 #include "dcborb.h"
 #include "dcbham.h"
-#include "dgroup.h"
 #include "dcbdhf.h"
 C
 C Used from COMMON blocks:
@@ -982,7 +980,6 @@ C  DGROUP: NZ
 C  DCBBAS: N2VCTQ
 C
 #include "dcbdhf.h"
-!#include "dgroup.h"
       DIMENSION BMAT(*),BFAC(*),EVEC(*),EBUF(*),CVEC(*),KPVT(*)
       CALL QENTER('BMDIIS')
 C
@@ -1130,7 +1127,6 @@ C  DGROUP: NZ
 C
       INTEGER :: I
 #include "dcbdhf.h"
-!#include "dgroup.h"
       DIMENSION FOCK(*),FBUF(*),CVEC(*)
 C
       CALL DSCAL(N2TMOTQ,CVEC(NELMBM),FOCK,1)
@@ -1157,13 +1153,12 @@ C
 C*****************************************************************************
 !      use dcborb_mod, only: NBORB, NESH, NPSH
 !      use dcbdhf_mod, only: I2TMOT
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
 #include "dcbdhf.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       REAL(dp), PARAMETER :: D0=0.0D0
       DIMENSION EVEC(*),WORK(*)

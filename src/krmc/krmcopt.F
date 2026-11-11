@@ -33,7 +33,7 @@ C***********************************************************************
 
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NAELEC, NASHT, NCMOTQ, NGAS_DC, NNASHX, NORBT
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 !      use dcbopt_mod, only: E_LVCORR_MC, FOCKONLY, IKRMCCNO, IOPT_INTDEF, IPROPT, JCAS, JDHF, JGAS, JODHF, MCTYPE, MOPT_MXMACRO, NATONLY, NOPEN_MC, NZCONF, NZCONFQ, NZHOPEQ, NZXOPPQ, OPT_CIPROGRAM, SPINFR_KRMC, THQKVA
       use dcbgen_mod, only: DOLVC, LUITFO, LUKRM1, LUKRM2, LUKRM3,
      &  LUKRM4, LUKRM5, LUKRMC
@@ -48,7 +48,6 @@ C
       LOGICAL   WFCONV
 C
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbopt.h"
 !dcbgen.h needed for DOLVC for LVCORR
 #include "dcbham.h"
@@ -875,7 +874,7 @@ C***********************************************************************
 !      use dcbopt_mod, only: COMPROT, FROZCI, IPROPT, JMCMIN, MCTYPE, NZCONF, NZCONFQ, NZHOPE, NZHOPEQ, NZXOPP, NZXOPPQ, NZXOPT
       use dcbgen_mod, only: LUKRM3, LUKRMC
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NCMOTQ, NNASHX, NORBT
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
 C
 C
@@ -894,7 +893,6 @@ C
 C
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       CALL QENTER('RGRAD')
       CALL RTKTIME(.TRUE.,9)
@@ -1133,14 +1131,13 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ASHX, NAELEC, NASHT, NNASHX
 !      use dcbopt_mod, only: IPROPT, KZCONF, NZCONF, OPT_CIPROGRAM
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
       use quaternion_algebra
 #include "implicit.h"
       INTEGER :: I
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dgroup.h"
 C
       LOGICAL CALCDV, CALCPV
       DIMENSION DV(*), PV(*), CREF(*), WORK(*)
@@ -1354,7 +1351,7 @@ C***********************************************************************
 !      use dcborb_mod, only: I2ORBX, ICMOQ, MXGAS, N2ORBXQ, NASHT, NISHT, NORB, NORBT
 !      use dcbopt_mod, only: IOPT_IFCKOP, IOPT_IHRMOP, IOPT_INTFLG, IOPT_ISYMOP, IPROPT
       use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use cbihr2_mod, only: IPRTWO
       use dirac_cfg ! for MCSCF-srDFT calculations
 #include "implicit.h"
@@ -1363,7 +1360,6 @@ C
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dgroup.h"
       DIMENSION DV(*),CMO(*),FC(*),FV(*)
       DIMENSION WORK(LWORK)
       LOGICAL NOFV
@@ -1657,7 +1653,7 @@ C***********************************************************************
       use dcbgen_mod, only: LUKRM3, LUX2C
 !      use dcbham_mod, only: X2CMMF
       use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use frame_mod, only: POTNUC
       use cbihr2_mod, only: IPRTWO
 #include "implicit.h"
@@ -1667,7 +1663,6 @@ C
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dcbham.h"
-#include "dgroup.h"
       LOGICAL   TOFILE
       DIMENSION CMO(*),FC(*), WORK(LWORK)
       DIMENSION IQBF(4)
@@ -1830,12 +1825,11 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbdhf_mod, only: LUFCK1
       use dcbbas_mod, only: NTBAS
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
       use cbihr1_mod, only: IPRONE
 #include "implicit.h"
 C
 #include "dcbdhf.h"
-#include "dgroup.h"
 C
       DIMENSION H1AO(*), WORK(*)
       LOGICAL   EX
@@ -1904,7 +1898,7 @@ C***********************************************************************
 !      use maxash_mod, only: MAXASH
 !      use dcbopt_mod, only: IOPTST, IPROPT, LZXOPE, LZXOPP, N2DSHX, N2DSHXQ, N2VSHX, N2VSHXQ, NDSH, NDSHT, NVSH, NVSHT, NZCONF, NZHOPE, NZXOPE, NZXOPP, OPT_CHCKJZ, OPT_CIPROGRAM, OPT_DELSTR, OPT_INDSTR, OPT_SKIPEE, OPT_SKIPEP, OPT_UCIBOS, SPINFR_KRMC
 !      use dcborb_mod, only: IORB, NASH, NCMOTQ, NESH, NFRO, NGAS_DC, NISH, NOCC, NORB, NORBT, NPSH, NSSH
-!      use dgroup_mod, only: LINEAR, NFSYM, NZ
+      use dgroup_mod, only: LINEAR, NFSYM, NZ
 !      use dcbbos_mod, only: IBOSYM
 !      use dcbnrt_mod, only: LNOROT, NOROT, NOROTC
 !      use dcbidx_mod, only: IDXD2G, IDXG2D, IDXG2V, IDXV2G
@@ -1918,7 +1912,6 @@ C
 C
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbbos.h"
 #include "dcbnrt.h"
 #include "dcbidx.h"
@@ -2256,7 +2249,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUKRMC
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
 !      use dcbopt_mod, only: KZCONF, LZCONF, LZXOPE, LZXOPP, NZCONF, NZCONFQ, NZHOPE, NZHOPEQ, NZHOPT, NZHOPTQ, NZVAR, NZVARQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZXOPT, NZXOPTQ
 !      use dcborb_mod, only: NAELEC, NASH, NFRO, NGAS_DC, NGSH, NISH, NOCC, NSSH
       use orbital_rotation_indices
@@ -2264,7 +2257,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, J
 C
-#include "dgroup.h"
 #include "dcbopt.h"
 #include "dcborb.h"
 C
@@ -2360,7 +2352,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUCOEF, LUKRM5, LUKRMC
-!      use dgroup_mod, only: ATOMIC, LINEAR, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: ATOMIC, LINEAR, NBSYM, NFSYM, NZ
 !      use dcbopt_mod, only: FCIDUMP, IOPT_SYMMETRY, IPROPT, KZCONF, LZCONF, NZCONF, NZCONFQ, OPT_UCIBOS, SPINFR_KRMC
 !      use dcborb_mod, only: IORB, NAELEC, NASHT, NESH, NORB, NORBT, NPSH
       use memory_allocator
@@ -2373,7 +2365,6 @@ C  dgroup: NZ,NBSYM,NFSYM, linear
 C  dcbopt: NZCONF,NZCONFQ,KZCONF,IOPT_SYMMETRY,LZCONF
 C  dcborb: NAELEC,NASHT
 C
-#include "dgroup.h"
 #include "dcbopt.h"
 #include "dcborb.h"
 C
@@ -2673,7 +2664,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUKRMC
 !      use dcborb_mod, only: NORBT
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 !      use dcbopt_mod, only: NZHOPE, NZXOPE, NZXOPP, SPINFR_KRMC
       use memory_allocator
 C***********************************************************************
@@ -2712,7 +2703,6 @@ C***********************************************************************
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbopt.h"
 
 C
@@ -2786,14 +2776,13 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ASHXQ, NASHT, NORBT
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
       use maxorb_mod, only: MXCORB
 !      use maxash_mod, only: MAXASH
 !      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "dgroup.h"
 #include "maxash.h"
 #include "dcbidx.h"
 C
@@ -2852,14 +2841,13 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
       use consts_mod, only: D0, DP5
 !      use dcborb_mod, only: N2ASHT, N2ASHXQ, NASHT, NORBT
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
 #include "maxash.h"
 C
 C
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbidx.h"
 C
       DIMENSION DV(*),FCAC(*),FQ(NORBT,NASHT,NZ)
@@ -2948,14 +2936,13 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NORB
 !      use dcbopt_mod, only: IPROPT
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: NFBAS
 #include "implicit.h"
       INTEGER :: I
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dgroup.h"
 C
       REAL*8    CMO(*)
       INTEGER   JRDMO, IOPT, LUNIT
@@ -3062,14 +3049,13 @@ C***********************************************************************
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NORB, NORBT
 !      use dcbopt_mod, only: CINT_REORD, IANACI, IOPT_INTDEF, IOPT_INTFLG, IPROPT, JKRRUNTYPE, JMCMIN, JTRLVL, KTRLVL, MAXCIT, MCTYPE, MOPT_MXMACRO, NATOLCR, NZCONF, NZCONFQ, OPT_CIPROGRAM, SPINFR_KRMC
       use dcbbas_mod, only: NFBAS
-!      use dgroup_mod, only: ATOMIC, IPQTOQ, LINEAR, NFSYM, NZ
+      use dgroup_mod, only: ATOMIC, IPQTOQ, LINEAR, NFSYM, NZ
 !      use dcbnrt_mod, only: LNOROT, NOROT
 #include "implicit.h"
       INTEGER :: I
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dgroup.h"
 #include "dcbnrt.h"
 C
       LOGICAL EX, FNDLAB, FILEOPEN, MJVEC_AVAIL, readmj_df
@@ -3827,14 +3813,13 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use dcbnrt_mod, only: NOROTC
 !      use dcbopt_mod, only: COMPROT, EACTIV, FROZCI, IOPT_INTDEF, IOPT_INTFLG, IPROPT, JMCMIN, JTRLVL, KTRLVL, KZCONF, MCTYPE, MOPT_MXMICRO, NZCONF, NZCONFQ, NZHOPE, NZHOPEQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZXOPT, NZXOPTQ, OPT_CIPROGRAM, OPT_NOFQX, OPT_NOPFQ, RBETA, STPLCI, STPLEE, STPLEN, STPLEP
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 !      use dcbkrmc_itinfo_mod, only: DINFO
       use orbital_rotation_indices
 #include "implicit.h"
 C
 #include "dcbnrt.h"
 #include "dcbopt.h"
-#include "dgroup.h"
 #include "dcbkrmc_itinfo.h"
 C
       LOGICAL OPTRST,OPTNRM,OPTDIH,OPTSTERN, GOEER
@@ -4267,7 +4252,7 @@ C***********************************************************************
 !      use dcbopt_mod, only: IPROPT, NZCONF, NZCONFQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPT, NZXOPTQ, OPT_CIPROGRAM, THRPCI
 !      use dcborb_mod, only: ICMOQ, N2ORBXQ, NCMOTQ, NOCC, NORB, NORBT
       use dcbbas_mod, only: NFBAS
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbgen_mod, only: LUKRM2
       use orbital_rotation_indices
 
@@ -4280,7 +4265,6 @@ C
 C
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION CMO(*), WORK(*), IBTYP(2,*), IBCVC(*),
      &          IBEVC(*),IBPVC(*), EVECR(*)
@@ -4576,7 +4560,7 @@ C     Written by J. Thyssen - Nov 27 1998; revised Aug 2015 hjaaj
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: N2ORBXQ, NORBT
 !      use dcbopt_mod, only: CRDFO_MAT, ECORE_LR
       use dcbgen_mod, only: LUKRM3
@@ -4587,7 +4571,6 @@ C dcborb.h : NORBT,...
 C dcbopt.h : CRDFO_MAT, ECORE_LR
 C dcbgen.h : LUKRM3
 C
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 C
@@ -5082,7 +5065,7 @@ C***********************************************************************
       use consts_mod, only: D0
 !      use thrzer_mod, only: THRZER
 !      use dcbopt_mod, only: NZCONF, NZCONFQ, OPT_CIPROGRAM
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
 C
@@ -5090,7 +5073,6 @@ C
       REAL(dp), PARAMETER :: THRTT = 1.0D-4
 C
 #include "dcbopt.h"
-#include "dgroup.h"
 C
       DIMENSION CREF(NZCONF,*)
 C
@@ -5550,7 +5532,7 @@ C
 C***********************************************************************
 !      use dcborb_mod, only: I2ORBT, ICMOQ, N2ORBTQ, NAELEC, NISHT, NORB, NORBT
 !      use dcbopt_mod, only: IPROPT
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, N2TMT, NFBAS,
      &  NTBAS, NZT
       use dcbgen_mod, only: BNCRON, LUTMAT
@@ -5559,7 +5541,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dgroup.h"
 C
       DIMENSION CMO(*)
       DIMENSION WORK(*)
@@ -5657,13 +5638,12 @@ C     NOTE: This routine is not active - S. Knecht/Jan 2010
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, II, III
       REAL(dp), PARAMETER :: DC = 100.0D0
 C
-#include "dgroup.h"
 C
       DIMENSION GPOE(*),GPOP(*)
       DIMENSION WORK(*)
@@ -5901,11 +5881,10 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ORBXQ, NORBT
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION GOEE(*),GOEP(*)
       DIMENSION WORK(*)
@@ -5964,14 +5943,13 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IOBTYP, JTACT, JTINAC
 !      use dcborb_mod, only: NORBT
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I
 #include "maxash.h"
 C
 #include "dcbidx.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION NOROT(*),GRAD(NORBT,NORBT,*)
 C
@@ -6002,13 +5980,12 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use consts_mod, only: D0, D2
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, II, III
       REAL(dp), PARAMETER :: DC = 1.0D2
 C
-#include "dgroup.h"
 C
       DIMENSION GOEE(*),GOEP(*)
       DIMENSION WORK(*)
@@ -6133,14 +6110,13 @@ C***********************************************************************
 !      use dcbnrt_mod, only: NOROT, NOROTC
       use dcbgen_mod, only: LUKRM3
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NORBT
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
       INTEGER :: I, J
 C
 C
 #include "dcbnrt.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION GOEE(NXOPE,*), GOEP(NXOPP,*), JXOPE(*), JXOPP(*)
       DIMENSION FC(*), FV(*), CMO(*), FQ(NORBT,NASHT,*), DV(*)
@@ -6372,7 +6348,7 @@ C***********************************************************************
 !      use dcborb_mod, only: NASHT, NISHT, NPSHT, NSSHT
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXG2I, IDXG2S, IDXG2U, IDXP2G, IDXS2G, IOBTYP, JTINAC, JTSEC
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
       INTEGER :: I, II, K, KK
 #include "maxash.h"
@@ -6381,7 +6357,6 @@ C
 C
 #include "dcborb.h"
 #include "dcbidx.h"
-#include "dgroup.h"
 C
       CHARACTER*1 C
       LOGICAL DOGRAD, DOTRI
@@ -6511,13 +6486,12 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXE2G, IDXI2G, IDXP2G, IDXS2G, IDXU2G
 !      use dcborb_mod, only: NASHT, NESHT, NISHT, NORBT, NPSHT, NSSHT
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 #include "maxash.h"
 C
 #include "dcbidx.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       CHARACTER C*1
       DIMENSION FD(NORBT,NORBT,NZ), U(*), WORK(*)

@@ -230,7 +230,6 @@ contains
     use integer_kind_mpilib
 #endif
 ! legacy
-!#include "dgroup.h"
       use dirac_partask_mod, only: VISUAL_PAR
       use orgcom_mod, only: GAGORG
 
@@ -943,10 +942,9 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine dmat_transform_mo2ao(cmo, dmat_mo, dmat_ao)
-!      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: I2ORBX, ICMOQ
+      use dgroup_mod, only: IPQTOQ, NZ
       use dcbbas_mod, only: I2BASX
-#include "dgroup.h"
 #include "dcborb.h"
     type(cmo_t), intent(in):: cmo
     type(dmat_t), intent(inout):: dmat_ao
@@ -981,8 +979,7 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine insert_half_phases(mat_dim,nz_inp,irep,dmat)
-!      use dgroup_mod, only: IPQTOQ
-#include "dgroup.h"
+      use dgroup_mod, only: IPQTOQ
     integer,intent(in)::mat_dim,irep,nz_inp
     real(8), intent(inout)::dmat(mat_dim, mat_dim, *)
     integer::iz,iq
@@ -1272,10 +1269,9 @@ contains
 ! ------------------------------------------------------------------------------
   subroutine qtrans_mo2ao(dmat,bmat,cmo,&
                 i1,i2,ns,is,js,ni,ii,ji,irep,fadd)
-!      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: NORBT
+      use dgroup_mod, only: IPQTOQ, NZ
       use dcbbas_mod, only: I2BASX, NTBAS
-#include "dgroup.h"
 #include "dcborb.h"
     real(kind=8), intent(inout) :: dmat(ntbas(0)*ntbas(0), nz)
     real(kind=8), intent(in) :: bmat(norbt, norbt, nz)

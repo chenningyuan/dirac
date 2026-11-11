@@ -31,12 +31,11 @@ C     Output:
 C        VNZ3  : elements in (*,NZ,3) format
 C
 C***********************************************************************
-!      use dgroup_mod, only: IPQTOQ, JBTOF, LINEAR, NBSYM, NZ
 !      use dcbham_mod, only: LEVYLE, SPINFR
+      use dgroup_mod, only: IPQTOQ, JBTOF, LINEAR, NBSYM, NZ
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dgroup.h"
 #include "dcbham.h"
 C
       DIMENSION VCL(NELEM,NZ,NZ,*)
@@ -193,15 +192,14 @@ C
 C
 C***********************************************************************
 !      use maxash_mod, only: MAXASH
-!      use dgroup_mod, only: NZ
 !      use dcbopt_mod, only: SPINFR_KRMC
 !      use dcborb_mod, only: NASHT, NORBT
+      use dgroup_mod, only: NZ
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
 #include "maxash.h"
 C
-#include "dgroup.h"
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbidx.h"
@@ -249,7 +247,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 !      use dcbopt_mod, only: IPROPT, SPINFR_KRMC
 !      use dcborb_mod, only: NASHT, NNASHX, NORBT
       use maxorb_mod, only: MXCORB
@@ -257,7 +255,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "maxash.h"
 C
-#include "dgroup.h"
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbidx.h"
@@ -385,11 +382,10 @@ C        UGINT: (ug) integrals.
 C
 C***********************************************************************
       use consts_mod, only: DM1
-!      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 #include "implicit.h"
 C
 C
-#include "dgroup.h"
 C
       DIMENSION GUINT(NORBI,NASHI,NZ,NZ,*)
       DIMENSION UGTINT(NORBI,NASHI,NZ,NZ,*)
@@ -462,10 +458,9 @@ C
 C     Written by Joern Thyssen - Nov 15 2000
 C
 C***********************************************************************
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
-#include "dgroup.h"
 C
       INTEGER, SAVE :: IFAC(4,3,4,4)
 C
@@ -573,13 +568,12 @@ C
 C***********************************************************************
 !      use dcbopt_mod, only: OPT_NOPFQ
 !      use dcborb_mod, only: IORB, N2ORBXQ, NESH, NORB, NORBT, NPSH
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
 #include "implicit.h"
 !#include "maxash.h"
 C
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION HT(NKL,NZ,NZ,*)
       DIMENSION HX(NORBT,NORBT,NZ)
@@ -633,7 +627,7 @@ C***********************************************************************
 !      use dcbidx_mod, only: IDXT2G, IIDX3, IIDX4, NIDX3, NIDX4
 !      use dcbopt_mod, only: JTRLVL, NZXOPP, OPT_NOPFQ
 !      use dcborb_mod, only: NORBT
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 #include "implicit.h"
       INTEGER :: II, JJ
 #include "maxash.h"
@@ -641,7 +635,6 @@ C
 #include "dcbidx.h"
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION HT(NKL,NZ,NZ,*)
       DIMENSION HX(NORBT,NORBT,NZ,NZ,*)
@@ -791,13 +784,12 @@ C     Last revision :
 C
 C***********************************************************************
 !      use dcborb_mod, only: IORB, N2ORBXQ, NASH, NISH, NORB, NORBT, NPSH
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 #include "implicit.h"
       INTEGER :: I, J
 !#include "maxash.h"
 C
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION GUINT(NKL,NZ,NZ,*)
       DIMENSION HX(NORBT,NORBT,NZ)
@@ -855,13 +847,12 @@ C
 C***********************************************************************
 !      use dcborb_mod, only: IORB, NESH, NORB, NORBT, NPSH
 !      use dcbopt_mod, only: OPT_NOPFQ
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
 #include "implicit.h"
 !#include "maxash.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dgroup.h"
 C
       DIMENSION HT(NKL,NZ,NZ,*)
       DIMENSION HX(NORBT,NORBT,NZ)
@@ -915,12 +906,11 @@ C     Last revision :
 C
 C***********************************************************************
 !      use dcborb_mod, only: IORB, NASH, NISH, NORB, NORBT, NPSH
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
 #include "implicit.h"
 !#include "maxash.h"
 C
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION HT(NKL,NZ,NZ,*)
       DIMENSION HX(NORBT,NORBT,NZ)
@@ -1084,7 +1074,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use consts_mod, only: D0, D1
       use dcbbas_mod, only: I2TMT, N2TMT, NFBAS, NZT
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use pgroup_mod, only: REP
 !      use dcborb_mod, only: I2ORBT, ICMOQ, IORB, N2ORBTQ, NCMOTQ, NOCC, NORB, NORBT
       use dcbgen_mod, only: LUTMAT
@@ -1092,7 +1082,6 @@ C***********************************************************************
       INTEGER :: I, J
 C
 C
-#include "dgroup.h"
 #include "dcborb.h"
 C
       DIMENSION CMO(*)
@@ -1218,7 +1207,7 @@ C***********************************************************************
       use consts_mod, only: D1
 !      use dcborb_mod, only: ICMOQ, NESH, NORB, NPSH
 !      use dcbopt_mod, only: IPROPT
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: N2BBASX, NFBAS, NTBAS
 #include "implicit.h"
       INTEGER :: I, J
@@ -1226,7 +1215,6 @@ C
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dgroup.h"
 C
       DIMENSION CMO(*), WORK(*)
 C
@@ -1327,14 +1315,13 @@ C***********************************************************************
       use consts_mod, only: D0, D1, DM1
 !      use dcborb_mod, only: IASH, IORB, NASH, NASHT, NISH, NORB, NORBT, NPSH
 !      use dcbopt_mod, only: IPROPT
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 #include "implicit.h"
       INTEGER :: I
 C
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dgroup.h"
 C
       DIMENSION FQ(NORBT,NASHT,NZ)
       DIMENSION DV(NASHT,NASHT,NZ)
@@ -1456,13 +1443,12 @@ C
 C***********************************************************************
       use consts_mod, only: D2
 !      use dcborb_mod, only: IORB, N2ORBXQ, NISH, NORBT, NPSH
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
 #include "implicit.h"
       INTEGER :: I
 C
 C
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION DC(NORBT,NORBT,NZ)
 C
@@ -1493,13 +1479,12 @@ C***********************************************************************
 !      use maxash_mod, only: MAXASH
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXE2G, IDXI2G, IDXP2G, IDXS2G, IDXU2G
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NESHT, NISHT, NORBT, NPSHT, NSSHT
 #include "implicit.h"
 #include "maxash.h"
 C
 #include "dcbidx.h"
-#include "dgroup.h"
 #include "dcborb.h"
 C
       CHARACTER C*1
@@ -1560,14 +1545,13 @@ C
 C***********************************************************************
       use consts_mod, only: D0
 !      use dcborb_mod, only: I2ORBX, NORB, NORBT
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 #include "implicit.h"
       INTEGER :: I
 !#include "maxash.h"
 C
 C
 #include "dcborb.h"
-#include "dgroup.h"
 C
       CHARACTER C*1
       DIMENSION FC(*), FCOLD(*)
@@ -1609,13 +1593,12 @@ C
 C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
-!      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: IASH, IORB, N2ORBXQ, NASH, NASHT, NISH, NORBT, NPSH
 !      use dcbopt_mod, only: JMCMIN, MCTYPE
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 C
@@ -1684,7 +1667,7 @@ C***********************************************************************
       use dcbbas_mod, only: NFBAS
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXE2G, IDXI2G, IDXP2G, IDXS2G, IDXU2G
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcborb_mod, only: I2ORBX, ICMOQ, N2ORBXQ, NASHT, NCMOTQ, NESHT, NISHT, NORB, NORBT, NPSHT, NSSHT
 #include "implicit.h"
       INTEGER :: I
@@ -1692,7 +1675,6 @@ C***********************************************************************
 C
 C
 #include "dcbidx.h"
-#include "dgroup.h"
 #include "dcborb.h"
 C
       CHARACTER C*1
@@ -1761,10 +1743,9 @@ C     Written by S. Knecht - July 2008
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
-#include "dgroup.h"
 C
       CHARACTER C*1
       DIMENSION EIG(*), EIGVEC(NDIM,NDIM,NZ), AM(NDIM,NDIM,NZ)
@@ -1819,13 +1800,15 @@ C     Written by S. Knecht - July 2008
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
+#if defined (MCSCF_debug)
+      use dgroup_mod, only: IPQTOQ
+#endif
 !      use dcborb_mod, only: NASH, NASHT, NESH, NESHT, NISH, NISHT, NORBT, NPSH, NPSHT
 !      use dcbopt_mod, only: NVSH, NVSHT
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 C
@@ -2025,11 +2008,10 @@ C
 !***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IASH, NASH, NASHT, NISH, NORB, NORBT, NPSH
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dcborb.h"
-#include "dgroup.h"
       dimension mjvector(norbt), amat(nasht,nasht,nz)
       REAL(dp), PARAMETER :: xtol_dens = 1.0D-3, d0=0.0D0
       logical call_quit
@@ -2152,7 +2134,10 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use parluci_mod, only: CHECKPOINT_LUCIX, CKRCIONLY, CPBLCK_FILE_LUCIX, IC_SHL, IIOMOD_REL, ISMEMFAC, IT_SHL, LEVEL_SM, LOWSRT_IJKL, MASTER, MYPROC, NO_CDIAF, REORD_IJKL, SHARED_M, SPLIT_IJKL
       use pgroup_mod, only: GROUP
-!      use dgroup_mod, only: LINEAR, NBSYM, NFSYM
+      use dgroup_mod, only: LINEAR
+#if defined (VAR_MPI)
+      use dgroup_mod, only: NBSYM, NFSYM
+#endif
       use maxorb_mod, only: MXCORB
 !      use dcbopt_mod, only: CHCKPT_WRT, CINT_LOWSRT, CINT_REORD, CINT_SPLIT, CPBLCK_FILE, CSHMEMO, EMY, IDENSLR_STATE, IDOPARIO, IMEMFAC, IOPT_MK2DEL, IOPT_MK2REF, IOPT_SYMMETRY, IPROPT, IRESTRK, ISHMEM_TYPE, MAXCIT, MOPT_MXMACRO, MXCIV, NATOLCR, NCIROOT, NMAX_SYM, OPT_CIPROGRAM, OPT_THRECI, OPT_THRGRD, OPT_UCIBOS
 !      use dcborb_mod, only: IORB, MXGAS, NASH, NGASSP, NGAS_DC, NGSH, NGSHT, NISH, NORBT, NPSH
@@ -2178,7 +2163,6 @@ C***********************************************************************
       INTEGER ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
-#include "dgroup.h"
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbham.h"
@@ -2875,7 +2859,7 @@ C     DIAPAR.1
       subroutine print_ci_info()
 !**********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 !      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXROOT
 !      use cstate_mod, only: IREFL, IREFML, IREFPA, IREFSM, IROOT, NROOT
 !      use crun_mod, only: C_CONV, C_THRE, ENVIRO, E_CONV, E_THRE, ICISTR, ICJKAIB, ICLSSEL, IDENSI, IDIAG, INIDEG, INTIMP, IRESTR, ISEQCI, ISKIPEI, LCSBLK, MAXIT, MK2DEL_CI, MK2REF_CI, MXCIV_CI, MXINKA, MXP1, MXP2, MXQ, NOINT, NSEQCI, THRES_E, THRES_G
@@ -2885,7 +2869,6 @@ C     DIAPAR.1
       use symmetry_setup_krci
 #include "implicit.h"
       INTEGER :: I, II
-#include "dgroup.h"
 #include "../luciarel/mxpdim.inc"
 #include "../luciarel/cstate.inc"
 #include "../luciarel/crun.inc"
@@ -3274,14 +3257,13 @@ C     Written by S. Knecht - Aug 2008
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: IORB, NASH, NESH, NISH, NPSH
 !      use dcbopt_mod, only: NVSH
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
@@ -3428,11 +3410,10 @@ C     Written by S. Knecht - Jan 2010
 C
 C***********************************************************************
 !      use dcborb_mod, only: IORB, NORB, NORBT
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
 #include "implicit.h"
       INTEGER :: I, J
 #include "dcborb.h"
-#include "dgroup.h"
       DIMENSION XKAPPA(NORBT,NORBT,NZ), IMJ2(NORBT)
 C
       DO IFRP = 1,NFSYM

@@ -62,14 +62,13 @@ C***********************************************************************
 !      use dcbopt_mod, only: CPUOPT, EMCSCF, E_LVCORR_MC, IOPT_STATE, IOPT_SYMMETRY, IPROPT, JMCMIN, KZCONF, MCTYPE, MOPT_MXMACRO, NZCONF, NZCONFQ, OPT_CIPROGRAM, THRPCI, WLLOPT
 !      use dcborb_mod, only: N2ASHXQ, NCMOTQ, NORBT
       use frame_mod, only: POTNUC
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
       use mc_energies
 #include "implicit.h"
       INTEGER :: I
 C
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION WORK(*), DINFO(LDINFO,*), IINFO(LIINFO,*)
 C
@@ -370,14 +369,13 @@ C***********************************************************************
 !      use dcblab_mod, only: IPLAB, PLABEL
 !      use dcborb_mod, only: ICMOQ, IORB, NOCC, NORB
       use dcbbas_mod, only: NFBAS
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J, JJ, JJJ
 C
 #include "dcblab.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION CMO(*)
       LOGICAL PROCC, PRSML, PRLINE

@@ -6408,7 +6408,7 @@ C
 C***********************************************************************
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
-!      use dgroup_mod, only: IBTOSF
+      use dgroup_mod, only: IBTOSF
       use symmet_mod, only: ISYMAX
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -6422,7 +6422,6 @@ C***********************************************************************
      &     SHLINT(KCKTAB,NINTS),TMPARR(KCKTAB,8)
       INTEGER T, U, V, NINTS
 ! onecom.h :  KCKTAB
-#include "dgroup.h"
 C
 C
       CALL DZERO(TMPARR,KCKTAB*8)

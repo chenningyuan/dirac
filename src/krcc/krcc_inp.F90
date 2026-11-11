@@ -7,6 +7,7 @@
 ! Written by Lasse Soerensen 2010
 !
 !***********************************************************************
+      use dgroup_mod, only: NBSYM, NFSYM
       use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
 #include "ipoist8.inc"
@@ -15,7 +16,6 @@
 #include "crun.inc"
 #include "lucinp.inc"
 ! other blocks
-#include "dgroup.h"
       PARAMETER (NTABLE = 25)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
 !

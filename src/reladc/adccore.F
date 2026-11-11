@@ -31,7 +31,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !---------------Common Blocks--------------------------------------
 !
       use priunit_mod, only: LUCMD, LUPRI
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 !      use dcbham_mod, only: CAP, LEVYLE, SPINFR
 !      use infpar_mod, only: MPARID, MYTID, NUMNOD
 !      use ccpar_mod, only: MASTER, MYPROC, NMPROC
@@ -39,7 +39,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
 #include "implicit.h"
       INTEGER :: I
-#include "dgroup.h"
 #include "dcbham.h"
 !#include "dcbpsi.h"
 #include "infpar.h"
@@ -496,6 +495,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Modules------------------------------------------------
 !
+      use dgroup_mod, only: NZ
       use adc_cfg
       use adc_fano
       use memory_allocator
@@ -523,7 +523,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "dgroup.h"
 #include  "../relccsd/files.inc"
 #include  "adcinpt.inc"
 #include  "../relccsd/symm.inc"

@@ -38,7 +38,7 @@ C***********************************************************************
 !      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
 !      use cgas_mod, only: NGAS
 !      use dcborb_mod, only: IORB, NGSH, NISH, NORBT, NPSH
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 !      use parluci_mod, only: IS_ANA_MCSCF, MYPROC, N_MASTER, N_MASTER_SM
       use memory_allocator
       use mospinor_info
@@ -50,7 +50,6 @@ C
 #include "../luciarel/mxpdim.inc"
 #include "../luciarel/cgas.inc"
 #include "dcborb.h"
-#include "dgroup.h"
 #include "parluci.h"
 !     scratch
       integer, allocatable  :: orb_sym_vec(:)
@@ -283,7 +282,7 @@ C***********************************************************************
 !      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXPWRD, MXROOT
       use maxorb_mod, only: MXCORB
 !      use dcbbos_mod, only: IBOSYM
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 !      use ipoist8_mod, only: KDUM, KGROUPLIST, KPCBLTP, KPCI1BT, KPCIBT, KPCLBT, KPCLEBT, KPROCLENGTH, KPROCLIST, KPROCLIST2, KVEC1, K_OFFSET
 !      use clunit_mod, only: LUC, LUIN, LUOUT, LUSC1, LUSC2, LUSC39
 !      use cprnt_mod, only: IMEMCK, IPRCIX, IPRDIA, IPRHAM_CI, IPRSTR, IPRTRA
@@ -305,7 +304,6 @@ C***********************************************************************
 #include "../luciarel/mxpdim.inc"
 *. Boson symmetry info
 #include "dcbbos.h"
-#include "dgroup.h"
 *.Memory
 #include "../luciarel/ipoist8.inc"
 *.File numbers
@@ -944,13 +942,12 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbopt_mod, only: CRDFO_MAT, CWRTFO_MAT, ECORE_LR, IPROPT
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NNASHX, NORBT
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 !      use parluci_mod, only: LEN_ALL_INT
 #include "implicit.h"
 C
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       CHARACTER*6 CIRUN,RCISTFILE
       LOGICAL PARCAL_SAVE
@@ -1133,14 +1130,13 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbopt_mod, only: CRDFO_MAT, CWRTFO_MAT, ECORE_LR, IPROPT, MAXCIT, MOPT_MXMACRO, NCIROOT, NZCONF
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NNASHX, NORBT
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 !      use clunit_mod, only: LUC
 !      use parluci_mod, only: LEN_ALL_INT
 #include "implicit.h"
 C
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       CHARACTER*6 CIRUN,RCISTFILE
       LOGICAL PARCAL_SAVE
@@ -1363,14 +1359,13 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbopt_mod, only: CRDFO_MAT, CWRTFO_MAT, ECORE_LR, IPROPT
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NNASHX
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 !      use parluci_mod, only: LEN_ALL_INT
 #include "implicit.h"
       INTEGER :: I
 C
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       CHARACTER*6 CIRUN
 C
@@ -1486,12 +1481,11 @@ C     Last revision :       T. Fleig             - Mar 16 2002
 C
 C***********************************************************************
 !      use dcbopt_mod, only: IPROPT, NZCONF
-!      use dgroup_mod, only: NZ
 !      use clunit_mod, only: LUC, LUDIA, LUHC
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
 #include "dcbopt.h"
-#include "dgroup.h"
 C
       LOGICAL   SAVDIA
       CHARACTER*6 CIRUN
@@ -1614,14 +1608,13 @@ C
 C***********************************************************************
 !      use dcbopt_mod, only: CANA_MCSCF, IPROPT, NATOLCR, NZCONF
 !      use dcborb_mod, only: NASHT
-!      use dgroup_mod, only: NZ
 !      use clunit_mod, only: LUC, LUSC61, LUSC62
 !      use parluci_mod, only: IS_ANA_MCSCF, LF2_ZERO
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       LOGICAL CALCR1,CALCR2, natolcr_temp
       CHARACTER*6 CIRUN
@@ -1759,12 +1752,11 @@ C                     activated            - Jan 05, 2005
 C
 C***********************************************************************
 !      use dcbopt_mod, only: IPROPT, MOPT_MXMACRO, NCIROOT, NZCONF
-!      use dgroup_mod, only: NZ
 !      use clunit_mod, only: LUC
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
 #include "dcbopt.h"
-#include "dgroup.h"
 C
 #include "../luciarel/clunit.inc"
 C
@@ -1821,12 +1813,11 @@ C     Written by S. Knecht                 - Jan 12, 2014
 C
 C***********************************************************************
 !      use dcbopt_mod, only: IPROPT, MOPT_MXMACRO, NCIROOT, NZCONF
-!      use dgroup_mod, only: NZ
 !      use clunit_mod, only: LUC
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
 #include "dcbopt.h"
-#include "dgroup.h"
 C
 #include "../luciarel/clunit.inc"
 C
@@ -1881,12 +1872,11 @@ C     Written by S. Knecht                 - Jan 13, 2014
 C
 C***********************************************************************
 !      use dcbopt_mod, only: IPROPT, NCIROOT, NZCONF
-!      use dgroup_mod, only: NZ
 !      use clunit_mod, only: LUC
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
 #include "dcbopt.h"
-#include "dgroup.h"
 C
 #include "../luciarel/clunit.inc"
 C
@@ -1973,11 +1963,10 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use dummy_mod, only: DUMMY
       use dcbgen_mod, only: LUKRM3
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 !      use parluci_mod, only: LUWRT
 #include "implicit.h"
 C
-#include "dgroup.h"
       CHARACTER*6 CIRUN
       DIMENSION VPROP_KRCI(*), WORK(*)
 C               VPROP_KRCI(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,NPROP_KRCI,MZ)
@@ -2205,7 +2194,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use krciprop_mod, only: LXPRPKRCI, NPROP_KRCI, NPROP_ROOTS_KRCI, RUNXPROP
 !      use dcborb_mod, only: NASHT, NNASHX, NORBT
       use dcbgen_mod, only: PARCAL
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use memory_allocator
 C
 #include "implicit.h"
@@ -2221,7 +2210,6 @@ C
 #include "krciprop.h"
 !#include "dcbopt.h"
 #include "dcborb.h"
-#include "dgroup.h"
 
       real(8), allocatable :: WORK(:)
       call legacy_lwork_get(LWORK)

@@ -16,8 +16,8 @@ C***********************************************************************
 !      use dcbtra_mod, only: IPRTRA, TH_CHOLESKY, TRA4_INDSTR
 !      use infpar_mod, only: MPARID, MYTID
 !      use dcborb_mod, only: NESH
-!      use dgroup_mod, only: NZ
 !      use dcbham_mod, only: SPINFR
+      use dgroup_mod, only: NZ
       use exacorr_cfg
       use exacorr_ao_to_mo,only     : exacorr_compute_mo_integrals
       use eti_ao_to_mo,only         : eti_compute_mo_integrals
@@ -34,7 +34,6 @@ C***********************************************************************
 ! we need to broadcast tra4_indstr
 #include "dcborb.h"
 ! to access nesh (number of positive energy "electronlike" orbitals)
-#include "dgroup.h"
 #include "dcbham.h"
 !information about the group
 

@@ -2867,9 +2867,8 @@ contains
   ! 
   !-----------------------------------------------------------------------------------
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: IPQTOQ
+      use dgroup_mod, only: IPQTOQ
    implicit none
-#include "dgroup.h"
     real*8, intent(in) :: eigval(N),eigvect(N,N)
     character(*), intent(in) :: routine_name
     real*8, allocatable :: AXr(:,:),AYr(:,:),C(:,:)

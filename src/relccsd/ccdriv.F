@@ -2737,6 +2737,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     CCFOPR - CC First Order PRoperties, aka gradients
 C
+      use dgroup_mod, only: NZ
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
       use interface_to_mpi
@@ -2776,7 +2777,6 @@ C
 #include "inpt.inc"
 #include "eqns.inc"
 #include "symm.inc"
-#include "dgroup.h"
 #include "complex.inc"
 #include "ccpar.inc"
 #include "mp1stpr.h"

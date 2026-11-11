@@ -250,9 +250,8 @@
         SUBROUTINE READ_BASIS(filenum,linelen,lupri)
       use codata_mod, only: XTANG
       use dcbgen_mod, only: KCHARG
+      use dgroup_mod, only: NONATM
         implicit none
-!      use dgroup_mod, only: NONATM
-#include "dgroup.h" 
 
 ! using OPTIMI
 
@@ -730,7 +729,9 @@
       use maxorb_mod, only: MXCORB
       use cbirea_mod, only: FAMPAR, INPTST, IPREAD, NFAMEXP, TOL_SYMADD, UNCONT
       use ccom_mod, only: DOCART, DOSPHE, NHTYP, THRS
-!      use dgroup_mod, only: ATOMIC, LINEAR, NONATM
+#ifdef PRG_DIRAC
+      use dgroup_mod, only: ATOMIC, LINEAR, NONATM
+#endif
       use maxaqn_mod, only: MXAQN, MXQN
 !      use infpar_mod, only: MYTID
       use RECP_NTR
@@ -779,9 +780,7 @@
       INTEGER :: int8
       integer blk
 !
-#ifdef PRG_DIRAC
-#include "dgroup.h"
-#else
+#ifndef PRG_DIRAC
       LOGICAL LINEAR, ATOMIC
 #endif
 

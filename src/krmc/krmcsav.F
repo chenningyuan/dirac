@@ -34,7 +34,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use consts_mod, only: D0
 !      use dcborb_mod, only: NASHT, NCMOTQ, NORBT
-!      use dgroup_mod, only: LINEAR
+      use dgroup_mod, only: LINEAR
 !      use dcbopt_mod, only: BETA, DEPRED, EACTIV, EMCOLD, EMCSCF, EMY, FOCKONLY, GAMMA, IKRMCCNO, IPROPT, ITMAC, NATONLY, NZCONF, NZCONFQ, OPT_CHCKJZ, RTRUST, SPINFR_KRMC
       use dcbgen_mod, only: LUCOEF, LUKRM4, LUKRMC
       use dircmo
@@ -42,7 +42,6 @@ C***********************************************************************
 C
 C
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbopt.h"
 C
       DIMENSION CMO(*), CREF(*)

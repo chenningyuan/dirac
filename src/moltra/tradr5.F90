@@ -87,7 +87,7 @@
 !      use dcbtra_mod, only: ISAME, SCRTRA
       use comdis_mod, only: ISHLA
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use interface_to_mpi
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -98,7 +98,6 @@
 #include "dcborb.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
-#include "dgroup.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION TMATRX1(*),TMATRX2(*)
       DIMENSION XMO(*)
@@ -228,12 +227,11 @@
 !      use dcbtr3_mod, only: IBAS1, IBAS2, IBBAS1, IBBAS2, ISPCK12, NBBAS1, NBBAS2, NSPCK12
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NTBAS
 !      use dcborb_mod, only: NASHT
-!      use dgroup_mod, only: JBTOF, NBSYM, NZ
+      use dgroup_mod, only: JBTOF, NBSYM, NZ
 #include "implicit.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcborb.h"
-#include "dgroup.h"
       LOGICAL NOPV, NODV, TRIAN(2)
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4)
@@ -512,9 +510,9 @@
 !     - HMAT         Symmetry packed half-transformed integrals
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dgroup_mod, only: JBTOF, NBSYM, NZ
 !      use dcbtra_mod, only: NFPCK12
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
+      use dgroup_mod, only: JBTOF, NBSYM, NZ
       use comdis_mod, only: LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -532,7 +530,6 @@
 !
       DIMENSION IHM(0:7)
 !
-#include "dgroup.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 !
@@ -620,7 +617,7 @@
 !     - XAOMO        The Lagrangian with one index in AO basis
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -634,7 +631,6 @@
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, K
-#include "dgroup.h"
 #include "dcbtra.h"
 #include "dcborb.h"
 #include "dcbtr3.h"
@@ -1013,9 +1009,8 @@
 !                                 X
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dgroup_mod, only: JBTOF, NBSYM, NFSYM
+      use dgroup_mod, only: JBTOF, NBSYM, NFSYM
 #include "implicit.h"
-#include "dgroup.h"
 !
       DIMENSION NBBASA(0:7,0:2)
 !
@@ -1049,9 +1044,8 @@
 !     Output :
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
-#include "dgroup.h"
 !
       INTEGER INFOT(6,4,4,2)
 !
@@ -1423,11 +1417,10 @@
 !     Output :
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
 !      use dcborb_mod, only: NAOCC, NAVIR
 !      use mp1stpr_mod, only: IOFFTM1, NTMATR1
+      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
 #include "implicit.h"
-#include "dgroup.h"
 #include "dcborb.h"
 #include "mp1stpr.h"
 !
@@ -1476,11 +1469,10 @@
 !     Output :
 !     
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
 !      use dcborb_mod, only: NAOCC, NAVIR
 !      use mp1stpr_mod, only: IOFFTM2, NTMATR2
+      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
 #include "implicit.h"
-#include "dgroup.h"
 #include "dcborb.h"
 #include "mp1stpr.h"
 !
@@ -1587,11 +1579,10 @@
 !     Output:  TMATRX2 - T matrix, order kcla
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
 !      use dcborb_mod, only: NAOCC, NAVIR
 !      use mp1stpr_mod, only: IOFFTM1, IOFFTM2
+      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
 #include "implicit.h"
-#include "dgroup.h"
 #include "dcborb.h"
 #include "mp1stpr.h"
 !
@@ -1661,11 +1652,10 @@
 !           
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbtra_mod, only: NFPCK12
-!      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
 #include "implicit.h"
 !     
 #include "dcbtra.h"
-#include "dgroup.h"
       DIMENSION IPTQLAG(2,0:7,0:7,2),NSTR3(2)
       DIMENSION NBBASR(0:7,0:2),NBBASS(0:7,0:2)
       DIMENSION NTQINT(2,0:7,0:7,2)
@@ -1714,9 +1704,8 @@
 !     Output : 
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dgroup_mod, only: NBSYM
+      use dgroup_mod, only: NBSYM
 #include "implicit.h"
-#include "dgroup.h"
 !
       DIMENSION NBBASA(0:7,0:2)
       DIMENSION ILOFF(0:7)
@@ -1744,10 +1733,9 @@
 !     Output :
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
 !      use dcborb_mod, only: NAOCC, NAVIR
+      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
 #include "implicit.h"
-#include "dgroup.h"
 #include "dcborb.h"
 !
       DIMENSION NBBASA(0:7,0:2)
@@ -1785,12 +1773,11 @@
 !     Output :
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
 !      use dcborb_mod, only: NAOCC, NAVIR
+      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
       use dcbbas_mod, only: NBBAS, NFBAS
 #include "implicit.h"
       INTEGER :: I
-#include "dgroup.h"
 #include "dcborb.h"
 !
       DIMENSION NBBASA(0:7,0:2)
@@ -1958,7 +1945,7 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcborb_mod, only: ICMOQ, NAOCC, NAOCCT, NIOCC, NORB, NORBT, NPSH
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: NFBAS
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1966,7 +1953,6 @@
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D4 = 4.0D0
 !
 #include "dcborb.h"
-#include "dgroup.h"
 !
       DIMENSION CMO(*)
       DIMENSION XAOMO(*)
@@ -2025,14 +2011,13 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcborb_mod, only: ICMOQ, NAVIR, NAVIRT, NOCC, NORB, NORBT, NPSH
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: NFBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D4 = 4.0D0
 !
 #include "dcborb.h"
-#include "dgroup.h"
 !
       DIMENSION CMO(*)
       DIMENSION ZAOMO(*)
@@ -2093,14 +2078,13 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcborb_mod, only: NAOCC, NAOCCT, NAVIR, NAVIRT, NIOCC, NOCC, NORB, NORBT, NPSH
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D1=1.0D0
 !     
 #include "dcborb.h"
-#include "dgroup.h"
 !
       DIMENSION XMO1(*), XMO2(*), XMO(*)
 !

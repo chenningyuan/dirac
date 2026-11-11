@@ -1,5 +1,6 @@
 module openrsp_interface_1el
 
+      use dgroup_mod, only: NZ
       use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBASX, NTBAS
       use dcbgen_mod, only: CVAL, LU1INT
       use symmet_mod, only: ISYMAX
@@ -25,7 +26,6 @@ module openrsp_interface_1el
 #include "dcbcls.h"
 #include "dcbprl.h"
 #include "dcbxpr.h"
-#include "dgroup.h"
 
 contains
 

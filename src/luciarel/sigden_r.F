@@ -2606,12 +2606,12 @@ C     INTEGER JGRP(MXPNGAS)
 
       SUBROUTINE SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,IPRNT)
 !      use ipoist8_mod, only: KLABEXTP, KLIHIND, KLOP_REO, KLSOBEX, KSIGNNHX, KSIOPREO
-!      use dgroup_mod, only: NZ
 !      use mxpdim_mod, only: MXINT_DIA, MXINT_TP, MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
 !      use cgas_mod, only: NGAS
 !      use ctcc_mod, only: I2DIATP, KLABEXTP, KLIHIND, KLOP_REO, KLSOBEX, KSIGNNHX, KSIOPREO, LEN_T_VEC, MX_ST_TSOSO_BLK_MX, MX_ST_TSOSO_MX, MX_TBLK_MX, N1ELINT, N2ELINT, NALLINT, NSPOBEX_TP
 !      use integrals_off_mod, only: IBTSOSO_TP, I_TOT_DIM_T, NINT_2E
 !      use parluci_mod, only: LUWRT
+      use dgroup_mod, only: NZ
       use luci_wrkspc
 *
 *     Construct orbital excitation types for different choices
@@ -2632,7 +2632,6 @@ C     INTEGER JGRP(MXPNGAS)
 #include "implicit.inc"
 #include "ipoist8.inc"
 *  
-#include "dgroup.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 C
@@ -2854,6 +2853,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                     ,IBLOCKL_S,NPARBLOCK_S
 #endif
      &                 )
+      use dgroup_mod, only: NZ
       use luci_wrkspc
 C***********************************************************************
 C
@@ -2910,7 +2910,6 @@ C***********************************************************************
 #include "krciprop.h"
 #include "files_r.inc"
 *
-#include "dgroup.h"
       LOGICAL SBLK_READS2
 *
 *     batches of sigma
@@ -3896,7 +3895,6 @@ C end of preprocessing for cray compiler
 !      use integrals_off_mod, only: IBTSOSO_TP
 !      use ctcc_mod, only: LEN_T_VEC, NSPOBEX_TP
 !      use krmc_shmem_mod, only: MY_T_WIN
-!      use dgroup_mod, only: LINEAR
 #if defined (VAR_MPI2)
      &                      ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
      &                       ISCLFAC_GROUP,NPARBLOCK_C,IBLOCKL_C,
@@ -3905,6 +3903,7 @@ C end of preprocessing for cray compiler
      &                       NPARBLOCK_S
 #endif
      &           )
+      use dgroup_mod, only: LINEAR
       use luci_wrkspc
 *
 *
@@ -3977,7 +3976,6 @@ C     general input
 C     memory window
 #include "krmc_shmem.h"
 !         FOR debug!!!
-#include "dgroup.h"
 C     specific input
       INTEGER ISBLOCK(8,*)
       INTEGER LCBLOCK(*),I1CBLOCK(*),ICBLOCK(8,*),LECBLOCK(*)

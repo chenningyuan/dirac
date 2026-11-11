@@ -41,12 +41,11 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbopt_mod, only: IOPT_INTFLG, IPROPT, OPT_INTTYP, OPT_NOPFQ, OPT_SKIPEP
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I, J, K
 C
 #include "dcbopt.h"
-#include "dgroup.h"
 C
       CHARACTER SZTRA(2,4)*(*)
       DIMENSION CMO(*),WORK(*)
@@ -110,12 +109,11 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbopt_mod, only: IPROPT, OPT_NOPFQ, OPT_SKIPEP
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I, J
 C
 #include "dcbopt.h"
-#include "dgroup.h"
 C
       CHARACTER*(*) SZTRA(2,4)
       CHARACTER*4 TESTSTRING
@@ -218,14 +216,13 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
       use dummy_mod, only: IDUMMY
 !      use dcborb_mod, only: NASH, NESH, NORB, NORBT
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 !      use dcbidx_mod, only: IDXE2G, IDXT2G, IDXU2G, IIDX1, IIDX2, IIDX3, IIDX4, NIDX1, NIDX2, NIDX3, NIDX4, NIDXT
 #include "implicit.h"
       INTEGER :: I, J
 #include "maxash.h"
 C
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbidx.h"
 C
       CHARACTER C*4
@@ -450,11 +447,10 @@ C     Written by J. Thyssen - Wed Mar 14 17:20:32 "MET 2001
 C     Last revision :
 C
 C***********************************************************************
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dgroup.h"
 C
       LOGICAL   IDXFLG, USENOROT
       DIMENSION IDX(*), IDXT2G(*), NORB(*), NOROT(*), IIDX(2), NIDX(2)
@@ -541,11 +537,10 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I, J
 C
-#include "dgroup.h"
 C
       DIMENSION ILIST(MXCORB,2), NLIST(2)
       CHARACTER*(*) SZTRA(2)
@@ -756,7 +751,7 @@ C***********************************************************************
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
       use dcbbas_mod, only: NFBAS
 !      use dcborb_mod, only: ICMOQ, IORB, NESH, NORB, NORBT, NPSH
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
       use dcbgen_mod, only: LUKRMC
 !      use dcbopt_mod, only: OPT_CHCKJZ, SPINFR_KRMC
 #include "implicit.h"
@@ -765,7 +760,6 @@ C
 #include "../moltra/dcbtra.h"
 #include "../moltra/dcbtr3.h"
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbopt.h"
       CHARACTER DAYTID*24, SECTID*12, CPUTID*12, WALLTID*12
       LOGICAL TRASAM
@@ -1069,11 +1063,10 @@ C
 !
 !***********************************************************************
 !      use dcborb_mod, only: N2ORBX
-!      use dgroup_mod, only: NBSYM, NFSYM, NZ
+      use dgroup_mod, only: NBSYM, NFSYM, NZ
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "dgroup.h"
 !-----------------------------------------------------------------------
       integer luint, LU_NOT_USED
       integer nfh12ij_offset(2), nfh12kl_offset(2), indxb34_offset(2)
@@ -1143,7 +1136,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use infpar_mod, only: MYTID
 !      use dcborb_mod, only: N2ORBX, NASHT, NNASHX, NORBT
-!      use dgroup_mod, only: IPQTOQ, JBTOF, LINEAR, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, JBTOF, LINEAR, NBSYM, NFSYM, NZ
 !      use dcbham_mod, only: LEVYLE, SPINFR
       use mcscf_routines
       use memory_allocator
@@ -1153,7 +1146,6 @@ C***********************************************************************
 !#include "maxash.h"
 C
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbham.h"
 C
       real*8    FQ(NORBT,NASHT,NZ)
@@ -1506,7 +1498,7 @@ C     Written by J. Thyssen - Nov 16 2000
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: NASHT, NNASHX, NORBT
 !      use dcbham_mod, only: LEVYLE, SPINFR
       use kinds_mod, only: dp
@@ -1516,7 +1508,6 @@ C
       REAL(dp), PARAMETER :: D1 = 1.0D00, DM1 = -1.0D00
 C
 C dcbham.h : spinfr, levyle
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbham.h"
 C
@@ -2042,7 +2033,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: NASHT, NNASHX, NORBT
 !      use dcbopt_mod, only: IPROPT, JTRLVL, OPT_NOPFQ
       use maxorb_mod, only: MXCORB
@@ -2050,7 +2041,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "maxash.h"
 C
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dcbidx.h"
@@ -2199,7 +2189,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
 !      use dcbopt_mod, only: JTRLVL
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
@@ -2207,7 +2197,6 @@ C***********************************************************************
 #include "maxash.h"
 C
 #include "dcbopt.h"
-#include "dgroup.h"
 #include "dcbidx.h"
 C
       DIMENSION NFPCK12(2)
@@ -2361,6 +2350,7 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision : S. Knecht - modifications for spinfree MCSCF
 C
 C***********************************************************************
+      use dgroup_mod, only: IPQTOQ, JBTOF, LINEAR, NBSYM, NFSYM, NZ
       use priunit_mod, only: LUPRI
       use memory_allocator
 #include "implicit.h"
@@ -2368,7 +2358,6 @@ C***********************************************************************
 C
 #include "dcbxrs.h"
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbham.h"
 C
       DIMENSION FQX(NORBT,NASHT,NZ,*)
@@ -2978,10 +2967,10 @@ C     Written by J. Thyssen - Dec 5 2000
 C     Last revision :
 C
 C***********************************************************************
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION H2AC(*)
       DIMENSION WORK(*)
@@ -3012,13 +3001,13 @@ C     Written by J. Thyssen - Dec 5 2000
 C     Last revision :
 C
 C***********************************************************************
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
 C dcbham.h : spinfr, levyle
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dcbham.h"
-#include "dgroup.h"
 C
       DIMENSION H2AC(NASHT,NASHT,NNASHX,NZ,3,*)
       DIMENSION H2ACO(NASHT,NASHT,NNASHX,NZ,3)
@@ -3261,11 +3250,11 @@ C     Written by J. Thyssen - Dec 6 2000
 C     Last revision :
 C
 C***********************************************************************
+      use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbxrs.h"
 C
       DIMENSION BEVEC(*), BPVEC(*)
@@ -3450,12 +3439,12 @@ C     Output:
 C        H2VP   : integrals in (NASHT,NASHT,*) format.
 C
 C***********************************************************************
+      use dgroup_mod, only: NFSYM, NZ
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "maxash.h"
 C
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dcbidx.h"
@@ -3554,6 +3543,7 @@ C
 C     Written by J. Thyssen - Dec 6 2000
 C
 C***********************************************************************
+      use dgroup_mod, only: IPQTOQ, NZ
       use consts_mod, only: D1, DM1, DMP5, DP5
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
@@ -3561,7 +3551,6 @@ C***********************************************************************
 #include "maxash.h"
 C
 C
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbidx.h"
 C
@@ -3764,10 +3753,10 @@ C
 C
       SUBROUTINE RADDFQX1(szPV,szQV,FAC,IZPV,I3PV,IZQV,I3QV,
      &     H2VPX,PV,NVQ,IQU,IVU,FQX)
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION H2VPX(NASHT,NASHT,NZ,3)
       DIMENSION PV(NASHT,NASHT,NNASHX,NZ,3)

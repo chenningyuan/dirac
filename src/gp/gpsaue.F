@@ -2763,10 +2763,9 @@ C
 C     Written by panor 1999
 C
 C***********************************************************************
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "dgroup.h"
 C
       REAL(dp), PARAMETER :: DM1 = -1.0D0
 C
@@ -3441,13 +3440,12 @@ C     Written by T. Saue Oct 10 2004
 C     Last changes: M.Ilias, Sept 2005
 C
 C***********************************************************************
-!      use dgroup_mod, only: IQDEF
+      use dgroup_mod, only: IQDEF
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: J
       REAL(dp), PARAMETER :: D1=1.0D0, D0=0.0D0
       DIMENSION A(LRA,LCA,NZA),EVEC(LRA,N,NZA),EVAL(N),WORK(*)
-#include "dgroup.h"
       KFRSAV = KFREE
 C
 C     First diagonalize the matrix and save eigenvectors 

@@ -4482,6 +4482,7 @@ C     END IF
 *
 * Lasse 2010
 *
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -4491,7 +4492,6 @@ C     END IF
 #include "ctcc.inc"
 #include "ctccp.inc"
 * for real or complex groups
-#include "../include/dgroup.h"
 *
       DIMENSION WORK(*)
 *
@@ -6284,11 +6284,11 @@ C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
 * just be the sum of the two ooperators contracted
 * Just perhaps just use IMAXKRFLIP from crun
 *
+      use dgroup_mod, only: NFSYM, NZ
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "crun.inc"
-#include "dgroup.h"
 *
       INTEGER IOP(4*NGAS)
 *

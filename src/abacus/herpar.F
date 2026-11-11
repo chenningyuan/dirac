@@ -607,7 +607,6 @@ C
       INTEGER :: I
 #if defined (PRG_DIRAC)
 #include "dcbham.h"
-#include "dgroup.h"
 #endif
 C
 #include "infpar.h"
@@ -1484,7 +1483,6 @@ C
 C
 #if defined (PRG_DIRAC)
 #include "dcbham.h"
-#include "dgroup.h"
 #endif
 #include "infpar.h"
 C

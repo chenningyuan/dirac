@@ -42,7 +42,7 @@ contains
 
 !      use dcbham_mod, only: IPRHAM, MC, MDIRAC
 !      use dcborb_mod, only: NCMOTQ, NESH, NORB, NPSH
-!      use dgroup_mod, only: IHQMAT, IPQTOQ, IQTOPQ, IRQMAT, JBTOF, JM4POS, JQBAS, NFSYM, NZ
+      use dgroup_mod, only: IHQMAT, IPQTOQ, IQTOPQ, IRQMAT, JBTOF, JM4POS, JQBAS, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, I2TMT, N2BASTQ, N2BBASXQ, N2TMT, NFBAS, NTBAS, NZT
       use dcbgen_mod, only: CVAL, LUTMAT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -53,7 +53,6 @@ contains
       use aobasis_collector
 #include "dcbham.h"
 #include "dcborb.h"
-#include "dgroup.h"
 !#include "dcbprp.h"
 !#include "dcbxpr.h"
 #include "dcbdhf.h"
@@ -247,13 +246,12 @@ contains
 
 !      use dcbham_mod, only: MDIRAC
 !      use dcborb_mod, only: NCMOT, NESH, NORB, NORB_SUB, NPSH, NTMO_SUB, N_SUB_BL
-!      use dgroup_mod, only: NZ
 !      use dcbdhf_mod, only: I2TMOT, N2TMO, NTMO
+      use dgroup_mod, only: NZ
       use dcbbas_mod, only: I2BASX, I2TMT, N2BASTQ, N2BBASXQ, N2TMT, NFBAS, NTBAS, NZT
       use quaternion_algebra
 #include "dcbham.h"
 #include "dcborb.h"
-#include "dgroup.h"
 !#include "dcbprp.h"
 !#include "dcbxpr.h"
 #include "dcbdhf.h"

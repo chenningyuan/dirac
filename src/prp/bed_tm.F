@@ -16,7 +16,7 @@ C***********************************************************************
       use codata_mod, only: CVEL
       use dcbgen_mod, only: CVAL
       use pgroup_mod, only: REP
-!      use dgroup_mod, only: JM4, JM4REP, MCMP, NBSYM, NZ
+      use dgroup_mod, only: JM4, JM4REP, MCMP, NBSYM, NZ
 !      use dcbxrs_mod, only: JSYMOP, JTIMOP, LUBOE, LUBOP, NESIM, NEXCNV, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcbxpp_mod, only: BEDCHK, BEDECD, DOBED, IPRXPP, KEXCNV, MAXEXC, UPOL, UWAVE
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
@@ -29,7 +29,6 @@ C
       INTEGER :: I, II
 C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0,D4=4.0D0)
-#include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "dcbxpr.h"
@@ -461,7 +460,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use pgroup_mod, only: REP
-!      use dgroup_mod, only: MCMP, NZ
+      use dgroup_mod, only: MCMP, NZ
       use nuclei_mod, only: NUCIND
 !      use dcbxrs_mod, only: JSYMOP, JTIMOP, LUBOE, LUBOP, NESIM, NEXCNV, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcbxpp_mod, only: IPRXPP, KEXCNV, MAXEXC
@@ -475,7 +474,6 @@ C
       INTEGER :: II
 C
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, D1=1.0D0
-#include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "dcbxpr.h"
@@ -713,7 +711,7 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use chrxyz_mod, only: CHRXYZ
       use pgroup_mod, only: REP
-!      use dgroup_mod, only: JM4, JM4REP, NZ
+      use dgroup_mod, only: JM4, JM4REP, NZ
       use nuclei_mod, only: NUCIND
 !      use dcbxrs_mod, only: JSYMOP, JTIMOP, LUBOE, LUBOP, NESIM, NEXCNV, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcbxpp_mod, only: IPRXPP, KEXCNV, MAXEXC
@@ -727,7 +725,6 @@ C
       INTEGER :: II
 C
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, D1=1.0D0
-#include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "dcbxpr.h"
@@ -986,7 +983,7 @@ C***********************************************************************
       use dcbgen_mod, only: CVAL
       use chrxyz_mod, only: CHRXYZ
       use pgroup_mod, only: REP
-!      use dgroup_mod, only: JM4, JM4REP, NBSYM, NZ
+      use dgroup_mod, only: JM4, JM4REP, NBSYM, NZ
 !      use dcbxrs_mod, only: JSYMOP, JTIMOP, LUBOE, LUBOP, NESIM, NEXCNV, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcbxpp_mod, only: ANGPLOT, BEDCHK, BEDECD, DOBED, IPRXPP, KEXCNV, MAXEXC, NROTAV
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
@@ -1006,7 +1003,6 @@ C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0,D4=4.0D0)
 !#include "maxash.h"
 C
-#include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "dcbxpr.h"
@@ -1589,7 +1585,6 @@ C
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0, DP5=0.5D0
       real(8)             :: TMPCPU, buff(2)
 !#include "maxash.h"
-!#include "dgroup.h"
 #include "dcbxrs.h"
 !#include "dcbxpp.h"
 !#include "dcbxpr.h"
@@ -1736,11 +1731,11 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use maxash_mod, only: MAXASH
 !      use dcborb_mod, only: ICMO, ICMOQ, IORB, N2ORB, N2ORBT, N2ORBX, NASH, NCMO, NCMOQ, NCMOT, NCMOTQ, NESH, NFRO, NISH, NORB, NORBT, NPSH
-!      use dgroup_mod, only: NFSYM
 !      use dcbxrs_mod, only: INDSTR, JOPSY, NEXCNV, NREDM, NZHOPE, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, SKIPEE, SKIPEP
 !      use dcbxpp_mod, only: ANGPLOT, BEDECD, DOBED, MAXEXC
 !      use dcbxpr_mod, only: IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
 !      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
+      use dgroup_mod, only: NFSYM
       use dcbbas_mod, only: I2BAST, I2BASX, IBBAS, MXFBAS, N2BBASX,
      &  N2BBASXQ, NBBAS, NFBAS, NNBBASX, NTBAS
       use dcbgen_mod, only: CVAL, LU1INT
@@ -1759,7 +1754,6 @@ C
 #include "maxash.h"
 #include "dcborb.h"
 C
-#include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "dcbxpr.h"

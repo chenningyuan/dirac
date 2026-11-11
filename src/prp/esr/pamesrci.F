@@ -37,7 +37,6 @@ C***********************************************************************
 C
 #include "dcbdhf.h"
 #include "dcbopt.h"
-!#include "dgroup.h"
 C
       DIMENSION WORK(*)
       CHARACTER WF*4
@@ -141,7 +140,7 @@ C***********************************************************************
 !      use dcbopt_mod, only: IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ITRINT, IPROPT, JTRLVL, KZCONF, NZCONF, NZCONFQ, OPT_CNVINT, OPT_INTTYP, OPT_NOPFQ
 !      use dcbesr_mod, only: IPRESR, THRPCI_ESR, THR_CIESR, THR_CVEC_ESR, USE_KRAMERS_CONJ
 !      use dcbgascip_mod, only: IMK2, MAXMK2, MINMK2, NMK2
-!      use dgroup_mod, only: NZ_IN_CI
+      use dgroup_mod, only: NZ_IN_CI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
@@ -156,7 +155,6 @@ C dcbgascip.h : IMK2(), NMK2(), MINMK2, MAXMK2
 #include "dcbopt.h"
 #include "dcbesr.h"
 #include "dcbgascip.h"
-#include "dgroup.h"
 C
       DIMENSION CMO(*), WORK(*)
       CHARACTER SZTRA(2,4)*200
@@ -384,13 +382,12 @@ C                   This enables DFT calculations for doublet.
 C
 C***********************************************************************
 !      use dcbdhf_mod, only: DHFERG
-!      use dgroup_mod, only: NZ_IN_CI
+      use dgroup_mod, only: NZ_IN_CI
 #include "implicit.h"
 
       REAL*8  WORK(*)
 
 #include "dcbdhf.h"
-#include "dgroup.h"
 
       L_EIGVAL = 2
       L_EIGVEC = 4*NZ_in_CI

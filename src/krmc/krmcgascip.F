@@ -53,7 +53,7 @@ C***********************************************************************
 !      use maxash_mod, only: MAXASH
 !      use dcbidx_mod, only: IDXU2G
 !      use dcbbos_mod, only: IBOSYM
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
 !      use dcbham_mod, only: LEVYLE, SPINFR
 !      use dcbopt_mod, only: IOPT_MAXMK2, IOPT_MINMK2, IOPT_MK2DEL, IOPT_MK2REF
 !      use dcborb_mod, only: IASH, NAELEC, NASH, NASHT
@@ -72,7 +72,6 @@ C  dcborb.h : NAELEC, NASHT, NASH(), IASH()
 C
 #include "dcbidx.h"
 #include "dcbbos.h"
-#include "dgroup.h"
 #include "dcbham.h"
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -295,7 +294,7 @@ C***********************************************************************
 !      use dcbgascip_mod, only: IEL_STR, IMK2, IRP, IRRP, MAXASH_GASCIP, MAXMK2, MINMK2, NEL_STR, NEL_STR_T, NMK2, REPNA
 !      use dcborb_mod, only: MXGAS, NAELEC, NASH, NASHT, NGASSP, NGAS_DC, NGSH, NISH
       use pgroup_mod, only: REP
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I, J, K
 C
@@ -305,7 +304,6 @@ C  dcborb.h : NAELEC,NASHT, NGSH(), ?
 C
 #include "dcbgascip.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       INTEGER   NA(MAXASH_GASCIP), NB(MAXASH_GASCIP)
       INTEGER*8 IDET(2,*), IASTR, IBSTR
@@ -874,7 +872,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
 !      use dcbgascip_mod, only: IEL_STR, IMK2, IRP, IRRP, MAXMK2, MINMK2, MULTB, N5, NEL_STR, NEL_STR_T, NMK2, NREP
 !      use dcborb_mod, only: NASH, NASHT, NCMOTQ, NGASSP, NGAS_DC, NGSH
-!      use dgroup_mod, only: NZ_IN_CI
+      use dgroup_mod, only: NZ_IN_CI
       implicit none
       INTEGER   NDET, IPRINT
       INTEGER*8 IDET(2, NDET), JSTR(*)
@@ -888,7 +886,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! dgroup.h :    NZ_in_CI
 #include "dcbgascip.h"
 #include "dcborb.h"
-#include "dgroup.h"
 
       LOGICAL is_open, file_exists
       LOGICAL LU_NOT_USED ! logical function
@@ -1228,12 +1225,11 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NZ, NZ_IN_CI
+      use dgroup_mod, only: NZ, NZ_IN_CI
 #include "implicit.h"
       INTEGER :: I
       INTEGER*8 IA, IB, ID
 C
-#include "dgroup.h"
 C
       INTEGER*8 IDET(2,*)
       DIMENSION WORK(*), CREF(NDET,NZ_in_CI), CMO(*)
@@ -1346,13 +1342,12 @@ C***********************************************************************
       use dcbgen_mod, only: LUKRMC
 !      use dcbham_mod, only: LEVYLE, SPINFR
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NAELEC, NASHT, NNASHX, NORBT
-!      use dgroup_mod, only: LINEAR, NZ, NZ_IN_CI
+      use dgroup_mod, only: LINEAR, NZ, NZ_IN_CI
 #include "implicit.h"
       INTEGER :: I
 C
 #include "dcbham.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION WORK(*), EIGVAL(*), EIGVEC(*), CMO(*)
       INTEGER*8 IDET(2,*)
@@ -1603,11 +1598,10 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NZ, NZ_IN_CI
+      use dgroup_mod, only: NZ, NZ_IN_CI
 !      use dcborb_mod, only: NASHT
 #include "implicit.h"
 C
-#include "dgroup.h"
 #include "dcborb.h"
 C
       DIMENSION CL(NDET,NZ_in_CI),CR(NDET,NZ_in_CI)
@@ -1922,13 +1916,12 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbgascip_mod, only: IPTA2O, IPTB2O, MAXASH_GASCIP
 !      use dcborb_mod, only: NAELEC, NASHT
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I, II, J, K
 C
 #include "dcbgascip.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
       DIMENSION VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
@@ -2150,7 +2143,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NASHT
-!      use dgroup_mod, only: NZ_IN_CI
+      use dgroup_mod, only: NZ_IN_CI
       use dcbgen_mod, only: PARCAL
 #include "implicit.h"
       INTEGER :: I, J
@@ -2159,7 +2152,6 @@ C
 ! dcbgen.h : PARCAL, ?
 !#include "dcbgascip.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
 !     output
       REAL*8    P1MAT_CI(N_P1MAT_CI,N_P1MAT_CI,*)
@@ -2619,7 +2611,7 @@ C***********************************************************************
       use dcbgen_mod, only: LUKRMC, PARCAL
 !      use dcbham_mod, only: LEVYLE, SPINFR
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NAELEC, NASHT, NCMOTQ, NNASHX, NORBT
-!      use dgroup_mod, only: IPQTOQ, LINEAR, NZ, NZ_IN_CI
+      use dgroup_mod, only: IPQTOQ, LINEAR, NZ, NZ_IN_CI
 #include "implicit.h"
       INTEGER :: I, II, J
 C
@@ -2629,7 +2621,6 @@ C  dcborb.h : NASHT,NCMOTQ,...
 C
 #include "dcbham.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       INTEGER*8 IDET(2,*)
       DIMENSION ECI_OUT(*), CVECS(NDET*NZ_in_CI,*), CMO(*), WORK(*)
@@ -3992,14 +3983,13 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NZ_IN_CI
+      use dgroup_mod, only: NZ_IN_CI
 !      use dcbgascip_mod, only: IMK2, MAXASH_GASCIP, MAXMK2, MINMK2, NMK2
 #include "implicit.h"
       INTEGER :: I, J, K
 C
 C Used from include files:
 C
-#include "dgroup.h"
 #include "dcbgascip.h"
 C
       REAL*8    CVEC(NDET,*), THR_PCI_in, WORK(*)
@@ -4149,11 +4139,10 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NZ_IN_CI
+      use dgroup_mod, only: NZ_IN_CI
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dgroup.h"
 C
       DIMENSION BVEC(NDET,NZ_in_CI), KRLIST(*)
 C
@@ -4324,7 +4313,7 @@ C***********************************************************************
 !      use thrzer_mod, only: THRZER
 !      use dcbgascip_mod, only: IMK2, IPTA2O, IPTB2O, MAXASH_GASCIP, MAXMK2, MINMK2, NMK2
 !      use dcborb_mod, only: NAELEC, NASHT
-!      use dgroup_mod, only: NZ, NZ_IN_CI
+      use dgroup_mod, only: NZ, NZ_IN_CI
 #include "implicit.h"
       INTEGER :: I, II, J, K
 #include "thrzer.h"
@@ -4333,7 +4322,6 @@ C Used from include files:
 C
 #include "dcbgascip.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION DIAG(*)
 C
@@ -4867,7 +4855,7 @@ C***********************************************************************
 !      use dcbgascip_mod, only: IMK2, IPTA2O, IPTB2O, MAXASH_GASCIP, MAXMK2, MINMK2, NMK2
 !      use dcborb_mod, only: NAELEC, NASHT
 !      use infpar_mod, only: MYTID, NUMNOD
-!      use dgroup_mod, only: NZ, NZ_IN_CI
+      use dgroup_mod, only: NZ, NZ_IN_CI
 #include "implicit.h"
       INTEGER :: I, II, J, K
 C
@@ -4877,7 +4865,6 @@ C
 #include "dcbgascip.h"
 #include "dcborb.h"
 #include "infpar.h"
-#include "dgroup.h"
 C
       DIMENSION SVEC(NDET,*), BVEC(NDET,*)
       DIMENSION VMUUUU(*), HCORE(*)
@@ -5184,7 +5171,7 @@ C
 !***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
 !      use dcbham_mod, only: LEVYLE, SPINFR
-!      use dgroup_mod, only: NBSYM, NFSYM, NZ
+      use dgroup_mod, only: NBSYM, NFSYM, NZ
       use pgroup_mod, only: REP
 !      use dcborb_mod, only: MXGAS
 !      use dcbgascip_mod, only: GASCIP_UCIBOS, IGASCIP_MAXMK2, IGASCIP_MINMK2, IGASCIP_MK2DEL, IGASCIP_MK2REF, IGASCIP_NAELEC, IGASCIP_NASH, IGASCIP_NASHT, IGASCIP_NGAS, IGASCIP_NGASSP, IGASCIP_NGSH, IGASCIP_NISH, IGASCIP_REP, IGASCIP_STATE, IRRP, MAXASH_GASCIP, NREP, REPNA
@@ -5199,7 +5186,6 @@ C
       DIMENSION MULTB_TMP(64,64)
 !
 #include "dcbham.h"
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbgascip.h"
 !
@@ -5566,14 +5552,13 @@ C     Called by: GASCIP_INP
 C
 C***********************************************************************
 !      use mxgas_mod, only: MXGAS
-!      use dgroup_mod, only: NFSYM
 !      use dcbgascip_mod, only: GASCIP_UCIBOS, IGASCIP_MAXMK2, IGASCIP_MINMK2, IGASCIP_MK2DEL, IGASCIP_MK2REF, IGASCIP_NAELEC, IGASCIP_NASH, IGASCIP_NGAS, IGASCIP_NGASSP, IGASCIP_NGSH, IGASCIP_NISH, IGASCIP_REP
 !      use dcbkrmc_mod, only: IKRMC_STATE, IKRMC_SYMMETRY, IPRKRMC, KRMC_CIPROGRAM, KRMC_UCIBOS, NKRMCAELEC, NKRMCASH, NKRMCGAS, NKRMCGSH, NKRMCGSP, NKRMCISH, NKRMC_MAXMK2, NKRMC_MINMK2, NKRMC_MK2DEL, NKRMC_MK2REF
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I, J
 #include "mxgas.h"
 C
-#include "dgroup.h"
 #include "dcbgascip.h"
 #include "dcbkrmc.h"
 C
@@ -5647,10 +5632,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use infpar_mod, only: MPARID
 !      use dcbgascip_mod, only: I1_DCI_GASCIP, I2_DCI_GASCIP
 !      use dcborb_mod, only: I1_DCBORB, I2_DCBORB
-!      use dgroup_mod, only: I1_DGROUP, I2_DGROUP, LINEAR
 #ifdef VAR_MPI
 
       use interface_to_mpi
+      use dgroup_bcast_mod, only: dgroup_bcast
 
 #include "implicit.h"
 C
@@ -5660,7 +5645,6 @@ C send info to slaves with MPI_BCAST from these common blocks:
 C
 #include "dcbgascip.h"
 #include "dcborb.h"
-#include "dgroup.h"
 
       IF (.NOT.PARCAL) RETURN
 
@@ -5692,14 +5676,11 @@ C
       call interface_MPI_BCAST(I1_DCBORB,NUMELM,MPARID,
      &                         global_communicator)
 C
-C     dgroup.h
-C     --------
+C     dgroup_mod: sent field by field (module variables are not
+C     contiguous like the old COMMON /DGROUP/)
+C     ----------
 C
-      NUMELM = ICOMMSIZE(I1_DGROUP,I2_DGROUP)
-      call interface_MPI_BCAST(I1_DGROUP,NUMELM,MPARID,
-     &                         global_communicator)
-      call interface_mpi_bcast_l0(LINEAR,1,MPARID,
-     &                         global_communicator)
+      call dgroup_bcast(MPARID)
 
 #endif
       RETURN
@@ -5748,15 +5729,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 !      use infpar_mod, only: MPARID
 !      use dcborb_mod, only: NASHT
-!      use dgroup_mod, only: NZ_IN_CI
 #ifdef VAR_MPI
+      use dgroup_mod, only: NZ_IN_CI
       use interface_to_mpi
 
 #include "implicit.h"
 C
 #include "infpar.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       REAL*8    HCORE(*), VMUUUU(*)
       LOGICAL   DO2EL
@@ -5815,8 +5795,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       use priunit_mod, only: LUPRI
 !      use infpar_mod, only: MPARID, NUMNOD
-!      use dgroup_mod, only: NZ_IN_CI
 #ifdef VAR_MPI
+      use dgroup_mod, only: NZ_IN_CI
       use interface_to_mpi
 
 #include "implicit.h"
@@ -5825,7 +5805,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 C
 #include "infpar.h"
-#include "dgroup.h"
 C
       REAL*8    BCVEC(*)
       REAL*8    SCVEC(NDET,NZ_in_CI,N_CSIM)
@@ -5964,10 +5943,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use infpar_mod, only: MPARID, MYTID
 !      use dcbgascip_mod, only: I1_DCI_GASCIP, I2_DCI_GASCIP
 !      use dcborb_mod, only: I1_DCBORB, I2_DCBORB
-!      use dgroup_mod, only: I1_DGROUP, I2_DGROUP, LINEAR
 #ifdef VAR_MPI
       use memory_allocator
       use interface_to_mpi
+      use dgroup_bcast_mod, only: dgroup_bcast
 
 #include "implicit.h"
 C
@@ -5977,7 +5956,6 @@ C common blocks to receive info from MPI_BCAST:
 C
 #include "dcbgascip.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       real(8), allocatable :: WORK(:)
 C
@@ -6014,14 +5992,11 @@ C
       call interface_MPI_BCAST(I1_DCBORB,NUMELM,MPARID,
      &                         global_communicator)
 C
-C     dgroup.h
-C     --------
+C     dgroup_mod: sent field by field (module variables are not
+C     contiguous like the old COMMON /DGROUP/)
+C     ----------
 C
-      NUMELM = ICOMMSIZE(I1_DGROUP,I2_DGROUP)
-      call interface_MPI_BCAST(I1_DGROUP,NUMELM,MPARID,
-     &                         global_communicator)
-      call interface_mpi_bcast_l0(LINEAR,1,MPARID,
-     &                         global_communicator)
+      call dgroup_bcast(MPARID)
 C
 C     Receive information about what GASCIP task to do
 C     ================================================
@@ -6059,8 +6034,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
 !      use infpar_mod, only: MPARID, MYTID
 !      use dcborb_mod, only: NASHT
-!      use dgroup_mod, only: NZ_IN_CI
 #if defined (VAR_MPI)
+      use dgroup_mod, only: NZ_IN_CI
 
       use interface_to_mpi
 
@@ -6076,7 +6051,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "infpar.h"
 !#include "dcbgascip.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       LOGICAL   DO2EL
       INTEGER   MY_S_INTERVAL(3)

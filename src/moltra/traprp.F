@@ -29,7 +29,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: LUMLF1, NOPAIR, PRPSYA, TRA2_INDPRP, TRA2_INDSTR
 !      use dcborb_mod, only: I2ORBX, ICMOQ, IORB, N2ORBXQ, NCMOTQ, NESH, NORB, NORBT, NPSH
-!      use dgroup_mod, only: JBTOF, NFSYM, NZ
+      use dgroup_mod, only: JBTOF, NFSYM, NZ
       use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
 !      use dcbtrp_mod, only: IPRTRP, LTRPP, NTRPP
@@ -38,7 +38,6 @@ C***********************************************************************
 C
 #include "dcbtra.h"
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbxpr.h"
 #include "dcbtrp.h"
       LOGICAL TOBE,TOBEK,TRASAM
@@ -226,12 +225,11 @@ C     Written by L.Visscher 1997
 C     Last revision Jul 23 1997
 C
 C*****************************************************************************
-!      use dgroup_mod, only: NZ
 !      use dcborb_mod, only: NORBT, NPSH
+      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I, II, J, JJ
 C
-#include "dgroup.h"
 #include "dcborb.h"
       DIMENSION PRPMO(NORBT,NORBT,NZ),
      &          PBUF(NDIM1,NDIM2,NZ),
@@ -293,14 +291,13 @@ C     Instead of array NSTRT now NSTRT1 and NSTRT2 are parameters
 C     ==============================================================
 C
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
 !      use dcbham_mod, only: SPINFR
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
 C
-#include "dgroup.h"
 #include "dcbham.h"
       REAL(dp), PARAMETER :: DM1=-1.D0, ZEROTHRS=1.0D-7
       CHARACTER*32 ACHAR

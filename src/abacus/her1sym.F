@@ -114,7 +114,9 @@ C  /* Deck oneso1 */
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use onecom_mod
       use maxaqn_mod, only: MXAQN, MXQN
-!      use dgroup_mod, only: IPQTOQ, NZ
+#ifdef PRG_DIRAC
+      use dgroup_mod, only: IPQTOQ, NZ
+#endif
       use cbisol_mod, only: LMNTOT, SOLVNT
       use quaternion_algebra
       use kinds_mod, only: dp
@@ -147,7 +149,6 @@ C     only DSHELL(*,1) used for Dalton
      &          RLMINT(*), RLMTAB(*), FCM(*), TLMD(*), LMNO(*)
 C
 #ifdef PRG_DIRAC
-#include "dgroup.h"
 !#include "dcbham.h"
 #endif 
       ITRI(I,J) = MAX(I,J)*(MAX(I,J) - 1)/2 + MIN(I,J)

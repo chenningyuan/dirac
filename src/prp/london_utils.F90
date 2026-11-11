@@ -1,6 +1,7 @@
 #ifdef MOD_LAO_REARRANGED
 module london_utils
 
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use priunit_mod, only: LUPRI
   use memory_allocator 
   use dirac_cfg
@@ -21,7 +22,6 @@ module london_utils
   private
 
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbxlr.h"
 
 #include "infpar.h"

@@ -111,12 +111,11 @@ C***********************************************************************
       use dcbbas_mod, only: N2BBASXQ
 !      use dcborb_mod, only: NORBT
 !      use dcbdhf_mod, only: DHFERG, E1PART, E2PART, ELERGY, INTFLG
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
 C
 #include "dcborb.h"
 #include "dcbdhf.h"
-#include "dgroup.h"
 C
       LOGICAL TOBE
       DIMENSION FMO(*),WORK(*)
@@ -191,7 +190,7 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbpsi_mod, only: DORES
 !      use dcbdhf_mod, only: IFCKOP, IHRMOP, INTFLG, ISYMOP, NFMAT, NOPEN
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: I2ORBX, N2ORBXQ, NORBT
 !      use dcbham_mod, only: BSS, SPINFR, X2CMMF
@@ -204,7 +203,6 @@ C*****************************************************************************
 C
 #include "dcbpsi.h"
 #include "dcbdhf.h"
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbres.h"
@@ -476,7 +474,7 @@ C Get the core density matrix into DMAT, from selected MOs in QCO
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: NORB
       use kinds_mod, only: dp
@@ -485,7 +483,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
       DIMENSION DMAT(*),QCO(*)
       DIMENSION NSPC(2,0:2),NDMOQC(2,2),ICMOQC(2)
-#include "dgroup.h"
 #include "dcborb.h"
 C
       CALL DZERO(DMAT,N2BBASXQ)
@@ -538,14 +535,13 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NORBT
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, II, J
       REAL(dp), PARAMETER :: D0=0.D0
 C
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION FMO(NORBT,NORBT,NZ)
       DIMENSION ORBE(*),IBORB(*),WORK(*)
@@ -624,7 +620,7 @@ C***********************************************************************
 !      use dcbdhf_mod, only: DHFERG
 !      use dcbham_mod, only: CAP, NOSFMU, SPINFR
 !      use dcbtra_mod, only: IPRTRA, LUASCII, LUMLF1, NCORE2, TRA_ASCII
-!      use dgroup_mod, only: LINEAR, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: LINEAR, NBSYM, NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, II, J
@@ -634,7 +630,6 @@ C
 #include "dcbdhf.h"
 #include "dcbham.h"
 #include "dcbtra.h"
-#include "dgroup.h"
 C
 C     NORDER gives the order of the Abelian subgroup used linear molecules. 
 C     NORDER=16 (default) uses C_16_h for D_inf_h and C_32 for C_inf_v.
@@ -1054,9 +1049,8 @@ C
 C     Luuk Visscher, Nov 03 2003
 C
 C***********************************************************************
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
-#include "dgroup.h"
 C
       CHARACTER*4 REPA(4*NORDER)
       CHARACTER PARITY
@@ -1240,10 +1234,9 @@ C
 C     Luuk Visscher, Mar 18 1997
 C
 C***********************************************************************
-!      use dgroup_mod, only: NBSYM
+      use dgroup_mod, only: NBSYM
       use pgroup_mod, only: REP
 #include "implicit.h"
-#include "dgroup.h"
 C
       CHARACTER*4 REPA(64)
       CHARACTER*1 REPAS(8)
@@ -1319,7 +1312,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NORB, NORBT
 !      use dcbham_mod, only: SPINFR
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: J
@@ -1327,7 +1320,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dcbham.h"
-#include "dgroup.h"
 !#include "dcbtr3.h"
 C
       LOGICAL FORWARD
@@ -1462,13 +1454,12 @@ C
 C***********************************************************************
 !      use dcborb_mod, only: NORBT
 !      use dcbham_mod, only: SPINFR
-!      use dgroup_mod, only: NBSYM, NFSYM, NZ
+      use dgroup_mod, only: NBSYM, NFSYM, NZ
 #include "implicit.h"
       INTEGER :: I
 C
 #include "dcborb.h"
 #include "dcbham.h"
-#include "dgroup.h"
 C
       INTEGER NDIM,IRCW,NREP,NR(NREP),NC(NREP)
       CHARACTER*(*) ROWTYP,COLTYP
@@ -1623,13 +1614,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !------------------------------------------------------------------
 !      use dcborb_mod, only: IORB, NAOCC, NAVIR, NOCC, NORBT, NPSH
 !      use dcbham_mod, only: SPINFR
-!      use dgroup_mod, only: LINEAR, NBSYM, NFSYM
 !      use dcbtr3_mod, only: NDMOQC
+      use dgroup_mod, only: LINEAR, NBSYM, NFSYM
 #include "implicit.h"
       INTEGER :: I, J, K
 #include "dcborb.h"
 #include "dcbham.h"
-#include "dgroup.h"
 #include "dcbtr3.h"
    
       integer, intent(in) :: nrep
@@ -1742,7 +1732,7 @@ C     REMARKS:
 C     
 C***********************************************************************
 !      use dcborb_mod, only: ICMOQ, IORB, NORB, NORBT
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
       use quaternion_algebra
       use kinds_mod, only: dp
@@ -1751,7 +1741,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C         
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION DMAT(N2BBASX,NZ),CMO(*),DMO(NORBT,NORBT,NZ),WORK(*)
 C           
@@ -1801,7 +1790,7 @@ C Johann Pototschnig, Fall 2019
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: NORB
 #include "implicit.h"
@@ -1810,7 +1799,6 @@ C*****************************************************************************
       integer            :: NSPC2(2,0:3)
       real(8), parameter :: d1 = 1.0D0,d0 = 0.0D0
       integer            :: ncspin(2,0:2), i, j, iopen
-#include "dgroup.h"
 #include "dcborb.h"
 C
       CALL DZERO(DMAT,2*N2BBASXQ)

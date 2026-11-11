@@ -738,6 +738,9 @@ contains
    !> from there. Otherwise, the RHSs are computed before calling the solver
    subroutine pert_dens(mol, S0, p, dimp, D, F, Dp, Fp, comp, freq)
       !> mol/basis/decomp/thresh needed by integrals and solver
+#ifdef PRG_DIRAC
+      use dgroup_mod, only: NBSYM
+#endif
       type(prop_molcfg), intent(in) :: mol
       !> unperturbed overlap matrix
       type(matrix), intent(in) :: S0
@@ -765,9 +768,6 @@ contains
       integer    :: ccomp(size(p)), pd, pd1, sym, nanti, i, j
       complex(8) :: ffreq(size(p)), freqdiff
 
-#ifdef PRG_DIRAC
-#include "dgroup.h"
-#endif
 
       if (size(dimp) /= size(p)) call quit('pert_dens: Differing numbers ' &
                // 'of perturbations and dimensions, size(dimp) /= size(p)',-1)

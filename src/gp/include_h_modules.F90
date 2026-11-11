@@ -48,9 +48,9 @@ end module include_dcbgen_h
 
 module include_dgroup_h
 !> module for picking up/setting certain variables from dgroup.h
+      use dgroup_mod, only: IPQTOQ, NZ
 implicit none
 private
-#include "dgroup.h"
 !> specify public variables and public methods to operate upon internal (protected) data module
 public :: get_IPQTOQ
 public :: get_NZ  

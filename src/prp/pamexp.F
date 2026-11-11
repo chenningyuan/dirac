@@ -475,7 +475,7 @@ C***********************************************************************
 !      use dcbexp_mod, only: NEXPP
       use dcbbas_mod, only: N2BBASXQ
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NORBT
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
       DIMENSION EXPVAL(*),WORK(LWORK)
@@ -485,7 +485,6 @@ C
 C
 #include "dcbexp.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       CALL QENTER('PRPEXP')
       KWORK = 1
@@ -541,7 +540,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
-!      use dgroup_mod, only: FREP, IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: FREP, IPQTOQ, NFSYM, NZ
 !      use dcborb_mod, only: I2ORBX, ICMOQ, NASHT, NCMOTQ, NOCC, NORB, NORBT
       use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcbexp_mod, only: IPREXP, LEXPP, NEXPP, ORBANA, PRJANA, PRPCAN
@@ -553,7 +552,6 @@ C***********************************************************************
       INTEGER :: I, J
       PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16,D2=2.0D0)      
 C
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbexp.h"
 #include "dcbxpr.h"
@@ -861,14 +859,13 @@ C***********************************************************************
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 !      use dcbexp_mod, only: PRJANA
       use dcbbas_mod, only: N2BBASX
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1=1.0D0
 C
 #include "dcbxpr.h"
 #include "dcbexp.h"
-#include "dgroup.h"
 C
 !     radovan:                    ONLY_TS: allow only totally symmetric
       LOGICAL FIRST(NZ),LEXPST(2),ONLY_TS
@@ -936,13 +933,12 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
       use dcbbas_mod, only: N2BBASX, NTBAS
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
 #include "dcbxpr.h"
-#include "dgroup.h"
 C
       LOGICAL FIRST(NZ),LEXPST(2)
       DIMENSION DMAT(N2BBASX,NZ),WORK(*),
@@ -1004,14 +1000,13 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: IPRPTYP, PRPNAM
       use dcbbas_mod, only: N2BBASX, NFBAS, NTBAS
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: II
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1=1.0D0
 C
 #include "dcbxpr.h"
-#include "dgroup.h"
 C
       LOGICAL FIRST(NZ)
       DIMENSION PFO(*),PAO(N2BBASX,NZ),NCNT(*),RVEC(*),WORK(*)
@@ -1100,7 +1095,7 @@ CMI    MI/March 2006 ... seems that PTRI is needed...
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
 !      use dcbprj_mod, only: NREFS, REFFIL
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1108,7 +1103,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1=1.0D0, D2=2.0D0
 C
 !#include "dcbxpr.h"
-#include "dgroup.h"
 #include "dcbprj.h"
 C
       DIMENSION PFO(*),DFO(*),NCNT(*),NMO(*),BVEC(*),IBUF(*),PBUF(*),
@@ -1224,7 +1218,7 @@ C     Last modifications: MI, March2006/Strasbourg
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: FREP, NZ
+      use dgroup_mod, only: FREP, NZ
 !      use dcbxpr_mod, only: PRPNAM
 !      use dcbprj_mod, only: REFFIL
       use kinds_mod, only: dp
@@ -1232,7 +1226,6 @@ C***********************************************************************
       INTEGER :: I, II, J, JJ
       REAL(dp), PARAMETER :: D2=2.0D0, D0=0.0D0, DTOL=1.0D-8
 C
-#include "dgroup.h"
 #include "dcbxpr.h"
 #include "dcbprj.h"
       DIMENSION PFO(NCNT,NCNT,NZ),DFO(NCNT,NCNT,NZ),PTRI(*),
@@ -1320,7 +1313,7 @@ C     Written by Trond Saue Oct 21 2003
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcborb_mod, only: NESH, NPSH
 !      use dcbprj_mod, only: VECPRJ
       use kinds_mod, only: dp
@@ -1328,7 +1321,6 @@ C***********************************************************************
       INTEGER :: K
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1=1.0D0, D2=2.0D0
 C
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbprj.h"      
       DIMENSION DFO(*),NFO(*),NMO(*),BVEC(*),WORK(*)
@@ -1397,7 +1389,7 @@ C
 C***********************************************************************
 !      use dcborb_mod, only: ICMOQ, IORB, NCMOTQ, NISH, NORB, NORBT
 !      use dcbxpr_mod, only: PRPNAM
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
       use dcbbas_mod, only: I2BASX, NFBAS
       use dcbgen_mod, only: LUCOEF
        use dircmo
@@ -1408,7 +1400,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dcbxpr.h"
-#include "dgroup.h"
       DIMENSION PAO(*),CMO(*),WORK(*)
       integer, allocatable :: IBP(:)
       real(8), allocatable :: EIG(:)
@@ -1483,14 +1474,13 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: NFBAS, NTBAS
 !      use dcborb_mod, only: NISH, NORB, NPSH
-!      use dgroup_mod, only: FREP, IPQTOQ, NZ
+      use dgroup_mod, only: FREP, IPQTOQ, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
 #include "dcborb.h"
-#include "dgroup.h"
       CHARACTER MXFORM*6,FMT*6
       DIMENSION PAO(*),PMO(*),SCO(*),UCO(*),CMO(*),EIG(*),
      &          PEIG(*),WORK(*)

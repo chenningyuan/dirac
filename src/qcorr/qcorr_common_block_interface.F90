@@ -54,7 +54,6 @@ contains
 #ifdef PRG_DIRAC
       subroutine init_qcorr_rel()
 
-!      use dgroup_mod, only: NFSYM
 !      use ipoist8_mod, only: KNSTSO, KNSTSO2
 !      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXROOT
 !      use strbas_mod, only: KNSTSO, KNSTSO2
@@ -62,8 +61,8 @@ contains
 !      use strinp_mod, only: NELEC
 !      use cgas_mod, only: NACTEL
 !      use gasstr_mod, only: IST_FOR_DT, MXNSTR
+      use dgroup_mod, only: NFSYM
  use symmetry_setup_krci
-#include "dgroup.h"
 #include "../luciarel/ipoist8.inc"
 #include "../luciarel/mxpdim.inc"
 #include "../luciarel/strbas.inc"
@@ -107,7 +106,6 @@ contains
 
       subroutine init_qcorr_nr()
 
-!      use dgroup_mod, only: NFSYM
 !      use mxpdim_mod, only: MXPIRR, MXPNGAS, MXPNSMST, MXPOBS, MXPORB, MXPR4T, MXPSTT
 !      use lucinp_mod, only: NACTEL
 !      use strbas_mod, only: KNSTSO
@@ -115,12 +113,13 @@ contains
 !      use gasstr_mod, only: MXNSTR
 !      use orbinp_mod, only: NTOOB
 !      use csm_mod, only: NSMST
+#ifdef PRG_DIRAC
+      use dgroup_mod, only: NFSYM
+#endif
 #ifndef PRG_DIRAC
       use inforb_mod, only: NSYM
 #endif
-#ifdef PRG_DIRAC
-#include "dgroup.h"
-#else
+#ifndef PRG_DIRAC
 #include "infpar.h"
 #endif
 #include "../lucita/mxpdim.inc"

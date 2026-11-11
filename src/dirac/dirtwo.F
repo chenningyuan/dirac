@@ -31,8 +31,8 @@ C     The reduced density matrices are generated within this routine,
 C     whereas Cauchy-Schwarz integrals must be provided externally
 C
 C*****************************************************************************
-!      use dgroup_mod, only: IHQMAT, IPQTOQ, NZ
 !      use dcbham_mod, only: HFXATT, HFXFAC, HFXMU, MDIRAC, ONECAP, SMLV1C, ZORA, ZORA4
+      use dgroup_mod, only: IHQMAT, IPQTOQ, NZ
       use quaternion_algebra
 #ifdef MOD_SRDFT
       use srdft_cfg ! for MCSCF-srDFT calculation
@@ -46,7 +46,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
 #include "dcbham.h"
-#include "dgroup.h"
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),
      &          DMAT(N2BBASX,NZ,NFMAT),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),
@@ -333,14 +332,13 @@ C		Class A placed in array of length NDIM
 C
 C*****************************************************************************
 !      use dcbind_mod, only: NIBUF
-!      use dgroup_mod, only: NBSYM
+      use dgroup_mod, only: NBSYM
       use dcbbas_mod, only: N2BBASX, NTBAS
 #include "implicit.h"
 C
 C
       INTEGER :: I
 #include "dcbind.h"
-#include "dgroup.h"
       CHARACTER FILNAM*6
       DIMENSION	WORK(LWORK),IREPA(N2BBASX),LUINT(0:8)
       CALL QENTER('TWOSRT')
@@ -1707,10 +1705,9 @@ C
 C     Written by T.Saue Mar 3 1995
 C     Last revision : tsaue - Mar 3 1995
 C*****************************************************************************
-!      use dgroup_mod, only: NBSYM
+      use dgroup_mod, only: NBSYM
 #include "implicit.h"
 C
-#include "dgroup.h"
       DIMENSION IBUF(*),BUF(*),FMAT(*),DMAT(*),IND(*),IFCTYP(*),
      &          IREPDM(*)
 C
@@ -2522,7 +2519,6 @@ C*****************************************************************************
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D4 = 4.0D0, D2 = 2.0D0
 #include "dcbind.h"
-!#include "dgroup.h"
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
      &          DMAT(NTBAS(0),NTBAS(0),NDMAT)
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
@@ -2872,7 +2868,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D4 = 4.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &                       DP5 = 0.5D0
 #include "dcbind.h"
-!#include "dgroup.h"
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
      &          DMAT(NTBAS(0),NTBAS(0),NDMAT)
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
@@ -3191,10 +3186,9 @@ C
 C*****************************************************************************
       use kinds_mod, only: dp
       use dcbbas_mod, only: N2BBASX
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
-#include "dgroup.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0,
      &                       D10 = 10.0D0
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DMAT(N2BBASX,NZ,NFMAT),
@@ -3227,7 +3221,8 @@ C*****************************************************************************
       use blocks_mod, only: NSYMBL
       use cbihr2_mod, only: IPRTWO, SCRFCK
 !      use dcbham_mod, only: MDIRAC
-!      use dgroup_mod, only: IQTOPQ, IRQMAT, JBTOF, JQBAS, NBSYM, NZ, NZC1
+      use dgroup_mod, only: IQTOPQ, IRQMAT, JBTOF, JQBAS, NBSYM, NZ,
+     &  NZC1
       use maxorb_mod, only: MXCORB, MXSHEL
       use quaternion_algebra
       use kinds_mod, only: dp
@@ -3242,7 +3237,6 @@ C
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DMAT(N2BBASX,NZ,NFMAT),
      &          ISYMOP(*),IHRMOP(*),IFCKOP(*),
      &          WORK(LWORK)
-#include "dgroup.h"
 C
       CALL QENTER('DIRAOF')
       KWORK = 1
@@ -3385,7 +3379,7 @@ C*****************************************************************************
       use symmet_mod, only: MAXREP
       use dcbgen_mod, only: IDFLAG, PARCAL
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NZC1
+      use dgroup_mod, only: NZC1
       use aovec_mod, only: MXAOVC
       use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
      &  IPRTWO, RTNTWO, SCRFCK, THRFAC, TKTIME
@@ -3406,7 +3400,6 @@ C   CCOM  : THRS,NHTYP,KHK
 C   SHELLS: KMAX
 C   symmet.h : MAXREP
 C
-#include "dgroup.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
 #endif
@@ -3602,8 +3595,8 @@ C     Written by T.Saue July 2 1995
 C     Sep 2 1996 tsaue - Allocate buffer IND for unpacking of indices
 C
 C*****************************************************************************
-!      use dgroup_mod, only: NZ
 !      use dcbind_mod, only: NIBUF
+      use dgroup_mod, only: NZ
       use dcbbas_mod, only: N2BBASX
 #include "implicit.h"
 C
@@ -3612,7 +3605,6 @@ C   DHFIOU: LUINT
 C   INDPCK: NIBUF
 C
 #include "dcbind.h"
-#include "dgroup.h"
       DIMENSION FSO(*),DSO(*),
      &          IFCKOP(NFMAT),ISYMOP(NFMAT),IHRMOP(NFMAT),
      &          WORK(LWORK)
@@ -3656,10 +3648,9 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: N2BBASX, NTBAS
       use dcbgen_mod, only: IDFLAG
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
-#include "dgroup.h"
 C
       LOGICAL LBIT
       DIMENSION FSO(N2BBASX,*),DSO(N2BBASX,*),
@@ -3770,8 +3761,9 @@ C
 C     Written by T.Saue Sep 4 1996
 C
 C*****************************************************************************
-!      use dgroup_mod, only: IHQMAT, IQTOPQ, JBTOF, NZC1
 !      use dcbham_mod, only: HFXATT, HFXFAC, HFXMU
+      use dgroup_mod, only: IHQMAT, IPQTOQ, IQTOPQ, IRQMAT, JBTOF,
+     &  JQBAS, NZC1
       use quaternion_algebra
 #ifdef MOD_SRDFT
       use srdft_cfg ! for MCSCF-srDFT calculations
@@ -3783,7 +3775,6 @@ C*****************************************************************************
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
-#include "dgroup.h"
 #include "dcbham.h"
 C     External variables
       DIMENSION IFCTYP(MZ,NFMAT),IREPDM(MZ,NFMAT),
@@ -3932,7 +3923,7 @@ C*****************************************************************************
       use dcbbas_mod, only: N2BBASX
       use cbihr2_mod, only: SCRFCK
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use aovec_mod, only: MXAOVC
       use blocks_mod, only: MAXSHL, NSYMBL
       use kinds_mod, only: dp
@@ -3945,7 +3936,6 @@ C
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DSO(N2BBASX,NZ,NFMAT),
      &          IFCKOP(NFMAT),
      &          IHRMOP(NFMAT),ISYMOP(NFMAT),WORK(LWORK)
-#include "dgroup.h"
 C
       CALL QENTER('DIRSOF')
       KWORK = 1
@@ -4016,7 +4006,7 @@ C*****************************************************************************
       use ccom_mod, only: THRS
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: HFXMU
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use dcbbas_mod, only: N2BBASX
 !      use infpar_mod, only: TOTWAL
       use kinds_mod, only: dp
@@ -4025,7 +4015,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D2 = 2.0D0, D4 = 4.0D0, D8 = 8.0D0,
      &                       D0=0.0D0
 C
-#include "dgroup.h"
 #include "dcbham.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
@@ -4199,7 +4188,8 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
-!      use dgroup_mod, only: IQTOPQ, IRQMAT, JBTOF, JQBAS, NBSYM, NZ, NZC1
+      use dgroup_mod, only: IQTOPQ, IRQMAT, JBTOF, JQBAS, NBSYM, NZ,
+     &  NZC1
       use dcbbas_mod, only: N2BBASX, NTBAS
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -4208,7 +4198,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "dgroup.h"
       DIMENSION DQO(N2BBASX,NZ,NFMAT),
      &          DMRQO(NSYMBL,NSYMBL,NZ,NFMAT),
      &          ISYMOP(NFMAT),WORK(LWORK)
@@ -4286,7 +4275,6 @@ C***********************************************************************
       use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
      &  RTNTWO, THRFAC, TKTIME
 #include "implicit.h"
-!#include "dgroup.h"
 C
       LOGICAL NODV,NOPV,NOCONT,RELCAL
       DIMENSION WORK(LWORK)

@@ -32,7 +32,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (VAR_MPI)
       use dcbgen_mod, only: PARCAL
 #endif
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use blocks_mod, only: MAXSHL, NSYMBL
 !      use dcbtra_mod, only: SCRTRA
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
@@ -44,7 +44,6 @@ C
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
-#include "dgroup.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
       LOGICAL ANTIS,LMP2
@@ -321,13 +320,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &  KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS
 !      use dcborb_mod, only: NASHT
 !      use dcbmpt_mod, only: MAXSCL, TESTLS, TESTSL
-!      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 #include "implicit.h"
       INTEGER :: I, K
 #include "dcbtra.h"
 #include "dcborb.h"
 #include "dcbmpt.h"
-#include "dgroup.h"
       LOGICAL ANTIS,LMP2,NODV,NOPV,L2TYP(0:3),IBEQJB,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,2),NSTR(2,0:2,4),INDX(3,*),
      &          NSTRT(4),ITQMT(0:7,0:7,2),
@@ -1190,12 +1188,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &  KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS
 !      use dcborb_mod, only: NASHT
 !      use dcbmpt_mod, only: MAXSCL
-!      use dgroup_mod, only: JBTOF, NBSYM, NZ
+      use dgroup_mod, only: JBTOF, NBSYM, NZ
 #include "implicit.h"
 #include "dcbtra.h"
 #include "dcborb.h"
 #include "dcbmpt.h"
-#include "dgroup.h"
       DIMENSION IDSNFO(6), KQ(2,4), KE(2,2), INDX(3,*),
      &     NSTR(2,0:2,4), NSTRT(4), DINTSKP(*), GABRAO(*), WORK(*),
      &     NDMOQR(2,2,4), ICMOQR(2,4), TIM1(7), DRIJ(*),
@@ -1387,11 +1384,10 @@ C
 C     Naive anti-symmetrize (extracted from TRDR23)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 !      use dcbtra_mod, only: IFPCK34, NFPCK12, NFPCK34
+      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 #include "implicit.h"
       INTEGER :: K
-#include "dgroup.h"
 #include "dcbtra.h"
       DIMENSION NSTR(2,0:2,4),NSTRT(4),WORK(*)
 C
@@ -1556,7 +1552,7 @@ C
 C     Written by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1567,7 +1563,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, K
-#include "dgroup.h"
 #include "dcbtra.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D00, D1=1.0D00
@@ -1715,7 +1710,7 @@ C
 C     Written by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1724,7 +1719,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use symmet_mod, only: ISYMAX
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "dgroup.h"
 #include "dcbtra.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D00, D1=1.0D00
@@ -1815,10 +1809,9 @@ C/* Deck MP2FI1 */
      &     NFM,NI,NJ,NK,NL,LS)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I, II, J, JJ
-#include "dgroup.h"
       DIMENSION NSTR(2,0:2,4)
       DIMENSION FMAT(NFM,2)
       DIMENSION SPMAT(NI,NJ,NK,NL,LS)
@@ -2020,8 +2013,8 @@ C     Output :
 C
 C     -              Updated values of buffer blocks
 C
-!      use dgroup_mod, only: JBTOF, NBSYM, NZ
 !      use dcbtra_mod, only: NFPCK12
+      use dgroup_mod, only: JBTOF, NBSYM, NZ
       use comdis_mod, only: LGFIL, NGBFSZ, NPASS
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2042,7 +2035,6 @@ C     For the buffered output
 C
       DIMENSION IHM(0:7)
 C
-#include "dgroup.h"
 #include "dcbtra.h"
 C
       CALL QENTER('MS4IN1E')
@@ -2092,9 +2084,8 @@ C/* Deck PRIEIN */
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
-#include "dgroup.h"
       DIMENSION E1(N1),E2(N2),E3(N3),E4(N4)
       DIMENSION NSTR(2,0:2,4)
       NX = 0
@@ -2135,13 +2126,12 @@ C/* Deck CONMP2 */
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 !      use dcbmpt_mod, only: TESTLS, TESTSL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: II
       REAL(dp), PARAMETER :: D0=0.0D0
-#include "dgroup.h"
 #include "dcbmpt.h"
       LOGICAL IBEQJB
       DIMENSION NSTR(2,0:2,4)
@@ -2358,11 +2348,10 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: NFBAS
-!      use dgroup_mod, only: FREP, NFSYM
+      use dgroup_mod, only: FREP, NFSYM
 #include "implicit.h"
       INTEGER :: I, K
 C
-#include "dgroup.h"
 C     Global variables
       DIMENSION NSTR(2,0:2,4),  ICMOQR(2,4)
       DIMENSION NSTRIJ(2,0:2,4),ICMOIJ(2,4)
@@ -2474,10 +2463,9 @@ C/* Deck MP2HDR */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MKNSTT */
       SUBROUTINE MKNSTT(NST,NSTT)
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I
-#include "dgroup.h"
       DIMENSION NST(2,0:2,4), NSTT(4)
       DO I = 1, 4
         NSTT(I) = 0
@@ -2497,10 +2485,9 @@ C     3/4 and 4/4 transformed matrix
 C
 C***********************************************************************
 !      use dcbtra_mod, only: ISAME, NFPCK12, NFPCK34
-!      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
 #include "implicit.h"
 #include "dcbtra.h"
-#include "dgroup.h"
       DIMENSION NST(2,0:2,4), ITQMT(0:7,0:7,2)
       LOGICAL TRIAN(2)
 C
@@ -2552,10 +2539,9 @@ C
 C     Determine size of final anti-symmetrized integrals
 C
 C***********************************************************************
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I
-#include "dgroup.h"
       DIMENSION NSTT(4)
 C
       IF (NZ .EQ. 1) THEN
@@ -2605,7 +2591,6 @@ C
 !#include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbmp2.h"
-!#include "dgroup.h"
       DIMENSION KQ(2,4), KE(2,2), KIBE(2,4), ICMOIJ(2,4),
      &     NSTR(2,0:2,4), NSTRT(4), NSTRIJ(2,0:2,4), NSTTIJ(4),
      &     WORK(*), IDSLST(6,NDSLST), TIMDIS(NDSLST),DINTSKP(8),
@@ -2947,7 +2932,6 @@ C
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbmp2.h"
-!#include "dgroup.h"
       LOGICAL ANTIS, LMP2, L2TYP(0:3), TRIAN(2), MP2FIN
       DIMENSION KQ(2,4), KE(2,2), NSTR(2,0:2,4), NSTRT(4), KIBE(2,4),
      &     WORK(*), TIM1(7), DINTSKP(8), IDSNFO(6), IBTNFO(2),
@@ -3170,7 +3154,7 @@ C
 C***********************************************************************
 !      use infpar_mod, only: MPARID
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use interface_to_mpi
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3180,7 +3164,6 @@ C
 !#include "dcborb.h"
 !#include "dcbtra.h"
 #include "dcbtr3.h"
-#include "dgroup.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,2),NSTR(2,0:2,4),NSTRT(4),KIBE(2,4)
       DIMENSION NSTRIJ(2,0:2,4),ICMOIJ(2,4)

@@ -31,7 +31,7 @@ C*****************************************************************************
 !      use dcbpsi_mod, only: DOMP2
 !      use dcborb_mod, only: NOCC
       use dcbbas_mod, only: NFBAS
-!      use dgroup_mod, only: FREP, NFSYM
+      use dgroup_mod, only: FREP, NFSYM
 !      use dcbmp2_mod, only: CMMNFO, DMP2_VIRTHR, IPRMP2, ISTRMP2, MP2NOP, MP2_ANTIS, MP2_INDSTR, MP2_INTFLG, MP2_MSOUT, SCRMP2, SRTSHL, TPRI34, TPRI44
 !      use dcbmpt_mod, only: IJTSK, MAXSCL, TESTLS, TESTSL
 !      use dcbham_mod, only: BSS, LEVYLE, X2C
@@ -47,7 +47,6 @@ C
 C
 #include "dcbpsi.h"
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbmp2.h"
 #include "dcbmpt.h"
 #include "dcbham.h"
@@ -443,7 +442,7 @@ C*****************************************************************************
       use dcbgen_mod, only: INTGEN, PARCAL
 !      use dcbpsi_mod, only: DOHSCC
       use dcbbas_mod, only: NFBAS
-!      use dgroup_mod, only: FREP, NFSYM
+      use dgroup_mod, only: FREP, NFSYM
 !      use dcbtra_mod, only: DO_FINESORT, IPAR4BS, IPRTRA, ISTRAT, ITRA_INTFL2, ITRA_INTFL4, ITRA_INTFLG, MDCSCAT, MOFILE_TRAINP, NCORE2, NO2IND, NO4IND, NOMDCINT, NOMDCINT_TRAINP, NOPAIR, PRPSYA, PRPTRA, RCORBS, SCRTRA, SET_AUTO_FINESORT, THROUT, TH_CHOLESKY, TRA2_INDSTR, TRA4_INDSTR, TRA_ANTIS, TRA_ASCII, TRA_CORSTR, TRA_CORSTR2, TRA_EXACORR, TRA_INDSTR
 !      use dcbham_mod, only: BSS, DO4C2C, GAUNT, LEVYLE, SPINFR, X2C
       use  relcc_cfg
@@ -460,7 +459,6 @@ C
       DIMENSION WORK(LWORK),IR(2,2),NTVEC(4)
 C
 #include "dcbpsi.h"
-#include "dgroup.h"
 #include "dcbtra.h"
 #include "dcbham.h"
 
@@ -1194,7 +1192,7 @@ C*****************************************************************************
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: DIPOLE, DONMQM, EFG, NQCC, QUADRU
 !      use dcbtrp_mod, only: IPRTRP, LTRPP, MAXTRP, NTRPP
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 !      use dcbtra_mod, only: IPRTRA, PRPSYA, PRPTRA, TRA2_INDPRP
 !      use dcbham_mod, only: BSS
       use kinds_mod, only: dp
@@ -1205,7 +1203,6 @@ C*****************************************************************************
 C
 #include "dcbprp.h"
 #include "dcbtrp.h"
-#include "dgroup.h"
 #include "dcbtra.h"
 ! Added temporarily to test for bss (where transform is not working)
 #include "dcbham.h"

@@ -61,7 +61,7 @@ C***********************************************************************
 #if defined (VAR_MPI)
       use comdis_mod, only: ISHLB
 #endif
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use interface_to_mpi
       use kinds_mod, only: dp
       use dcbgen_mod, only: PARCAL
@@ -73,7 +73,6 @@ C***********************************************************************
 #endif
 #include "infpar.h"
 #include "dcbtra.h"
-#include "dgroup.h"
       LOGICAL ANTIS,LMP2,TRIAN(2),LBIT
       DIMENSION NSTR(2,0:2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
@@ -399,7 +398,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbtr3_mod, only: IBAS1, IBAS2, IBAS3, IBAS4, IBBAS1, IBBAS2, IBBAS3, IBBAS4, ICMOQR, ICMOQS, ICMOQT, ISPCK12, ISPCK34, NBBAS1, NBBAS2, NBBAS3, NBBAS4, NDMOQR, NDMOQS, NDMOQT, NSPCK12, NSPCK34
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dcborb_mod, only: NASHT
-!      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
       use blocks_mod, only: LCLASH, NCNTSH, NHKTSH
       use nuclei_mod, only: NAMN
 #include "implicit.h"
@@ -407,7 +406,6 @@ C
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C     MXGBFSZ determines direct access record lengths, can be used to tune I/O
       PARAMETER (MXGBFSZ=4096)
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
@@ -945,8 +943,8 @@ C
 C     Output is written directly in the MOLFDIR-type file MDCINT
 C
 !      use infpar_mod, only: MPARID, MYTID
-!      use dgroup_mod, only: NBSYM, NFSYM, NZ
 !      use dcbtra_mod, only: MDCSCAT, NFPCK34, NOMDCINT
+      use dgroup_mod, only: NBSYM, NFSYM, NZ
 #if defined (VAR_MPI)
       use dcbgen_mod, only: PARCAL
 #endif
@@ -956,7 +954,6 @@ C
       INTEGER   NSTR3(2),NSTR4(2)
       DIMENSION WORK(*)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
-#include "dgroup.h"
 #include "dcbtra.h"
 C
       KFRSAV = KFREE
@@ -1045,13 +1042,12 @@ C
       use aovec_mod, only: MXAOVC
       use blocks_mod, only: IORBSB, IORBSH, ISTBSH, KHKTSH, LCLASH,
      &  NHKTSH, NORBSH
-!      use dgroup_mod, only: JBTOF, NZ
+      use dgroup_mod, only: JBTOF, NZ
       use dcbbas_mod, only: IBAS, IBBAS
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ICOS, IPTSYM, ISYMAO, MAXREP
 #include "implicit.h"
-#include "dgroup.h"
 C
       DIMENSION QM(NDIM1,NDIM2,NZ),QMR(NDIMR1,NDIMR2,NZ)
 C
@@ -1124,14 +1120,13 @@ C
 C***********************************************************************
 !      use infpar_mod, only: MPARID
 !      use dcbtra_mod, only: ISAME, MDCSCAT, NFPCK12, NFPCK12T, NFPCK34, NFPCK34T
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use comdis_mod, only: ISHLA
       use interface_to_mpi
 #include "implicit.h"
 C
 #include "infpar.h"
 #include "dcbtra.h"
-#include "dgroup.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4),NSTR(2,0:2,4)
       DIMENSION DRIJ(*),GABRAO(*)
@@ -1232,10 +1227,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C& End of parallel section : activitate compilation only when necessary
 #endif
       FUNCTION MWHMATCALC(IJPASS,NPASS,NFPCK12)
-!      use dgroup_mod, only: JBTOF, NBSYM, NZ
+      use dgroup_mod, only: JBTOF, NBSYM, NZ
 #include "implicit.h"
 C
-#include "dgroup.h"
 C
       DIMENSION IJPASS(0:7,NPASS)
       DIMENSION NFPCK12(2)

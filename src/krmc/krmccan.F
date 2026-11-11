@@ -25,7 +25,7 @@ C  /* Deck rgetno */
 !      use dcborb_mod, only: IASH, ICMOQ, IOCC, IORB, N2ASHX, N2ASHXQ, NASH, NASHT, NCMOTQ, NESH, NESHT, NGAS_DC, NISH, NOCC, NORB, NORBT, NPSH
 !      use dcbopt_mod, only: IDENSLR_STATE, ISVRONO, NATOLCR, NZCONFQ, SAVE_REORDERED_NOS, SPINFR_KRMC
       use dcbbas_mod, only: NFBAS
-!      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM, NZ
       use memory_allocator
 C***********************************************************************
 C
@@ -54,7 +54,6 @@ C
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dgroup.h"
 C
       DIMENSION CREF(*)
       DIMENSION OCCNO(*), UNO(NASHT,NASHT,*)
@@ -542,13 +541,12 @@ C
 !
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IASH, NASH, NASHT, NGSH
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
       use memory_allocator
       implicit none
 
 #include "dcborb.h"
 !#include "dcbopt.h"
-#include "dgroup.h"
 
       integer , parameter     :: dp = 8
       real(dp), parameter     :: d0 = 0.0d0
@@ -620,7 +618,7 @@ C***********************************************************************
 !      use dcborb_mod, only: I2ASHX, I2ORBX, ICMOQ, MXGAS, N2ASHXQ, N2ISHX, N2ORBXQ, N2PSHX, NASH, NASHT, NCMOTQ, NISH, NISHT, NORB, NORBT, NPSH, NPSHT
 !      use dcbopt_mod, only: IPROPT, JGAS, MCTYPE, N2DSHXQ, N2VSHXQ, NDSH, NDSHT, NVSH, NVSHT, NZCONF, OPT_CHCKJZ, SPINFR_KRMC
       use dcbgen_mod, only: LUKRMC
-!      use dgroup_mod, only: IPQTOQ, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NBSYM, NFSYM, NZ
       use dcbbas_mod, only: NFBAS
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXD2G, IDXI2G, IDXP2G, IDXU2G, IDXV2G
@@ -633,7 +631,6 @@ C
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dgroup.h"
 #include "dcbidx.h"
 #include "dcbkrmc.h"
 C
@@ -1257,7 +1254,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: MXGAS
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 !      use dcbopt_mod, only: OPT_CIPROGRAM
 !      use krciprop_mod, only: ISYMEIG_KRCI, LXPRPKRCI, NPROP_KRCI, NPROP_ROOTS_KRCI
 !      use dcbkrci_mod, only: NKRCI_CIROOTS, NKRCI_MAX_SYM, NKRCI_SELOM, NOMEGASEL_STATENR, STATE_SELECT_KRCI
@@ -1268,7 +1265,6 @@ C
 C
 !#include "dcbidx.h"
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbopt.h"
 #include "krciprop.h"
 #include "dcbkrci.h"
@@ -1437,7 +1433,7 @@ C***********************************************************************
 !      use dcborb_mod, only: ICMOQ, N2ASHX, N2ASHXQ, N2ORBXQ, NASHT, NISHT, NORB, NORBT
 !      use dcbopt_mod, only: IPROPT
       use dcbgen_mod, only: LUKRM3
-!      use dgroup_mod, only: IPQTOQ, JBTOF, NZ
+      use dgroup_mod, only: IPQTOQ, JBTOF, NZ
 !      use krciprop_mod, only: DOJZEXP, LPROP_KRCI, NPROP_KRCI
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 #include "implicit.h"
@@ -1446,7 +1442,6 @@ C write-protection for DUMMY.
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dgroup.h"
 #include "krciprop.h"
 #include "dcbxpr.h"
       DIMENSION CMO(*), PRPCOREE(*), WORK(*)
@@ -1601,7 +1596,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: MXGAS, NAELEC
       use dcbgen_mod, only: CVAL
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 !      use krciprop_mod, only: DODIPMOM_KRCI, DOEEDM_KRCI, DOENSPS_KRCI, DOGENP_KRCI, DOJZEXP, DOMHYP_KRCI, DONMQM_KRCI, DOOSCILLST, ISYMEIG_KRCI, LPROP_KRCI, NPROP_KRCI, NPROP_ROOTS_KRCI, VKRCI_NUCMAGMOM, VKRCI_NUCSPIN, XREPEIG
 !      use dcbkrci_mod, only: MAX_NKRCI_MAX_SYM, NKRCI_CIROOTS, NKRCI_MAX_SYM
 !      use dcbxpr_mod, only: PRPNAM
@@ -1616,7 +1611,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 !#include "dcbopt.h"
-#include "dgroup.h"
 #include "krciprop.h"
 #include "dcbkrci.h"
 #include "dcbxpr.h"
@@ -2305,11 +2299,10 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NASHT
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
       INTEGER :: I, J, K
 #include "dcborb.h"
-#include "dgroup.h"
 
       DIMENSION PROP(2*NASHT,2*NASHT,NZ)
       CHARACTER*8 ACHAR

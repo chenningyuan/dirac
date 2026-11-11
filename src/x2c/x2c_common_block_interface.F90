@@ -51,7 +51,7 @@ contains
 
 !      use dcbham_mod, only: IMFCH, IPRHAM, ISORDER_AMFI_X2C, MDIRAC, NOAMFI, ONESYS, SPINFR
 !      use dcborb_mod, only: NCMOTQ, NESH, NFORB, NORB, NPSH
-!      use dgroup_mod, only: ATOMIC, IPQTOQ, IQDEF, IQTOPQ, IRQMAT, JBTOF, JM4POS, JQBAS, LINEAR, NFSYM, NZ
+      use dgroup_mod, only: ATOMIC, IPQTOQ, IQDEF, IQTOPQ, IRQMAT, JBTOF, JM4POS, JQBAS, LINEAR, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, N2BASTQ, NFBAS, NTBAS, NZT
       use dcbgen_mod, only: BNCRON, CVAL, INTGEN, INTGEN_SAVE, LU1INT, LUX2C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -67,7 +67,6 @@ contains
       use dirac_cfg, only: dirac_cfg_dft_calculation
 #include "dcbham.h"
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
@@ -350,14 +349,13 @@ contains
 !      use dcbham_mod, only: I2COFK, MC, SPINFR, SSMTRC, SSMTRC_SAVE, SUB_BL
 !      use dcborb_mod, only: ID_SUB_BL, NBORB, NESH, NISH, NOCC, NORB, NORB_SUB, NPSH, NTMO_SUB, N_SUB_BL
 !      use dcbdhf_mod, only: I2TMOT, INTDEF, INTDEF_SAVE, N2TMO, N2TMOTQ, NESHMF, NISHMF, NOCCMF, NPSHMF, NTMO
-!      use dgroup_mod, only: LINEAR, NFSYM, NZ
+      use dgroup_mod, only: LINEAR, NFSYM, NZ
       use dcbbas_mod, only: I2TMT, N2TMT, NFBAS, NZT
       use dcbgen_mod, only: INTGEN
   use x2cmod_cfg
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
-#include "dgroup.h"
 !**********************************************************************
 !   
 !    purpose: 1. after the X2C procedure:

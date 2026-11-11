@@ -107,10 +107,9 @@ contains
 !  DCBHAM: QED
 !  DCBORB: IORB,NPSH,NFRO,NISH,NASH
 !
-!      use dgroup_mod, only: NFSYM
 !      use dcbham_mod, only: QED
+      use dgroup_mod, only: NFSYM
       use dcbbas_mod, only: MXFBAS, N2BBASX
-#include "dgroup.h"
 #include "dcbham.h"
 !
       LOGICAL SKIPEP,SKIPEE,GAS
@@ -194,13 +193,12 @@ contains
 !      use maxash_mod, only: MAXASH
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXG2U
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use dcbbas_mod, only: MXFBAS
 !      use dcbxrs_mod, only: STERNC
 #include "maxash.h"
 !
 #include "dcbidx.h"
-#include "dgroup.h"
 #include "dcbxrs.h"
 !
       integer :: JXOPE(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
@@ -434,10 +432,9 @@ contains
 !
 !***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use dcbbas_mod, only: MXFBAS
 !
-#include "dgroup.h"
 !
       LOGICAL QED, dryrun
       integer :: JXOPP(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
@@ -549,10 +546,9 @@ contains
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IORB, NESH, NPSH
       use dcbbas_mod, only: NFBAS
-!      use dgroup_mod, only: FREP, NFSYM
+      use dgroup_mod, only: FREP, NFSYM
 !
 #include "dcborb.h"
-#include "dgroup.h"
       CHARACTER INDSTR(NTYP,NFSYM)*72
       integer :: IND(LIND,NTYP,NFSYM),NIND(2,NTYP,NFSYM)
       integer :: iprint, ntyp, lind
@@ -635,13 +631,12 @@ contains
 !      use maxash_mod, only: MAXASH
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXG2U
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: MXGAS, NAELEC, NASHT, NGASSP, NGAS_DC, NGSH
       use dcbbas_mod, only: MXFBAS
 #include "maxash.h"
 !
 #include "dcbidx.h"
-#include "dgroup.h"
 #include "dcborb.h"
 !
       integer :: JXOPE(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)

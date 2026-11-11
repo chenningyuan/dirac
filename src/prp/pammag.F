@@ -53,7 +53,6 @@ C*****************************************************************************
 #include "dcbnmr.h"
 #include "dcbham.h"
 #include "dcbxlr.h"
-!#include "dgroup.h"
 C
 
       PARAMETER (NTABLE = 16)
@@ -451,7 +450,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use nuclei_mod, only: NUCDEP
       use symmet_mod, only: IPTAX
-!      use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NFSYM, NZ
+      use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NFSYM, NZ
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBXQ, NCMOTQ, NISH, NOCC, NORB, NORBT, NPSH
       use dcbbas_mod, only: NTBAS
       use dcbgen_mod, only: LUCOEF
@@ -465,7 +464,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
 C
-#include "dgroup.h"
 #include "dcborb.h"   
 #include "dcbham.h"
 #include "dcbprp.h"
@@ -643,12 +641,12 @@ C   reorthonormalization over both p+e shells, or only over
 C   the electronic shells. 
 C
 C***********************************************************************
-!      use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NFSYM, NZ
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBXQ, NCMOTQ, NISH, NOCC, NORB, NORBT, NPSH
 !      use dcbham_mod, only: SPINFR
 !      use dcbprp_mod, only: DOPCT, FULMAT, IPCON, IPSHIELD
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 !      use dcbxlr_mod, only: LLRAPU
+      use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NFSYM, NZ
 #ifdef MOD_LAO_REARRANGED
       use london_helper
       use london_utils
@@ -666,7 +664,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dgroup.h"
 #include "dcborb.h"   
 #include "dcbham.h"
 #include "dcbprp.h"
@@ -887,8 +884,8 @@ C  Written by Miro Ilias (based on TEC's routine TECTRA), august 2003, Odense.
 C
 C*****************************************************************************
 !      use dcborb_mod, only: IORB, NESH, NORB, NORBT, NPSH
-!      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 !      use dcbnmr_mod, only: EPREORTH
+      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
@@ -897,7 +894,6 @@ C*****************************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbnmr.h"
 C
       DIMENSION  TMAT(NORBT,NORBT,NZ), 
@@ -1112,7 +1108,7 @@ C***********************************************************************
 !      use dcborb_mod, only: ICMOQ, N2ORBXQ, NORB, NORBT
 !      use dcbham_mod, only: SPINFR
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: IPLONDON, IPRPRP
       use kinds_mod, only: dp
@@ -1121,7 +1117,6 @@ C***********************************************************************
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbxpr.h"
-#include "dgroup.h"
 #include "dcbprp.h"
 C
       DIMENSION CMO(*),IBEIG(*),WORK(*)
@@ -1228,8 +1223,8 @@ C    august 2003, Odense.
 C
 C*****************************************************************************
 !      use dcborb_mod, only: ICMOQ, IORB, NESH, NOCC, NORB, NORBT, NPSH
-!      use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NFSYM, NZ
 !      use dcbnmr_mod, only: EPREORTH
+      use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NFSYM, NZ
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
@@ -1240,7 +1235,6 @@ C*****************************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbnmr.h"
       DIMENSION DMAT(N2BBASX,NZ),CMO(*),IBEIG(*),
      &          TMAT(NORBT,NORBT,NZ),IQSYM(4),WORK(*)
@@ -1653,7 +1647,7 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
       use symmet_mod, only: I2COSX
-!      use dgroup_mod, only: IQPH, JQBAS, NBSYM
+      use dgroup_mod, only: IQPH, JQBAS, NBSYM
       use dcbbas_mod, only: NBBAS, NTBAS
       use quaternion_algebra
       use kinds_mod, only: dp
@@ -1661,7 +1655,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0, DM1 = -1.0D0
 C
 C
-#include "dgroup.h"
       LOGICAL DOINT(2,2),DIAG,SAME
       DIMENSION ONEINT(*)
       CHARACTER TYP*1
@@ -1759,7 +1752,7 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
-!      use dgroup_mod, only: IPQTOQ, IQTOPQ, IRQMAT, JBTOF, JQBAS, NZ
+      use dgroup_mod, only: IPQTOQ, IQTOPQ, IRQMAT, JBTOF, JQBAS, NZ
 !      use dcborb_mod, only: NASHT
 !      use dcbdhf_mod, only: ISYMOP, NFMAT
       use quaternion_algebra
@@ -1769,7 +1762,6 @@ C
       DIMENSION WORK(*),DMAT(N2BBASX,4,NFMAT),CMO(*),IBEIG(*)
       LOGICAL FOLD
       REAL(dp), PARAMETER :: D1 = 1.0 D00, D2 = 2.0 D00
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 C
@@ -1945,7 +1937,7 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXCENT, MXCOOR
       use cbihr2_mod, only: IPRNTA, IPRNTB, IPRNTC, IPRNTD, TKTIME
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use aovec_mod, only: MXAOVC
 #if defined (VAR_MPI)
       use blocks_mod, only: NLRGBL, NSMLBL
@@ -1973,7 +1965,6 @@ C*****************************************************************************
       use dcbbas_mod, only: N2BBASX, NTBAS
 #include "implicit.h"
       INTEGER :: I, J
-#include "dgroup.h"
 C
 #include "dcbnmr.h"
 #include "dcbprp.h"
@@ -2360,7 +2351,7 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: IPTAX
-!      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBXQ, NISH, NOCC, NORB, NORBT, NPSH
 !      use dcbprp_mod, only: DOPCT, IPCON23, IPRPRP
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM
@@ -2369,7 +2360,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, D1 = 1.0D0
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
@@ -2525,7 +2515,7 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: IPTAX
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBXQ, NISH, NOCC, NORB, NORBT, NPSH
-!      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
 !      use dcbprp_mod, only: DOPCT, IPCON21, IPCON22, IPLONDON, IPRPRP, SYMCON
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM
       use dcbsusc_mod, only: SUSFSY
@@ -2542,7 +2532,6 @@ C*****************************************************************************
       INTEGER :: I
       PARAMETER(D0=0.0D0, DI2=0.5D0, DM1=-1.0D0, D2=2.0D0, D1 = 1.0D0)
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
 C
@@ -3588,11 +3577,11 @@ C
 C   Written by Miro Ilias, August 2003, Odense
 C 
 C*****************************************************************************
-!      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: N2ORBXQ, NORBT
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
 !      use dcbnmr_mod, only: LUFCKL, LUTWOL, NOONEI, NOTWOL
 !      use dcbprp_mod, only: BXLAO, BYLAO, BZLAO
+      use dgroup_mod, only: IPQTOQ, NZ
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
@@ -3602,7 +3591,6 @@ C*****************************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
 C

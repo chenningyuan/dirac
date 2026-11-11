@@ -967,7 +967,7 @@ C
 !      use inpt_mod, only: INTERFACE
 !      use ccpar_mod, only: MYPROC, NMPROC
 !      use symm_mod, only: NE, SPFR
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use interface_to_mpi
       use spinor_indexing
       implicit none
@@ -1001,7 +1001,6 @@ C
 #include "ccpar.inc"
 #include "symm.inc"
 ! This dependency on a DIRAC common block should go but otherwise NZ is not known.
-#include "dgroup.h"
 C
 C---------------Calling variables--------------------------------------
 C

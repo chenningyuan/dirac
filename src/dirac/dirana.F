@@ -141,8 +141,8 @@ C
 C     Written by H.J.Aa.Jensen and P.Norman, Jan. 2010
 C
 C***********************************************************************
-!      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: NOCC, NPSH
+      use dgroup_mod, only: NFSYM
       use dcbbas_mod, only: N2BBASX, NTBAS
       use maxorb_mod, only: MXCORB
 !      use dcbpop_mod, only: DONETP, DO_SCFPOP, ILABDF, IPRPOP, LABDEF, NPOPLAB, VECPOP, VECPOP_SAVE
@@ -154,7 +154,6 @@ C  DCBBAS: N2BBASX
 C  LABELS: NLAB
 #include "dcborb.h"
 #include "dcbpop.h"
-#include "dgroup.h"
 C
       DIMENSION CMO(*), EIG(*), IBEIG(*), WORK(LWORK)
       LOGICAL   DONETP_M,LABDEF_M
@@ -248,7 +247,7 @@ C***********************************************************************
       use dcbgen_mod, only: LUKRMC
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: NESH, NESHT, NOCC, NORBT, NPSH
 !      use dcbmp2no_mod, only: IPRMP2NO, MP2NATPOP, NACTMP2NO, SELPOPNAT
       use dircmo
@@ -261,7 +260,6 @@ C  DCBBAS: N2BBASX
 C  LABELS: NLAB
 #include "dcborb.h"
 #include "dcbpop.h"
-#include "dgroup.h"
 #include "dcbmp2no.h"
 C
       LOGICAL TOBE,TOBEK,DONETP_M,ADDSML_M,LABDEF_M
@@ -490,7 +488,7 @@ C***********************************************************************
 !      use dcbpop_mod, only: DONETP, DO_SCFPOP, ILABDF, IPOPLAB, IPRPOP, NPOPLAB, POPLAB
       use maxorb_mod, only: MXCORB
 !      use dcbham_mod, only: SSMTRC
-!      use dgroup_mod, only: NBSYM, NFSYM
+      use dgroup_mod, only: FREP, NBSYM, NFSYM
 !      use dcborb_mod, only: NORB, NORBT, NPSH
       use xmlout
       use kinds_mod, only: dp
@@ -505,7 +503,6 @@ C
 #include "dcbpop.h"
 #include "dcborb.h"
 #include "dcbham.h"
-#include "dgroup.h"
 C
       DIMENSION PMAT(NPOPLAB,NPOPLAB,2),SMAT(*),CMO(*),
      &          EIG(NORBT),IBEIG(NORBT),
@@ -648,7 +645,7 @@ C***********************************************************************
 !      use dcborb_mod, only: NISH, NPSH
 !      use dcbpop_mod, only: DONETP, IPRPOP, NPOPLAB, POPLAB
 !      use dcbham_mod, only: SPINFR
-!      use dgroup_mod, only: ATOMIC, LINEAR, NFSYM, NZ
+      use dgroup_mod, only: ATOMIC, FREP, LINEAR, NFSYM, NZ
       use dcbbas_mod, only: NTBAS
       use maxorb_mod, only: MXCORB
       use pgroup_mod, only: REP
@@ -667,7 +664,6 @@ C
 #include "dcbham.h"
 #include "dcbpop.h"
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbdhf.h"
 C
       DIMENSION SMAT(NTBAS(0),NTBAS(0))
@@ -938,7 +934,6 @@ C Used from COMMON blocks
 C  DCBBAS: NTBAS,NFBAS
 C  DCBORB: NORB
 C  DGROUP: NZ
-!#include "dgroup.h"
 #include "dcbpop.h"
 C
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),PBUF(NTBAS(0),NTBAS(0),*)
@@ -1322,8 +1317,8 @@ C     Written by T.Saue March 26 1999
 C
 C***********************************************************************
 !      use dcborb_mod, only: NORBT, NPSH
-!      use dgroup_mod, only: NFSYM, NZ
 !      use dcbprj_mod, only: C1READ, IPRPRJ, MAXREF, NPROJNUC, NREFS, OWNBAS, REFFIL, VECREF
+      use dgroup_mod, only: NFSYM, NZ
       use dcbbas_mod, only: N2BBASXQ, NFBAS
       use priunit_mod, only: LUPRI
       use labeled_storage
@@ -1333,7 +1328,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, DM1=-1.0D0, D1=1.0D0
 C
 #include "dcbprj.h"
-#include "dgroup.h"
 #include "dcborb.h"
 !#include "dcbham.h"
 C
@@ -1747,9 +1741,9 @@ C                                    MCSCF-NO coefficients, occupation
 C                                    numbers (and mj-values)
 C
 C***********************************************************************
-!      use dgroup_mod, only: LINEAR
 !      use dcbprj_mod, only: IPRPRJ, LWGPOP, MAXREF, NREFS, PROTHR, VECREF
 !      use dcbham_mod, only: SPINFR
+      use dgroup_mod, only: FREP, LINEAR
       use priunit_mod, only: LUPRI
       use pgroup_mod, only: REP
       use quaternion_algebra
@@ -1759,7 +1753,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0
 C
 #include "dcbprj.h"
-#include "dgroup.h"
 #include "dcbham.h"      
 C
       integer, intent(in)    :: ntot, nref, nmol, nzp, iopt
@@ -2085,7 +2078,7 @@ C
 C***********************************************************************
       use dcbgen_mod, only: LUKRMC
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: IPQTOQ, NFSYM
+      use dgroup_mod, only: IPQTOQ, NFSYM
 !      use dcbvec_mod, only: ILABDF, IPRCMP, IPRVEC, VECPRI
       use dcbbas_mod, only: N2BBASXQ, NFBAS
 !      use dcborb_mod, only: ICMOQ, NOCC, NORB, NORBT, NPSH
@@ -2095,7 +2088,6 @@ C***********************************************************************
 C
 #include "dcbvec.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       LOGICAL TOBE
       DIMENSION WORK(*)
@@ -2942,15 +2934,14 @@ C      Do Loewdin symmetric orthonormalization
 C      Written by T. Saue Oct 2004
 C
 C***********************************************************************
-!      use dgroup_mod, only: NZ
 !      use dcbprj_mod, only: IPRPRJ, NREFS, REFFIL, VECREF
+      use dgroup_mod, only: IPQTOQ, NZ
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0
 C
-#include "dgroup.h"
 #include "dcbprj.h"
       CHARACTER OTYP(2)*1
       DIMENSION AMAT(NTOT,NTOT,NZ),BVEC(NTOT,NMOL,NZ),
@@ -3024,11 +3015,10 @@ C     Written by T. Saue
 C
 C***********************************************************************
 !      use dcborb_mod, only: NPSH
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I,II
 C
-#include "dgroup.h"
 #include "dcborb.h"
       DIMENSION CMO(NBAS,NVEC,NZ),BVEC(NTOT,NMOL,NZ),JVEC(NMOL)
 C
@@ -3060,13 +3050,12 @@ C     Written by T. Saue
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0
 C
-#include "dgroup.h"
       DIMENSION CMO(NBAS,NVEC,NZ),BVEC(NTOT,NMOL,NZ),JVEC(NMOL)
       DIMENSION A(4),B(4)
       IF(NZ.EQ.1) THEN
@@ -3124,7 +3113,7 @@ C***********************************************************************
 !      use dcbham_mod, only: SSMTRC
 !      use dcborb_mod, only: NPSH
 !      use dcbprj_mod, only: IPRPRJ, NPROJNUC, NREFS, REFFIL, VECREF
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
       use dcbbas_mod, only: N2BAST, N2BBASXQ, NFBAS
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUCOEF
@@ -3136,7 +3125,6 @@ C
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dcbprj.h"
-#include "dgroup.h"
       LOGICAL TOBE
       CHARACTER TEXT*74,FMT*6,MXFORM*6
       DIMENSION WORK(*)
@@ -3285,12 +3273,11 @@ C***********************************************************************
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: IPQTOQ, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D1 = 1.0D0, DM1=-1.0D0, D0 = 0.0D0
-#include "dgroup.h"
 C
       DIMENSION CMO1(NBAS1,NORB1,NZ),CMO2(NBAS2,NORB2,NZ),
      &          SMAT1(NBAS1,NBAS1),SCOMP(NVEC2,NORB1,NZ),
@@ -3876,7 +3863,7 @@ C***********************************************************************
 !      use dcbprj_mod, only: IPRPRJ, MAXREF, NREFS, PATOMS, REFFIL, VECREF
 !      use dcbham_mod, only: SSMTRC
 !      use dcborb_mod, only: IOCC
-!      use dgroup_mod, only: FREP, IPQTOQ, IQDEF, NFSYM, NZ, NZC1
+      use dgroup_mod, only: FREP, IPQTOQ, IQDEF, NFSYM, NZ, NZC1
       use dcbbas_mod, only: N2BAS, N2BAST, N2BBASX, NFBAS, NTBAS
       use dcbgen_mod, only: LUCOEF
       use priunit_mod, only: LUPRI
@@ -3886,7 +3873,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0=0.0D0
 C
 #include "dcbprj.h"
-#include "dgroup.h"
 #include "dcbham.h"
 #include "dcborb.h"
       DIMENSION NVECS(2,0:2),KVEC(2,0:MAXREF),NSTR(2,0:2,0:MAXREF),
@@ -4045,13 +4031,12 @@ C       NREF reference orbitals + NMOL polarization contributions
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: J
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
-#include "dgroup.h"
       DIMENSION POLVEC(NBAS,NTOT,NZ),AMAT(NTOT,NTOT,NZ),
      &          BVEC(NTOT,NMOL,NZ)
 C
@@ -4298,11 +4283,10 @@ C     Calculate a capped density matrix of the atoms
 c     listed in icent.
 c
       subroutine make_cap_dmat(icent,ncent,cmo,D,thres)
-!      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: NISH, NORBT, NPSH
+      use dgroup_mod, only: NZ
       implicit none
 #include "dcborb.h"
-#include "dgroup.h"
       double precision cmo(*), D(norbt,norbt,nz),thres,ovsum
       integer icent, ncent, i, j, k
       dimension icent(ncent)
@@ -4327,11 +4311,10 @@ c     Make a projector on the basis of centers icent(1)
 c     .. icent(ncent) (and their symmetry related centers). The
 c     projector is created in MO basis (given by cmo) -ulfek
 !      use dcborb_mod, only: NORBT, NPSH
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
       use dcbbas_mod, only: NTBAS
       implicit none
 #include "dcborb.h"
-#include "dgroup.h"
       integer icent, ncent, aomap, i, j, ifind, n
       double precision P, tmp, cmo(*)
       double precision, allocatable :: Pao(:,:), Pso(:,:), vec(:,:),
@@ -4374,9 +4357,8 @@ C
       subroutine purify(P,n,mz,thres)
 c     purify quaternion matrix P by setting eigenvalues > thres to 1 and
 c     eigenvalues <= thres to 0.
-!      use dgroup_mod, only: IPQTOQ
+      use dgroup_mod, only: IPQTOQ
       implicit none
-#include "dgroup.h"
       double precision P(n,n,mz), thres
       double precision, allocatable :: val(:), vec(:,:,:)
       integer ierr, kveg, keig, nvec, n, mz, i, j, k
@@ -4425,9 +4407,9 @@ C
 C     Written by T.Saue May 14 2012
 C
 C***********************************************************************
-!      use dgroup_mod, only: IPQTOQ, IQDEF, NFSYM, NZ, NZC1
 !      use dcbprj_mod, only: IPRPRJ, MAXREF, REFFIL, VECREF
 !      use dcborb_mod, only: NORBT, NPSH
+      use dgroup_mod, only: IPQTOQ, IQDEF, NFSYM, NZ, NZC1
       use dcbbas_mod, only: N2BBASXQ, NFBAS, NTBAS
       use nuclei_mod, only: NONT, NONTYP, NOORBT, NUCDEG
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -4440,7 +4422,6 @@ C
 C
 #include "dcbprj.h"
 #include "dcborb.h"
-#include "dgroup.h"
       DIMENSION NVECS(2,0:2),KVEC(2,0:MAXREF),NSTR(2,0:2,0:MAXREF),
      &          NAO(MAXREF),WORK(*),IDIM(3)
       DIMENSION IOFF(2)
@@ -4833,13 +4814,12 @@ C
 C***********************************************************************
 !      use dcbham_mod, only: SSMTRC
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: IPQTOQ, IQDEF, NZC1
+      use dgroup_mod, only: IQDEF, NZC1
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,JJ
       REAL(dp), PARAMETER :: D0=0.0D0, DM1=-1.0D0
 #include "dcbham.h"
-#include "dgroup.h"
       CHARACTER*6 REFFIL(NONTYP)
       DIMENSION AMAT(NVECS,NVECS,NZC1),NCATOM(0:2,NONTYP),
      &          NATOMS(NONTYP),CSEL(NBAS,NVECS,NZC1),WORK(*)

@@ -40,7 +40,7 @@ C
 C***********************************************************************
 !      use dcbopt_mod, only: GNORM, NZCONF, NZCONFQ, NZHOPE, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcbkrmc_itinfo_mod, only: DINFO
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
 C
@@ -48,7 +48,6 @@ C
 C
 #include "dcbopt.h"
 #include "dcbkrmc_itinfo.h"
-#include "dgroup.h"
 C
       DIMENSION GCI(NZCONF,*),GOEE(NZHOPE,*),GOEP(NZXOPP,*)
 C
@@ -181,7 +180,10 @@ C***********************************************************************
 !      use thrzer_mod, only: THRZER
 !      use dcbopt_mod, only: IPROPT, KZCONF, NZCONF, OPT_CIPROGRAM
 !      use dcborb_mod, only: NASHT
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: NZ
+#if defined (UNDEF)
+      use dgroup_mod, only: IPQTOQ
+#endif
       use dcbgen_mod, only: LUKRM3
 #include "implicit.h"
       INTEGER :: I
@@ -190,7 +192,6 @@ C
 C
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION CREF(NZCONF,*), GCI(NZCONF,*), FCAC(*), H2AC(*)
       DIMENSION WORK(*), EMC(2)

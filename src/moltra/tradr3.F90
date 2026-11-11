@@ -48,7 +48,7 @@
 !     Luuk Visscher
 !
 !
-!      use dgroup_mod, only: JBTOF, NZ
+      use dgroup_mod, only: JBTOF, NZ
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -58,7 +58,6 @@
 !      use dcbtr3_mod, only: ISPCK34, NBBAS3, NSPCK34
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "dgroup.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 !
@@ -227,8 +226,8 @@
 !     - Q3T          Coefficients for index 3 but for transposed AO ints
 !     - Q4T          Coefficients for index 4 but for transposed AO ints
 !
-!      use dgroup_mod, only: NFSYM, NZ
 !      use dcbtra_mod, only: NFPCK12, NFPCK34
+      use dgroup_mod, only: NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
@@ -238,7 +237,6 @@
       DIMENSION Q3S(*),Q4S(*),Q3T(*),Q4T(*)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       DIMENSION IRECC(2),MHTM(2),NBUF(2),NIJBUF(2),NBFSZ(2)
-#include "dgroup.h"
 #include "dcbtra.h"
 !
       CALL QENTER('MS4IN2D')
@@ -317,7 +315,7 @@
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX
-!      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 !      use dcbtra_mod, only: IFPCK34, ISTRAT, NFPCK34
 !      use dcbtr3_mod, only: IBAS3, IBAS4, IBBAS3, IBBAS4, ICMOQS, ICMOQT, NBBAS3, NBBAS4, NDMOQS, NDMOQT, NSPCK34
       use kinds_mod, only: dp
@@ -330,7 +328,6 @@
       DIMENSION HMAT(*)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       LOGICAL CORRECT_PARITY
-#include "dgroup.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 !
@@ -584,10 +581,9 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbtra_mod, only: LUTRA1
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
 #include "dcbtra.h"
-#include "dgroup.h"
       DIMENSION NBFSZ(2),NBUF(2),JBOFF(2,0:*),IRECC(2)
       CHARACTER*10 LFNAM,FNODE,FNAME*5
 !
@@ -624,10 +620,9 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbtra_mod, only: LUTRA1
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
 #include "dcbtra.h"
-#include "dgroup.h"
 !
       DO IRREP = 1, NFSYM
          LUTRA11 = LUTRA1 + IRREP
@@ -646,10 +641,9 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbtra_mod, only: LUTRA1
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
 #include "dcbtra.h"
-#include "dgroup.h"
       DIMENSION IRECC(2),NBFSZ(2),NBUF(2),JBOFF(2,0:*),IBOFF(2)
       DIMENSION RBUF(*),LBUF1(*)
 !
@@ -756,9 +750,9 @@
 !
 !     -              Updated values of buffer blocks
 !
-!      use dgroup_mod, only: JBTOF, NBSYM, NZ
 !      use dcbtra_mod, only: NFPCK12
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
+      use dgroup_mod, only: JBTOF, NBSYM, NZ
       use comdis_mod, only: LGFIL, NGBFSZ, NPASS
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -782,7 +776,6 @@
 !
       DIMENSION IHM(0:7)
 !
-#include "dgroup.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 !

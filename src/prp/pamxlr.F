@@ -138,11 +138,11 @@ C***********************************************************************
 !      use dcbham_mod, only: NOSPIN
 !      use dcbxlr_mod, only: BFREQ, INDBP, IPRXLR, JLRBP, LLBPSU, LLRBPU, NBFREQ, NCLS_XLR, NLRAPT, NLRBP, NLRBPT, NOSPIA, NOSPIB, THRCOM, XLRANA, XLR_INDSTR, XLR_RSPEXP, XLR_SKIPEE, XLR_SKIPEP
 !      use dcborb_mod, only: NCMOTQ, NORBT
-!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
 !      use dcbxpr_mod, only: IPRPTIM, PRPNAM
 !      use dcbxrs_mod, only: GPTNRM, JOPSY, JSYMOP, JTIMOP, LUXVC, NCRED, NDAMP, NERED, NFREQ, NPRED, NREDM, NZCONF, NZCONFQ, NZRED, NZVAR, NZVARQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZXOPT, NZXOPTQ, RSPLAB
 !      use dcbprp_mod, only: LONDON, REGRAD
 !      use dcbnmr_mod, only: NOONEI, NOTWOL
+      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
       use london_direct_hb
       use london_reorth_hb
 #ifdef MOD_LAO_REARRANGED
@@ -168,7 +168,6 @@ C
 #include "dcbham.h"
 #include "dcbxlr.h"
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbxpr.h"
 #include "dcbxrs.h"
 #include "dcbprp.h"
@@ -410,9 +409,9 @@ C***********************************************************************
 !      use dcbprp_mod, only: DOPCT, DOVDW, DOXLR
 !      use dcbxlr_mod, only: ALLCMB, BFREQ, CNVXLR, DMPFRLR, INTXLR, IPRXLR, ITRILR, ITRXLR, LLRAPU, LLRBPU, MAXFLR, MAXLLR, MAXRM, MXLOAD, NBFREQ, NLRAP, NLRAPT, NLRBP, NLRBPT, NOSPIA, NOSPIB, RESXLR, THCLR, THRCOM, TRIAB, XLRANA, XLRDIH, XLRNRM, XLR_ANATHR, XLR_E2CHEK, XLR_IMFREQ, XLR_INDSTR, XLR_LSFG, XLR_RSPEXP, XLR_RSPIMP, XLR_SKIPEE, XLR_SKIPEP, XLR_TRIPLET, XLR_UNCOUP, XLR_XVCFIL, XSTERN, XSTERNC
 !      use dcbham_mod, only: BSS, FREEPJ, GAUNT, LEVYLE, QED, SPINFR, VEXTPJ, X2C, X2CMMF
-!      use dgroup_mod, only: NFSYM
 !      use dcbxpr_mod, only: IPRPTIM
 !      use gauss_legendre_mod, only: FREQ_10PT, FREQ_12PT, FREQ_14PT, FREQ_16PT, FREQ_6PT, FREQ_8PT
+      use dgroup_mod, only: NFSYM
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
@@ -436,7 +435,6 @@ C
 #include "dcbxlr.h"
 !#include "dcborb.h"
 #include "dcbham.h"
-#include "dgroup.h"
 #include "dcbxpr.h"
 C
       LOGICAL SET, NEWDEF, RESET, FINTER, FLIST, INTFLG_CHANGE
@@ -1262,7 +1260,7 @@ C     Last revision: July 9 1996 - tsaue
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
+      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
       use pgroup_mod, only: REP
 !      use dcbxlr_mod, only: BFREQ, CNVXLR, DMPFRLR, INDBP, INTXLR, IPRXLR, ITRILR, ITRXLR, JLRAP, JLRBP, LLAPSU, LLBPSU, LLRAPU, LLRBPU, MAXRM, MXLOAD, NBFREQ, NLRAP, NLRAPT, NLRBP, NLRBPT, RESXLR, THCLR, XLRDIH, XLRNRM, XLR_E2CHEK, XLR_IMFREQ, XLR_INDSTR, XLR_LSFG, XLR_SKIPEE, XLR_SKIPEP, XLR_TRIPLET, XLR_UNCOUP, XLR_XVCFIL, XSTERN, XSTERNC
 !      use dcbxrs_mod, only: CNVINT, DAMPFREQ, DIAGHE, E2CHEK, IMFREQ, INTDEF, IPRXRS, ITRINT, IXRSTB, LINEQ, LOFFTY, LSVCFG, LURST, LUXVC, MAXITR, MAXSIM, N2REDM, NDAMP, NFREQ, NREDM, RESFAC, RSREST, STATIC, STERNC, STERNH, THCXRS, TKNORM, TRIPLET, UNCOUP
@@ -1272,7 +1270,6 @@ C***********************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
-#include "dgroup.h"
 #include "dcbxlr.h"
 #include "dcbxrs.h"
 #include "dcbxpr.h"
@@ -1456,7 +1453,7 @@ C***********************************************************************
 !      use dcbibn_mod, only: JBENDX, JBPNDX
 !      use dcborb_mod, only: NCMOTQ, NORBT
 !      use dcbham_mod, only: SPINFR
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use dcbbas_mod, only: NTBAS
       use orbital_rotation_indices
 
@@ -1469,7 +1466,6 @@ C
 #include "dcbibn.h"
 #include "dcborb.h"
 #include "dcbham.h"
-#include "dgroup.h"
       LOGICAL FIRST
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(*),
      &          IBTYP(2,*),IBCVC(*),IBEVC(*),IORBCL(4,*),
@@ -1651,8 +1647,8 @@ C***********************************************************************
 !      use dcbibn_mod, only: JBENDX, JBPNDX
 !      use dcbxrs_mod, only: BVTYP, IMX, INTXRS, IPEP, IPPP, IPX, JSYMOP, JTIMOP, LUBOE, LUBOP, LUXVC, NDAMP, NERED, NEVEC, NFREQ, NPRED, RSPLAB, STATIC
 !      use dcbxlr_mod, only: ALLCMB, INDBP, IPRXLR, JLRAP, LLAPSU, LLRAPU, LLRBPU, NLRAP, NLRAPT, NLRBPT, XLRANA, XLR_ANATHR
-!      use dgroup_mod, only: FREP, NZ
 !      use dcbxpr_mod, only: IPRPTIM
+      use dgroup_mod, only: FREP, NZ
 #ifdef MOD_LAO_REARRANGED
       use london_helper
       use london_utils 
@@ -1667,7 +1663,6 @@ C
 #include "dcbibn.h"
 #include "dcbxrs.h"
 #include "dcbxlr.h"
-#include "dgroup.h"
 #include "dcbxpr.h"
       CHARACTER FILNAM*6,MEMTYP*6,BLANK16*16,BLANK2*2
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,NDAMP,*),RCNV(*),
@@ -1941,7 +1936,7 @@ C
 C***********************************************************************
       use codata_mod, only: XTEV, XTKAYS
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
+      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
       use pgroup_mod, only: REP
 !      use dcbxlr_mod, only: ALLCMB, BFREQ, INDBP, JLRAP, JLRBP, LLAPSU, LLBPSU, LLRAPU, LLRBPU, NBFREQ, NLRAP, NLRAPT, NLRBP, NLRBPT, THCLR
 !      use dcbxrs_mod, only: DAMPFREQ, IMFREQ, NDAMP, UNCOUP
@@ -1951,7 +1946,6 @@ C***********************************************************************
       INTEGER :: I, J
 C
       REAL(dp), PARAMETER :: D0 = 0.0D0
-#include "dgroup.h"
 #include "dcbxlr.h"
 #include "dcbxrs.h"
 #include "dcbxpr.h"
@@ -2100,7 +2094,7 @@ C
 C***********************************************************************
 
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: JBTOF, NZ
+      use dgroup_mod, only: JBTOF, NZ
 !      use dcbxrs_mod, only: INDSTR, INTFLG, NZHOPE, NZXOPE, NZXOPP, SKIPEE, SKIPEP
 !      use dcborb_mod, only: NORBT
       use overlap_diagnostic
@@ -2110,7 +2104,6 @@ C***********************************************************************
 
 #include "implicit.h"
 C
-#include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcborb.h"
 C
@@ -2278,9 +2271,8 @@ C/* Deck anaxr1 */
      &                  NCLS,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C***********************************************************************
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
 #include "implicit.h"
-#include "dgroup.h"
       INTEGER   NCLS(2,3,2)
       DIMENSION JXOP(*),IORBCL(4,*),WORK(*)
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
@@ -2338,7 +2330,7 @@ C
 C***********************************************************************
 
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: FREP, IPQTOQ, NZ
+      use dgroup_mod, only: FREP, IPQTOQ, NZ
       use pgroup_mod, only: REP
       use overlap_diagnostic
       use dft_cfg
@@ -2347,7 +2339,6 @@ C***********************************************************************
       INTEGER :: I, II, J, JJ
       PARAMETER(DTOL=1.0D-12,DTOL2=1.0D-4,D0=0.0D0,D1=1.0D0,DM=1.0D2)
 C
-#include "dgroup.h"
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
       LOGICAL LFLAG(NVEC)
       DIMENSION BVEC(NBDIM,NZ,NVEC),FREQ(NVEC),RNORM(NVEC),IBTYP(NVEC),

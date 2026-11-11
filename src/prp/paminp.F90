@@ -35,7 +35,7 @@
 !      use dcbham_mod, only: BSS, GAUNT, IBSS, X2C
 !      use dcbprp_mod, only: ABUND, BXLAO, BYLAO, BZLAO, DIPOLE, DOESR, DOEXCPRP, DOEXP, DOPCT, DOTPA, DOVDW, DOVER, DOXLR, DOXPP, DOXQR, DSO, EFFDE2, EFFDEN, EFG, EFN, EFT, EFTNTL, EPOLAR, ESRGTENS, ESR_HFCC, EXCPRPTYP, HDF5IO, IMAGOUT, IPRPRP, LONDON, MGRAD, MSUSCDIA, MSUSCP, MXPRP_WF, NOPCT, NPRP_WF, NQCC, NQCCCART, NSTDIA, OPTROT, PRP_WF, PVC, PVC_EFG, PVC_SHIELD, PVC_SPINRO, PVC_SPINSPIN, QUADRU, RHONUC, ROTG, SHIELD, SPINRO, SPNSPN
 !      use dcborb_mod, only: NASHT
-!      use dgroup_mod, only: NBSYM
+      use dgroup_mod, only: NBSYM
          use memory_allocator
 #ifdef MOD_LAO_REARRANGED
          use london_helper
@@ -69,7 +69,6 @@
 !
 #include "dcbprp.h"
 #include "dcborb.h"
-#include "dgroup.h"
 !
       allocate(GEOM(NUCDEP,3))
       allocate(MASS(NATOMS))
@@ -732,7 +731,6 @@
 !
 #include "dcbprp.h"
 #include "dcbexp.h"
-!#include "dgroup.h"
 !#include "dcbxpr.h"
 !
       LOGICAL SET, NEWDEF, RESET
@@ -2510,14 +2508,13 @@
       use priunit_mod, only: LUPRI
 !      use dcbprl_mod, only: IPRLREP, IPRLTYP, PDOINT, PRPLBL
 !      use dcbxpr_mod, only: IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP
-!      use dgroup_mod, only: JM4, JM4REP, JM4TIM, MCMP, NOPTYP
+      use dgroup_mod, only: JM4, JM4REP, JM4TIM, MCMP, NOPTYP
       use pgroup_mod, only: REP
 #include "implicit.h"
 !
 !
 #include "dcbprl.h"
 #include "dcbxpr.h"
-#include "dgroup.h"
 !
       LOGICAL DIFSYM,DIFTIM, SKIP_JM4
       DIMENSION ICREP(3),ICTIM(3)
@@ -2678,7 +2675,7 @@
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, PRPNAM
 !      use dcbprl_mod, only: IPRLTYP, PDOINT, PRPLBL
       use pgroup_mod, only: REP
-!      use dgroup_mod, only: MCMP
+      use dgroup_mod, only: MCMP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -2686,7 +2683,6 @@
 !
 #include "dcbxpr.h"
 #include "dcbprl.h"
-#include "dgroup.h"
       CHARACTER MXFORM*6,FMT*6,OPTYPE*12,TTYP(-1:1)*2
       SAVE TTYP
       DATA TTYP /'T-','T0','T+'/
@@ -2941,12 +2937,11 @@
 !
 !***********************************************************************
 !      use dcbxpr_mod, only: IPRPSYM
-!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
+      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
 #include "implicit.h"
       INTEGER :: J
 !
 #include "dcbxpr.h"
-#include "dgroup.h"
       DIMENSION IPOP1U(NOP1T),IPOP1S(NOP1T),NOP1(8),                    &
      &          JOP1(8),IBUF(NOP1T,8)
 !

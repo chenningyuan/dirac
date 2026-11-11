@@ -4257,10 +4257,9 @@ C  /* Deck effdentyp */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CEXPINT_INFO(NINTS,INTREP,LABINT)
 C***********************************************************************
-!      use dgroup_mod, only: NBSYM, NFSYM
+      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
       use pgroup_mod, only: REP
 #include "implicit.h"
-#include "dgroup.h"
       DIMENSION INTREP(8)
       CHARACTER*8 LABINT(8)
       NFC = NBSYM/NFSYM

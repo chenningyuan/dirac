@@ -195,7 +195,8 @@ C*****************************************************************************
       use dcbgrd_mod, only: GRADXC, LUMGRD
       use dirac_partask_mod, only: XCINT_PAR
       use maxorb_mod, only: MXCORB
-!      use dgroup_mod, only: IPQTOQ, IQTOPQ, IRQMAT, JM4POS, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, IQTOPQ, IRQMAT, JM4POS, JQBAS,
+     &  NFSYM, NZ
       use nuclei_mod, only: NUCDEP, NUCIND
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
@@ -221,7 +222,6 @@ C
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
-#include "dgroup.h"
 C
       DIMENSION WORK(*)
       LOGICAL TOBE
@@ -875,7 +875,6 @@ C     Timing variables
       DATA DPRTIM /D0,D0,D0,D0,D0,D0,D0,D0/
 C
 #include "dcbdhf.h"
-!#include "dgroup.h"
 #include "dcbham.h"
 C two el. part
 C

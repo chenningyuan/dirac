@@ -1,5 +1,6 @@
 module openrsp_interface_response
 
+      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
    use dirac_interface
    use memory_allocator
@@ -16,7 +17,6 @@ module openrsp_interface_response
 #include "dcborb.h"
 #include "dcbxpr.h"
 #include "dcbxrs.h"
-#include "dgroup.h"
 
 contains
 

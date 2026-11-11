@@ -58,6 +58,7 @@ C Assuming this position (at least until a new one is taken)
      &                  WORK,KFREE,LFREE)
 *
 *
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -67,7 +68,6 @@ C Assuming this position (at least until a new one is taken)
 #include "ctcc.inc"
 #include "ctccp.inc"
 #include "cgas.inc"
-#include "dgroup.h"
 *
       character*1 COORD
       logical MCSCF
@@ -419,6 +419,7 @@ C     call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
 * Don't think just do
 * Much is a copy paste from KRCI_CALC and KRCI_CALC1
 *
+      use dgroup_mod, only: NZ
       use dcbgen_mod, only: LUCOEF, LUKRMC
       use consts_mod, only: D0
       use maxorb_mod, only: MXCORB
@@ -434,7 +435,6 @@ C
 #include "dcbkrmc_itinfo.h"
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dgroup.h"
 #include "krciprop.h"
 #include "mxpdim.inc"
 #include "ctcc.inc"
@@ -624,6 +624,7 @@ C    &               WORK(KFREE),LFREE,IPROPT)
      &                            LABEL,IPRNT,
      &                            WORK,KFREE,LFREE)
 *
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -634,7 +635,6 @@ C    &               WORK(KFREE),LFREE,IPROPT)
 #include "glbbas.inc"
 #include "clunit.inc"
 *
-#include "dgroup.h"
 *
       character*6 CIRUN
       INTEGER   INCLUDED_HX(NSPOBEX_TP)
@@ -1546,8 +1546,8 @@ C     CALL MEMCHK_KRCC(WORK)
       subroutine getind_nz3_KRCC(YINT,INDEX,IRI,IDIM,INVREO,
      &                      KR,NASHT,NNASHX,DMFC,H2AC,IPRNT)
 *
+      use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
-#include "dgroup.h"
 *
 C     dimension DMFC(*),H2AC(*)
       dimension DMFC(*),H2AC(NASHT/2,NASHT/2,NNASHX,NZ,*)
@@ -1757,6 +1757,7 @@ C     Written by J. Thyssen - Jul 21 2000
 C     Last revision : L. Visscher - Mar 15 2001
 C
 C***********************************************************************
+      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
@@ -1764,7 +1765,6 @@ C***********************************************************************
 C
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbidx.h"
 #include "dcbham.h"
 C

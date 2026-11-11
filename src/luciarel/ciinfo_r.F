@@ -308,7 +308,7 @@ CTEMP     ISM2(3,5) = 1
 !      use cprnt_mod, only: IPRWFC
 !      use cands_mod, only: IACTP, IBCTP
 !      use parluci_mod, only: L_COMBI
-!      use dgroup_mod, only: LINEAR
+      use dgroup_mod, only: LINEAR
       use luci_wrkspc
 *
 *
@@ -343,7 +343,6 @@ CTEMP     ISM2(3,5) = 1
 #include "cprnt.inc"
 #include "cands.inc"
 #include "parluci.h"
-#include "dgroup.h"
 *
       DIMENSION IBLOCK(8,NBLOCK),IBLTP(*)
       dimension C(*)
@@ -572,8 +571,8 @@ CTEMP     ISM2(3,5) = 1
 *
 *
 !      use dcborb_mod, only: NASH, NGSH, NORBT
-!      use dgroup_mod, only: LINEAR, NFSYM
 !      use maxash_mod, only: MAXASH
+      use dgroup_mod, only: LINEAR, NFSYM
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXU2G
       use mospinor_info
@@ -593,7 +592,6 @@ CTEMP     ISM2(3,5) = 1
       DIMENSION NCPMT(10,NOCCLS)
       DIMENSION WCPMT(10,NOCCLS)
 #include "dcborb.h"
-#include "dgroup.h"
 #include "maxash.h"
 C
 #include "dcbidx.h"

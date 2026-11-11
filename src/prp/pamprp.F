@@ -1069,7 +1069,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-!#include "dgroup.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
       LOGICAL DOATOM(NUCIND),SAME
@@ -3091,7 +3090,7 @@ C***********************************************************************
 !      use dcbprp_mod, only: ABUND, IPRPRP, IPSPNSPN
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT, TRIAB
       use nuclei_mod, only: IZATOM, NAMDEP, NAMN, NUCDEG, NUCDEP, NUCIND
-!      use dgroup_mod, only: IPQTOQ
+      use dgroup_mod, only: IPQTOQ
       use codata_mod, only: ALPHA2, NMAGN, NMAGNAU, PLANCK, XTHZ
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3104,7 +3103,6 @@ C
 !#include "dcbprl.h"
 !#include "dcbexp.h"
 #include "dcbxlr.h"
-#include "dgroup.h"
       LOGICAL TEST,DOATOM(NUCIND)
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT),
      &          ABCNV(NBFREQ,NLRBPT),
@@ -3673,7 +3671,6 @@ C***********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: DM1 = -1.0D0
 C
-!#include "dgroup.h"
 #include "dcbprp.h"
 #include "dcbexp.h"
       LOGICAL DOATOM(NUCIND),SAME
@@ -3814,7 +3811,7 @@ C***********************************************************************
 !      use dcbprl_mod, only: PRPLBL
 !      use dcbexp_mod, only: LEXPP
       use nuclei_mod, only: IZATOM, NAMDEP, NAMN, NUCDEG, NUCDEP, NUCIND
-!      use dgroup_mod, only: IPQTOQ
+      use dgroup_mod, only: IPQTOQ
       use codata_mod, only: ALPHA2, NMAGN, NMAGNAU, PLANCK, XTHZ
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3826,7 +3823,6 @@ C
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "dcbexp.h"
-#include "dgroup.h"
       LOGICAL TEST,DOATOM(NUCIND)
       DIMENSION EXPVAL(*),
      &          IATINF(3,NUCDEP),RATINF(3,5,NUCDEP),
@@ -4088,7 +4084,6 @@ C***********************************************************************
       use dcbgen_mod, only: CVAL
 #include "implicit.h"
       INTEGER :: I
-!#include "dgroup.h"
 #include "dcbprp.h"
 #include "dcbesr.h"
 #include "dcbxlr.h"
@@ -4465,7 +4460,6 @@ C
 !#include "dcbxpr.h"
 #include "krciprop.h"
 !#include "dcborb.h"
-!#include "dgroup.h"
 C
 #ifdef CODE_NOT_WORKING
       CHARACTER PNAME(6)*16, PLABEL(6)*8
@@ -4549,7 +4543,6 @@ C
 !#include "dcbxpr.h"
 #include "krciprop.h"
 !#include "dcborb.h"
-!#include "dgroup.h"
 C
       CHARACTER PNAME(2)*16, PLABEL(2)*8
       DIMENSION PFAC(2),IOP(2)
@@ -4595,7 +4588,6 @@ C
 #include "dcbxpr.h"
 #include "krciprop.h"
 !#include "dcborb.h"
-!#include "dgroup.h"
 C
 C     define operator type, factor, name and label
 C     4*ic gamma^0 gamma^5 p^2/2m
@@ -4650,7 +4642,6 @@ C
 !#include "dcbprp.h"
 #include "dcbxpr.h"
 #include "krciprop.h"
-!#include "dgroup.h"
 !#include "dcbxlr.h"
 !#include "dcborb.h"
       LOGICAL   SAME
@@ -4764,7 +4755,6 @@ C***********************************************************************
 !#include "maxash.h"
 !#include "dcbprp.h"
 #include "krciprop.h"
-!#include "dgroup.h"
 #include "dcbxpr.h"
 !#include "dcbexp.h"
 C
@@ -5234,7 +5224,6 @@ C=======================================================================
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C-----------------------------------------------------------------------
-!#include "dgroup.h"
 #include "dcbprp.h"
 !#include "dcbesr.h"
 #include "dcbxlr.h"
@@ -5617,7 +5606,6 @@ C***********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
-!#include "dgroup.h"
 #include "dcbprp.h"
 #include "dcbexp.h"
       LOGICAL DOATOM(NUCIND),SAME
@@ -6473,7 +6461,6 @@ C***********************************************************************
       use codata_mod, only: ECHARGE, EMASS, XFMOL, XTANG
 #include "implicit.h"
       INTEGER :: I, II, J, K
-!#include "dgroup.h"
 #include "dcbprp.h"
 #include "dcbexp.h"
 #include "dcbxlr.h"
@@ -7952,7 +7939,6 @@ C
       integer I,J
 C
 #include "spinro.h"
-!#include "dgroup.h"
 !#include "dcbham.h"
 C
       integer K,KATOM,IPRINT,IATOM,ISYMOP,JATOM,NATTYP,NUMIS,IJ
@@ -8163,7 +8149,6 @@ C
      &          WORK(*)
       DOUBLE PRECISION FACTOR
 C
-!#include "dgroup.h"
 C
       FACTOR = (GFERMI*(D1-D4*S2THETAW))/(CVEL*SQRT(D2))
       FACTOR = (FACTOR*XTHZ)/(D2*PI*CVEL*CVEL)
@@ -8848,7 +8833,7 @@ C*****************************************************************************
 !      use dcbprp_mod, only: IPROTG
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
 !      use rotg_mod, only: LINDET
-!      use dgroup_mod, only: LINEAR
+      use dgroup_mod, only: LINEAR
       use memory_allocator
 C
       implicit none
@@ -8858,7 +8843,6 @@ C
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "rotg.h"
-#include "dgroup.h"
 C
       INTEGER IPRINT,INDOP1,INDXPR,IOP,IPTYP,ISYXPR,ITRXPR,NPCOMP
       DOUBLE PRECISION PFAC,DL,DS
@@ -9080,7 +9064,7 @@ C***********************************************************************
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEE, XLR_SKIPEP
       use nuclei_mod, only: NATOMS, NFLOAT, NUCDEP
 !      use rotg_mod, only: GFANUC, LINDET
-!      use dgroup_mod, only: LINEAR
+      use dgroup_mod, only: LINEAR
 !      use dcbham_mod, only: SPINFR, URKBAL, ZORA
       use consts_mod, only: D0
       use memory_allocator
@@ -9095,7 +9079,6 @@ C
 !#include "dcbprl.h"
 #include "dcbxlr.h"
 #include "rotg.h"
-#include "dgroup.h"
 #include "dcbham.h"
 C
       integer, allocatable :: NAT(:),ISOT(:)
@@ -9359,7 +9342,7 @@ C***********************************************************************
       use symmet_mod, only: IPTAX, ISYMAX, MAXOPR, PT
 !      use rotg_mod, only: GFANUC
       use orgcom_mod, only: CMXYZ
-!      use dgroup_mod, only: LINEAR
+      use dgroup_mod, only: LINEAR
 !      use dcbprp_mod, only: LONDON
       use codata_mod, only: PMASS, XFAMU
       use consts_mod, only: D1, D2
@@ -9368,7 +9351,6 @@ C
       integer I,J
 C
 #include "rotg.h"
-#include "dgroup.h"
 #include "dcbprp.h"
 C
       integer IATOM,IX,IY,IPRINT,ISYMOP,JATOM,JX,JY,
@@ -9651,14 +9633,13 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXQN
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use dcbbas_mod, only: NTBAS
       use dcbgen_mod, only: LUBSS
 !      use dcbxpr_mod, only: IPRPSYM, NPRPS, PRPNAM
       use ccom_mod, only: DOSPHE
 #include "implicit.h"
       INTEGER :: I
-#include "dgroup.h"
 !#include "dcborb.h"
 !#include "dcbexp.h"
 #include "dcbxpr.h"
@@ -9772,7 +9753,6 @@ C***********************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: DM1 = -1.0D0, DMI2 = -0.5D0
 C
-!#include "dgroup.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
 !#include "dcbexp.h"
@@ -9985,7 +9965,6 @@ C
       INTEGER :: J
       PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
      &          DI2 = +0.5D00,DM1 = - 1.0D0)
-!#include "dgroup.h"
 #include "dcbprp.h"
 !#include "dcbesr.h"
 !#include "dcbxlr.h"
@@ -10801,13 +10780,12 @@ C
 C     Define integrals for full light-matter interaction
 C
 C***********************************************************************
-!      use dgroup_mod, only: MCMP
+      use dgroup_mod, only: MCMP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: II
 C
       REAL(dp), PARAMETER :: DP5=0.5D0
-#include "dgroup.h"
       CHARACTER PNAME*16
       character (len=8),  allocatable   :: LABINT(:)
       integer, allocatable              :: INTREP(:)
@@ -10873,13 +10851,12 @@ C
 C     Define integrals for full light-matter interaction
 C
 C***********************************************************************
-!      use dgroup_mod, only: MCMP
+      use dgroup_mod, only: MCMP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: II
 C
       REAL(dp), PARAMETER :: DP5=0.5D0
-#include "dgroup.h"
       CHARACTER PNAME*16
       character (len=8),  allocatable   :: LABINT(:)
       integer, allocatable              :: INTREP(:)
@@ -10954,7 +10931,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use maxorb_mod, only: MXCORB
       use nuclei_mod, only: NAMN, NUCDEP, NUCIND
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
-!      use dgroup_mod, only: LINEAR
+      use dgroup_mod, only: LINEAR
       use pgroup_mod, only: REP
       use chrxyz_mod, only: CHRXYZ
 !      use dcbexp_mod, only: IPEFN, LEXPP, MAXEXP, NEXPP
@@ -10970,7 +10947,6 @@ C
 C
       integer I,J
 C
-#include "dgroup.h"
 #include "dcbexp.h"
 #include "dcbprp.h"   ! common block for expectation values
 #include "dcbxlr.h"   ! common block for linear reponse
@@ -11305,7 +11281,7 @@ C***********************************************************************
       use symmet_mod, only: IPTAX
       use orgcom_mod, only: CMXYZ
 !      use spinro_mod, only: LINDET, SPRDNL
-!      use dgroup_mod, only: LINEAR
+      use dgroup_mod, only: LINEAR
 !      use dcbham_mod, only: SPINFR, URKBAL, ZORA
       use consts_mod, only: D0
       use memory_allocator
@@ -11318,7 +11294,6 @@ C
 #include "dcbexp.h"
 #include "dcbxlr.h"
 #include "spinro.h"
-#include "dgroup.h"
 #include "dcbham.h"
 C
       logical, allocatable :: DOATOM(:)
@@ -11930,7 +11905,7 @@ C***********************************************************************
       use symmet_mod, only: IPTAX, ISYMAX, MAXOPR, PT
 !      use spinro_mod, only: GTRANT, SPRNUC, SPRNUC2, SPRNUC3
       use orgcom_mod, only: CMXYZ
-!      use dgroup_mod, only: LINEAR
+      use dgroup_mod, only: LINEAR
       use codata_mod, only: ALPHA2, PMASS, XFAMU, XTHZ
       use consts_mod, only: D0, D1, D2, D6
       implicit none
@@ -11938,7 +11913,6 @@ C
       integer I,J
 C
 #include "spinro.h"
-#include "dgroup.h"
 C
       integer K,KATOM,IPRINT,IATOM,ICOOR,ISYMOP,IX,IY,
      &        JATOM,JX,JY,NATTYP,NUMIS,KHZPPM
@@ -12393,7 +12367,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use maxorb_mod, only: MXCORB
       use nuclei_mod, only: GAUNUC, NAMDEP, NUCDEP, NUCIND, NUCPRE
       use symmet_mod, only: IPTCNT, IPTNUC, MAXREP
-!      use dgroup_mod, only: LINEAR
+      use dgroup_mod, only: LINEAR
 !      use dcbprp_mod, only: IP_PVC_SPINRO
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
       use dcbgen_mod, only: CVAL
@@ -12408,7 +12382,6 @@ C
 C
       integer I,J
 C
-#include "dgroup.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"     ! Common block for linear reponse
 #include "spinro.h"
@@ -12661,7 +12634,7 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: IPTAX
 !      use spinro_mod, only: LINDET
-!      use dgroup_mod, only: LINEAR
+      use dgroup_mod, only: LINEAR
 !      use dcbham_mod, only: SPINFR, URKBAL, ZORA
       use consts_mod, only: D0
       use memory_allocator
@@ -12671,7 +12644,6 @@ C
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "spinro.h"
-#include "dgroup.h"
 #include "dcbham.h"
 C
       logical, allocatable :: DOATOM(:)

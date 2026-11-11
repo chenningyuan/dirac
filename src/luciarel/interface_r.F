@@ -73,8 +73,8 @@
 !      use ctcc_mod, only: KLABEXTP, KLSOBEX, MX_ST_TSOSO_BLK_MX, N1ELINT, NALLINT, NSPOBEX_TP
 !      use cgas_mod, only: NGAS
 !      use integrals_off_mod, only: IPOSDIA
-!      use dgroup_mod, only: LINEAR, NZ
 !      use dcborb_mod, only: NGSHT, NORBT
+      use dgroup_mod, only: LINEAR, NZ
       use luci_wrkspc
 *---------------------------------------------------
 *
@@ -95,7 +95,6 @@
 #include "cgas.inc"
 #include "integrals_off.inc"
 *
-#include "dgroup.h"
 #include "dcborb.h"
 *
       character*6 CIRUN
@@ -574,7 +573,7 @@ C
 !      use parluci_mod, only: IJKL_PRE, LOWSRT_IJKL, LUWRT, REORD_IJKL
 !      use files_r_mod, only: LUSC94_MPIL, LUSC95_MPIL, NLUSC94_MPI, NLUSC95_MPI
 !      use integrals_off_mod, only: IBTSOSO_TP, IPOSDIA
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use luci_wrkspc
 ***********************************************************************
 * Driver routine for distribution of DIRAC integrals to
@@ -619,7 +618,6 @@ C
 #include "files_r.inc"
 #include "integrals_off.inc"
 *
-#include "dgroup.h"
 *
       character*6 CIRUN
       dimension ISOBEX(NGAS,4,NSPOBEX_TP),
@@ -1307,7 +1305,7 @@ C
 !      use parluci_mod, only: IJKL_PRE, LOWSRT_IJKL, LUWRT, REORD_IJKL
 !      use files_r_mod, only: LUSC94_MPIL, LUSC95_MPIL, NLUSC94_MPI, NLUSC95_MPI
 !      use integrals_off_mod, only: IBTSOSO_TP, IPOSDIA
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
       use luci_wrkspc
 *
       use mospinor_info
@@ -1329,7 +1327,6 @@ C
 #include "files_r.inc"
 #include "integrals_off.inc"
 *
-#include "dgroup.h"
 *
       character*6 CIRUN
       dimension ISOBEX(NGAS,4,NSPOBEX_TP),
@@ -2088,12 +2085,11 @@ C
 *=========================
 *
 *
-!      use dgroup_mod, only: IPQTOQ, NZ
 !      use parluci_mod, only: IJKL_PRE, LOWSRT_IJKL
+      use dgroup_mod, only: IPQTOQ, NZ
       use interface_to_mpi
 #include "implicit.h"
       INTEGER :: I
-#include "dgroup.h"
 #if defined (VAR_MPI2)
 !#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -2467,7 +2463,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUKRM3
 !      use dcborb_mod, only: MXGAS, N2ASHX, NASH, NASHT
-!      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM, NZ
       use pgroup_mod, only: REP
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
 !      use krciprop_mod, only: DODIPMOM_KRCI, DOOSCILLST, ISYMOPPRP_KRCI, LPROP_KRCI, NPROP_KRCI
@@ -2477,7 +2473,6 @@ C***********************************************************************
       INTEGER :: I
 C
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbxpr.h"
 !#include "dcbprl.h"
 #include "krciprop.h"
@@ -2722,9 +2717,9 @@ C
      &                     SIGN_OPREO,ISF,NASHTL,IDEN_TYPE,IPRNT)
 !      use mxpdim_mod, only: MXPNGAS, MXPORB
 !      use ctcc_mod, only: N1ELINT, N2ELINT, NALLINT, NSPOBEX_TP
-!      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: NGAS_DC, NGSH
 !      use parluci_mod, only: LUWRT
+      use dgroup_mod, only: NFSYM, NZ
       use luci_wrkspc
 *
 *  Input:  DENS
@@ -2742,7 +2737,6 @@ C
 #include "mxpdim.inc"
 #include "ctcc.inc"
 *
-#include "dgroup.h"
 #include "dcborb.h"
 #include "parluci.h"
 *
@@ -3017,9 +3011,9 @@ csk               write(LUWRT,*) ' continuing ...'
      &                     SIGN_OPREO,ISF,NASHTL,IPRNT)
 !      use mxpdim_mod, only: MXPNGAS, MXPORB
 !      use ctcc_mod, only: N1ELINT, N2ELINT, NALLINT, NSPOBEX_TP
-!      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: NASHT, NGAS_DC, NGSH
 !      use parluci_mod, only: LUWRT
+      use dgroup_mod, only: NFSYM, NZ
       use luci_wrkspc
 *
 *  Input:  DENS
@@ -3037,7 +3031,6 @@ csk               write(LUWRT,*) ' continuing ...'
 #include "mxpdim.inc"
 #include "ctcc.inc"
 *
-#include "dgroup.h"
 #include "dcborb.h"
 #include "parluci.h"
 *
@@ -3257,8 +3250,8 @@ csk               write(LUWRT,*) ' continuing ...'
 !      use krmc_shmem_mod, only: MY_T_WIN
 !      use mxpdim_mod, only: MXPNGAS, MXPORB
 !      use ctcc_mod, only: N1ELINT, N2ELINT, NALLINT, NSPOBEX_TP
-!      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: NGAS_DC, NGSH
+      use dgroup_mod, only: NFSYM, NZ
       use luci_wrkspc
 *
 *  Input:  DENS
@@ -3280,7 +3273,6 @@ csk               write(LUWRT,*) ' continuing ...'
 #include "mxpdim.inc"
 #include "ctcc.inc"
 *
-#include "dgroup.h"
 #include "dcborb.h"
 *
       dimension F1(*), IT_TTPL(*)
@@ -3524,10 +3516,10 @@ csk               write(LUWRT,*) ' continuing ...'
      &                              IPRNT)
 !      use mxpdim_mod, only: MXPNGAS, MXPORB
 !      use ctcc_mod, only: N1ELINT, N2ELINT, NSPOBEX_TP
-!      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: NGAS_DC, NGSH
 !      use parluci_mod, only: LUWRT, MASTER, MYPROC
 !      use krmc_shmem_mod, only: LEN_T_BUFF
+      use dgroup_mod, only: NFSYM, NZ
       use luci_wrkspc
 *
 *  Input:  DENS
@@ -3548,7 +3540,6 @@ csk               write(LUWRT,*) ' continuing ...'
 !#include "glbbas.inc"
 #include "ctcc.inc"
 *
-#include "dgroup.h"
 #include "dcborb.h"
 #include "parluci.h"
 !#include "noccn_inf.inc"
@@ -3800,10 +3791,10 @@ csk               write(LUWRT,*) ' continuing ...'
      &                           SIGN_OPREO,ISF,NASHTL,IPRNT)
 !      use mxpdim_mod, only: MXPNGAS, MXPORB
 !      use ctcc_mod, only: N1ELINT, N2ELINT, NALLINT, NSPOBEX_TP
-!      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: NGAS_DC, NGSH
 !      use parluci_mod, only: LUWRT, MASTER, MYPROC
 !      use krmc_shmem_mod, only: LEN_T_BUFF
+      use dgroup_mod, only: NFSYM, NZ
       use luci_wrkspc
 *
 *  Input:  DENS
@@ -3824,7 +3815,6 @@ csk               write(LUWRT,*) ' continuing ...'
 !#include "glbbas.inc"
 #include "ctcc.inc"
 *
-#include "dgroup.h"
 #include "dcborb.h"
 #include "parluci.h"
 !#include "noccn_inf.inc"

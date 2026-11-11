@@ -30,8 +30,8 @@ C
 C     Written by Trond Saue
 C
 C***********************************************************************
-!      use dgroup_mod, only: NZC1
 !      use dcb_effqed_mod, only: REFFIL
+      use dgroup_mod, only: NZC1
       use dcbgen_mod, only: LUCOEF
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NONT, NONTYP, NUCDEG
@@ -41,7 +41,6 @@ C***********************************************************************
       INTEGER :: J
 C
 C
-#include "dgroup.h"
 #include "dcb_effqed.h"      
       DIMENSION FOCK(*),WORK(*)
       CHARACTER TEXT*74

@@ -91,11 +91,10 @@ SUBROUTINE RECP_CHK_SYM
 ! switch off linear symmetry if this is active
 !      use inc_print_mod, only: RECP_OUT
 !      use dcbham_mod, only: ECPCALC
-!      use dgroup_mod, only: LINEAR
+      use dgroup_mod, only: LINEAR
   IMPLICIT NONE
 #include "inc_print.h"
 #include "dcbham.h"
-#include "dgroup.h"
   IF (LINEAR.AND.ECPCALC) THEN
 !       * Switch off linear symmetry
 !       WRITE(RECP_OUT,'(10X,A)')'>>> RECP incompatibility: '

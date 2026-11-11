@@ -573,13 +573,13 @@ contains
    !> print matrix A to unit, starting with label, making each column colwidth wide,
    !> and using braces braces
    subroutine mat_print_nontmp(A, label, unit, colwidth, braces)
+      use dgroup_mod, only: IPQTOQ
       type(matrix),           intent(in) :: A
       integer,      optional, intent(in) :: unit, colwidth
       character(*), optional, intent(in) :: label, braces
       integer                            :: uni, colw, dec, i, j, siz
       character*8                        :: fmt
       character*4                        :: brac
-#include "dgroup.h"
 #ifndef PRG_DIRAC
       uni = 6 !process optional argument unit, which defaults to stdout
       if (present(unit)) uni = unit

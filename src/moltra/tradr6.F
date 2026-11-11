@@ -62,7 +62,7 @@ C***********************************************************************
       use dcbgen_mod, only: PARCAL
 !      use dcbtra_mod, only: NFPCK12, NFPCK12T, NFPCK34T, NOMDCINT, SCRTRA
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use interface_to_mpi
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -73,7 +73,6 @@ C***********************************************************************
 #endif
 #include "dcbtra.h"
 #include "dcbtr3.h"
-#include "dgroup.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION NSTR(2,0:2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
@@ -299,12 +298,11 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: NFPCK12T
       use comdis_mod, only: ISHLA
-!      use dgroup_mod, only: NBSYM
+      use dgroup_mod, only: NBSYM
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 #include "dcbtra.h"
-#include "dgroup.h"
 
       DIMENSION LSORT(3,NFPCK12T,0:7)
       Real(8), Allocatable :: RGBUF(:)
@@ -401,7 +399,7 @@ C***********************************************************************
 !      use infpar_mod, only: MPARID, MYTID, NODES
 !      use dcbtra_mod, only: IPAR4BS, NFPCK12T
       use comdis_mod, only: ISHLA, ISHLB
-!      use dgroup_mod, only: NBSYM
+      use dgroup_mod, only: NBSYM
       use interface_to_mpi
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -409,7 +407,6 @@ C***********************************************************************
 #include "infpar.h"
       INTEGER ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
 #include "dcbtra.h"
-#include "dgroup.h"
       DIMENSION LSORT(3,NFPCK12T,0:7)
       Real(8), Allocatable :: RGBUF(:)
       Integer, Allocatable :: IGBUF(:,:)
@@ -587,14 +584,13 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: IFPCK12, NFPCK12T
-!      use dgroup_mod, only: JBTOF, NBSYM, NFSYM
+      use dgroup_mod, only: JBTOF, NBSYM, NFSYM
 !      use infpar_mod, only: NODE, NUMNOD
       use memory_allocator
 #include "implicit.h"
       INTEGER :: KK
 C
 #include "dcbtra.h"
-#include "dgroup.h"
 #include "infpar.h"
       LOGICAL TRIAN(2)
       DIMENSION NSTR(2,0:2,4)
@@ -993,7 +989,7 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1021,7 +1017,6 @@ C     For the buffered input
 C
       DIMENSION LGREC(NPASS)
 C
-#include "dgroup.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 C
@@ -1235,7 +1230,7 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS
-!      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 !      use dcbtra_mod, only: DO_FINESORT, IFPCK34, NFPCK12, NFPCK12T, NFPCK34
       use comdis_mod, only: NSPCK
 !      use infpar_mod, only: MYTID
@@ -1252,7 +1247,6 @@ C
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       LOGICAL INIT
       Real(8), Allocatable :: HTMP(:),HMAT(:),GMAT(:)
-#include "dgroup.h"
 #include "dcbtra.h"
 #include "infpar.h"
 C
@@ -1402,11 +1396,10 @@ C     Written by Luuk Visscher August 2004.
 C
 C     PURPOSE : Make G = G + G(Transposed)
 C
-!      use dgroup_mod, only: NBSYM, NZ
+      use dgroup_mod, only: NBSYM, NZ
       use dcbbas_mod, only: NBBAS
       use comdis_mod, only: ISPCK
 #include "implicit.h"
-#include "dgroup.h"
       DIMENSION GMAT(NDG,NZ)
 C
       DO IZ = 1, NZ

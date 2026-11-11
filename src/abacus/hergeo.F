@@ -213,8 +213,6 @@ C
       COMMON /CBIANA/ IANG(3,MAXANG),IDIHED(4,MAXANG),NANG,NDIHED,
      *                SKIP
 C
-!#include "dgroup.h"
-C
       PARAMETER (LUPUNCH = 4)
       DIMENSION COORD(3,*),
      *          DIST(MXCENT*(MXCENT+1)/2),

@@ -92,7 +92,7 @@ C***********************************************************************
       use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
       use maxaqn_mod, only: MXAQN, MXQN
       use dummy_mod, only: IDUMMY
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use orgcom_mod, only: CAVORG, DIPORG
 !      use dcbham_mod, only: EPSOL, LSOLMX, RSOLAV
       use symmet_mod, only: ISYMAX
@@ -106,7 +106,6 @@ C
       REAL(dp), PARAMETER :: FLFAC = -0.5D0, DM2 = -2.0D0
 C
 #include "dcbham.h"
-#include "dgroup.h"
 C
       LOGICAL DOINT(2,2),FIRST
       DIMENSION FOCK(N2BBASX,NZ,NFMAT),DMAT(N2BBASX,NZ,NFMAT),

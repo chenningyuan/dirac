@@ -24,9 +24,9 @@ C     Output module for DIRAC
 C
 C***********************************************************************
 !      use dcbham_mod, only: E_PE, INTV1C, ONECAP, ONESYS, SOLVEN
-!      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: NESH, NPSH
 !      use dcbdhf_mod, only: CACC, DHFCONV, DHFERG, DHF_INTTYP, ELERGY, ERGCNV, ERGVAL, ESOLVE, ESOLVN, EVCCNV, EVCVAL, FCKCNV, FCKVAL, INTFLG, IPREIG, ITRSCF, LUCYCL, NAELEC_DHF, NELECT_DHF, NITER, SCFCNV, SCFTID
+      use dgroup_mod, only: NFSYM
       use dirac_cfg
       use fde_evaluators_dirac, only: fde_calculate_interaction_energy
 #ifdef MOD_XAMFI
@@ -51,7 +51,6 @@ C
 #include "dcbham.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
-#include "dgroup.h"
       LOGICAL LBIT,LVCON
       CHARACTER CPUTID*12,FMT*6,MXFORM*6,SECTID*12,DAYTID*10
       DIMENSION CMO(*),EIG(*),IBEIG(*),WORK(LWORK)
@@ -264,12 +263,11 @@ C     Written by T.Saue 1996
 C     Last revision Jan 9 1997
 C
 C***********************************************************************
-!      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: NESH, NORB, NPSH
+      use dgroup_mod, only: FREP, NFSYM
       use dcbbas_mod, only: NFBAS, NTBAS
 #include "implicit.h"
 C
-#include "dgroup.h"
 #include "dcborb.h"
       CHARACTER VECPRI*72
       DIMENSION CMO(*),EIG(*),VECPRI(NFSYM),WORK(LWORK)
@@ -341,7 +339,7 @@ C***********************************************************************
 !      use dcborb_mod, only: NESH, NPSH
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: JFSYM, NZ
+      use dgroup_mod, only: JFSYM, NZ
       use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -349,7 +347,6 @@ C***********************************************************************
       INTEGER :: I,II,J,JJ
 C
 #include "dcblab.h"
-#include "dgroup.h"
 #include "dcborb.h"
       LOGICAL LBIT
       CHARACTER FMT*6,MXFORM*6
@@ -474,8 +471,8 @@ C
 C     Written by T.Saue November 1994
 C     Last revision: Jan 7 1998 - jth NFBAS(IFRP,0) is now parameter
 C***********************************************************************
-!      use dgroup_mod, only: JFSYM, NZ
 !      use dcbham_mod, only: MC
+      use dgroup_mod, only: JFSYM, NZ
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NFBAS
       use quaternion_algebra
       use kinds_mod, only: dp
@@ -484,7 +481,6 @@ C***********************************************************************
 C
       REAL(dp), PARAMETER :: DM1 = -1.0D0
 C
-#include "dgroup.h"
 #include "dcbham.h"
       DIMENSION CMO(KNFBAS,NVEC,NZ),CBUF(KNFBAS,NVEC,4)
 C
@@ -735,12 +731,11 @@ C     Last revision Jan 8 1997
 C
 C*****************************************************************************
 !      use dcborb_mod, only: NESH, NPSH
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use dcbbas_mod, only: NFBAS
 #include "implicit.h"
 C
       INTEGER :: I,II
-#include "dgroup.h"
 #include "dcborb.h"
 C
 C     KBAS = NFBAS(IFRP,0)
@@ -892,7 +887,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I,II
 C
-!#include "dgroup.h"
 #include "dcborb.h"
       DIMENSION EIG(*),EBUF(NPVEC+NEVEC),JVEC(*)
 C
@@ -926,7 +920,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I,II
 C
-!#include "dgroup.h"
 #include "dcborb.h"
       DIMENSION IBEIG(*),IBBUF(*),JVEC(*)
 C
@@ -1034,9 +1027,9 @@ C     Modified by A. Sunaga - 20 Sep 2018 for Atomic output
 C
 C***********************************************************************
 !      use dcbham_mod, only: LEVYLE, SPINFR, SUB_BL
-!      use dgroup_mod, only: ATOMIC, NBSYM, NFSYM
 !      use dcbdhf_mod, only: DF, MXOPEN, NOPEN
 !      use dcborb_mod, only: ID_SUB_BL, IORB, MAX_SUB_BL, NESH, NISH, NORBT, NPSH, N_SUB_BL
+      use dgroup_mod, only: ATOMIC, FREP, NBSYM, NFSYM
       use pgroup_mod, only: REP
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
@@ -1044,7 +1037,6 @@ C***********************************************************************
       INTEGER :: I,J,K
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
       PARAMETER(NCOL=16)
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
@@ -1536,7 +1528,7 @@ C***********************************************************************
       use pgroup_mod, only: REP
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: LEVYLE, SPINFR
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: FREP, NFSYM
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -1546,7 +1538,6 @@ C
       DIMENSION EIG(*),IBEIG(*)
       CHARACTER CLUMO*3,CHOMO*3
 C
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbham.h"
 C
@@ -1659,7 +1650,7 @@ C
 C     Written by T.Saue Sep 25 2000
 C
 C***********************************************************************
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
       use dcbbas_mod, only: NFBAS
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -1669,7 +1660,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dgroup.h"
       DIMENSION EIG(*),CMO(*),IBEIG(*),NSTR(2,0:2),KVEC(2),NVECS(2),
      &          CSEL(*),ESEL(*),IBSEL(*),IOFF(2),WORK(*)
       type(file_info_t)    :: fragfile
@@ -1916,7 +1906,6 @@ C*****************************************************************************
 #include "implicit.h"
 C
       INTEGER :: I,II
-!#include "dgroup.h"
       DIMENSION EIG(*),EBUF(NPVEC+NEVEC),JVEC(NPVEC+NEVEC)
 C
       NVEC = NPVEC + NEVEC
@@ -1947,11 +1936,9 @@ C
 C     Written by L. Visscher 1997
 C
 C*****************************************************************************
-!      use dgroup_mod, only: IBAS
 #include "implicit.h"
 C
       INTEGER :: I,II
-#include "dgroup.h"
       DIMENSION IBEIG(*),IBBUF(NPVEC+NEVEC),JVEC(*)
 C
       NVEC = NPVEC + NEVEC
@@ -1989,7 +1976,6 @@ C***********************************************************************
       use dcbbas_mod, only: IBAS, NFBAS
       use dcbibt_mod, only: JGET
       use maxorb_mod, only: MXCORB
-!      use dgroup_mod, only: IBAS
 #include "implicit.h"
       INTEGER :: I,II,J,K
 C

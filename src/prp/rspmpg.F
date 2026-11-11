@@ -38,8 +38,8 @@ C
 C***********************************************************************
 !      use dcborb_mod, only: NESH, NOCC, NPSH
 !      use dcbxlr_mod, only: ALLCMB, BFREQ, CNVXLR, INTXLR, IPRXLR, ITRILR, ITRXLR, LLRBPU, MAXLLR, MAXRM, NBFREQ, NLRAP, NLRAPT, NLRBP, NLRBPT, RESXLR, THCLR, THRCOM, TRIAB, XLRDIH, XLRNRM, XLR_INDSTR, XLR_LSFG, XLR_SKIPEE, XLR_SKIPEP, XLR_XVCFIL, XSTERN
-!      use dgroup_mod, only: NFSYM
 !      use dcbham_mod, only: BSS, FREEPJ, LEVYLE, NONREL, VEXTPJ, X2C
+      use dgroup_mod, only: NFSYM
       use dcbgen_mod, only: INTGEN
       use dummy_mod, only: DUMMY
       use kinds_mod, only: dp
@@ -49,7 +49,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dcbxlr.h"
-#include "dgroup.h"
 #include "dcbham.h"
       dimension work(*)
       DIMENSION DMO(*)
@@ -215,9 +214,9 @@ C     REMARKS: -
 C     
 C***********************************************************************
 !      use dcbxlr_mod, only: BFREQ, INDBP, IPRXLR, JLRBP, LLBPSU, LLRBPU, NBFREQ, NLRAPT, NLRBP, NLRBPT, XLR_INDSTR, XLR_SKIPEE, XLR_SKIPEP
-!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
 !      use dcbxpr_mod, only: IPRPTIM, PRPNAM
 !      use dcbxrs_mod, only: GPTNRM, JOPSY, JSYMOP, JTIMOP, LUXVC, NCRED, NERED, NEXSIM, NFREQ, NPRED, NREDM, NZCONFQ, NZRED, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, RSPLAB
+      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
       use orbital_rotation_indices
 
       use kinds_mod, only: dp
@@ -227,7 +226,6 @@ C
 C
 !#include "dcborb.h"
 #include "dcbxlr.h"
-#include "dgroup.h"
 #include "dcbxpr.h"
 #include "dcbxrs.h"
 C
@@ -367,7 +365,6 @@ C***********************************************************************
       use cbihr2_mod, only: IPRTWO
 #include "implicit.h"
 
-!#include "dgroup.h"
 #include "dcbxlr.h"
 !#include "dcborb.h"
 #include "dcbxrs.h"
@@ -445,11 +442,10 @@ C     REMARKS: -
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: JBTOF
+      use dgroup_mod, only: JBTOF
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
 #include "implicit.h"
 C
-#include "dgroup.h"
 #include "dcbxpr.h"
       dimension gpoe(*)
       dimension gpop(*)
@@ -508,13 +504,12 @@ C              NXOPP  - # of occupied - positronic rotations
 C     
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: IPQTOQ, NZ
+      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: NORBT
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
       use kinds_mod, only: dp
 #include "implicit.h"
 C
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0
@@ -653,7 +648,7 @@ C***********************************************************************
 !      use dcbibn_mod, only: JBENDX, JBPNDX
 !      use dcbham_mod, only: SPINFR
 !      use dcborb_mod, only: NCMOTQ, NOCC, NORB, NORBT, NPSH, NSSH
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
       use dcbbas_mod, only: NTBAS
       use orbital_rotation_indices
 
@@ -666,7 +661,6 @@ C
 #include "dcbibn.h"
 #include "dcbham.h"
 #include "dcborb.h"
-#include "dgroup.h"
 !#include "../moltra/dcbtr3.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0
       logical first
@@ -852,12 +846,11 @@ C              DIV = eig_x - eig_a
 C            
 C***********************************************************************
 !      use dcborb_mod, only: NCMOTQ, NORBT
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use dcbgen_mod, only: LUCOEF
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "dgroup.h"
       LOGICAL FILEX
       DIMENSION DMO(*)
       DIMENSION XMO(*)
@@ -907,14 +900,13 @@ C     Output :
 C            
 C***********************************************************************
 !      use dcborb_mod, only: IORB, NAVIR, NIVIR, NOCC, NORB, NORBT, NPSH
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: J, K
       REAL(dp), PARAMETER :: D2 = 2.0D0
 C
 #include "dcborb.h"
-#include "dgroup.h"
 C     
       DIMENSION DMO(*), DAX(*), DVJ(*)
       DIMENSION XMO(*), EIG(*)
@@ -1026,12 +1018,11 @@ C     Output : DMO - D_ji' and D_b'a
 C     
 C***********************************************************************
 !      use dcborb_mod, only: NCMOTQ, NIOCCT, NIVIRT, NORBT
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use dcbgen_mod, only: LUCOEF
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "dgroup.h"
       LOGICAL FILEX
       DIMENSION DMO(*)
       DIMENSION XMO(*)
@@ -1087,14 +1078,13 @@ C     Output : DMO - D_ji' and D_b'a
 C
 C***********************************************************************
 !      use dcborb_mod, only: IORB, NAOCC, NAVIR, NIOCC, NIOCCT, NIVIR, NIVIRT, NOCC, NORB, NORBT, NPSH
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2 = 2.0D0
 C     
 #include "dcborb.h"
-#include "dgroup.h"
       DIMENSION DMO(*)
       DIMENSION XMO(*)
       DIMENSION WORK(*)

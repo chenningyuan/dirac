@@ -10059,7 +10059,7 @@ C**********************************************************************
 !      use cicisp_mod, only: ISYM_KRMC
 !      use dcbopt_mod, only: JKRRUNTYPE, JTRLVL, NZXOPP, OPT_NOPFQ
 !      use dcborb_mod, only: IASH, N2ORBX, NASHT, NNASHX, NORBT
-!      use dgroup_mod, only: IPQTOQ, IQTOPQ, JBTOF, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, IQTOPQ, JBTOF, NBSYM, NFSYM, NZ
       use maxorb_mod, only: MXCORB
 !      use maxash_mod, only: MAXASH
 !      use dcbidx_mod, only: IDXG2U, IDXT2G, IDXU2G, IIDX3, IIDX4, NIDX3, NIDX4
@@ -10071,7 +10071,6 @@ C**********************************************************************
 #include "cicisp.inc"
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dgroup.h"
 #include "maxash.h"
 #include "dcbidx.h"
       CHARACTER*6 CIRUN
@@ -10151,13 +10150,12 @@ C
 C**********************************************************************
 !      use parluci_mod, only: LF2_ZERO, LUWRT, MASTER, MYPROC
 !      use dcborb_mod, only: NASHT, NNASHX
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "dcborb.h"
-#include "dgroup.h"
       DIMENSION F1(*), F2(*)
       CHARACTER*6 CIRUN
 C

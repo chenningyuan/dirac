@@ -36,7 +36,7 @@ C*****************************************************************************
 !      use dcbprp_mod, only: ALLATM, IPATOM, NPATOM
 !      use dcbesr_mod, only: IPRESR, LESRP, LVL_CIESR, MAXESR, MAXGAS_ESR, MAXMK2_ESR, MAX_CIESR_IT, MULTIPESR, NESRP, NGAS_CIESR, NGSH_CIESR, N_CIESR, STATE_ESR, THRPCI_ESR, THR_CIESR, THR_CVEC_ESR, USE_KRAMERS_CONJ
 !      use dcborb_mod, only: NASH
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I, J
 C
@@ -45,7 +45,6 @@ C  dcbprp.h : ALLATM, NPATOM, IATOM(:), ...
 #include "dcbprp.h"
 #include "dcbesr.h"
 #include "dcborb.h"
-#include "dgroup.h"
 
       PARAMETER (NTABLE = 20)
       LOGICAL SET, NEWDEF, RESET, GORG_BY_USER, g_10ppm
@@ -437,7 +436,7 @@ C***********************************************************************
 !      use dcbprp_mod, only: ESRGTENS, ESR_HFCC, IPESR
       use dcbbas_mod, only: N2BBASXQ
 !      use dcborb_mod, only: N2ASHX
-!      use dgroup_mod, only: NZ, NZ_IN_CI
+      use dgroup_mod, only: NZ, NZ_IN_CI
 !      use dcbopt_mod, only: NZCONF
 #include "implicit.h"
       INTEGER :: I, II, J, K
@@ -461,7 +460,6 @@ C
 #include "dcbprp.h"
 !#include "dcbham.h"
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbopt.h"
 C
       CALL QENTER('PRPESR')
@@ -921,7 +919,7 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbopt_mod, only: NZCONF
-!      use dgroup_mod, only: NZ_IN_CI
+      use dgroup_mod, only: NZ_IN_CI
 !      use dcbesr_mod, only: IPRESR, IPSIGMA, LESRP, MULTIPESR, NPSIGMA, N_CIESR, STATE_ESR
 !      use dcbxpr_mod, only: PRPNAM
       use kinds_mod, only: dp
@@ -947,7 +945,6 @@ C  dgroup : NZ,NZ_in_CI
 C  dcbesr : ...,STATE_ESR,...
 C
 #include "dcbopt.h"
-#include "dgroup.h"
 #include "dcbesr.h"
 #include "dcbxpr.h"
 C
@@ -1350,7 +1347,7 @@ C     Revised August 2002 Hans Joergen Aa. Jensen
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: JBTOF
+      use dgroup_mod, only: JBTOF
 !      use dcbopt_mod, only: NZCONF
 !      use dcbesr_mod, only: IPRESR, LESRP, MULTIPESR, NESRP, N_CIESR
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
@@ -1369,7 +1366,6 @@ C Used from common blocks:
 C  dcbgen : LU1INT,?
 C  dcbopt : KZCONF,NZCONF
 C
-#include "dgroup.h"
 #include "dcbopt.h"
 #include "dcbesr.h"
 #include "dcbxpr.h"
@@ -1579,7 +1575,7 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUCOEF
 !      use dcbopt_mod, only: KZCONF, NZCONF
-!      use dgroup_mod, only: IPQTOQ, JBTOF, NZ, NZ_IN_CI
+      use dgroup_mod, only: IPQTOQ, JBTOF, NZ, NZ_IN_CI
 !      use dcborb_mod, only: ICMOQ, NASH, NASHT, NISH, NORBT, NPSH
       use dcbbas_mod, only: NFBAS
 !      use dcbesr_mod, only: IPRESR, MAX_CIESR_IT, MULTIPESR, N_CIESR, STATE_ESR, THR_CIESR
@@ -1601,7 +1597,6 @@ C  dcbopt : KZCONF,NZCONF
 C  dgroup : NZ, NZ_in_CI (NZ_in_CI = 1 if CI vectors real, =2 if complex)
 C
 #include "dcbopt.h"
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbesr.h"
 #include "dcbxpr.h"
@@ -1875,14 +1870,16 @@ C***********************************************************************
 C
 C***********************************************************************
 !      use dcbesr_mod, only: N_CIESR
-!      use dgroup_mod, only: IPQTOQ, NZ, NZ_IN_CI
 !      use dcborb_mod, only: I2ASHX, N2ASHX, NASH, NASHT
+      use dgroup_mod, only: IPQTOQ, NZ_IN_CI
+#if defined (OLDCODE)
+      use dgroup_mod, only: NZ
+#endif
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
 C dgroup.h : NZ, NZ_in_CI
 #include "dcbesr.h"
-#include "dgroup.h"
 #include "dcborb.h"
 C
       REAL*8    ESRVAL(N_CIESR,N_CIESR,2),PMLF(NASHT,2,NASHT,2,*)
@@ -1949,13 +1946,12 @@ C***********************************************************************
 C
 C***********************************************************************
 !      use dcbesr_mod, only: N_CIESR
-!      use dgroup_mod, only: IPQTOQ, NZ_IN_CI
 !      use dcborb_mod, only: NASHT
+      use dgroup_mod, only: IPQTOQ, NZ_IN_CI
 #include "implicit.h"
 C
 C dgroup.h : NZ, NZ_in_CI
 #include "dcbesr.h"
-#include "dgroup.h"
 #include "dcborb.h"
 C
       REAL*8    ESRVAL(N_CIESR,N_CIESR,2),PMLF(NASHT,2,NASHT,2,*)
@@ -1996,14 +1992,13 @@ C     Based on prpex2 by Trond Saue May 27 1996
 C
 C***********************************************************************
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM
-!      use dgroup_mod, only: IHQMAT, IPQTOQ, NZ
 !      use dcborb_mod, only: NAELEC, NASHT
+      use dgroup_mod, only: IHQMAT, IPQTOQ, NZ
       use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
 #include "implicit.h"
 C
 #include "dcbxpr.h"
 !#include "dcbesr.h"
-#include "dgroup.h"
 #include "dcborb.h"
 C
       LOGICAL   FIRST(4),LESRST(2), RODHF
@@ -2464,7 +2459,7 @@ C
 !      use dcbham_mod, only: LEVYLE, SPINFR
       use dcbbas_mod, only: N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NESHT, NORB, NORBT
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 #include "implicit.h"
       INTEGER :: I
       REAL*8  CMO(*), WORK(*)
@@ -2479,7 +2474,6 @@ C  dcborb.h : NORBT, ..., NCMOTQ
 C  dgroup.h : IPQTOQ
 #include "dcbham.h"
 #include "dcborb.h"
-#include "dgroup.h"
 
 C
       KFREE_start = KFREE

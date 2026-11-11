@@ -520,11 +520,10 @@ module fde_evaluators_dirac
 ! the outgoing dmat is not scaled with occupation numbers
 !   ----------------------------------------------------------------------------
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 !      use dcbdhf_mod, only: NFMAT
       use dcbgen_mod, only: LUCOEF
 !      use dcborb_mod, only: NCMOTQ
-#include "dgroup.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
 ! Passed/recovered variables
@@ -1183,11 +1182,10 @@ module fde_evaluators_dirac
 !   ----------------------------------------------------------------------------
       subroutine fde_dirac_data_interface
 !   ----------------------------------------------------------------------------
-!      use dgroup_mod, only: NBSYM
+      use dgroup_mod, only: NBSYM
       use dcbbas_mod, only: N2BBASXQ, NTBAS
       use dcbgen_mod, only: LUCOEF
 #include "implicit.h"
-#include "dgroup.h"
 !#include "dcbdhf.h"
 
          nba_orb = ntbas(0)

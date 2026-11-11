@@ -1621,7 +1621,7 @@ subroutine eom_calculate_store_density_matrices(B, davResultsL, davResultsR)
 !      use symm_mod, only: NCONT, NDIMT1, NDIMT2, NO, NOOT, NORBT, NREP, NV
 !      use complex_mod, only: RCW
 !      use files_mod, only: IW
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
    use davidson
    use memory_allocator
    use allocator_parameters, only : klongint
@@ -1631,7 +1631,6 @@ subroutine eom_calculate_store_density_matrices(B, davResultsL, davResultsR)
 #include "symm.inc"
 #include "complex.inc"
 #include "files.inc"
-#include "dgroup.h"
 !--------------------------------------------------
    type(davidson_results), intent(inout) :: davResultsR(nrep), davResultsL(nrep)
    type(intermediates), intent(inout) :: B

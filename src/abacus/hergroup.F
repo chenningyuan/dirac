@@ -438,7 +438,7 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use cbirea_mod, only: IPREAD
       use mxcent_mod, only: MXCENT
-!      use dgroup_mod, only: FREP, IBTOSF, IFDIRP, IHQMAT, IPQTOQ, IQDEF, IQMAP, IQPH, IQTOPQ, ITOT, JMROI, JQBAS, JSPINR, NBSYM, NFSYM, NZ, NZ_IN_CI
+      use dgroup_mod
       use symmet_mod, only: ISYMAX, MAXREP, NINVC
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
@@ -449,7 +449,6 @@ C*****************************************************************************
       INTEGER :: I,J
       REAL(dp), PARAMETER :: DM1 = -1.0D0, D1 = 1.0D0
 C
-#include "dgroup.h"
 C
       LOGICAL LBUF(8)
 C
@@ -918,11 +917,10 @@ C***********************************************************************
       use symmet_mod, only: ISYMAX
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use dgroup_mod, only: JCOM, JM4, JM4POS, JM4REP, JM4TIM, MCMP
+      use dgroup_mod, only: JCOM, JM4, JM4POS, JM4REP, JM4TIM, MCMP
 #include "implicit.h"
 C
 C
-#include "dgroup.h"
 C
 C     ********************************************
 C     *****   Define 4-component matrices   ******
@@ -1342,11 +1340,10 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
-!      use dgroup_mod, only: PT
+      use dgroup_mod, only: IPQTOQ, IQMAP, JFSYM
 #include "implicit.h"
 C
       INTEGER :: I,III,J,K
-#include "dgroup.h"
       DIMENSION III(2)
 C.....III is the totally symmetric irrep for the large components
       III(1) = 0

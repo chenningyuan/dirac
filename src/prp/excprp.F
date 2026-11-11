@@ -54,14 +54,13 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: PRPNAM
 !      use dcbxqr_mod, only: LAQROP, LSTATE, MAXFQR, MAXLQR, MAXQR, MZYEE, MZYEP, NAQROP, NQRHYP, RSTATE
-!      use dgroup_mod, only: NBSYM, NZ
+      use dgroup_mod, only: NBSYM, NZ
 !      use dcborb_mod, only: NCMOTQ
       use dcbbas_mod, only: NTBAS
 !      use dcbham_mod, only: SPINFR
 #include "implicit.h"
 #include "dcbxpr.h"
 #include "dcbxqr.h"
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbham.h"
 C
@@ -200,10 +199,9 @@ C     Written by Erik Tellgren, aug 2004
 C
 C***********************************************************************
 !      use dcbxqr_mod, only: LSTATE, RSTATE
-!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
+      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
 #include "implicit.h"
 #include "dcbxqr.h"
-#include "dgroup.h"
 !
       LOGICAL prponly
       LOGICAL nonzeroflag
@@ -247,11 +245,10 @@ C
 C***********************************************************************
 !      use dcbxqr_mod, only: LAQROP, MAXFQR, MAXLQR, MAXQR, MZYEE, MZYEP, NQRHYP
 !      use dcbxpr_mod, only: IPRPSYM
-!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: JFSYM, NBSYM, NFSYM, NZ
 #include "implicit.h"
 #include "dcbxqr.h"
 #include "dcbxpr.h"
-#include "dgroup.h"
 C
       REAL*8 D0
       PARAMETER ( D0=0.0D0 )
@@ -326,11 +323,10 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxqr_mod, only: IEXCOFF, LAQROP, MZYEE, MZYEP, NQRHYP
-!      use dgroup_mod, only: JFSYM, NZ
+      use dgroup_mod, only: JFSYM, NZ
 !      use dcbxpr_mod, only: IPRPSYM
 #include "implicit.h"
 #include "dcbxqr.h"
-#include "dgroup.h"
 #include "dcbxpr.h"
 C
       REAL*8 D1
@@ -430,12 +426,11 @@ C     Written by Erik Tellgren, aug 2004
 C
 C***********************************************************************
 !      use dcbxqr_mod, only: LAQROP, LSTATE, NAQROP, RSTATE
-!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
 !      use dcbxpr_mod, only: IPRPSYM
+      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
 #include "implicit.h"
       INTEGER :: J
 #include "dcbxqr.h"
-#include "dgroup.h"
 #include "dcbxpr.h"
 C
       LOGICAL stateOK, prponly
@@ -514,10 +509,9 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUCMD, LUPRI
 !      use dcbxqr_mod, only: IPRXQR, LAQROP, LSTATE, MAXLQR, NAQROP, NBQRFR, NBQROP, NCQRFR, NCQROP, RSTATE
-!      use dgroup_mod, only: NBSYM
+      use dgroup_mod, only: NBSYM
 #include "implicit.h"
 #include "dcbxqr.h"
-#include "dgroup.h"
 !
       REAL*8 D1
       PARAMETER ( D1=1.0D0 )
@@ -660,7 +654,6 @@ C***********************************************************************
       INTEGER :: I, J
 !#include "dcbxpr.h"
 #include "dcbxqr.h"
-!#include "dgroup.h"
 !#include "dcbham.h"
 !
       INTEGER tmomlist(5,MAXQR)
@@ -725,11 +718,10 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: IPRPSYM
 !      use dcbxqr_mod, only: EXCIT, LAQROP, LQRHYP, LSTATE, MAXQR, NAQROP, NQRHYP, QRFRHYP, RSTATE
-!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
+      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
 #include "implicit.h"
 #include "dcbxpr.h"
 #include "dcbxqr.h"
-#include "dgroup.h"
 !
       LOGICAL prponly, toomanyeqs
       INTEGER tmomlist(5,MAXQR)
@@ -852,12 +844,11 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxqr_mod, only: EXCIT, IEXCOFF, LAQROP, LQROP, LSTATE, MAXFQR, MAXLQR, MAXQR, NAQROP, NQRHYP, NQROP, QRFREQ, RSTATE
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
-!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
+      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
       use pgroup_mod, only: REP
 #include "implicit.h"
 #include "dcbxqr.h"
 #include "dcbxpr.h"
-#include "dgroup.h"
 C
       PARAMETER ( LUCMO = 22, D0 = 0.0D0, D2R3 = (2.0D0/3.0D0),
      &            D2 = 2.0D0, D4 = 4.0D0 )

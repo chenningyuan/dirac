@@ -2195,7 +2195,7 @@
 !
 !      use complex_mod, only: RCW
 !      use dcborb_mod, only: NAOCC, NAVIR
-!      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -2219,7 +2219,6 @@
 !
 #include "complex.inc"
 #include "dcborb.h"
-#include "dgroup.h"
 !
 !---------------Local variables--------------------------------------
 !

@@ -27,7 +27,7 @@
 !
       use dirac_partask_mod, only: POLPRP_PAR, RELEASE_NODES
       use priunit_mod, only: LUCMD, LUPRI
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 !      use dcbham_mod, only: CAP, LEVYLE, SPINFR
       use dcbgen_mod, only: PARCAL
 !      use dcbtra_mod, only: ISTRAT
@@ -37,7 +37,6 @@
       use interface_to_mpi
 #include "implicit.h"
       INTEGER :: I
-#include "dgroup.h"
 #include "dcbham.h"
 !#include "dcbpsi.h"
 #include "../moltra/dcbtra.h"
@@ -157,7 +156,6 @@
 #if defined (VAR_MPI)
       integer istat(df_mpi_status_size)
 #endif
-!#include "dgroup.h"
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/files.inc"
       CHARACTER*10 INTFCE

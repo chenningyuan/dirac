@@ -16,10 +16,10 @@ contains
 
   subroutine openrsp_driver(work, lwork)
 
+      use dgroup_mod, only: NZ
       use dcbbas_mod, only: N2BBASXQ
       use priunit_mod, only: LUPRI
 #include "dcborb.h"
-#include "dgroup.h"
 
     type(prop_molcfg)             :: mol
     type(matrix)  :: S, C_i, D, F

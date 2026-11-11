@@ -236,11 +236,11 @@ C                     July 2005 - MI - adapted for DC2BSS calculations.
 C
 C*****************************************************************************
 
-!      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: I2ORBT, ICMOQ, NELECT, NESH, NISH, NISHT, NORB, NPSH, NSSH
 !      use dcbpsi_mod, only: PHCOEF
 !      use dcbham_mod, only: CONT2C, DO4C2C, IF, IPRHAM, IPRSOL, ONECAP, ONESYS, RESTFCK, SMLV1C, SOLVEN, SPINFR
 !      use dcbdhf_mod, only: AOC, ATHUCK, ATOMST, CACC, DHFCONV, DHFERG, DHFEXIT, DHF_INTTYP, DOLEVEL, ERGVAL, ESOLVE, ESOLVN, EVCVAL, FCKVAL, FIXDIF, I2TMOT, IFCKOP, IHRMOP, INIOCC, INTFLG, IPRSCF, ISYMOP, LUCMOS, LUCYCL, LUDENS, LUEVEC, LUFCK1, LUFCK2, LUFCKT, LUFOCK, MXDIIS, MXOPEN, N2TMOTQ, NACSH, NELECT_DHF, NESHMF, NFMAT, NISH_BOS, NITER, NOCCMF, NOPEN, NTMO, SCFPOP, TDF2, TRIFCK, TRIVEC
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dirac_cfg
       use interface_mo_specific
       use fde_mod
@@ -274,7 +274,6 @@ C
 #include "dcbpsi.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
-#include "dgroup.h"
 #include "dcborb.h"
       type(fde_import) :: itmp
       LOGICAL DOSEL,DOLEV,DSCFON,AOCBUF, tobe
@@ -816,8 +815,8 @@ C
 C     Extracted from DFSOLV Feb. 2015 hjaaj
 C
 C*****************************************************************************
-!      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: I2ORBT, NASHT, NCMOTQ, NESH, NISH, NORB, NORBT, NPSH, NSSH
+      use dgroup_mod, only: NFSYM, NZ
       use dcbbas_mod, only: N2BBASXQ, N2TMT
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: DO4C2C, IF, IPRHAM, RESTFCK
@@ -829,7 +828,6 @@ C
 #include "dcbdhf.h"
 #include "dcbham.h"
 #include "dcborb.h"
-#include "dgroup.h"
       REAL*8    FMO(*),FAO(*),DAO(*),TMAT(*),SAOMO(*),WORK(*)
       LOGICAL   FNDLAB
 C
@@ -953,7 +951,7 @@ C     Last revisions: Mar 09 1995
 C                     Nov. 2005 - MI
 C
 C*****************************************************************************
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: I2TMT, N2BBASXQ, N2TMT, NFBAS, NZT
       use dummy_mod, only: DUMMY
 !      use dcborb_mod, only: I2ORBT, ICMOQ, IORB, NASH, NESH, NFRO, NFROT, NISH, NORB, NPSH, NSSH
@@ -969,7 +967,6 @@ C
 #include "dcbdhf.h"
 #include "dcbham.h"
 #include "dcborb.h"
-#include "dgroup.h"
       REAL(dp), PARAMETER :: DP5 = 0.50D00, D0 = 0.00D00, D1 = 1.00D00,
      &                       DM1 = -1.00D00, D2 = 2.00D00
       LOGICAL DOSEL,DOLEV,FNDLAB
@@ -1272,7 +1269,7 @@ C*****************************************************************************
 !      use dcbdhf_mod, only: AOC, ATHUCK, CACC, CNVINT, DHFERG, DHFEXIT, DHF_INTTYP, DODIIS, DODSCF, DOLEVEL, ERGVAL, ESOLVE, ESOLVN, EVCVAL, FCKVAL, FIXDIF, I2TMOT, IFCKOP, IHRMOP, INTBUF, INTDEF, INTFLG, IPRSCF, ISYMOP, ITRINT, KITER, LUCMOS, LUCYCL, LUDENS, LUEVEC, LUFCK1, LUFCK2, LUFCKT, LUFOCK, MAXITR, MXOPEN, NACSH, NESHMF, NFMAT, NITER, NOCCMF, NOPEN, NTMO, OVLSEL, SCFPOP, TDDG, TDF2
 !      use dcborb_mod, only: I2ORBT, NISH, NISHT, NPSH, NSSH
 !      use dcbham_mod, only: ECPCALC, IF, IPRSOL, ONECAP, ONECNV, ONECOFF, SMLV1C, SOLVEN
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: IPQTOQ, NZ
       use dirac_cfg
       use fde_mod
       use num_grid_gen
@@ -1303,7 +1300,6 @@ C
 #include "dcbham.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
-#include "dgroup.h"
       real(8), allocatable :: aoo2esssoc(:)
       LOGICAL   LBIT, tobe, DODIIS_save
       type(fde_import) :: itmp
@@ -1765,9 +1761,9 @@ C                    Sept 2005, Miro Ilias - added control outputs
 C
 C*****************************************************************************
 
-!      use dgroup_mod, only: NZ
 !      use dcbham_mod, only: E_PE, IF, INTV1C, ONECAP, SOLVEN
 !      use dcbdhf_mod, only: AOC, DA, DF, DHFERG, E1PART, E2PART, ELERGY, ERGBUF, ESOLVE, ESOLVN, I2TMOT, INTFLG, IPRSCF, MXOPEN, NACSH, NESHMF, NFMAT, NOCCMF, NOPEN, NTMO
+      use dgroup_mod, only: IPQTOQ, NZ
       use dirac_cfg
       use fde_mod
 #ifdef MOD_XAMFI
@@ -1792,7 +1788,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2=2.0D0, DP5 = 0.5D00,
      &                       DP25 = 0.25D00
 C
-#include "dgroup.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
       LOGICAL LVCON, XAMFI_CORRECTIONS, XAMFI_VXC_
@@ -2184,7 +2179,7 @@ C     Written by H.J.Aa.Jensen Oct. 2004
 C     Modified by A. Sunaga Oct. 2018 for atomic symmetry
 C***********************************************************************
 !      use dcborb_mod, only: I2ORBT, IORB, NISH, NORB, NPSH, NSSH
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use priunit_mod, only: LUPRI
 !      use dcbdhf_mod, only: I2TMOT, MAX_BOS_BL, NACSH, NESHMF, NISH_BOS, NISH_DHF, NOCCMF, NOPEN, NTMO
 #include "implicit.h"
@@ -2193,7 +2188,6 @@ C***********************************************************************
 C     
 #include "dcbdhf.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       INTEGER IBUF(MAX_BOS_BL)
       INTEGER JOCC(2), KOCC(2)
@@ -2251,11 +2245,10 @@ C
 C     Written by H.J.Aa.Jensen Oct. 2004
 C     Modified by A. Sunaga Oct. 2018 for atomic symmetry
 C***********************************************************************
-!      use dgroup_mod, only: ATOMIC, LINEAR, NFSYM, NZ
 !      use dcborb_mod, only: I2ORBT, NISH, NORB, NPSH, NSSH, N_SUB_BL
+      use dgroup_mod, only: ATOMIC, LINEAR, NFSYM, NZ
 #include "implicit.h"
       INTEGER :: J
-#include "dgroup.h"
 #include "dcborb.h"
       DIMENSION EIG(*), CFU(NO,NO,NZ)
       INTEGER   IBEIG(*), NB_CNT(*)
@@ -2356,9 +2349,9 @@ C     Last revision May 2002 hjaaj: include EIG and IBEIG
 C                      Aug 2007 MI: extended for all electronic shells
 C
 C***********************************************************************
-!      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: I2ORBT, IORB, NISH, NPSH, NSSH
 !      use dcbdhf_mod, only: I2TMOT, LUSMOS, NACSH, NESHMF, NSMOTQ, NTMO
+      use dgroup_mod, only: NFSYM, NZ
 #include "implicit.h"
       DIMENSION EIG(*),IBEIG(*),CFU(*),SMO(*),WORK(LWORK)
 C
@@ -2368,7 +2361,6 @@ C  DGROUP: NFSYM
       INTEGER :: I
 #include "dcbdhf.h"
 #include "dcborb.h"
-#include "dgroup.h"
       CALL QENTER('SMOSE1')
       KWORK = 1
       KFREE = KWORK
@@ -2420,9 +2412,9 @@ C                      May 2002 hjaaj: EIG and IBEIG added
 C                      Aug 2007 MI: extended for all electronic shells
 C
 C***********************************************************************
-!      use dgroup_mod, only: NZ
 !      use dcbdhf_mod, only: I2TMOT, IPRSCF, NACSH, NESHMF, NOCCMF, NTMO
 !      use dcborb_mod, only: I2ORBT, NISH, NPSH, NSSH
+      use dgroup_mod, only: IPQTOQ, NZ
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2432,7 +2424,6 @@ C
 C Used from COMMON blocks:
 C
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbdhf.h"
 C
 C     KNORB = NORB(IFRP)
@@ -2550,14 +2541,13 @@ C     Written by T.Saue Oct 22 1996
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: IPQTOQ, NZ
       use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: I2ORBT, NISH, NPSH, NSSH
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1=1.0D0, D0=0.0D0
       DIMENSION DMAT(*),CMO(*)
-#include "dgroup.h"
 #include "dcborb.h"
 C
 CTROND
@@ -2592,7 +2582,7 @@ C
 C***********************************************************************
 !      use dcbdhf_mod, only: AOC, DHFERG, E1PART, ELERGY, ERGBUF, I2TMOT, IPRSCF, NACSH, NESHMF, NOCCMF, NOPEN, NTMO
 !      use dcborb_mod, only: I2ORBT, IORB, NISH, NISHT, NPSH, NSSH
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use priunit_mod, only: LUPRI
       use frame_mod, only: POTNUC
       use kinds_mod, only: dp
@@ -2601,7 +2591,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2=2.0D0
 C
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbdhf.h"
       CHARACTER FMT*6,MXFORM*6
       DIMENSION EIG(*)
@@ -2668,7 +2657,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbdhf_mod, only: I2TMOT, IPRSCF, NACSH, NESHMF, NOCCMF, NTMO
       use dcbbas_mod, only: NFBAS
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcborb_mod, only: I2ORBT, ICMOQ, IORB, NCMOQ, NESH, NISH, NORB, NPSH, NSSH
 #include "implicit.h"
       INTEGER :: I,J
@@ -2680,7 +2669,6 @@ C***********************************************************************
       integer, allocatable :: ibeig_save(:)
 
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbdhf.h"
 C
       CALL QENTER('REORD')
@@ -2836,8 +2824,8 @@ C
 C        Written by J. Thyssen Dec 1997
 C
 C***********************************************************************
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbham_mod, only: IF, SUB_BL
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, NFBAS, NTBAS, NZT
 !      use dcbdhf_mod, only: I2TMOT, IPRSCF, NACSH, NESHMF, NFMAT, NOCCMF, NTMO
@@ -2848,7 +2836,6 @@ C***********************************************************************
      &                       DM1 = -1.00D00, D2 = 2.00D00
 #include "dcbham.h"
 #include "dcbdhf.h"
-#include "dgroup.h"
       DIMENSION FMO(*),FAO(N2BBASXQ,NFMAT),TMAT(*),WORK(*)
       CHARACTER CTMP*3
 C
@@ -3038,12 +3025,11 @@ C        Written by L. Visscher
 C        September 2000
 C
 C***********************************************************************
-!      use dgroup_mod, only: NZ
 !      use dcborb_mod, only: I2ORBT, NBORB, NISH, NPSH, NSSH
+      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION FSUB(MSUB,NSUB,NZS),FFUL(MFUL,NFUL,NZ)
       LOGICAL SUBI, SUBJ
@@ -3154,11 +3140,10 @@ C
 C        Last modifications: MI, august 2005, April 2009 (Tel Aviv)
 C
 C***********************************************************************
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: J,K
-#include "dgroup.h"
       DIMENSION EIG(NO),INDX(NO),IBEIG(NO),IDUM(NO)
       DIMENSION EVEC(NO,NO),RDUM(NO,NO)
 
@@ -3238,14 +3223,13 @@ C        October 2000
 C        Last modifications: M.Ilias, Aug 2005
 C
 C***********************************************************************
-!      use dgroup_mod, only: JFSYM, NZ
 !      use dcbham_mod, only: IF, IPRHAM, URKBAL
 !      use dcborb_mod, only: I2ORBT, NBORB, NISH, NPSH, NSSH
+      use dgroup_mod, only: JFSYM, NZ
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbham.h"
       DIMENSION IBEIG(NO),INDX(NO)
       DIMENSION EVEC(NO,NO,NZ),RDUM(NO,4)
@@ -3377,9 +3361,9 @@ C     Written by T.Saue June 18 1998
 C     Last revision : June 18 1998 - tsaue
 C
 C***********************************************************************
-!      use dgroup_mod, only: FREP, IPQTOQ, NFSYM, NZ
 !      use dcbham_mod, only: WORK
 !      use dcborb_mod, only: I2ORBT, ICMOQ, IORB, NCMO, NISH, NOCC, NORB, NPSH, NSSH
+      use dgroup_mod, only: FREP, IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
       use dcbgen_mod, only: LUCOEF
       use priunit_mod, only: LUPRI
@@ -3392,7 +3376,6 @@ C***********************************************************************
      &                       DM2=-2.0D0, D2=2.0D0
 C
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbmvo.h"
 #include "dcbham.h"
       LOGICAL   TOBE
@@ -3538,9 +3521,9 @@ C
 C     Generate density matrix for chosen MVO vectors
 C
 C***********************************************************************
-!      use dgroup_mod, only: NFSYM, NZ
 !      use dcbmvo_mod, only: IPRMVO, VECMVO
 !      use dcborb_mod, only: I2ORBT, NESH, NISH, NPSH, NSSH
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
@@ -3549,7 +3532,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbmvo.h"
       DIMENSION DMAT(*),CMO(*),BUF(*),WORK(*)
       DIMENSION NR(2),IR(2,2),KVEC(2,2),NVEC(2,0:2)
@@ -3865,13 +3847,12 @@ C***********************************************************************
       use dcbgen_mod, only: KCHARG
       use priunit_mod, only: LUPRI
 !      use dcbdhf_mod, only: AOC, I2TMOT, NACSH, NAELEC_DHF, NASH_DHF, NASHMFT, NELECT_DHF, NESHMF, NISH_DHF, NOCCMF, NTMO
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I,J
 C
 #include "dcborb.h"
 #include "dcbdhf.h"
-#include "dgroup.h"
 C
       DIMENSION EIG(*)
       DIMENSION IEIGMIN(2)
@@ -4316,7 +4297,7 @@ C
 C     Taken out of DFSOLV and modified by L.Visscher Jan 10 2000
 C
 C***********************************************************************
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use priunit_mod, only: LUPRI
 !      use dcbdhf_mod, only: I2TMOT, IPRSCF, N2TMO, NACSH, NESHMF, NOCCMF, NTMO, WRITE_FMO_MATRIX
 !      use dcbham_mod, only: IPRHAM, SPINFR, SUB_BL, ZORA
@@ -4331,7 +4312,6 @@ C
 #include "dcbdhf.h"
 #include "dcbham.h"
 #include "dcborb.h"
-#include "dgroup.h"
       REAL(dp), PARAMETER :: D0 = 0.00D00, D1 = 1.00D00
       LOGICAL   SPECIAL,DODBG
       DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),WORK(*)
@@ -4615,13 +4595,12 @@ C     Polish Dec 5 2006 T. Saue
 C
 C***********************************************************************
 !      use dcbham_mod, only: IF, ZORA4, ZORASC
-!      use dgroup_mod, only: IPQTOQ
+      use dgroup_mod, only: IPQTOQ
       use kinds_mod, only: dp
 #include "implicit.h"
 C
       INTEGER :: J
 #include "dcbham.h"
-#include "dgroup.h"
       REAL(dp), PARAMETER :: D0 = 0.00D00, D1 = 1.00D00
       DIMENSION EIGP(NS),EIGE(NL),WORK(*)
       DIMENSION FLL(NL,NL,NZS),FSS(NS,NS,NZS),FLS(NL,NS,NZS)
@@ -4797,14 +4776,13 @@ C     A cut-and-paste job by T. Saue
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: I2ORBT, NASH, NISH, NPSH
 !      use dcbdhf_mod, only: I2TMOT, INIOCC, NESHMF, NEWOCC, NOCCMF, NTMO
 #include "implicit.h"
 C
 #include "dcborb.h"
 #include "dcbdhf.h"
-#include "dgroup.h"
       LOGICAL TEST
       DIMENSION EIG(*),WORK(*)
       DIMENSION NISHOLD(2),NASHOLD(2)
@@ -4863,14 +4841,13 @@ C***********************************************************************
 
 !      use dcborb_mod, only: I2ORBT, NFROT, NISH, NPSH, NSSH
 !      use dcbdhf_mod, only: I2TMOT, NACSH, NESHMF, NOCCMF, NOPEN, NTMO
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use dcbgen_mod, only: LUTMAT
          use memory_allocator
 #include "implicit.h"
 C
 #include "dcbdhf.h"
 #include "dcborb.h"
-#include "dgroup.h"
       integer, allocatable :: ind(:)
       integer, allocatable :: ibf(:)
 C
@@ -4986,9 +4963,9 @@ C  MI July 6,2006: Requires CHECKPOINT with written MO's
 !              A "Level-Shifting" method for converging closed shell Hartree-Fock wave functions, IJQC, 7, p699-705 (1973).
 C
 C***********************************************************************
-!      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: I2ORBT, NESH, NISH, NPSH, NSSH
 !      use dcbdhf_mod, only: DLSHIF, I2TMOT, LUCMOS, N2TMOTQ, NACSH, NACSHMF, NESHMF, NISHMF, NOCCMF, NOPEN, NTMO, OLEV
+      use dgroup_mod, only: NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
 C
@@ -4996,7 +4973,6 @@ C
       INTEGER :: I
 #include "dcbdhf.h"
 #include "dcborb.h"
-#include "dgroup.h"
       DIMENSION FMO(*),CMO(*)
       LOGICAL IS_HERE,IS_OPEN
 
@@ -5073,7 +5049,7 @@ C
 C***********************************************************************
 !      use dcborb_mod, only: I2ORBT, IORB, NESH, NISH, NPSH, NSSH
 !      use dcbdhf_mod, only: DLSHIF, I2TMOT, NACSH, NESHMF, NISHMF, NOCCMF, NOPEN, NTMO
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -5082,7 +5058,6 @@ C
       INTEGER :: I,J
 #include "dcbdhf.h"
 #include "dcborb.h"
-#include "dgroup.h"
       DIMENSION EIG(*)
 !#def LEVELSHIFT_DEBUG
 
@@ -5145,7 +5120,7 @@ C**********************************************************************
       use dcbbas_mod, only: I2TMT, N2TMT, NFBAS, NZT
       use dcbgen_mod, only: LUTMAT
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbdhf_mod, only: I2TMOT, LUCMOS, N2TMOTQ, NACSH, NESHMF, NOCCMF, NTMO, OVLSEL
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -5154,7 +5129,6 @@ C
 #include "dcbpsi.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
-#include "dgroup.h"
       LOGICAL DOSEL,TOBE
       CHARACTER TEXT*74
       DIMENSION COFT(*),COFU(*),TMAT(*),WORK(*)
@@ -5225,13 +5199,12 @@ C     Written by T. Saue July 10 2006
 C     Last changes: M.Ilias, Aug.2008 - update for all electronic shells
 C
 C***********************************************************************
-!      use dgroup_mod, only: NFSYM, NZ
 !      use dcbdhf_mod, only: I2TMOT, IPRSCF, ISMOQ, LUSMOS, NACSH, NESHMF, NOCCMF, NSMOTQ, NTMO
 !      use dcborb_mod, only: I2ORBT, NISH, NPSH, NSSH
+      use dgroup_mod, only: NFSYM, NZ
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 
@@ -5276,8 +5249,8 @@ C
 C***********************************************************************
 !      use dcbdhf_mod, only: DOCCNV, I2TMOT, NACSH, NESHMF, NFMAT, NOCCMF, NOPEN, NTMO, OPEN_FAC
 !      use dcborb_mod, only: I2ORBT, NISH, NPSH, NSSH
-!      use dgroup_mod, only: NFSYM
 !      use dcbham_mod, only: IF, ONESYS
+      use dgroup_mod, only: NFSYM
       use dcbbas_mod, only: N2BBASXQ
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -5286,7 +5259,6 @@ C
 #include "dcbham.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
-#include "dgroup.h"
       DIMENSION CMO(*),EIG(*),IBEIG(*),FOCK(*),WORK(*),NB(2),NO(2)
 C
       KWORK = 1
@@ -5335,12 +5307,11 @@ C
       RETURN
       END
       SUBROUTINE FMO_FREEZE(FMO)
+      use dgroup_mod, only: NFSYM, NZ
 #include "implicit.h"
 !      use dcborb_mod, only: I2ORBT, NISH, NORB, NORBT, NPSH, NSSH
-!      use dgroup_mod, only: NFSYM, NZ
 !      use dcbdhf_mod, only: I2TMOT, IMOFREEZE, NACSH, NESHMF, NMOFREEZE, NOCCMF, NTMO
       INTEGER :: I,J
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
       DIMENSION FMO(NORBT,NORBT,NZ)
@@ -5373,11 +5344,10 @@ C         A cut and paste job by T. Saue Dec 5 2006
 C
 C***********************************************************************
 !      use dcborb_mod, only: I2ORBT, NBORB, NISH, NPSH, NSSH
-!      use dgroup_mod, only: NZ
 !      use dcbham_mod, only: IF, SUB_BL
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbham.h"
       DIMENSION EIG(*),FAO(*),FMO(*),WORK(*)
@@ -5470,14 +5440,13 @@ C     Written by T. Saue Feb 4 2009
 C
 C***********************************************************************
 !      use dcborb_mod, only: I2ORBT, NFRO, NISH, NPSH, NSSH
-!      use dgroup_mod, only: NZ
 !      use dcbdhf_mod, only: I2TMOT, NACSH, NESHMF, NOCCMF, NOPEN, NTMO
+      use dgroup_mod, only: NZ
       use dcbbas_mod, only: NZT
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
       DIMENSION COFT(NB,NO,NZ),COFU(NT,NT,NZ),TMAT(NB,NT,NZT),WORK(*)
@@ -5540,13 +5509,12 @@ C
 C     Written by Trond Saue Feb 6 2009
 C
 C***********************************************************************
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: IPQTOQ, NZ
       use dcbbas_mod, only: NZT
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
-#include "dgroup.h"
       DIMENSION COFT(NB,NO,NZ),COFU(NT,NT,NZ),TMAT(NB,NT,NZT),WORK(*)
 C
 C     
@@ -5590,7 +5558,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use dcbbas_mod, only: NTBAS
       use mxcent_mod, only: MXATOM
 !      use dcbdhf_mod, only: I2TMOT, MXOPEN, NACSH, NESHMF, NOCCMF, NTMO
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 !      use dcbatom_mod, only: ATOMFIL, MAXATOM, NVECATOM, OCCATOM, VECATOM
       use dircmo
 C***********************************************************************
@@ -5605,7 +5573,6 @@ C***********************************************************************
 C
 #include "dcbdhf.h"
 #include "dcbatom.h"
-#include "dgroup.h"
       DIMENSION DMAT(NTBAS(0),NTBAS(0),NZ),WORK(*)
 C.....Local variables
       LOGICAL TOBE,FNDLAB
@@ -5636,14 +5603,14 @@ C***********************************************************************
       use nuclei_mod, only: NAMN, NONT, NONTYP, NUCDEG
       use dcbbas_mod, only: I2BASX, NFBAS, NTBAS
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: IQDEF, IQTOPQ, IRQMAT, JQBAS, NBSYM, NFSYM, NZ, NZC1
+      use dgroup_mod, only: FREP, IPQTOQ, IQDEF, IQTOPQ, IRQMAT, JQBAS,
+     &  NBSYM, NFSYM, NZ, NZC1
       use quaternion_algebra
       use labeled_storage
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
-#include "dgroup.h"
       CHARACTER*6  ATOMFIL(MATOM)
       CHARACTER*72 VECATOM(MSHEL,MATOM)
       INTEGER      NVECATOM(MATOM)
@@ -5831,7 +5798,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: NFBAS, NTBAS
 !      use dcborb_mod, only: I2ORBT, NISH, NPSH, NSSH
-!      use dgroup_mod, only: IQDEF, NZC1
+      use dgroup_mod, only: IQDEF, NZC1
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NONT, NONTYP, NUCDEG
       use dircmo
@@ -5856,7 +5823,6 @@ C***********************************************************************
 C
 #include "dcbhoc.h"
 #include "dcborb.h"
-#include "dgroup.h"
       type(file_info_t)    :: fragfile
       LOGICAL FNDLAB
       CHARACTER TEXT*74
@@ -6096,11 +6062,10 @@ C       only in the linear symmetry !
 C***********************************************************************
 !      use dcbdhf_mod, only: I2TMOT, NACSH, NESHMF, NOCCMF, NTMO
 !      use dcborb_mod, only: I2ORBT, NISH, NPSH, NSSH
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
 C
       INTEGER :: II,JJ
-#include "dgroup.h"
 #include "dcborb.h"            
 #include "dcbdhf.h"      
       character*100 :: hfile_format,hfile_name

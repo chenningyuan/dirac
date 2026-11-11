@@ -24,13 +24,12 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxqr_mod, only: MAXFQR, MAXLQR, MZYEE, MZYEP
-!      use dgroup_mod, only: NBSYM, NZ
+      use dgroup_mod, only: NBSYM, NZ
 !      use dcborb_mod, only: NCMOTQ
       use dcbbas_mod, only: NTBAS
 !      use dcbham_mod, only: SPINFR
 #include "implicit.h"
 #include "dcbxqr.h"
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbham.h"
 C
@@ -132,13 +131,12 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxqr_mod, only: LAQROP, LBQROP, NAQROP, NBQROP, TPACNV, TPASIM, TPASTV
 !      use dcbxrs_mod, only: JOPSY, JSYMOP, JTIMOP
-!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
+      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
 !      use dcbxpr_mod, only: IPRPSYM
 #include "implicit.h"
       INTEGER :: I, J
 #include "dcbxqr.h"
 #include "dcbxrs.h"
-#include "dgroup.h"
 #include "dcbxpr.h"
 C
       DIMENSION WORK(*)
@@ -205,13 +203,12 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxqr_mod, only: EXCIT, IEXCOFF, IPRXQR, MAXFQR, XQR_INDSTR, XQR_SKIPEE, XQR_SKIPEP
 !      use dcbxrs_mod, only: JOPSY, JSYMOP, JTIMOP, NCRED, NERED, NEXSIM, NEXSTV, NFREQ, NPRED, NREDM, NZCONF, NZRED, NZXOPE, RSPLAB
-!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
+      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
       use pgroup_mod, only: REP
 !      use dcbxpr_mod, only: PRPNAM
 #include "implicit.h"
 #include "dcbxqr.h"
 #include "dcbxrs.h"
-#include "dgroup.h"
 #include "dcbxpr.h"
 C
       DIMENSION RCNV(MAXFQR,NBSYM)
@@ -332,13 +329,12 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxlr_mod, only: XSTERN
-!      use dgroup_mod, only: NBSYM, NFSYM
+      use dgroup_mod, only: NBSYM, NFSYM
 !      use dcbxqr_mod, only: CNVXQR, EXCIT, INTXQR, IPRXQR, ITRIQR, ITRXQR, LUQRINFO, MAXFQR, MAXQRM, MZYEE, MZYEP, NQROP, RESXQR, THCQR, XQRDIH, XQRNRM, XQR_INDSTR, XQR_SKIPEE, XQR_SKIPEP
 !      use dcbxrs_mod, only: CNVINT, DIAGHE, INTDEF, IPRXRS, ITRINT, JOPSY, JTIMOP, LINEQ, LOFFTY, LSVCFG, MAXITR, MAXSIM, N2REDM, NREDM, NZXOPE, NZXOPP, RESFAC, STATIC, STERNH, THCXRS, TKNORM
 #include "implicit.h"
 #include "dcbxlr.h"
 !#include "dcbham.h"
-#include "dgroup.h"
 #include "dcbxqr.h"
 #include "dcbxrs.h"
 C
@@ -433,7 +429,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: IPRPSYM
 !      use dcbxqr_mod, only: EXCIT, LAQROP, LBQROP, LQRHYP, MAXQR, NAQROP, NBQROP, NQRHYP, QRFRHYP, TPACNV
-!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
+      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
 !      use dcbxrs_mod, only: JOPSY
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -441,7 +437,6 @@ C***********************************************************************
 #include "dcbxpr.h"
 !#include "dcbxlr.h"
 #include "dcbxqr.h"
-#include "dgroup.h"
 #include "dcbxrs.h"
 C
       DIMENSION WORK(*)
@@ -519,14 +514,13 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxqr_mod, only: IEXCOFF, LAQROP, LBQROP, MAXFQR, MAXLQR, MAXQR, MZYEE, MZYEP, NAQROP, NBQROP, NQRHYP, TPACNV
 !      use dcbxpr_mod, only: IPRPSYM
-!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM, NZ
+      use dgroup_mod, only: JFSYM, NBSYM, NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
 #include "dcbxqr.h"
 #include "dcbxpr.h"
 !#include "dcbxrs.h"
-#include "dgroup.h"
 C
       REAL(dp), PARAMETER :: D0=0.0D0
       CHARACTER ALAB*8,BLAB*8,ELAB*8
@@ -658,14 +652,13 @@ C***********************************************************************
 !      use dcbxqr_mod, only: EXCIT, IEXCOFF, LAQROP, LQROP, MAXFQR, MAXLQR, MAXQR, NAQROP, NBQROP, NQROP, QRFREQ, TPACNV
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
 !      use dcbxrs_mod, only: JOPSY, JTIMOP
-!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
+      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
       use pgroup_mod, only: REP
 #include "implicit.h"
       INTEGER :: I, J
 #include "dcbxqr.h"
 #include "dcbxpr.h"
 #include "dcbxrs.h"
-#include "dgroup.h"
 C
       PARAMETER ( LUCMO = 22, D0 = 0.0D0, D2R3 = (2.0D0/3.0D0),
      &            D2 = 2.0D0, D4 = 4.0D0 )
@@ -964,12 +957,11 @@ C     Written by johhe 2002
 C***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
 !      use dcbxqr_mod, only: IPRXQR, LAQROP, LBQROP, MAXFQR, MAXLQR, NAQROP, NBQROP, NCQROP, TPACNV, TPASIM, TPASTV
-!      use dgroup_mod, only: NBSYM
+      use dgroup_mod, only: NBSYM
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
 #include "dcbxqr.h"
-#include "dgroup.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
       CHARACTER PNAME*16
       DIMENSION WORK(LWRK),PNAME(3)
@@ -1040,12 +1032,11 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxqr_mod, only: EXCIT, IPRXQR, LUQREE, LUQREP, MZYEE, MZYEP, XQR_INDSTR, XQR_SKIPEE, XQR_SKIPEP
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 !      use dcbxrs_mod, only: JOPSY, JSYMOP, JTIMOP, NZXOPE, NZXOPP
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dcbxqr.h"
-#include "dgroup.h"
 #include "dcbxrs.h"
 C
       REAL(dp), PARAMETER :: D0=0.0D0

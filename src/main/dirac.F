@@ -40,7 +40,6 @@ C***********************************************************************
 
 
 #include "infpar.h"
-!#include "dgroup.h"
 
 #ifdef HAVE_OPENMP
       INTEGER omp_get_num_procs
@@ -108,8 +107,8 @@ C  /* Deck dirctl */
       SUBROUTINE DIRCTL()
 
 !      use dcbham_mod, only: BSS, X2C
-!      use dgroup_mod, only: NBSYM
 !      use dcbdhf_mod, only: NOPEN
+      use dgroup_mod, only: NBSYM
       use checkpoint
       use interface_ao_specific
       use interface_mo_specific
@@ -127,7 +126,6 @@ C  /* Deck dirctl */
 
 ! dcbgrd.h : DONGRD
 #include "dcbham.h"
-#include "dgroup.h"
 #include "dcbdhf.h"
 
       logical run_pamset, tobe
@@ -591,7 +589,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use consts_mod, only: D0, D2
-!      use dgroup_mod, only: LINEAR, NFSYM
+      use dgroup_mod, only: LINEAR, NFSYM
 !      use dcbdhf_mod, only: CNVINT, DF, DHF_SKIPEE, DHF_SKIPEP, EVCCNV, INTBUF, INTDEF, INTFLG, IPRSCF, ITRINT, MAXBCK, MXMACRO, MXMICRO, NACSH, NAELEC_DHF, NASH_DHF, NELECT_DHF, NELEC_DHF, NFRO_DHF, NISH_DHF, NOPEN, NSSH_DHF, SCFCNV
 !      use dcbesr_mod, only: LVL_CIESR, MAXMK2_ESR, NGAS_CIESR, NGSH_CIESR, THRPCI_ESR, THR_CVEC_ESR
 !      use dcborb_mod, only: MXGAS, NAELEC, NASH, NASHT, NELEC, NELECT, NFRO, NGASSP, NGAS_DC, NGSH, NGSHT, NISH, NOCC, NSSH
@@ -602,7 +600,6 @@ C
 C
       CHARACTER*(*) CISELECT
 C
-#include "dgroup.h"
 #include "dcbdhf.h"
 #include "dcbesr.h"
 #include "dcborb.h"
@@ -885,7 +882,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
-!      use dgroup_mod, only: NBSYM, NFSYM
+      use dgroup_mod, only: NBSYM, NFSYM
 !      use dcborb_mod, only: MXGAS, NAELEC, NASH, NESH, NFRO, NGASSP, NGAS_DC, NGSH, NGSHT, NISH, NOCC, NSSH
 !      use dcbkrmc_mod, only: DKRMC_CNVINT, DKRMC_THRGRD, DKRMC_THRPCI, IKRMC_INTBUF, IKRMC_INTDEF, IKRMC_INTFLG, IKRMC_ITRINT, IKRMC_MEMFAC, IKRMC_STATE, IKRMC_SVRONO, IKRMC_SYMMETRY, IPRKRMC, KRMC_CHCKJZ, KRMC_CIPROGRAM, KRMC_DELSTR, KRMC_FRZSTR, KRMC_FULL_CI, KRMC_NO1PDENS, KRMC_NOCI, KRMC_SAVE_REORDERED_NOS, KRMC_SKIPEE, KRMC_SKIPEP, KRMC_UCIBOS, MCFLAG, MKRMC_MAXBCK, MKRMC_MXMACRO, MKRMC_MXMICRO, NKRMCAELEC, NKRMCASH, NKRMCFRO, NKRMCGAS, NKRMCGSH, NKRMCGSP, NKRMCISH, NKRMCSSH, NKRMC_MAXMK2, NKRMC_MINMK2, NKRMC_MK2DEL, NKRMC_MK2REF
 !      use dcbopt_mod, only: CANA_MCSCF, CHCKPT_WRT, CINT_LOWSRT, CINT_REORD, CINT_SPLIT, CPBLCK_FILE, CSHMEMO, E_LVCORR_MC, FLAG, IMEMFAC, IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ITRINT, IOPT_MAXMK2, IOPT_MINMK2, IOPT_MK2DEL, IOPT_MK2REF, IOPT_STATE, IOPT_SYMMETRY, IPROPT, ISHMEM_TYPE, ISVRONO, JKRRUNTYPE, MOPT_MAXBCK, MOPT_MXMACRO, MOPT_MXMICRO, NCIROOT, NMAX_SYM, NO1PDENS_SAVE, NOPEN_MC, NOPTFLAGS, OPT_CHCKJZ, OPT_CIPROGRAM, OPT_CNVINT, OPT_DELSTR, OPT_FRZSTR, OPT_NOCI, OPT_SKIPEE, OPT_SKIPEP, OPT_THRECI, OPT_THRGRD, OPT_THR_CVEC, OPT_UCIBOS, SAVE_REORDERED_NOS, THRPCI
@@ -894,7 +891,6 @@ C***********************************************************************
       INTEGER :: I, J
 C
 #include "maxash.h"
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbkrmc.h"
 !#include "dcbkrci.h"
@@ -1078,15 +1074,14 @@ C     Written by S. Knecht - Aug 2008
 C     Last revision:
 C
 C***********************************************************************
-!      use dgroup_mod, only: LINEAR, NFSYM
 !      use dcborb_mod, only: MXGAS, NAELEC, NASH, NFRO, NGASSP, NGAS_DC, NGSH, NGSHT, NISH, NOCC, NPSHT, NSSH
 !      use dcbkrci_mod, only: CHCKPT_KRCI, CINT_REORD_KRCI, CINT_SPLIT_KRCI, CRDFO_MAT_KRCI, CSHMEMO_KRCI, CUSE_PBLFL_KRCI, CWRTFO_MAT_KRCI, DKRCI_CNVINT, DKRCI_THRECI, DKRCI_THRGCI, DKRCI_THRPCI, DOMCANA_KRCI, FCIDUMP_KRCI, IANACI_KRCI, IDOPARIO_KRCI, IKRCI_INTBUF, IKRCI_INTDEF, IKRCI_INTFLG, IKRCI_ITRINT, IKRCI_MEMFAC, IKRCI_SVRONO, IPRKRCI, IRESTRK_KRCI, KRCI_CIPROGRAM, KRCI_UCIBOS, KTRLVL_KRCI, LOWSORT_KRCI, MAXCIT_KRCI, MXCIV_KRCI, NATOLCR_KRCI, NKRCIAELEC, NKRCIASH, NKRCIFRO, NKRCIGAS, NKRCIGSH, NKRCIGSP, NKRCIISH, NKRCISSH, NKRCI_MAXMK2, NKRCI_MAX_SYM, NKRCI_MINMK2, NKRCI_MK2DEL, NKRCI_MK2REF, SAVE_REORDERED_NOS_KRCI, TRANATO_KRCI
 !      use dcbopt_mod, only: CANA_MCSCF, CHCKPT_WRT, CINT_LOWSRT, CINT_REORD, CINT_SPLIT, COMPFAC, COMPROT, CPBLCK_FILE, CRDFO_MAT, CSHMEMO, CWRTFO_MAT, E_LVCORR_MC, FCIDUMP, FLAG, FOCKONLY, IANACI, IDOPARIO, IKRMCCNO, IMEMFAC, IOPTST, IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ITRINT, IOPT_MAXMK2, IOPT_MINMK2, IOPT_MK2DEL, IOPT_MK2REF, IOPT_STATE, IOPT_SYMMETRY, IPROPT, IRESTRK, ISVRONO, JKRRUNTYPE, KTRLVL, MAXCIT, MOPT_MAXBCK, MOPT_MXMACRO, MOPT_MXMICRO, MXCIV, NATOLCR, NATONLY, NCIROOT, NMAX_SYM, NO1PDENS_SAVE, NOPEN_MC, NOPTFLAGS, OPT_CHCKJZ, OPT_CIPROGRAM, OPT_CNVINT, OPT_DELSTR, OPT_FRZSTR, OPT_NOCI, OPT_NOFQX, OPT_NOPFQ, OPT_SKIPEE, OPT_SKIPEP, OPT_THRECI, OPT_THRGRD, OPT_THR_CVEC, OPT_UCIBOS, SAVE_REORDERED_NOS, THRPCI, TRA_NATO
 !      use dcbdhf_mod, only: NOPEN
+      use dgroup_mod, only: LINEAR, NFSYM
 #include "implicit.h"
       INTEGER :: I, J
 C
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbkrci.h"
 #include "dcbopt.h"
@@ -1805,12 +1800,11 @@ C     Well Lasse did a copy and paste of it to this routine 2010
 C     Last revision:
 C
 C***********************************************************************
-!      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: MXGAS, NAELEC, NASH, NFRO, NGASSP, NGAS_DC, NGSH, NGSHT, NISH, NOCC, NSSH
 !      use dcbopt_mod, only: CANA_MCSCF, CHCKPT_WRT, CINT_LOWSRT, CINT_REORD, CINT_SPLIT, COMPFAC, COMPROT, CPBLCK_FILE, CRDFO_MAT, CSHMEMO, CWRTFO_MAT, E_LVCORR_MC, FCIDUMP, FOCKONLY, IANACI, IDOPARIO, IKRMCCNO, IMEMFAC, IOPTST, IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ITRINT, IOPT_MAXMK2, IOPT_MINMK2, IOPT_MK2DEL, IOPT_MK2REF, IOPT_STATE, IOPT_SYMMETRY, IPROPT, IRESTRK, JKRRUNTYPE, KTRLVL, MAXCIT, MOPT_MAXBCK, MOPT_MXMACRO, MOPT_MXMICRO, MXCIV, NATOLCR, NATONLY, NCIROOT, NMAX_SYM, NO1PDENS_SAVE, OPT_CIPROGRAM, OPT_DELSTR, OPT_FRZSTR, OPT_NOFQX, OPT_NOPFQ, OPT_THR_CVEC, TRA_NATO
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
 C
-#include "dgroup.h"
 #include "dcborb.h"
 C#include "dcbkrci.h"
 #include "dcbopt.h"

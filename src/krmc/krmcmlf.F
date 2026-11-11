@@ -47,13 +47,12 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use consts_mod, only: D0, DM1
 !      use dcborb_mod, only: IASH, NASH, NASHT
-!      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
 #include "implicit.h"
       INTEGER :: J
 C
 C
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION DQFC(NASHT,NASHT,NZ)
       DIMENSION DMFC(2*NASHT,2*NASHT,2)
@@ -234,7 +233,10 @@ C  /* Deck mfc2qfc */
       use priunit_mod, only: LUPRI
       use consts_mod, only: D1, DM1
 !      use dcborb_mod, only: NASH, NASHT, NORBT
-!      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+#if defined (LINSYM_DEBUG)
+      use dgroup_mod, only: LINEAR
+#endif
       use memory_allocator
 C***********************************************************************
 C
@@ -254,7 +256,6 @@ C***********************************************************************
 C
 C
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION DQFC(NASHT,NASHT,NZ)
       DIMENSION DMFC(2*NASHT,2*NASHT,2)
@@ -381,13 +382,12 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NASH, NASHT, NNASHX
-!      use dgroup_mod, only: IPQTOQ, NBSYM, NFSYM, NZ, NZ_IN_CI
+      use dgroup_mod, only: IPQTOQ, NBSYM, NFSYM, NZ, NZ_IN_CI
 !      use dcbham_mod, only: LEVYLE, SPINFR
 #include "implicit.h"
       INTEGER :: I, II, J, JJ, K, KK
 C
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbham.h"
 C
       DIMENSION VDUUUU(NASHT,NASHT,NNASHX,NZ,*)
@@ -934,7 +934,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NASH, NASHT, NNASHX
-!      use dgroup_mod, only: IPQTOQ, NBSYM, NFSYM, NZ, NZ_IN_CI
+      use dgroup_mod, only: IPQTOQ, NBSYM, NFSYM, NZ, NZ_IN_CI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, II, J, JJ, K, KK
@@ -942,7 +942,6 @@ C
       REAL(dp), PARAMETER :: THROUT = 1.0D-15
 C
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION VDUUUU(NASHT,NASHT,NNASHX,NZ,*)
       DIMENSION VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
@@ -1270,12 +1269,11 @@ C     Last revision :
 C
 C***********************************************************************
 !      use dcborb_mod, only: NASHT, NNASHX
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I, J, K
 C
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION VDUUUU(NASHT,NASHT,NNASHX,NZ,3)
 C
@@ -1363,14 +1361,13 @@ C***********************************************************************
 !      use thrzer_mod, only: THRZER
       use consts_mod, only: DP5
 !      use dcborb_mod, only: NASHT, NNASHX
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I
 C
 #include "thrzer.h"
 C
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION VDUUUU(*)
       DIMENSION WORK(*)
@@ -1733,7 +1730,7 @@ C
 !***********************************************************************
 !      use dcborb_mod, only: IORB, NAELEC, NASH, NASHT, NGSH, NISH, NORB, NORBT, NPSH
 !      use dcbham_mod, only: SPINFR
-!      use dgroup_mod, only: LINEAR, NFSYM, NZ_IN_CI
+      use dgroup_mod, only: LINEAR, NFSYM, NZ_IN_CI
       use dcbgen_mod, only: LUCOEF, LUKRMC
       use pgroup_mod, only: GROUP
       use mospinor_info
@@ -1743,7 +1740,6 @@ C
 C
 #include "dcborb.h"
 #include "dcbham.h"
-#include "dgroup.h"
 C
       DIMENSION  VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
       DIMENSION  hcore(2*NASHT,2*NASHT,*)

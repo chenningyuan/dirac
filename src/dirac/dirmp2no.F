@@ -28,15 +28,14 @@ C     Written by S.Knecht and H.J.Aa. Jensen - March 2008
 C
 C***********************************************************************
 !      use dcbpsi_mod, only: DOMP2NO
-!      use dgroup_mod, only: FREP, NFSYM
 !      use dcbmp2no_mod, only: IAOMOSCHEME, IF2MP2NO, INTMP2NO, IPRMP2NO, MP2NATPOP, MP2NATPOP2, SELPOPNAT, VECMP2NO, VECNOSEL
+      use dgroup_mod, only: FREP, NFSYM
       use dcbgen_mod, only: INTGEN, IPRGEN
       use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
       INTEGER :: I,J
 C
 #include "dcbpsi.h"
-#include "dgroup.h"
 #include "dcbmp2no.h"
 C
       PARAMETER (NTABLE = 8)
@@ -337,7 +336,7 @@ C***********************************************************************
 !      use infpar_mod, only: ICOUNT, IF, MPARID, MYTID
 !      use dcborb_mod, only: NASHT, NCMOTQ, NESH, NESHT, NORBT
 !      use dcbmp2no_mod, only: IF2MP2NO, IMO_NAT, IOCC_NAT, LUNATORB, MP2NATPOP, MP2NATPOP2, NACTMP2NO, SKIP_MP2DEN, VECNOSEL
-!      use dgroup_mod, only: LINEAR, NFSYM, NZ
+      use dgroup_mod, only: LINEAR, NFSYM, NZ
       use memory_allocator
       use dircmo
 
@@ -345,7 +344,6 @@ C***********************************************************************
       INTEGER :: I,J
 C
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbmp2no.h"
 !#include "dcbham.h"
 #include "infpar.h"
@@ -566,8 +564,8 @@ C
 C     written by S. Knecht - June 2008, Odense
 C
 C***********************************************************************
-!      use dgroup_mod, only: NBSYM, NFSYM, NZ
 !      use dcbdhf_mod, only: NASH_DHF, NFRO_DHF, NISH_DHF, NOPEN
+      use dgroup_mod, only: NBSYM, NFSYM, NZ
       use dcbbas_mod, only: N2BBASXQ, NFBAS
       use dcbgen_mod, only: INTGEN
       use dummy_mod, only: DUMMY
@@ -584,7 +582,6 @@ C
 
 #include "dcbdhf.h"
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbmp2no.h"
 #include "../moltra/dcbtra.h"
 #include "../moltra/dcbtr3.h"
@@ -1166,11 +1163,10 @@ C     written by S.Knecht - July 2008
 C
 C***********************************************************************
 !      use dcborb_mod, only: NCMOTQ, NESHT, NORBT
-!      use dgroup_mod, only: LINEAR, NFSYM
+      use dgroup_mod, only: LINEAR, NFSYM
       use dcbgen_mod, only: LUKRMC
 #include "implicit.h"
 #include "dcborb.h"
-#include "dgroup.h"
       DIMENSION CMO(*), EIG(*), EIG_NAT(*),ibeig(*)
       character(len=8) :: label
 C
@@ -1205,16 +1201,15 @@ C
 C     written by S.Knecht - July 2008
 C
 C***********************************************************************
-!      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: IASH, ICMOQ, NASH, NASHT, NCMOTQ, NIOCC, NORB, NPSH
 !      use dcbmp2no_mod, only: IPRMP2NO
+      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: NFBAS
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
 C
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbmp2no.h"
       DIMENSION CMO(*), CMO_NAT(nasht,nasht,NZ)
       DIMENSION WORK(*)
@@ -1302,12 +1297,11 @@ C
       subroutine reorder_mp2no(cmo,occ,ibeig)
 
 !      use dcborb_mod, only: IORB, NASH, NESH, NIOCC, NORBT, NPSH
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use priunit_mod, only: LUPRI
       implicit none
 C
 #include "dcborb.h"
-#include "dgroup.h"
        real(8), intent(inout) :: cmo(*), occ(*)
        integer, intent(inout) :: ibeig(*)
        real(8), allocatable   :: occ_full(:), occ_full_save(:)

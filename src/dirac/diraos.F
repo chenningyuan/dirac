@@ -30,7 +30,6 @@ C***********************************************************************
       PARAMETER(D0=0.0D0)
 C
 #include "dcbham.h"
-#include "dgroup.h"
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),BUF(*)
       RHO = D0
       DO IC = 1,MC
@@ -49,12 +48,12 @@ C
 C     Written by T.Saue and T.Helgaker
 C
 C***********************************************************************
+      use dgroup_mod, only: NBSYM
       use dcbbas_mod, only: IBBAS, NBBAS, NTBAS
 #include "implicit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
 C
 #include "dcbham.h"
-#include "dgroup.h"
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),BUF(*)
 C
 C      
@@ -85,12 +84,12 @@ C
 C     Written by T.Saue and T.Helgaker
 C
 C***********************************************************************
+      use dgroup_mod, only: NBSYM
       use dcbbas_mod, only: IBBAS, NBBAS, NTBAS
 #include "implicit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
 C
 #include "dcbham.h"
-#include "dgroup.h"
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),
      &          BUF(NTBAS(0)),GAO1(NTBAS(0),3)
       DIMENSION RHG(3)
@@ -133,12 +132,12 @@ C
 C     Written by T.Saue and T.Helgaker
 C
 C***********************************************************************
+      use dgroup_mod, only: JFSYM, NFSYM, NZ
       use dcbbas_mod, only: IBBAS, NBBAS, NTBAS
 #include "implicit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
 C
 #include "dcbham.h"
-#include "dgroup.h"
       DIMENSION RHO(0:2),GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),
      &          BUF(NTBAS(0),4),GAO1(NTBAS(0),3),GAO2(NTBAS(0),6)
 C      
@@ -212,8 +211,8 @@ C
 C     Written by T.Saue May 12 2000
 C
 C***********************************************************************
+      use dgroup_mod, only: NBSYM
 #include "implicit.h"
-#include "dgroup.h"
       DIMENSION GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
      &          GAB1(NBAST,3), BUF(NBAST), NCNT(NBAST)
 C
