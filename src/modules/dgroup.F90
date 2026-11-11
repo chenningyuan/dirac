@@ -1,6 +1,8 @@
 !-----------------------------------------
 ! Module with variables previously defined
 ! at dgroup.h include file (COMMON /DNAME/, /DGROUP/, /DGRPL/, /ONEOPS/)
+! MPI: dgroup_bcast (src/dirac/dirgp.F) sends most of variabes, field by field.
+! If new variables are defined here, add them also there is slaves need them.
 !-----------------------------------------
 !     NZ                 - number of fermion matrices (1,2,4)
 !     NZC1               - number of fermion matrices in C1 symmetry (1 or 4)

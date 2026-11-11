@@ -15,6 +15,51 @@
 !dirac_copyright_end
 
 C
+C     Field-by-field MPI broadcast of COMMON /DGROUP/ (dgroup_mod), which
+C     was sent as one block of integers from I1_DGROUP to I2_DGROUP,
+C     followed by LINEAR. Master and slaves call the same routine, so the
+C     order always matches.
+C
+      module dgroup_bcast_mod
+      implicit none
+      private
+#if defined (VAR_MPI)
+      public :: dgroup_bcast
+      contains
+      subroutine dgroup_bcast(ROOT)
+      use dgroup_mod, only: NZ, NFSYM, NBSYM, IFDIRP, JBTOF, JMROI,
+     &                      JSPINR, JQBAS, JFSYM, IPQTOQ, IQTOPQ, IQPH,
+     &                      IHQMAT, IRQMAT, IQDEF, ITOT, IBTOSF, NZC1,
+     &                      NZ_IN_CI, IQMAP, LINEAR
+      use interface_to_mpi, only: interface_mpi_bcast,
+     &                            global_communicator
+      integer, intent(in) :: ROOT
+      integer, parameter :: COMM = global_communicator
+      call interface_mpi_bcast(NZ, 1, ROOT, COMM)
+      call interface_mpi_bcast(NFSYM, 1, ROOT, COMM)
+      call interface_mpi_bcast(NBSYM, 1, ROOT, COMM)
+      call interface_mpi_bcast(IFDIRP, size(IFDIRP), ROOT, COMM)
+      call interface_mpi_bcast(JBTOF, size(JBTOF), ROOT, COMM)
+      call interface_mpi_bcast(JMROI, size(JMROI), ROOT, COMM)
+      call interface_mpi_bcast(JSPINR, size(JSPINR), ROOT, COMM)
+      call interface_mpi_bcast(JQBAS, size(JQBAS), ROOT, COMM)
+      call interface_mpi_bcast(JFSYM, size(JFSYM), ROOT, COMM)
+      call interface_mpi_bcast(IPQTOQ, size(IPQTOQ), ROOT, COMM)
+      call interface_mpi_bcast(IQTOPQ, size(IQTOPQ), ROOT, COMM)
+      call interface_mpi_bcast(IQPH, size(IQPH), ROOT, COMM)
+      call interface_mpi_bcast(IHQMAT, size(IHQMAT), ROOT, COMM)
+      call interface_mpi_bcast(IRQMAT, size(IRQMAT), ROOT, COMM)
+      call interface_mpi_bcast(IQDEF, size(IQDEF), ROOT, COMM)
+      call interface_mpi_bcast(ITOT, 1, ROOT, COMM)
+      call interface_mpi_bcast(IBTOSF, size(IBTOSF), ROOT, COMM)
+      call interface_mpi_bcast(NZC1, 1, ROOT, COMM)
+      call interface_mpi_bcast(NZ_IN_CI, 1, ROOT, COMM)
+      call interface_mpi_bcast(IQMAP, size(IQMAP), ROOT, COMM)
+      call interface_mpi_bcast_l0(LINEAR, 1, ROOT, COMM)
+      end subroutine dgroup_bcast
+#endif
+      end module dgroup_bcast_mod
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pcmoin */
       SUBROUTINE PCMOIN()
@@ -32,7 +77,7 @@ C
 C*****************************************************************************
 
 !      use dcbpsi_mod, only: DOKRCC, DOKRCI, DOKRMC
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use dcbgen_mod, only: LUCOEF, LUKRMC
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NCMOTQ, NORBT
@@ -45,7 +90,6 @@ C*****************************************************************************
       INTEGER :: I,J
 #include "dcbpsi.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       real(8), allocatable :: CMO(:),EIG(:)
       integer, allocatable :: IBEIG(:,:)
@@ -177,13 +221,12 @@ C*****************************************************************************
 !      use dcborb_mod, only: NCMOTQ, NORBT
       use dcbgen_mod, only: LUCOEF, LUKRMC
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: ATOMIC, NZ
+      use dgroup_mod, only: ATOMIC, NZ
       use memory_allocator
 
 #include "implicit.h"
 #include "dcbpsi.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       real(8), allocatable :: CMO(:),EIG(:)
       integer, allocatable :: IBEIG(:,:)
@@ -272,12 +315,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine get_dimension_info (idims)
       ! Pack dimension info needed in wricmo with information taken from
       ! common blocks (LV, 2021)
-!      use dgroup_mod, only: ATOMIC, NFSYM, NZ
 !      use dcborb_mod, only: NCMOTQ, NESH, NORBT, NPSH
+      use dgroup_mod, only: ATOMIC, NFSYM, NZ
       use dcbbas_mod, only: NFBAS
 #include "implicit.h"
 #include "dcborb.h"
-#include "dgroup.h"
       integer, intent(out) :: idims(*)
       IDIMS(1) = NZ
       IDIMS(2) = NFSYM
@@ -351,13 +393,12 @@ C     IDIM(3,J) - number of AO-basis functions
 C     Written by BHP (adapted from TS WRICMO)
 C
 C*****************************************************************************
-!      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: NCMOTQ, NESH, NORBT, NPSH
+      use dgroup_mod, only: NFSYM, NZ
       use dcbbas_mod, only: NFBAS
       use dcbgen_mod, only: TITLE
 #include "implicit.h"
       INTEGER :: I,J
-#include "dgroup.h"
 #include "dcborb.h"
       CHARACTER TEXT*74
       DIMENSION CMO(NCMOTQ),EIG(NORBT),
@@ -414,14 +455,13 @@ C
 C***********************************************************************
 !      use dcborb_mod, only: NCMOTQ, NORBT
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
       use dcbbas_mod, only: NFBAS
          use memory_allocator
          use dircmo
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "dgroup.h"
       LOGICAL INFO,LBIT,TEST,FNDLAB
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
       DIMENSION CMO(NCMOTQ),EIG(NORBT),
@@ -617,7 +657,6 @@ C*****************************************************************************
 !      use dcbdhf_mod, only: NACSH
 #include "implicit.h"
 C
-!#include "dgroup.h"
 #include "dcbdhf.h"
       LOGICAL INFO, INFO_loc
       CHARACTER TEXT*74, FILNAM*60
@@ -1320,11 +1359,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck NOSELPRI */
       SUBROUTINE NOSELPRI(NINDEX,I,NUMTOT)
       use priunit_mod, only: LUPRI
+      use dgroup_mod, only: FREP
 #include "implicit.h"
-!      use dgroup_mod, only: FREP
       INTEGER :: I,K
 C
-#include "dgroup.h"
 C
       INTEGER NINDEX(*)
 C
@@ -1615,7 +1653,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck acmout */
       SUBROUTINE ACMOUT()
-!      use dgroup_mod, only: NFSYM, NZC1
+      use dgroup_mod, only: NFSYM, NZC1
       use dcbbas_mod, only: N2BBASX, NTBAS
       use dcbgen_mod, only: LUCOEF, LUKRMC
       use priunit_mod, only: LUPRI
@@ -1659,7 +1697,6 @@ C*****************************************************************************
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "dgroup.h"
       LOGICAL TOBE, TOBEK, FNDLAB, MCORB, MJAVA, X2CMOB
       CHARACTER TEXT*74
       character*(:), allocatable :: mobasis
@@ -1804,13 +1841,12 @@ C***********************************************************************
 C
 C***********************************************************************
 !      use dcborb_mod, only: NISH, NORB, NPSH, NSSH
-!      use dgroup_mod, only: NFSYM, NZC1
 !      use dcbdhf_mod, only: NOPEN
+      use dgroup_mod, only: NFSYM, NZC1
 #include "implicit.h"
 C
 #include "dcborb.h"
 #include "dcbdhf.h"
-#include "dgroup.h"
       DIMENSION CMO1(NR,NC,NZC1),CMO2(NR,NC,NZC1),
      &          EIG1(NC),EIG2(NC),IVEC(2)     
       real(8), allocatable :: CBUF(:),EBUF(:)
@@ -1912,14 +1948,13 @@ C
 C     Written by T. Saue, Oct 21 2003
 C
 C***********************************************************************
-!      use dgroup_mod, only: NFSYM, NZ
 !      use dcbprj_mod, only: NREFS
+      use dgroup_mod, only: NFSYM, NZ
       use dcbbas_mod, only: NFBAS
 #include "implicit.h"
 C
       INTEGER :: I
 #include "dcbprj.h"
-#include "dgroup.h"
       DIMENSION NR(NREFS,NFSYM),NP(2,0:2),WORK(*)
       NCDIM = 0
       NBDIM = 0
@@ -2159,7 +2194,7 @@ C***********************************************************************
       use pi_mod, only: PI
 !      use dcborb_mod, only: NCMOTQ, NORBT
       use dcbbas_mod, only: NFBAS
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 !      use dcbrot_mod, only: ROTANG
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2167,7 +2202,6 @@ C***********************************************************************
 C
 #include "dcbrot.h"
 #include "dcborb.h"
-#include "dgroup.h"
       DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT)
 
       integer, allocatable :: jvec(:)
@@ -2206,11 +2240,10 @@ C
 C     Written by T. Saue March 1 2005
 C
 C***********************************************************************
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
       INTEGER :: I
-#include "dgroup.h"
       DIMENSION CMO(NBAS,NORB,NZ),BUF(NBAS),JVEC(NORB)
       DO I=1,NVECS,2
         I1 = JVEC(I)
@@ -2555,14 +2588,13 @@ C
 C     Written by Trond Saue Sep 6 2006
 C
 C***********************************************************************
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
       use dcbgen_mod, only: LUCOEF
       use priunit_mod, only: LUPRI
       use labeled_storage
 #include "implicit.h"
 C
 !#include "dcborb.h"
-#include "dgroup.h"
       LOGICAL TOBE,OWNBAS,LBIT,C1READ
       CHARACTER*(*) FRAGFIL(NFRAG)
       DIMENSION CSEL(*),ESEL(*),IBSEL(*),NVECS(*),CMO(*),KVEC(2,NFRAG),
@@ -2687,7 +2719,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
 C
-!#include "dgroup.h"
       LOGICAL DONRM
       CHARACTER COMP(2)*1
       DIMENSION IFUN(NFUN,3),
@@ -2970,7 +3001,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D2=2.0D0
 C
 C
-!#include "dgroup.h"
       LOGICAL DONRM,LRKB
       CHARACTER COMP(2)*1
       DIMENSION IFUN(NFUN,3),SPHM(NCAR,NCAR),CRED(*),IRED(3,LMAX),
@@ -3239,7 +3269,7 @@ C  /* Deck acmoin */
       SUBROUTINE ACMOIN()
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: N2BBASX, NTBAS
-!      use dgroup_mod, only: IPQTOQ, IQDEF, NFSYM, NZ
+      use dgroup_mod, only: IPQTOQ, IQDEF, NFSYM, NZ
       use dcbgen_mod, only: IPRGEN, LUCOEF
 !      use dcborb_mod, only: NORBT
       use labeled_storage
@@ -3256,7 +3286,6 @@ C***********************************************************************
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "dgroup.h"
       CHARACTER TEXT*74
       DIMENSION IDIM(3),NBF(2)
       real(8), allocatable :: CMO1(:)
@@ -3422,7 +3451,7 @@ C     Written by T. Saue Mar 4 2008
 C
 C***********************************************************************
       use mxcent_mod, only: MXCENT
-!      use dgroup_mod, only: JBTOF, JQBAS, NZ
+      use dgroup_mod, only: IQMAP, JBTOF, JQBAS, NZ
       use symmet_mod, only: ICOS, ISYMAX, MAXREP
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
@@ -3436,7 +3465,6 @@ C***********************************************************************
       INTEGER :: I,II,III,J,K
       REAL(dp), PARAMETER :: D0=0.0D0, DTOL=1.0D-1
 C
-#include "dgroup.h"
 #include "dcbham.h"
       DIMENSION CMO(NB,NO,4),IBUF(NO,2)
       DIMENSION TMP(2),NBF(2),III(2),WB(4,8,2),IB(64,4)
@@ -3574,7 +3602,6 @@ C***********************************************************************
 #include "implicit.h"
 C
 C
-!#include "dgroup.h"
 #include "dcborb.h"
 C
       DIMENSION CBU(*),EIGU(*),IBEIGU(*),
@@ -3612,8 +3639,8 @@ C
 C     Written by T.Saue Mar 4 2008
 C
 C***********************************************************************
-!      use dgroup_mod, only: IPQTOQ, IQMAP, JFSYM, NZ
 !      use dcbham_mod, only: MC
+      use dgroup_mod, only: IPQTOQ, IQMAP, JFSYM, NZ
       use symmet_mod, only: ICOS, ISYMAX
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
@@ -3625,7 +3652,6 @@ C***********************************************************************
       INTEGER :: I,III,J,K
       REAL(dp), PARAMETER :: DM1=-1.0D0
 C
-#include "dgroup.h"
 #include "dcbham.h"
       DIMENSION CBU(NBU,NOU,4),CBS(NBS,NOS,NZ),III(2)
 C
@@ -3674,7 +3700,7 @@ C***********************************************************************
 !      use dcbham_mod, only: SUB_BL
       use dcbbas_mod, only: I2TMT, N2TMT, NFBAS, NZT
       use priunit_mod, only: LUPRI
-!      use dgroup_mod, only: NFSYM, NZ
+      use dgroup_mod, only: NFSYM, NZ
       use dcbgen_mod, only: LUCOEF, LUTMAT
       use memory_allocator
       use checkpoint
@@ -3683,7 +3709,6 @@ C***********************************************************************
 C
 #include "dcbham.h"
 #include "dcborb.h"
-#include "dgroup.h"
       LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
       DIMENSION IDIM(3,2)
@@ -3810,12 +3835,11 @@ C
 C     Written by T. Saue Feb 23 2010
 C
 C***********************************************************************
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: IPQTOQ, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
-#include "dgroup.h"
       DIMENSION CMO(NBAS,NORB,NZ),TINV(NBAS,NORB,NZ),CBUF(NORB,NORB,NZ),
      &          WORK(*)
       real(8), allocatable :: cf(:)
@@ -3844,7 +3868,7 @@ C
 C     Written by T. Saue Feb 23 2010
 C
 C***********************************************************************
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: IPQTOQ, NZ
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: CVAL
       use kinds_mod, only: dp
@@ -3853,7 +3877,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0
 C
 !#include "dcbham.h"
-#include "dgroup.h"
       DIMENSION CMO(NBAS,NORB,NZ),EIG(NORB),
      &          TMAT(NBAS,NORB,NZ),CBUF(NORB,NORB,NZ)
       IF(IPRINT.GE.5) THEN
@@ -3886,12 +3909,11 @@ C
 C     Written by J. Thyssen - Feb 11 1999
 C     
 C***********************************************************************
-!      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: NISH
 !      use dcbdhf_mod, only: NACSH, NOPEN
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
 C
-#include "dgroup.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
 C
@@ -4039,10 +4061,9 @@ C     extract/expand in AO-basis
 C
 C     Written by T. Saue May 30 2012
 C***********************************************************************
-!      use dgroup_mod, only: NBSYM, NZ
+      use dgroup_mod, only: NBSYM, NZ
 #include "implicit.h"
 C
-#include "dgroup.h"
       DIMENSION CMO(NBAS1,NORB1,NZ),CSEL(LRSEL,LCSEL,4),
      &          IVEC(NVEC),WORK(*)
       IF(NVEC.EQ.NORB1) THEN
@@ -4094,10 +4115,9 @@ C     extract/expand in SO-basis
 C
 C     Written by T. Saue May 30 2012
 C***********************************************************************
-!      use dgroup_mod, only: NZ
+      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
-#include "dgroup.h"
       DIMENSION CMO(NBAS,NORB,NZ),CSEL(LRSEL,LCSEL,4),IVEC(NVEC),WORK(*)
       IF(NVEC.EQ.NORB) THEN
         CALL QEXPAND(CSEL,CMO,NVEC,IFRP,NBAS)
@@ -4213,13 +4233,12 @@ C
 C     NOTE: 
 C
 C***********************************************************************
-!      use dgroup_mod, only: NFSYM, NZ, NZC1
+      use dgroup_mod, only: NFSYM, NZ, NZC1
       use dcbbas_mod, only: NFBAS, NTBAS
 #include "implicit.h"
 C
       INTEGER :: I
 !#include "dcbham.h"
-#include "dgroup.h"
       DIMENSION CAO(*),CSO(*),NVEC(2)
       real(8), allocatable :: CBUF(:)
       integer, allocatable :: IBUF(:)
@@ -4336,10 +4355,9 @@ C
 C     Written by T. Saue Oct 5 2016
 C
 C***********************************************************************
-!      use dgroup_mod, only: NFSYM
+      use dgroup_mod, only: NFSYM
 #include "implicit.h"
 C
-#include "dgroup.h"      
       DIMENSION INFOSEL(2,NVECT),KVEC(2,NFRAG),NSTR(2,0:2,NFRAG),
      &     WORK(*)
       IOFF = 1
@@ -4469,15 +4487,14 @@ C***********************************************************************
 !     - write_psh == true: write occupations also for negative energy orbitals (4C runs)
 !                 == false: write occupations only for the positive energy orbitals (2C runs)
 
-!      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: NESHT, NORBT
 !      use dcbdhf_mod, only: DF, NACSH, NOPEN
+      use dgroup_mod, only: NFSYM
       use checkpoint
 #include "implicit.h"
       INTEGER :: I
 #include "dcbdhf.h"
 #include "dcborb.h"
-#include "dgroup.h"
       character(len=*),intent(in) :: group
       logical,intent(in) :: write_psh
       real(8), allocatable :: occupations(:)
