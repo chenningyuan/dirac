@@ -1,21 +1,30 @@
 .define-cores:
   script:
+    # N_PROC is the number of physical cores (hardware threads are not counted).
+    # Note: lscpu reports the whole machine, not the CPU limit of a container, so on
+    # shared self-hosted runners with CPU limits N_PROC can be too large.
     - cores=$(LC_ALL=C lscpu | awk '/^Core\(s\) per socket:/ {print $4}')
     - sockets=$(LC_ALL=C lscpu | awk '/^Socket\(s\):/ {print $2}')
     - N_PROC=$((cores * sockets))
     - |
-      if [ "$N_PROC" -lt 4 ]; then
-        M=$((N_PROC / 2))
+      # M = number of tests run concurrently by ctest, each with NEW_DIRAC_MPI_COMMAND
+      if [ "$N_PROC" -lt 2 ]; then
+        # e.g. 2 vCPUs = 1 core with 2 hardware threads: Open MPI refuses more ranks than cores
+        M=1
+        export NEW_DIRAC_MPI_COMMAND="mpiexec -n 1"
+      elif [ "$N_PROC" -lt 4 ]; then
+        M=1
         export NEW_DIRAC_MPI_COMMAND="mpiexec -n 2"
       else
         M=$((N_PROC / 4))
         export NEW_DIRAC_MPI_COMMAND="mpiexec -n 4"
       fi
+      : > var_cores.env  # start a fresh file on every call
       if [[ -v DIRAC_MPI_COMMAND ]]; then
         echo "DIRAC_MPI_COMMAND defined by the build."
       else
         echo "DIRAC_MPI_COMMAND defined by define-cores function."
-        echo "DIRAC_MPI_COMMAND=\"$NEW_DIRAC_MPI_COMMAND\"" > var_cores.env
+        echo "DIRAC_MPI_COMMAND=\"$NEW_DIRAC_MPI_COMMAND\"" >> var_cores.env
       fi
       echo "N_PROC=$N_PROC" >> var_cores.env
       echo "M=$M" >> var_cores.env

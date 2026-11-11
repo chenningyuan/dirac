@@ -19,7 +19,7 @@ coverage:
 #   Serial build for coverage 
     - !reference [.define-cores, script]
     - export DIRAC_MPI_COMMAND=''
-    - echo "DIRAC_MPI_COMMAND was changed to $DIRAC_MPI_COMMAND" (serial running)
+    - echo "DIRAC_MPI_COMMAND was changed to '$DIRAC_MPI_COMMAND' (serial run)"
     - python setup --coverage build-serial
     - cd build-serial
     - make -j $N_PROC
@@ -28,6 +28,7 @@ coverage:
     - ctest -j$N_PROC --output-on-failure -L "short|medium|long|verylong" -E "(${avoid_tests})" --timeout 3000
     - cd ..
 #   Parallel build for coverage
+    - unset DIRAC_MPI_COMMAND  # let define-cores set the MPI command (the serial part set it to '')
     - !reference [.define-cores, script]
     - python setup --mpi --coverage build-mpi
     - cd build-mpi
