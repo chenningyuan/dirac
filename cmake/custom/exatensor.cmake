@@ -292,19 +292,24 @@ if(ENABLE_EXATENSOR)
    # Collect everything in one string (also including the hardwires ones that need not be changed) and store this in a file (direct passing appears to be impossible within cmake)
    set(EXATENSOR_ENV "${EXATENSOR_WRAP} ${EXATENSOR_BUILD} ${EXATENSOR_TALSH} ${TALSH_COMPILERS} ${EXATENSOR_TOOLKIT} ${EXATENSOR_OS} ${EXATENSOR_GPUENV} ${EXATENSOR_MPIENV} ${EXATENSOR_BLAS} ${EXATENSOR_CUDA} ${EXATENSOR_ROCM} ${EXATENSOR_CUDA_ARCH} ${EXATENSOR_AMD_ARCH} ${EXATENSOR_HIP}")
    message(STATUS "The environment variables used to build ExaTensor are collected in the file ExaTensor_ENV (can be inspected/changed if necessary)")
-   file(WRITE ${PROJECT_BINARY_DIR}/ExaTensor_ENV ${EXATENSOR_ENV})
-   file(WRITE ${PROJECT_BINARY_DIR}/ExaTensor_ENV_UP "${EXATENSOR_ENV}  EXA_NO_BUILD=YES")
+   # Only touch ExaTensor_ENV when its contents change: the ExaTensor build step depends on it,
+   # and rerunning that step reinstalls all ExaTensor modules, which forces a recompilation of exacorr
+   file(WRITE ${PROJECT_BINARY_DIR}/ExaTensor_ENV.tmp ${EXATENSOR_ENV})
+   file(COPY_FILE ${PROJECT_BINARY_DIR}/ExaTensor_ENV.tmp ${PROJECT_BINARY_DIR}/ExaTensor_ENV ONLY_IF_DIFFERENT)
+   file(REMOVE ${PROJECT_BINARY_DIR}/ExaTensor_ENV.tmp ${PROJECT_BINARY_DIR}/ExaTensor_ENV_UP)
 
    ExternalProject_Add(exatensor
         PREFIX "${PROJECT_BINARY_DIR}/exatensor"
         GIT_REPOSITORY ${EXATENSOR_GIT_REPO_LOCATION}
         GIT_TAG ${EXATENSOR_GIT_HASH}
         GIT_CONFIG advice.detachedHead=false
+        UPDATE_DISCONNECTED ON  # GIT_TAG is a fixed hash: do not rerun the update (and all later steps) at every build
         CONFIGURE_COMMAND true  # currently no configure command, but this is needed for cmake to function
-        BUILD_COMMAND cd ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/ && set -a && . ${PROJECT_BINARY_DIR}/ExaTensor_ENV && set +a && make && cp ${PROJECT_BINARY_DIR}/ExaTensor_ENV_UP ${PROJECT_BINARY_DIR}/ExaTensor_ENV
+        BUILD_COMMAND cd ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/ && set -a && . ${PROJECT_BINARY_DIR}/ExaTensor_ENV && set +a && make
         INSTALL_DIR ${EXATENSOR_INSTALL_DIR}
         INSTALL_COMMAND true
         )
+   ExternalProject_Add_StepDependencies(exatensor build ${PROJECT_BINARY_DIR}/ExaTensor_ENV)
 
    set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${EXATENSOR_INSTALL_DIR}/libtalsh.a)
    if (ENABLE_MPI AND NOT EXATENSOR_TALSH)

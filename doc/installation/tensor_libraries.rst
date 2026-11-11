@@ -43,9 +43,9 @@ For TAL-SH / ExaTENSOR, it is possible to avoid fetching via the network by sett
 
 The setup for building TAL-SH / ExaTENSOR in this version of DIRAC is driven by DIRAC's CMake system but not fully integrated with it, with environment variables being passed on to the TAL-SH / ExaTENSOR Make system. 
 
-Upon starting the build for TAL-SH / ExaTENSOR, the file  ``Exatensor_ENV`` containing TAL-SH / ExaTENSOR environment variables is created by DIRAC's CMake system. The file ``Exatensor_ENV_UP`` is also created as a backup of the last configuration, as ``Exatensor_ENV`` is re-generated and overwritten at each CMake configuration. The values of the variables in ``Exatensor_ENV`` can be changed (e.g. ``BUILD_TYPE=OPT`` to ``BUILD_TYPE=DEV`` to toggle debug flags on), or valid variables in the the ExaTENSOR build system (found under ``exatensor/src/exatensor`` in the build directory) can be added, for additional customization.
+Upon starting the build for TAL-SH / ExaTENSOR, the file  ``ExaTensor_ENV`` containing TAL-SH / ExaTENSOR environment variables is created by DIRAC's CMake system. At each CMake configuration ``ExaTensor_ENV`` is re-generated, but it is only overwritten if its contents change, and TAL-SH / ExaTENSOR is rebuilt (followed by a recompilation of ExaCorr) only when ``ExaTensor_ENV`` has been modified. The values of the variables in ``ExaTensor_ENV`` can be changed (e.g. ``BUILD_TYPE=OPT`` to ``BUILD_TYPE=DEV`` to toggle debug flags on), or valid variables in the the ExaTENSOR build system (found under ``exatensor/src/exatensor`` in the build directory) can be added, for additional customization.
 
-For example, the contents of ``Exatensor_ENV`` for a Mac OSX build with GNU compilers and the OpenBLAS library could look like the following::
+For example, the contents of ``ExaTensor_ENV`` for a Mac OSX build with GNU compilers and the OpenBLAS library could look like the following::
 
     WRAP=NOWRAP              # WRAP: compile with the Cray compiler wrappers ftn/cc/CC 
     BUILD_TYPE=OPT           # optimization configuration
@@ -59,24 +59,23 @@ For example, the contents of ``Exatensor_ENV`` for a Mac OSX build with GNU comp
     GPU_CUDA=NOCUDA          # CPU-only configuration
     MPILIB=NONE              # no MPI 
     BLASLIB=OPENBLAS 
-    PATH_BLAS_OPENBLAS=/opt/local/lib       
-    EXA_NO_BUILD=YES         # skips building ExaTENSOR and TAL-SH
+    PATH_BLAS_OPENBLAS=/opt/local/lib
 
-**Note** The variable ``EXA_NO_BUILD=YES`` is added to ``Exatensor_ENV`` at the end of complete build, so if one wishes to change any configuration variables and recompile, this has to be removed.
+**Note** After editing ``ExaTensor_ENV`` by hand, running ``make`` rebuilds TAL-SH / ExaTENSOR with the new settings. Hand edits are, however, overwritten at the next CMake configuration (which then triggers another rebuild).
 
-Before configuring, the environment variable ``EXA_GPUS`` should be set in order to enable GPU support for TAL-SH or ExaTENSOR.
+Before configuring, the environment variable ``EXA_GPU`` should be set in order to enable GPU support for TAL-SH or ExaTENSOR.
 
 For NVIDIA GPUs::
 
-    export EXA_GPUS=NVIDIA
+    export EXA_GPU=NVIDIA
 
-It is important for NVIDIA architectures to see whether the ``GPU_SM_ARCH`` is correctly set in ``Exatensor_ENV``. Examples are ``GPU_SM_ARCH=70`` for V100 (sm_70) GPUs, ``GPU_SM_ARCH=80`` for A100 GPUs (sm_80), and ``GPU_SM_ARCH=90`` for H100 GPUs (sm_90). For additional information please consult the NVIDIA documentation, or `other online resources <https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/>`__. 
+It is important for NVIDIA architectures to see whether the ``GPU_SM_ARCH`` is correctly set in ``ExaTensor_ENV``. Examples are ``GPU_SM_ARCH=70`` for V100 (sm_70) GPUs, ``GPU_SM_ARCH=80`` for A100 GPUs (sm_80), and ``GPU_SM_ARCH=90`` for H100 GPUs (sm_90). For additional information please consult the NVIDIA documentation, or `other online resources <https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/>`__. 
 
 For AMD GPUs::
 
-    export EXA_GPUS=AMD
+    export EXA_GPU=AMD
 
-For AMD GPUs, ``Exatensor_ENV`` will contain ``GPU_CUDA=CUDA`` and ``USE_HIP=YES``. The ``GPU_SM_ARCH`` will be disregarded if present, and the build system should detect the target architecture from environment variables; if not, the GPU type can be passed on via the environment variable ``HIP_TARGET``. 
+For AMD GPUs, ``ExaTensor_ENV`` will contain ``GPU_CUDA=CUDA`` and ``USE_HIP=YES``. The ``GPU_SM_ARCH`` will be disregarded if present, and the build system should detect the target architecture from environment variables; if not, the GPU type can be passed on via the environment variable ``HIP_TARGET``. 
 
 MPI builds of ExaTENSOR
 ~~~~~~~~~~~~~~~~~~~~~~~
