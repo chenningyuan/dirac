@@ -17,24 +17,25 @@ coverage:
     - !reference [.restrict-UCX, script]
     - export avoid_tests="f90mod"
 #   Serial build for coverage 
-    - export DIRAC_MPI_COMMAND=''
     - !reference [.define-cores, script]
+    - export DIRAC_MPI_COMMAND=''
+    - echo "DIRAC_MPI_COMMAND was changed to '$DIRAC_MPI_COMMAND' (serial run)"
     - python setup --coverage build-serial
     - cd build-serial
     - make -j $N_PROC
     - ldd dirac.x    
-    - echo "Running ctest serially with $M jobs"
+    - echo "Running ctest serially with $N_PROC jobs"
     - ctest -j$N_PROC --output-on-failure -L "short|medium|long|verylong" -E "(${avoid_tests})" --timeout 3000
     - cd ..
 #   Parallel build for coverage
-    - export DIRAC_MPI_COMMAND='mpiexec -n 1' #Faster and more reliable for coverage
+    - unset DIRAC_MPI_COMMAND  # let define-cores set the MPI command (the serial part set it to '')
     - !reference [.define-cores, script]
     - python setup --mpi --coverage build-mpi
     - cd build-mpi
     - make -j $N_PROC
     - ldd dirac.x    
-    - echo "Running ctest in parallel with $N_PROC jobs"
-    - ctest -j$N_PROC --output-on-failure -L "short|medium|long|verylong" -E "(${avoid_tests})" --timeout 3000
+    - echo "Running ctest in parallel with $M jobs"
+    - ctest -j$M --output-on-failure -L "short|medium|long|verylong" -E "(${avoid_tests})" --timeout 3000
     - cd ..
     - gcovr -r . build-serial build-mpi --merge-mode-functions=merge-use-line-min --gcov-ignore-errors=no_working_dir_found --filter '^src/.*' --filter '^utils/.*' --txt --print-summary -o coverage.txt
     - echo "Coverage report is available at coverage.txt"
