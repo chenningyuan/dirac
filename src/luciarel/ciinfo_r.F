@@ -1226,13 +1226,12 @@ C
       IDUM = 0
       call memmar(KDUM,IDUM,'FLUSM ',KDUM,'GET_3B')
 C
-      IF(CIRUN /= 'REFVEC')THEN
+      IF(CIRUN /= 'REFVEC' .AND. NTEST > 0)THEN
       WRITE(LUWRT,'(/3X,A)') 
      & '=============================================================='
       WRITE(LUWRT,'(3X,A)') 
      & '==> allocation of two CI vectors and one resolution vector <=='
-      write(LUWRT,*) ' '
-      WRITE(LUWRT,'(3X,A,1X,I15)')
+      WRITE(LUWRT,'(/3X,A,1X,I15)')
      & 'current available free memory in double words:',LMEMFREE_PTR
       WRITE(LUWRT,'(3X,A,1X,I15)')
      & 'allocate two CI vectors each of length:       ',LBLOCK

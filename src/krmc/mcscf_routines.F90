@@ -705,7 +705,7 @@ contains
   !           Write to the file input information for unit testing               !
   !------------------------------------------------------------------------------!
       icount = icount + 1
-      write(6,*) 'M2DNZ390',psymm,ksymm,tsymm,icount
+      if (iprint .gt. 1) write(lupri,*) 'M2DNZ390',psymm,ksymm,tsymm,icount
 
 #ifdef CREATE_UNIT_TEST_M2DNZ390
       call set_suffix(psymm)
