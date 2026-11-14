@@ -62,27 +62,37 @@ file(GLOB atomfrag_files "${ROSE_PYTHON_SCRIPTS_PATH}/atomfrag_*.py")
 file(GLOB molfrag_files "${ROSE_PYTHON_SCRIPTS_PATH}/molfrag_*.py")
 file(GLOB groupfrag_files "${ROSE_PYTHON_SCRIPTS_PATH}/groupfrag_*.py")
 
-# Execute pip if python is found
-execute_process(
-  COMMAND ${PYTHON_INTERPRETER} -m pip install --user runtest --upgrade
-  COMMAND ${PYTHON_INTERPRETER} -m pip install --user -e ${ROSE_PYTHON_SCRIPTS_PATH}/genibo/ --upgrade
-  COMMAND ${PYTHON_INTERPRETER} -m pip install --user -e ${ROSE_ASE_PATH}[testing] --upgrade
-  RESULT_VARIABLE INSTALLATION_CHECK_RESULT
-)
-
-if(NOT INSTALLATION_CHECK_RESULT)
-  message("\n Runtest and genibo (python_scripts/genibo/) python packages installed/upgraded successfully!\n")
-else()  
+# Execute pip if python is found.
+#
+# Each package gets its own execute_process call. Several COMMAND entries in a
+# single call are not run in sequence: CMake chains them into a pipeline, so the
+# output of all but the last disappears into a pipe and RESULT_VARIABLE reports
+# only the exit status of the last one. A failing install then goes unnoticed
+# until something tries to import the package.
+function(rose_pip_install)
+  set(pip_args ${ARGN})
   execute_process(
-    COMMAND ${PYTHON_INTERPRETER} -m pip install runtest --upgrade
-    COMMAND ${PYTHON_INTERPRETER} -m pip install -e ${ROSE_PYTHON_SCRIPTS_PATH}/genibo/ --upgrade
-    COMMAND ${PYTHON_INTERPRETER} -m pip install -e ${ROSE_ASE_PATH}[testing] --upgrade
-    RESULT_VARIABLE INSTALLATION_CHECK_RESULT_NO_USER
+    COMMAND ${PYTHON_INTERPRETER} -m pip install --user ${pip_args} --upgrade
+    RESULT_VARIABLE pip_user_result
   )
-  if (INSTALLATION_CHECK_RESULT_NO_USER)
-    message(FATAL_ERROR "Failed to install runtest and genibo (python_scripts/genibo/) python packages. Check python interpreter and pip.")
+  if(NOT pip_user_result EQUAL 0)
+    message(STATUS "pip install --user ${pip_args} failed, retrying without --user")
+    execute_process(
+      COMMAND ${PYTHON_INTERPRETER} -m pip install ${pip_args} --upgrade
+      RESULT_VARIABLE pip_plain_result
+    )
+    if(NOT pip_plain_result EQUAL 0)
+      message(FATAL_ERROR
+        "Failed to pip install ${pip_args}. Check the python interpreter and pip.")
+    endif()
   endif()
-endif() 
+endfunction()
+
+rose_pip_install(runtest)
+rose_pip_install(-e ${ROSE_PYTHON_SCRIPTS_PATH}/genibo/)
+rose_pip_install(-e ${ROSE_ASE_PATH}[testing])
+
+message("\n Runtest and genibo (python_scripts/genibo/) python packages installed/upgraded successfully!\n")
 
 # Copying python files to build directory
 message("Copying atomfrag and molfrag python scripts to ${CMAKE_CURRENT_BINARY_DIR} directory...\n")
@@ -99,8 +109,14 @@ endif()
 #### final of Updates from the original ROSE CMakeLists.txt
 
 
+# Tests are launched with the bare name python3, not with ${PYTHON_INTERPRETER}.
+# The latter is an absolute path resolved at configure time and baked into
+# CTestTestfile.cmake, which pins the tests to whatever environment happened to
+# be active when cmake ran. Resolving python3 through PATH at test time instead
+# means the tests follow the environment that is active when they are run, and
+# runtest_config.py then hands that same interpreter to the launcher it spawns.
 macro(rose_test _name _label)
-    add_test(${_name} ${PYTHON_INTERPRETER} ${PROJECT_SOURCE_DIR}/test/${_name}/test --binary-dir=${PROJECT_BINARY_DIR} --work-dir=${PROJECT_BINARY_DIR}/test/${_name} --verbose)
+    add_test(${_name} python3 ${PROJECT_SOURCE_DIR}/test/${_name}/test --binary-dir=${PROJECT_BINARY_DIR} --work-dir=${PROJECT_BINARY_DIR}/test/${_name} --verbose)
     if(NOT "${_label}" STREQUAL "")
       set_tests_properties(${_name} PROPERTIES LABELS "${_label}")
     endif()
@@ -123,12 +139,12 @@ rose_test(ams_molfrags "ams" "")
 # adding ase_rose tests
 set(ASE_WORKDIR ${PROJECT_SOURCE_DIR}/ase_rose/tests/)
 add_test(NAME rose_ase_pyscf_tests
-         COMMAND python -m pytest -v
+         COMMAND python3 -m pytest -v
           ${PROJECT_SOURCE_DIR}/ase_rose/tests/test_pyscf_water.py
           ${PROJECT_SOURCE_DIR}/ase_rose/tests/test_pyscf_water-ammonia.py
 )
 add_test(NAME rose_ase_psi4_tests
-         COMMAND python -m pytest -v
+         COMMAND python3 -m pytest -v
           ${PROJECT_SOURCE_DIR}/ase_rose/tests/test_psi4_water-ammonia.py
 )
 

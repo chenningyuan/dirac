@@ -498,7 +498,7 @@ module rose_mo
                M%coeff_r(:,offset:offset+nmo_act-1,:) = coeff
             case (3) ! complex unrestricted
                if (n /= 4) stop "inconsistency in call to fill_mo_basis"
-               M%coeff_c(:,offset:offset+nmo_act-1,:) = cmplx(coeff(:,:,1:2),coeff(:,:,3:4))
+               M%coeff_c(:,offset:offset+nmo_act-1,:) = dcmplx(coeff(:,:,1:2),coeff(:,:,3:4))
             case (4) ! quaternion restricted
                if (n /= 4) stop "inconsistency in call to fill_mo_basis"
                M%coeff_q(:,offset:offset+nmo_act-1,:) = coeff

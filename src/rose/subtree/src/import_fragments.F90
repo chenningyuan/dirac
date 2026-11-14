@@ -205,7 +205,7 @@ contains
               write(luout,*) "####################################"
               write(luout,*) "#     Recanonization  Groups       #"
               write(luout,*) "####################################"
-              write(luout,*)
+              write(luout,'(A)') " "
               write(luout,'(A,I0,A,I0,A)') ' ',n_fragments,' IAO fragments collected into ',n_groups,' groups'
               do ig = 1, n_groups
                  write(luout,'(A,I3,A,A)') ' group ',ig,' : ',trim(group_name(ig))
@@ -602,19 +602,19 @@ contains
                  nvale = 2
             case (3:4)       ! Li,Be
                  ncore = 2
-                 nvale = 2   ! better changed into 8, but keeping for the moment to let tests pass
+                 nvale = 8   ! valence shell ns np (8 spinors): the np shell is needed for the valence virtuals
             case (5:10)      ! B..Ne
                  ncore = 2
                  nvale = 8
             case (11:12)     ! Na,Mg
                  ncore = 10
-                 nvale = 2
+                 nvale = 8   ! 3s3p
             case (13:18)     ! Al..Ar
                  ncore = 10
                  nvale = 8
             case (19:20)     ! K,Ca
                  ncore = 18
-                 nvale = 2
+                 nvale = 8   ! 4s4p
             case (21:30)     ! Sc..Zn
                  ncore = 18
                  nvale = 12
@@ -623,7 +623,7 @@ contains
                  nvale = 18
             case (37:38)     ! Rb,Sr
                  ncore = 36
-                 nvale = 2
+                 nvale = 8   ! 5s5p
             case (39:48)     ! Y..Cd
                  ncore = 36
                  nvale = 12
@@ -632,7 +632,7 @@ contains
                  nvale = 18
             case (55:56)     ! Cs,Ba
                  ncore = 54
-                 nvale = 2
+                 nvale = 8   ! 6s6p
             case (57:70)     ! La..Yb
                  ncore = 54
                  nvale = 16  ! assuming that we will enforce 4f rather than 5d occupation in the atomic scf
@@ -644,7 +644,7 @@ contains
                  nvale = 18
             case (87:88)     ! Fr,Ra
                  ncore = 86 
-                 nvale = 2
+                 nvale = 8   ! 7s7p
             case (89:102)    ! Ac,RNo
                  ncore = 86 
                  nvale = 16  ! assuming that we will enforce 5f rather than 6d occupation in the atomic scf
