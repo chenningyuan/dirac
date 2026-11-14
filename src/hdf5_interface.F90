@@ -96,6 +96,10 @@ contains
 	      molecule%znumber = sum(nuc_charge)
        end if
 
+!      datafile is local to this routine, so close it here rather than leaving
+!      the handle for HDF5 to clean up from its atexit handler.
+       call lab_close (datafile)
+
     end subroutine read_hdf5
 
     subroutine read_aomobasis (datafile,ierr,ao_label,ao_basis,mo_label,spinors)
@@ -136,6 +140,9 @@ contains
        character*(:), allocatable :: C1
 
        ierr = NOERROR
+       n_mo = 0
+       n_po = 0
+       n_basis = 0
 
        ! read AO basis information
        call read_ao_basis(datafile,ierr,ao_label,ao_basis,small_component=.false.)
@@ -623,6 +630,8 @@ contains
                              rdata=reshape(transpose(RIBO_Fock(:,:,1)),(/nribo*nribo/)))
           end if
        end if
+
+       call lab_close (datafile)
 
     end subroutine replace_mobasis
 

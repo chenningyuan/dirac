@@ -5,7 +5,7 @@ def configure(options, input_files, extra_args):
     """
 
     from os import path
-    from sys import platform
+    from sys import executable, platform
 
     (program, mol, inp) = input_files
 
@@ -27,7 +27,11 @@ def configure(options, input_files, extra_args):
     launcher_full_path = path.normpath(path.join(options.binary_dir, launcher))
 
     command = []
-    command.append('python3 {0}'.format(launcher_full_path))
+    # Use the interpreter that is running this driver rather than whatever
+    # 'python3' happens to resolve to on PATH. Building with one conda
+    # environment active and testing with another otherwise gives a
+    # ModuleNotFoundError for genibo_MOcoeff in the launcher subprocess.
+    command.append('{0} {1}'.format(executable, launcher_full_path))
     command.append('{0} {1}'.format(mol, inp))
     if extra_args is not None:
         command.append(extra_args)

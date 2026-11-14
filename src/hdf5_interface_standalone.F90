@@ -51,6 +51,8 @@ contains
 
        call lab_write (datafile,mo_label//'shell_id',idata=spinors%shell_id)
 
+       call lab_close (datafile)
+
     end procedure write_to_checkpoint
 
 end submodule hdf5_interface_standalone

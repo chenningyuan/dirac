@@ -150,19 +150,19 @@ def atom_minbas_size(atom_number):
         nvale = 2
     elif z in range(3,4+1): # Li, Be
         ncore = 2
-        nvale = 2
+        nvale = 8 # valence shell ns np (8 spinors): the np shell is needed for the valence virtuals
     elif z in range(5,10+1): # B..Ne
         ncore = 2
         nvale = 8
     elif z in range(11,12+1): # Na,Mg
         ncore = 10
-        nvale = 2
+        nvale = 8 # 3s3p
     elif z in range(13,18+1): # Al..Ar
         ncore = 10
         nvale = 8
     elif z in range(19,20+1): # K,Ca
         ncore = 18
-        nvale = 2
+        nvale = 8 # 4s4p
     elif z in range(21,30+1): # Sc..Zn
         ncore = 18
         nvale = 12
@@ -171,7 +171,7 @@ def atom_minbas_size(atom_number):
         nvale = 18
     elif z in range(37,38+1): # Rb,Sr
         ncore = 36
-        nvale = 2
+        nvale = 8 # 5s5p
     elif z in range(39,48+1): # Y..Cd
         ncore = 36
         nvale = 12
@@ -180,7 +180,7 @@ def atom_minbas_size(atom_number):
         nvale = 18
     elif z in range(55,56+1): # Cs,Ba
         ncore = 54
-        nvale = 2
+        nvale = 8 # 6s6p
     elif z in range(57,70+1): # La..Yb
         ncore = 54 
         nvale = 16 # assuming that we will enforce 4f rather than 5d occupation in the atomic scf
@@ -192,7 +192,7 @@ def atom_minbas_size(atom_number):
         nvale = 18 # place the 4f in the core
     elif z in range(87,88+1): # Fr,Ra
         ncore = 86
-        nvale = 2
+        nvale = 8 # 7s7p
     elif z in range(89,102+1): # Ac,RNo
         ncore = 86
         nvale = 16 # assuming that we will enforce 5f rather than 6d occupation in the atomic scf

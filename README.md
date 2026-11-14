@@ -41,30 +41,6 @@ ctest
 
 ```
 
-# INSTALL with the AMS file interface
-
-```
-export ROSEDIR=`pwd`
-export AMSBUILDNAME="auto"
-export PATH=$AMSHOME/build/$AMSBUILDNAME/lib:$AMSHOME/bin.$AMSBUILDNAME/zlib/lib:$PATH
-export PATH=$ROSEDIR/bin:$PATH
-mkdir build_withams
-cd build_withams
-cmake .. -DCMAKE_Fortran_FLAGS="-I$AMSHOME/build/libscm_base.build/$AMSBUILDNAME"
-make install
-ctest
-
-```
-
-# REQUIREMENTS FOR the AMS file interface
-
-- The ADF file interface works only with AMS2021 and later
-- Use the same compiler to compile both ROSE and AMS
-- The environment variables AMSHOME and AMSBUILDNAME should be set correctly. The former is standard,
-  when you have an AMS installation, the latter currently requires developer access and should be
-  consistent with the name you have given your build (default is "auto", change if you have defined something else).
-
-
 # INSTALL inside AMS (remove files that conflict with AMS and then use regular AMS compilation)
 
 ```

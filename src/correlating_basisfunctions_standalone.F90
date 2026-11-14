@@ -6,7 +6,7 @@ contains
 
        use correlating_functions, only: read_corrfuns
        use read_xyzfile, only: atom
-       use rose_input_data, only: correlation_basis_file
+       use rose_input_data, only: correlation_basis_file, get_corr_levels
 
        implicit none
 
@@ -15,7 +15,7 @@ contains
 
        current_atom => molecule%firstatom
        do i = 1, size(ao_basis)
-          call read_corrfuns(nint(current_atom%bascharge),current_atom%x,(/0/),ao_basis(i), &
+          call read_corrfuns(nint(current_atom%bascharge),current_atom%x,get_corr_levels(current_atom%name),ao_basis(i), &
                              trim(correlation_basis_file))
           current_atom => current_atom%next
        end do
