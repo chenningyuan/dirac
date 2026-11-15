@@ -14,6 +14,89 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
+C
+C     Field-by-field MPI broadcast of COMMON /DCLHAM/ (dcbham_mod), which
+C     was sent as one block of logicals from QED with ICOMMSIZE(I1_DCLHAM,
+C     I2_DCLHAM) elements; that count reached one element past I2_DCLHAM,
+C     so DOEFFQED was sent too (and still is). DOASHIFT was never sent.
+C
+      module dcbham_bcast_mod
+      implicit none
+      private
+#if defined (VAR_MPI)
+      public :: dcbham_bcast
+      contains
+      subroutine dcbham_bcast(ROOT)
+      use dcbham_mod
+      use interface_to_mpi, only: global_communicator
+      integer, intent(in) :: ROOT
+      call bcast_l(QED)
+      call bcast_l(ONESYS)
+      call bcast_l(FREEPJ)
+      call bcast_l(VEXTPJ)
+      call bcast_l(NOSMLV)
+      call bcast_l(URKBAL)
+      call bcast_l(LEVYLE)
+      call bcast_l(SUB_BL)
+      call bcast_l(SOLVEN)
+      call bcast_l(INERSI)
+      call bcast_l(INERSF)
+      call bcast_l(SPINFR)
+      call bcast_l(SPINFR2)
+      call bcast_l(ZORA)
+      call bcast_l(ZORA4)
+      call bcast_l(ZORASC)
+      call bcast_l(PROJEC)
+      call bcast_l(PROOWN)
+      call bcast_l(SMLV1C)
+      call bcast_l(ONECAP)
+      call bcast_l(ONECOFF)
+      call bcast_l(NOSPIN)
+      call bcast_l(BSS)
+      call bcast_l(NOPRTR)
+      call bcast_l(BLOCKD)
+      call bcast_l(YREQ1)
+      call bcast_l(DO2C4C)
+      call bcast_l(DO4C2C)
+      call bcast_l(USEDF)
+      call bcast_l(RESTFCK)
+      call bcast_l(CONT2C)
+      call bcast_l(START2C)
+      call bcast_l(GAUNT)
+      call bcast_l(ALLAMFA)
+      call bcast_l(RDSUSLLMOD)
+      call bcast_l(CAP)
+      call bcast_l(CMPEIG)
+      call bcast_l(DKH1)
+      call bcast_l(DKH2)
+      call bcast_l(NOAMFI)
+      call bcast_l(QDOTS)
+      call bcast_l(LSCALE_DFT_GAUNT)
+      call bcast_l(NOSFMU)
+      call bcast_l(TRMO4C2C)
+      call bcast_l(X2CMMF)
+      call bcast_l(X2C)
+      call bcast_l(X2C_aba)
+      call bcast_l(ECPCALC)
+      call bcast_l(MDIRAC)
+      call bcast_l(TRS_MIX)
+      call bcast_l(WRITE_Jz_MATRIX)
+      call bcast_l(NONREL)
+      call bcast_l(WRITE_K_MATRIX)
+      call bcast_l(FAKE2C)
+      call bcast_l(DOEFFQED)
+C
+      contains
+C
+      subroutine bcast_l(X)
+      logical, intent(inout) :: X
+      call interface_mpi_bcast_l0(X, 1, ROOT, global_communicator)
+      end subroutine bcast_l
+C
+      end subroutine dcbham_bcast
+#endif
+      end module dcbham_bcast_mod
+
 ! define task symbols for CALL DIRAC_PARCTL( task )
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -50,7 +133,7 @@ C***********************************************************************
 !      use dcbtra_mod, only: IPRTRA, ISAME, ISTRAT, ITRA_INTFL4, MOFILE_TRAINP, NCORE2, NO2IND, NO4IND, NOMDCINT, NOMDCINT_TRAINP, NOPAIR, NQQCLASS, PRPSYA, PRPTRA, RCORBS, TRA4_INDSTR, TRA_ANTIS, TRA_CORSTR, TRA_CORSTR2, TRA_EXACORR
 !      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
 !      use dcborb_mod, only: ICMOQ, IORB, NAOCC, NAOCCT, NAVIR, NAVIRT, NCMOTQ, NESH, NIOCC, NIOCCT, NIVIR, NIVIRT, NOCC, NORB, NORBT, NPSH
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
       use dgroup_mod, only: ATOMIC, LINEAR, NBSYM, NFSYM, NZ
       Use memory_allocator
       Use moltra_labeling
@@ -70,7 +153,6 @@ C
 #include "dcborb.h"
 
 ! until the KRMCSCF/KRMCOLD issue with IBEIG has been fixed...
-#include "dcbham.h"
       CHARACTER*24 DAYTID
       LOGICAL TOBE,TOBEK,TOBEKK,TRASAM,ACTIVE
       DIMENSION NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
@@ -1600,11 +1682,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUCOEF
       use dcbbas_mod, only: NFBAS
-!      use dcbham_mod, only: SMLV1C
+      use dcbham_mod, only: SMLV1C
       use dgroup_mod, only: FREP, NFSYM
 #include "implicit.h"
       INTEGER :: I, J
-#include "dcbham.h"
       CHARACTER*24 DAYTID
       LOGICAL TOBE,TOBEK
 C
@@ -3493,13 +3574,12 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use dgroup_mod, only: FREP, IPQTOQ, NFSYM, NZ
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0
 C
-#include "dcbham.h"
       DIMENSION NDMOQR(2,2),ICMOQR(2),KQ(2),KE(2),KIBE(2),
      &          CMO(*),FAO(*),FMO(*),WORK(*)
       DIMENSION NFMO(2,2),IFMO(2)
@@ -3671,14 +3751,13 @@ C*****************************************************************************
 !      use dcbdhf_mod, only: ESOLVE, ESOLVN, IFCKOP, IHRMOP, ISYMOP, NFMAT
       use dgroup_mod, only: FREP, IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
-!      use dcbham_mod, only: IPRSOL, SOLVEN, SPINFR
+      use dcbham_mod, only: IPRSOL, SOLVEN, SPINFR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
 #include "dcbdhf.h"
-#include "dcbham.h"
 CTOBS: Note the use of dcbdhf ! Should be generalized !!!
       LOGICAL TOBE
       DIMENSION FMO(*),NFMO(2,2),IFMO(2),FAO(*),CMO(*),Q1(*),Q2(*),
@@ -4684,7 +4763,6 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use dcbgen_mod, only: MP2ORG
 !      use dcborb_mod, only: I1_DCBORB, I2_DCBORB
-!      use dcbham_mod, only: I1_DCLHAM, I2_DCLHAM, QED
 !      use dcbtra_mod, only: IPRTRA, ISAME, NDCBTRI, NDCBTRL, NDCBTRR, SCRTRA, THROUT, TRA_ANTIS
       use comdis_mod, only: ISPCK, NSPCK
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
@@ -4697,6 +4775,7 @@ C
       use twosta_mod, only: MXHERMEM
       use interface_to_mpi
       use dgroup_bcast_mod, only: dgroup_bcast
+      use dcbham_bcast_mod, only: dcbham_bcast
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
@@ -4704,7 +4783,6 @@ C
 C
 C
 #include "dcborb.h"
-#include "dcbham.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbmp2.h"
@@ -4766,12 +4844,11 @@ C
       call interface_MPI_BCAST(NZT,1,MPARID,ICOMM)
       call interface_MPI_BCAST(N2TMT,1,MPARID,ICOMM)
 C
-C     dcbham.h
-C     --------
+C     dcbham_mod: sent field by field (module variables are not
+C     contiguous like the old COMMON /DCLHAM/)
+C     ----------
 C
-      NUMELM = ICOMMSIZE(I1_DCLHAM,I2_DCLHAM)
-      call interface_mpi_bcast_l0(QED,NUMELM,MPARID,
-     &                                global_communicator)
+      call dcbham_bcast(MPARID)
 C
 C     dgroup_mod: sent field by field (module variables are not
 C     contiguous like the old COMMON /DGROUP/)
