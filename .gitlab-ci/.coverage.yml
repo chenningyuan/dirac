@@ -30,7 +30,7 @@ coverage:
 #   Parallel build for coverage
     - unset DIRAC_MPI_COMMAND  # let define-cores set the MPI command (the serial part set it to '')
     - !reference [.define-cores, script]
-    - python setup --mpi --coverage build-mpi
+    - python setup --mpi --coverage --extra-fc-flags=-fprofile-update=single --extra-cc-flags=-fprofile-update=single --extra-cxx-flags=-fprofile-update=single build-mpi
     - cd build-mpi
     - make -j $N_PROC
     - ldd dirac.x    
