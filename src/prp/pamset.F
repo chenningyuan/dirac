@@ -27,13 +27,12 @@ C     Written by T.Saue, Sep 16 1996
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
       use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NCMOTQ, NORBT
       use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
 C
-#include "dcbham.h"
 #include "dcborb.h"
 C
       LOGICAL TOBE
@@ -107,8 +106,8 @@ C     Written by T.Saue, Sep 16 1996
 C
 C***********************************************************************
 !      use dcbdhf_mod, only: ESOLVE, ESOLVN, IFCKOP, IHRMOP, INTDEF, INTFLG, ISYMOP, NFMAT
-!      use dcbham_mod, only: IPRSOL, SOLVEN, SPINFR
 !      use dcborb_mod, only: I2ORBX, ICMOQ, IORB, N2ORBXQ, NASHT, NORB, NORBT
+      use dcbham_mod, only: IPRSOL, SOLVEN, SPINFR
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
        use dirac_cfg
        use dft_cfg
@@ -138,7 +137,6 @@ C***********************************************************************
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0, DP5 = 0.50D00,D2=2.0D0)
 C
 #include "dcbdhf.h"
-#include "dcbham.h"
 #include "dcborb.h"
       type(fde_import) :: itmp
 CTOBS: Note the use of dcbdhf ! Should be generalized !!!

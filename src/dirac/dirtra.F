@@ -1335,11 +1335,10 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use dcbham_mod, only: MC
+      use dcbham_mod, only: MC
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "dcbham.h"
 C
 C     KNFBAS = NFBAS(IFRP,0)
 C     NBAST  = NTBAS(0)
@@ -1396,7 +1395,7 @@ C
 C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ICOS, ISYMAO, MAXOPR, MAXREP, NCOS, PT
-!      use dcbham_mod, only: MC
+      use dcbham_mod, only: MC
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
@@ -1407,7 +1406,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "dcbham.h"
 C
 C     KNFBAS = NFBAS(IFRP,0)
 C     NBAST  = NTBAS(0)
@@ -3392,7 +3390,6 @@ C**********************************************************************
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D1 = 1.00D00, D0 = 0.00D00
-!#include "dcbham.h"
 #include "dcborb.h"
 
             DIMENSION SMOAO(*),TMAT(*),UMOMO(*)
@@ -3444,7 +3441,7 @@ C        Modified by T.Saue Aug 2000
 C        Last revision: Jan 2 1998
 C
 C***********************************************************************
-!      use dcbham_mod, only: SSMTRC
+      use dcbham_mod, only: SSMTRC
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, I2TMT, N2BBASX, NFBAS, NTBAS, NZT
       use priunit_mod, only: LUPRI
@@ -3453,7 +3450,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D1 = 1.00D00, D0 = 0.00D00
-#include "dcbham.h"
 #include "dcborb.h"
 C
       DIMENSION SMOAO(*),TMAT(*),WORK(*)
@@ -3531,14 +3527,13 @@ C***********************************************************************
       use dcbgen_mod, only: TWOCOMPBSS
       use dcbbas_mod, only: I2BASX, I2TMT, N2BBASX, NFBAS, NTBAS, NZT
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
-!      use dcbham_mod, only: BSS, SSMTRC, X2C
+      use dcbham_mod, only: BSS, SSMTRC, X2C
 !      use dcbdhf_mod, only: NTMO
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D1 = 1.00D00, D0 = 0.00D00
 #include "dcbdhf.h"
-#include "dcbham.h"
 #include "dcborb.h"
 C
       DIMENSION SAOMO(*),TMAT(*),WORK(*)

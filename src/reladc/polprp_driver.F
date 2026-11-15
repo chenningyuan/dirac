@@ -28,7 +28,7 @@
       use dirac_partask_mod, only: POLPRP_PAR, RELEASE_NODES
       use priunit_mod, only: LUCMD, LUPRI
       use dgroup_mod, only: NZ
-!      use dcbham_mod, only: CAP, LEVYLE, SPINFR
+      use dcbham_mod, only: CAP, LEVYLE, SPINFR
       use dcbgen_mod, only: PARCAL
 !      use dcbtra_mod, only: ISTRAT
       use infpar_mod, only: NUMNOD
@@ -40,7 +40,6 @@
       use interface_to_mpi
 #include "implicit.h"
       INTEGER :: I
-#include "dcbham.h"
 !#include "dcbpsi.h"
 #include "../moltra/dcbtra.h"
 #include "../relccsd/ccpar.inc"
@@ -154,7 +153,6 @@
       use interface_to_mpi
 
 #include "implicit.h"
-!#include "dcbham.h"
 #include "../moltra/dcbtra.h"
 #if defined (VAR_MPI)
       integer istat(df_mpi_status_size)
@@ -258,6 +256,7 @@ C
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE POLPRP_MAIN (IN123,IW123,CA,INTFCE)
 
+      use dcbham_mod, only: X2CMMF
       use memory_allocator
       use interface_to_mpi
       use polprp_cfg
@@ -283,7 +282,6 @@ C
 #include "../relccsd/complex.inc"
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/waio.h"
-#include "dcbham.h"
 !
 !---------------Local variables--------------------------------------
 !

@@ -148,9 +148,6 @@ C     only DSHELL(*,1) used for Dalton
      &          JCENTC(*), NCENTC(*), SIGNC(3,*),GEXP(*),
      &          RLMINT(*), RLMTAB(*), FCM(*), TLMD(*), LMNO(*)
 C
-#ifdef PRG_DIRAC
-!#include "dcbham.h"
-#endif 
       ITRI(I,J) = MAX(I,J)*(MAX(I,J) - 1)/2 + MIN(I,J)
 #ifdef PRG_DIRAC
 C     Element (I,J,IZ) in full quaternion matrix

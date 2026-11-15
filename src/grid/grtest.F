@@ -24,7 +24,7 @@ C     Modified for grid testing by Olav Fossgaard July 2002.           C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-!      use dcbham_mod, only: IPRHAM
+      use dcbham_mod, only: IPRHAM
       use inforb_mod, only: NBAST
       use dft_cfg
       use memory_allocator
@@ -34,7 +34,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
  
       REAL(dp), PARAMETER :: DP5 = 0.5D0
 
-#include "dcbham.h"
 
       real(8), allocatable :: smat(:)
       real(8), allocatable :: gao(:)
@@ -92,7 +91,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use dcbibt_mod, only: JGET
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
-!      use dcbham_mod, only: LEVYLE, MC, SSMTRC
+      use dcbham_mod, only: LEVYLE, MC, SSMTRC
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NFBAS, NTBAS
       use dgroup_mod, only: NFSYM
       use maxorb_mod, only: MXCORB
@@ -117,7 +116,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DOUBLE PRECISION ERRAV,ERRAB,RMS,ERRMX,MAXS,MAXP,MAXD,MAXF,
      &     RERRAV,RERRAB,RERRMX,SMATDF, SMATAN, SMATFR
 
-#include "dcbham.h"
 #include "dcblab.h"
 
       DIMENSION SMAT(NTBAS(0),NTBAS(0),2),ICLAB(NTBAS(0))
@@ -527,7 +525,7 @@ C     Written by T.Saue and T.Helgaker                                 C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-!      use dcbham_mod, only: MC
+      use dcbham_mod, only: MC
       use dgroup_mod, only: NBSYM
       use dcbbas_mod, only: IBBAS, NBBAS, NTBAS
       use kinds_mod, only: dp
@@ -536,7 +534,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0
 
-#include "dcbham.h"
 
       DIMENSION GAO(NTBAS(0)),EXCMAT(NTBAS(0),NTBAS(0))
       

@@ -135,7 +135,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUKRMC
-!      use dcbham_mod, only: HFXFAC, HFXMU
+      use dcbham_mod, only: HFXFAC, HFXMU
 !      use dcborb_mod, only: NORBT
 !      use dcbopt_mod, only: IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ITRINT, IPROPT, JTRLVL, KZCONF, NZCONF, NZCONFQ, OPT_CNVINT, OPT_INTTYP, OPT_NOPFQ
 !      use dcbesr_mod, only: IPRESR, THRPCI_ESR, THR_CIESR, THR_CVEC_ESR, USE_KRAMERS_CONJ
@@ -150,7 +150,6 @@ C
 C dcbham.h : HFXFAC, HFXMU
 C dcbesr.h : THR_CIESR, THR_CVEC_ESR
 C dcbgascip.h : IMK2(), NMK2(), MINMK2, MAXMK2
-#include "dcbham.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dcbesr.h"

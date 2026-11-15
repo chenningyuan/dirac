@@ -361,11 +361,10 @@ C
 C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
       use dgroup_mod, only: IPQTOQ, JBTOF, LINEAR, NBSYM, NZ
 #include "implicit.h"
       INTEGER :: I
-#include "dcbham.h"
       INTEGER NSTR3(2),NSTR4(2)
       DIMENSION FMAT(NKL,NZ,NZ,*)
       DIMENSION IREPIJB(2),IREPKLB(2,NKL)

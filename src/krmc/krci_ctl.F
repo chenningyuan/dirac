@@ -62,7 +62,7 @@ C***********************************************************************
 !      use krciprop_mod, only: DODIPMOM_KRCI, DOEEDM_KRCI, DOENSPS_KRCI, DOGENP_KRCI, DOJZEXP, DOMHYP_KRCI, DONMQM_KRCI, DOOSCILLST, DOPROP_KRCI, ISYMOPPRP_KRCI, LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI, RUNXPROP, VKRCI_NUCMAGMOM, VKRCI_NUCSPIN, XREPEIG
 !      use dcborb_mod, only: MXGAS
 !      use dcbkrci_mod, only: CHCKPT_KRCI, CINT_REORD_KRCI, CINT_SPLIT_KRCI, CRDFO_MAT_KRCI, CSHMEMO_KRCI, CUSE_PBLFL_KRCI, CWRTFO_MAT_KRCI, DKRCI_CNVINT, DKRCI_THRECI, DKRCI_THRGCI, DKRCI_THRPCI, DOMCANA_KRCI, FCIDUMP_KRCI, IANACI_KRCI, IDOPARIO_KRCI, IKRCI_INTBUF, IKRCI_INTDEF, IKRCI_INTFLG, IKRCI_ITRINT, IKRCI_MEMFAC, IKRCI_SVRONO, IPRKRCI, IRESTRK_KRCI, KRCI_CIPROGRAM, KRCI_UCIBOS, KTRLVL_KRCI, LOWSORT_KRCI, MAXCIT_KRCI, MAX_NKRCI_MAX_SYM, MXCIV_KRCI, NATOLCR_KRCI, NKRCIAELEC, NKRCIASH, NKRCIFRO, NKRCIGAS, NKRCIGSH, NKRCIGSP, NKRCIISH, NKRCIPSH, NKRCISSH, NKRCI_CIROOTS, NKRCI_MAXMK2, NKRCI_MAX_SYM, NKRCI_MINMK2, NKRCI_MK2DEL, NKRCI_MK2REF, NKRCI_SELOM, NOMEGASEL_STATENR, SAVE_REORDERED_NOS_KRCI, STATE_SELECT_KRCI, TRANATO_KRCI, XPSINTERFACE_KRCI
-!      use dcbham_mod, only: LEVYLE, SPINFR, ZORA, ZORA4
+      use dcbham_mod, only: LEVYLE, SPINFR, ZORA, ZORA4
       use dgroup_mod, only: ATOMIC, ITERSEOUT, LINEAR, NBSYM, NFSYM, NZ
       use pgroup_mod, only: REP
       use symmetry_setup_krci
@@ -85,7 +85,6 @@ C
 #include "krciprop.h"
 #include "dcborb.h"
 #include "dcbkrci.h"
-#include "dcbham.h"
 C
       SAVE SET
       DATA TABLE /'.MAX CI','.OPERAT','.RSTRCI','.ANALYZ','.CIROOT',
@@ -1466,7 +1465,7 @@ C***********************************************************************
       use dcbgen_mod, only: DOLVC, LUKRM3, LUKRM5
 !      use dcbkrci_mod, only: DKRCI_THRGCI, NKRCI_CIROOTS, NKRCI_MAX_SYM, XPSINTERFACE_KRCI
 !      use krciprop_mod, only: DOPROP_KRCI, RUNXPROP, XREPEIG
-!      use dcbham_mod, only: INTV1C, ONECAP
+      use dcbham_mod, only: INTV1C, ONECAP
       use frame_mod, only: CORRLV
       use memory_allocator
       use symmetry_setup_krci, only: orbsymVEC
@@ -1483,7 +1482,6 @@ C
 #include "dcbopt.h"
 #include "dcbkrci.h"
 #include "krciprop.h"
-#include "dcbham.h"
 !frame.h needed for CORRLV for LVCORR
 C
       LOGICAL   EX, FILEOPEN
@@ -1972,12 +1970,11 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUKRMC
-!      use dcbham_mod, only: LEVYLE, SPINFR
+      use dcbham_mod, only: LEVYLE, SPINFR
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NNASHX, NORBT
       use dgroup_mod, only: LINEAR, NZ, NZ_IN_CI
 #include "implicit.h"
 C
-#include "dcbham.h"
 #include "dcborb.h"
 C
       DIMENSION WORK(*), CMO(*)

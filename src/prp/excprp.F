@@ -57,12 +57,11 @@ C***********************************************************************
       use dgroup_mod, only: NBSYM, NZ
 !      use dcborb_mod, only: NCMOTQ
       use dcbbas_mod, only: NTBAS
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
 #include "implicit.h"
 #include "dcbxpr.h"
 #include "dcbxqr.h"
 #include "dcborb.h"
-#include "dcbham.h"
 C
       INTEGER LUCMO
       PARAMETER ( LUCMO = 22 )
@@ -654,7 +653,6 @@ C***********************************************************************
       INTEGER :: I, J
 !#include "dcbxpr.h"
 #include "dcbxqr.h"
-!#include "dcbham.h"
 !
       INTEGER tmomlist(5,MAXQR)
       INTEGER iop,sym1,sym2,exc1,exc2,numeqs

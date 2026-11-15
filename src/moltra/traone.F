@@ -193,7 +193,7 @@ C*****************************************************************************
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: I2ORBX, N2ORBXQ, NORBT
-!      use dcbham_mod, only: BSS, SPINFR, X2CMMF
+      use dcbham_mod, only: BSS, SPINFR, X2CMMF
 !      use dcbres_mod, only: COREDENS, NOVXC
          use dirac_cfg
       use kinds_mod, only: dp
@@ -204,7 +204,6 @@ C
 #include "dcbpsi.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
-#include "dcbham.h"
 #include "dcbres.h"
       LOGICAL TOBE
       LOGICAL ::  remove_spinfree_terms=.false.
@@ -618,7 +617,10 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NESH, NISH, NORB, NORBT
 !      use dcbdhf_mod, only: DHFERG
-!      use dcbham_mod, only: CAP, NOSFMU, SPINFR
+      use dcbham_mod, only: NOSFMU, SPINFR
+#if defined (MOD_CAP)
+      use dcbham_mod, only: CAP
+#endif
 !      use dcbtra_mod, only: IPRTRA, LUASCII, LUMLF1, NCORE2, TRA_ASCII
       use dgroup_mod, only: LINEAR, NBSYM, NFSYM, NZ
       use kinds_mod, only: dp
@@ -628,7 +630,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dcbdhf.h"
-#include "dcbham.h"
 #include "dcbtra.h"
 C
 C     NORDER gives the order of the Abelian subgroup used linear molecules. 
@@ -1311,7 +1312,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NORB, NORBT
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1319,7 +1320,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0=0.D0, DM1=-1.D0, D1 = 1.0D0
 C
 #include "dcborb.h"
-#include "dcbham.h"
 !#include "dcbtr3.h"
 C
       LOGICAL FORWARD
@@ -1453,13 +1453,12 @@ C       Linear molecules use supersymmetry (see Super_Symmetry).
 C
 C***********************************************************************
 !      use dcborb_mod, only: NORBT
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
       use dgroup_mod, only: NBSYM, NFSYM, NZ
 #include "implicit.h"
       INTEGER :: I
 C
 #include "dcborb.h"
-#include "dcbham.h"
 C
       INTEGER NDIM,IRCW,NREP,NR(NREP),NC(NREP)
       CHARACTER*(*) ROWTYP,COLTYP
@@ -1613,13 +1612,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !   one-to-one on the active orbitals of the fermion irrep.
 !------------------------------------------------------------------
 !      use dcborb_mod, only: IORB, NAOCC, NAVIR, NOCC, NORBT, NPSH
-!      use dcbham_mod, only: SPINFR
 !      use dcbtr3_mod, only: NDMOQC
+      use dcbham_mod, only: SPINFR
       use dgroup_mod, only: LINEAR, NBSYM, NFSYM
 #include "implicit.h"
       INTEGER :: I, J, K
 #include "dcborb.h"
-#include "dcbham.h"
 #include "dcbtr3.h"
    
       integer, intent(in) :: nrep

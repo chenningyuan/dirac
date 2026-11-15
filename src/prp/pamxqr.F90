@@ -29,7 +29,7 @@
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbxqr_mod, only: BQRFR, CNVXQR, CQRFR, INTXQR, IPRXQR, ITRIQR, ITRXQR, LAQROP, LBQROP, LCQROP, LQROP, MAXFQR, MAXLQR, MAXQRM, NAQROP, NBQRFR, NBQROP, NCQRFR, NCQROP, RESXQR, THCQR, XQRDIH, XQRNRM, XQR_ALLCMB, XQR_INDSTR, XQR_LEVICI, XQR_SKIPEE, XQR_SKIPEP
       use dcbgen_mod, only: INTGEN
-!      use dcbham_mod, only: BSS, FREEPJ, GAUNT, LEVYLE, VEXTPJ, X2C
+      use dcbham_mod, only: BSS, FREEPJ, GAUNT, LEVYLE, VEXTPJ, X2C
 !      use dcbprp_mod, only: DOEXCPRP, DOTPA, DOVER, DOXQR, EXCPRPTYP
       use dgroup_mod, only: NFSYM
       use kinds_mod, only: dp
@@ -37,7 +37,6 @@
       INTEGER :: I, J
 !
 #include "dcbxqr.h"
-#include "dcbham.h"
 #include "dcbprp.h"
 !#include "dcbxpr.h"
 !
@@ -459,13 +458,12 @@
 !***********************************************************************
 !      use dcbxqr_mod, only: MAXFQR, MAXLQR, MAXQR, MZYEE, MZYEP
 !      use dcborb_mod, only: NCMOTQ
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
       use dgroup_mod, only: NZ
       use dcbbas_mod, only: NTBAS
 #include "implicit.h"
 #include "dcbxqr.h"
 #include "dcborb.h"
-#include "dcbham.h"
 !
       PARAMETER ( LUCMO = 22 )
       DIMENSION RES_LR(3,MAXLQR,MAXLQR,MAXFQR),RES_QR(3,MAXQR)
@@ -3473,13 +3471,12 @@
 !
 !*****************************************************************************
 !      use dcbxqr_mod, only: BQRFR, CQRFR, IPRXQR, LAQROP, LBQROP, LCQROP, MAXLQR, NAQROP, NBQRFR, NBQROP, NCQRFR, NCQROP
-!      use dcbham_mod, only: LEVYLE
+      use dcbham_mod, only: LEVYLE
       use dcbgen_mod, only: CVAL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
 #include "dcbxqr.h"
-#include "dcbham.h"
 !
       REAL(dp), PARAMETER :: D1 = 1.0D0
       CHARACTER PNAME*16,PLABEL*8

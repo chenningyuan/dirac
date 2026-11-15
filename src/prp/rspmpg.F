@@ -38,7 +38,7 @@ C
 C***********************************************************************
 !      use dcborb_mod, only: NESH, NOCC, NPSH
 !      use dcbxlr_mod, only: ALLCMB, BFREQ, CNVXLR, INTXLR, IPRXLR, ITRILR, ITRXLR, LLRBPU, MAXLLR, MAXRM, NBFREQ, NLRAP, NLRAPT, NLRBP, NLRBPT, RESXLR, THCLR, THRCOM, TRIAB, XLRDIH, XLRNRM, XLR_INDSTR, XLR_LSFG, XLR_SKIPEE, XLR_SKIPEP, XLR_XVCFIL, XSTERN
-!      use dcbham_mod, only: BSS, FREEPJ, LEVYLE, NONREL, VEXTPJ, X2C
+      use dcbham_mod, only: BSS, FREEPJ, LEVYLE, NONREL, VEXTPJ, X2C
       use dgroup_mod, only: NFSYM
       use dcbgen_mod, only: INTGEN
       use dummy_mod, only: DUMMY
@@ -49,7 +49,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dcbxlr.h"
-#include "dcbham.h"
       dimension work(*)
       DIMENSION DMO(*)
       DIMENSION XMO(*)
@@ -645,8 +644,8 @@ C***********************************************************************
 !      use dcbxrs_mod, only: NCSIM, NESIM, NFREQ, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, STATIC
 !      use dcbxlr_mod, only: NLRAPT, NLRBPT
 !      use dcbibn_mod, only: JBENDX, JBPNDX
-!      use dcbham_mod, only: SPINFR
 !      use dcborb_mod, only: NCMOTQ, NOCC, NORB, NORBT, NPSH, NSSH
+      use dcbham_mod, only: SPINFR
       use dgroup_mod, only: NFSYM, NZ
       use dcbbas_mod, only: NTBAS
       use orbital_rotation_indices
@@ -658,7 +657,6 @@ C
 #include "dcbxrs.h"
 #include "dcbxlr.h"
 #include "dcbibn.h"
-#include "dcbham.h"
 #include "dcborb.h"
 !#include "../moltra/dcbtr3.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0

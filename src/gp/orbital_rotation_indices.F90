@@ -107,10 +107,9 @@ contains
 !  DCBHAM: QED
 !  DCBORB: IORB,NPSH,NFRO,NISH,NASH
 !
-!      use dcbham_mod, only: QED
+      use dcbham_mod, only: QED
       use dgroup_mod, only: NFSYM
       use dcbbas_mod, only: MXFBAS, N2BBASX
-#include "dcbham.h"
 !
       LOGICAL SKIPEP,SKIPEE,GAS
       CHARACTER INDSTR(3,2)*72

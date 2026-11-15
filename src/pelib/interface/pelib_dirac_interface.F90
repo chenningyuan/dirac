@@ -594,11 +594,10 @@ module pelib_dirac_interface
     end subroutine pelib_ifc_finalize
 
     subroutine pelib_ifc_fock(dmat, fmat, tot_nrg, el_nrg)
-!      use dcbham_mod, only: LEVYLE
+      use dcbham_mod, only: LEVYLE
       use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
         use pelib, only: pelib_master
         implicit none
-#include "dcbham.h"
         ! Input/output.
         real(rp), intent(in   ) :: dmat(n2bbasx)
         real(rp), intent(inout) :: fmat(n2bbasx)
@@ -645,11 +644,10 @@ module pelib_dirac_interface
     end subroutine pelib_ifc_fock
 
     subroutine pelib_ifc_energy(dmat)
-!      use dcbham_mod, only: LEVYLE
+      use dcbham_mod, only: LEVYLE
       use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
         use pelib, only: pelib_master
         implicit none
-#include "dcbham.h"
         ! Input/output.
         real(rp), dimension(n2bbasx), intent(in) :: dmat(n2bbasx)
         ! Local variables.
@@ -682,7 +680,7 @@ module pelib_dirac_interface
     subroutine pelib_ifc_response(fao, dens1, ndmat, dmat_ih_sym)
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: N2BBASXQ, NNBBASX, NTBAS
-!      use dcbham_mod, only: LEVYLE
+      use dcbham_mod, only: LEVYLE
         use pelib, only: pelib_master
         use pelib_options, only: pelib_gspol
 !       Written by : Erik Donovan Hedegrd (edh)
@@ -691,7 +689,6 @@ module pelib_dirac_interface
 !                    one index transformed fock matrix
         implicit none
 !#include "dcborb.h"
-#include "dcbham.h"
         ! Input/output.
         ! Note: dens1 set to dim. n2bbasxq, but is passed from routine GMOLITX1 with N2ORBXQ (for reasons of memory re-use) -
         integer(ip), intent(in   ) :: ndmat              ! number of b-vectors

@@ -15,9 +15,8 @@
 !dirac_copyright_end
 
       SUBROUTINE DFTSETCAM(W,BETA)
+      use dcbham_mod, only: HFXATT, HFXMU
 #include "implicit.h"
-#include "dcbham.h"
-!      use dcbham_mod, only: HFXATT, HFXMU
       HFXMU = W
       HFXATT = BETA
       END

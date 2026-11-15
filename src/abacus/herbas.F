@@ -59,6 +59,7 @@ C
       SUBROUTINE BASLIB (IQM, JCO, NUC, NRC, SEG, ALPHA, CPRIM,
      &                   CPRIMU, NBLOCK, KAOVEC, KPRIM,
      &                   Q, QEFF, DSM, UNCONT, BASNAM, BASREF, IPRBAS)
+      use dcbham_mod, only: ECPCALC, LEVYLE, NONREL
       use infpar_mod, only: MPARID, MYTID
 #ifdef PRG_DIRAC
       use aobasis_collector, only: add_aobasis2container
@@ -71,7 +72,6 @@ C
      +          ALPHA(KPRIM, KAOVEC), CPRIMU(KPRIM, KPRIM, KAOVEC),
      +          CPRIM(KPRIM,KPRIM, KAOVEC)
 ! infpar.h : MYTID, MPARID
-#include "dcbham.h"
 C*************************************************************
 C* Variable declarations:                                    *
 C*     BASNAM - A character variable that contains the name  *
@@ -321,7 +321,6 @@ C djw Feb 2005 - notation changed from 'd' to 'd-' for consistency with EMSL
 !radovan: added some nonstandard augmentation prefixes
 !         i need them to test high-order response
 !         use at own risk
-!      use dcbham_mod, only: ECPCALC, LEVYLE, NONREL
             else if (basnam(1:2) .eq. '5-') then
                iaug = 4
             else if (basnam(1:2) .eq. '6-') then

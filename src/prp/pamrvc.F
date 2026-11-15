@@ -460,8 +460,8 @@ C     Last revision Aug 2 1996 - tsaue
 C
 C***********************************************************************
 !      use dcborb_mod, only: N2ASHX, N2ASHXQ, N2ORBXQ, NASHT, NNASHX, NORBT
-!      use dcbham_mod, only: LEVYLE, SPINFR
 !      use dcbxrs_mod, only: FKRMC, IPRXRS, LSVCFG, LUBCI, NCSIM, NESIM, NOSIM, NPSIM, NZCONF, NZCONFQ, NZXOPE, NZXOPP, XRS_NOFQX, XRS_NOPFQ
+      use dcbham_mod, only: LEVYLE, SPINFR
       use dgroup_mod, only: LINEAR, NZ
       use dcbbas_mod, only: N2BBASXQ
       use dcbgen_mod, only: LUKRMC
@@ -477,7 +477,6 @@ C***********************************************************************
       DIMENSION GPOE(*),GPOP(*)
 C
 #include "dcborb.h"
-#include "dcbham.h"
 #include "dcbxrs.h"
 C
       CALL QENTER('XRSSEP')
@@ -3797,7 +3796,7 @@ C***********************************************************************
       use dgroup_mod, only: IPQTOQ, NBSYM, NFSYM, NZ, NZ_IN_CI
 !      use dcbxrs_mod, only: IPRXRS, KZCONF, NZCONF, XRS_CIPROGRAM
 !      use dcborb_mod, only: NASH, NASHT, NNASHX
-!      use dcbham_mod, only: LEVYLE, SPINFR
+      use dcbham_mod, only: LEVYLE, SPINFR
       use mcscf_routines
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3806,7 +3805,6 @@ C
 C
 #include "dcbxrs.h"
 #include "dcborb.h"
-#include "dcbham.h"
 C
       LOGICAL TSYMM
       DIMENSION WORK(*)
@@ -3917,7 +3915,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: FKRMC, IPRXRS, NOSIM, NTSIM
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
       use dcbbas_mod, only: N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: ICMOQ, NASHT, NCMOTQ, NORB, NORBT
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
@@ -3926,7 +3924,6 @@ C***********************************************************************
       INTEGER :: I
 C
 #include "dcbxrs.h"
-#include "dcbham.h"
 #include "dcborb.h"
 C
       DIMENSION FMO(*), DV(*), DVT(*)
@@ -4035,7 +4032,7 @@ C
 C***********************************************************************
 !      use dcbxrs_mod, only: INTFLG, IPRXRS, JSYMOP, JTIMOP, NCSIM, NESIM, NPSIM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NISHT, NORBT
-!      use dcbham_mod, only: IPRSOL, SOLVEN, SPINFR
+      use dcbham_mod, only: IPRSOL, SOLVEN, SPINFR
       use dgroup_mod, only: IPQTOQ, NZ
 #ifdef MOD_LAO_REARRANGED
         use london_helper
@@ -4074,7 +4071,6 @@ C***********************************************************************
 C
 #include "dcbxrs.h"
 #include "dcborb.h"
-#include "dcbham.h"
 C
 !gosia testing #include "dcbxlr.h"
       DIMENSION FMO(N2ORBXQ,*), DV(*), DVT(*), CMO(*),IBEIG(*)
@@ -4897,7 +4893,7 @@ C     Written by J. Thyssen - Nov 27 2000
 C
 C***********************************************************************
       use consts_mod, only: D0
-!      use dcbham_mod, only: NOSPIN, SPINFR
+      use dcbham_mod, only: NOSPIN, SPINFR
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBX, NOCC, NORB, NORBT, NPSH
       use dcbbas_mod, only: I2BASX, NFBAS, NTBAS
 !      use dcbxrs_mod, only: IPRXRS, JOPSY, JSYMOP, JTIMOP
@@ -4906,7 +4902,6 @@ C***********************************************************************
       INTEGER :: II
 C
 C
-#include "dcbham.h"
 #include "dcborb.h"
 #include "dcbxrs.h"
 C

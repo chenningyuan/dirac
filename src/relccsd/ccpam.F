@@ -39,7 +39,7 @@ C---------------Common Blocks--------------------------------------
 C
       use priunit_mod, only: LUCMD, LUPRI
       use dgroup_mod, only: NZ
-!      use dcbham_mod, only: CAP, LEVYLE, SPINFR
+      use dcbham_mod, only: CAP, LEVYLE, SPINFR
 !      use dcbpsi_mod, only: DOMP2NO
 !      use dcbmp2no_mod, only: IAOMOSCHEME, MP2_DENRUN, RUN_CCMOD
 #if defined (VAR_MPI)
@@ -51,7 +51,6 @@ C
 
 #include "implicit.h"
       INTEGER :: I
-#include "dcbham.h"
 #include "dcbpsi.h"
 #include "dcbmp2no.h"
 #include "ccpar.inc"

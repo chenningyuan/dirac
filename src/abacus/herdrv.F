@@ -21,6 +21,9 @@ C  /* Deck herinp */
 C
 C --- General Input for HERMIT ---
 C
+#ifdef PRG_DIRAC
+      use dcbham_mod, only: ECPCALC, NONREL
+#endif
 #ifndef PRG_DIRAC
       use gnrinf_mod, only: DIRCAL, HRINPC, IPRUSR, RELCAL
 #endif
@@ -48,7 +51,6 @@ C
 C
 #ifdef PRG_DIRAC
 ! dcbham.h : ECPCALC, NONREL
-#include "dcbham.h"
 #endif
 C
 C

@@ -336,6 +336,9 @@ C  /* Deck twolop */
      &                  ADISTR,I2TYP,ICEDIF,SCREEN,
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,GENCNT)
 C
+#ifdef PRG_DIRAC
+      use dcbham_mod, only: HFXFAC, LSCALE_DFT_GAUNT, ONECAP
+#endif
 #ifndef PRG_DIRAC
       use energy_mod, only: GRADEE, GRADFS, GRADKE, GRADNA, GRADNN
 #endif
@@ -362,9 +365,6 @@ C
       DIMENSION DMAT(*), FMAT(*), GMAT(*), IREPDM(*), IFCTYP(*),
      &        INDHSQ(*), IODDHR(*), INDHER(*), GABRAO(*),
      &        DMRAO(*),DMRSO(*),DINTSKP(*),WORK(LWORK)
-#ifdef PRG_DIRAC
-#include "dcbham.h"
-#endif
 C
       CALL QENTER('TWOLOP')
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWOLOP','*',103)
@@ -991,7 +991,9 @@ C  /* Deck twodis */
      &                INDHER,INDHSQ,IODDHR,IFCTYP,ADISTR,I2TYP,
      &                RELCAL,GENCNT)
 C
-!      use dcbham_mod, only: IF, ONECAP
+#ifdef PRG_DIRAC
+      use dcbham_mod, only: ONECAP
+#endif
       use blocks_mod
       use comdis_mod, only: ISHLA, ISHLB
       use twocom_mod
@@ -1008,9 +1010,6 @@ C
       DIMENSION DMAT(*), FMAT(*), GMAT(*), IFCTYP(*),
      &      GABRAO(*),DMRAO(NSYMBL,NSYMBL,*),DINTSKP(*),
      &      INDX(2,*), INDXAB(*), INDHSQ(*), IODDHR(*), WORK(LWORK)
-#ifdef PRG_DIRAC
-#include "dcbham.h"
-#endif
 C
       CALL QENTER('TWODIS')
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWODIS','*',103)
@@ -1096,6 +1095,9 @@ C  /* Deck dislop */
      &                  SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,ADISTR,
      &                  I2TYP,INDX,INDXAB,GENCNT)
 C
+#ifdef PRG_DIRAC
+      use dcbham_mod, only: ONECAP
+#endif
       use priunit_mod, only: LUPRI
       use twocom_mod
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1116,9 +1118,6 @@ C
       DIMENSION IDIS(2,2,2,2)
       DATA IDIS/1,5,5,2,5,4,4,5,5,4,4,5,2,5,5,3/
       SAVE IDIS
-#ifdef PRG_DIRAC
-#include "dcbham.h"
-#endif
 C
       CALL QENTER('DISLOP')
       IF (JPRINT .GT. 5) CALL TITLER('Output from DISLOP','*',103)
@@ -1750,6 +1749,9 @@ C  /* Deck symlop */
      &                  IFCTYP,ADISTR,WRKBUF,
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,DNSBUF,IREPDM,INDX,
      &                  INDXAB,GENCNT)
+#ifdef PRG_DIRAC
+      use dcbham_mod, only: HFXFAC, INTV1C, ONECAP
+#endif
       use chrxyz_mod, only: CHRXYZ
       use priunit_mod, only: LUPRI
       use aovec_mod, only: MXAOVC
@@ -1809,9 +1811,6 @@ C  /* Deck symlop */
      &          INDX(2,*),INDXAB(*)
 CMI ... added missing declarations (as in GABDR2)
       DIMENSION COEFAB(*),COEFCD(*)
-#ifdef PRG_DIRAC
-#include "dcbham.h"
-#endif
       IBTAXO(I,J) = IAND(I,IEOR(I,J))
       XAND(I)     = PT(IAND(ISYMAX(1,1),I))
       YAND(I)     = PT(IAND(ISYMAX(2,1),I))

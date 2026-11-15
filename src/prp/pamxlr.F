@@ -135,13 +135,13 @@ C     2002/2003, MI & HJAaj(&TEC) added changes for LAO based
 C     calculation of magnetic properties
 C
 C***********************************************************************
-!      use dcbham_mod, only: NOSPIN
 !      use dcbxlr_mod, only: BFREQ, INDBP, IPRXLR, JLRBP, LLBPSU, LLRBPU, NBFREQ, NCLS_XLR, NLRAPT, NLRBP, NLRBPT, NOSPIA, NOSPIB, THRCOM, XLRANA, XLR_INDSTR, XLR_RSPEXP, XLR_SKIPEE, XLR_SKIPEP
 !      use dcborb_mod, only: NCMOTQ, NORBT
 !      use dcbxpr_mod, only: IPRPTIM, PRPNAM
 !      use dcbxrs_mod, only: GPTNRM, JOPSY, JSYMOP, JTIMOP, LUXVC, NCRED, NDAMP, NERED, NFREQ, NPRED, NREDM, NZCONF, NZCONFQ, NZRED, NZVAR, NZVARQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZXOPT, NZXOPTQ, RSPLAB
 !      use dcbprp_mod, only: LONDON, REGRAD
 !      use dcbnmr_mod, only: NOONEI, NOTWOL
+      use dcbham_mod, only: NOSPIN
       use dgroup_mod, only: JFSYM, NBSYM, NFSYM
       use london_direct_hb
       use london_reorth_hb
@@ -165,7 +165,6 @@ C***********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: GPTHRS = 1.0D-9, D0 = 0.0D0, D2=2.0D0
 C
-#include "dcbham.h"
 #include "dcbxlr.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
@@ -408,9 +407,10 @@ C
 C***********************************************************************
 !      use dcbprp_mod, only: DOPCT, DOVDW, DOXLR
 !      use dcbxlr_mod, only: ALLCMB, BFREQ, CNVXLR, DMPFRLR, INTXLR, IPRXLR, ITRILR, ITRXLR, LLRAPU, LLRBPU, MAXFLR, MAXLLR, MAXRM, MXLOAD, NBFREQ, NLRAP, NLRAPT, NLRBP, NLRBPT, NOSPIA, NOSPIB, RESXLR, THCLR, THRCOM, TRIAB, XLRANA, XLRDIH, XLRNRM, XLR_ANATHR, XLR_E2CHEK, XLR_IMFREQ, XLR_INDSTR, XLR_LSFG, XLR_RSPEXP, XLR_RSPIMP, XLR_SKIPEE, XLR_SKIPEP, XLR_TRIPLET, XLR_UNCOUP, XLR_XVCFIL, XSTERN, XSTERNC
-!      use dcbham_mod, only: BSS, FREEPJ, GAUNT, LEVYLE, QED, SPINFR, VEXTPJ, X2C, X2CMMF
 !      use dcbxpr_mod, only: IPRPTIM
 !      use gauss_legendre_mod, only: FREQ_10PT, FREQ_12PT, FREQ_14PT, FREQ_16PT, FREQ_6PT, FREQ_8PT
+      use dcbham_mod, only: BSS, FREEPJ, GAUNT, LEVYLE, QED, SPINFR,
+     &  VEXTPJ, X2C, X2CMMF
       use dgroup_mod, only: NFSYM
 #ifdef MOD_LAO_REARRANGED
       use london_helper
@@ -434,7 +434,6 @@ C
 #include "dcbprp.h"
 #include "dcbxlr.h"
 !#include "dcborb.h"
-#include "dcbham.h"
 #include "dcbxpr.h"
 C
       LOGICAL SET, NEWDEF, RESET, FINTER, FLIST, INTFLG_CHANGE
@@ -1452,7 +1451,7 @@ C***********************************************************************
 !      use dcbxlr_mod, only: IPRXLR, NCLS_XLR, NLRAPT, NLRBPT, XLRANA, XLR_INDSTR
 !      use dcbibn_mod, only: JBENDX, JBPNDX
 !      use dcborb_mod, only: NCMOTQ, NORBT
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
       use dgroup_mod, only: NFSYM
       use dcbbas_mod, only: NTBAS
       use orbital_rotation_indices
@@ -1465,7 +1464,6 @@ C
 #include "dcbxlr.h"
 #include "dcbibn.h"
 #include "dcborb.h"
-#include "dcbham.h"
       LOGICAL FIRST
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(*),
      &          IBTYP(2,*),IBCVC(*),IBEVC(*),IORBCL(4,*),

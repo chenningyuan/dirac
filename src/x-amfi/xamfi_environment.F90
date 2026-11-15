@@ -40,8 +40,8 @@ contains
 
   subroutine xamfi_init()
 
-!      use dcbham_mod, only: IPRHAM, MC, MDIRAC
 !      use dcborb_mod, only: NCMOTQ, NESH, NORB, NPSH
+      use dcbham_mod, only: IPRHAM, MC, MDIRAC
       use dgroup_mod, only: IHQMAT, IPQTOQ, IQTOPQ, IRQMAT, JBTOF, JM4POS, JQBAS, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, I2TMT, N2BASTQ, N2BBASXQ, N2TMT, NFBAS, NTBAS, NZT
       use dcbgen_mod, only: CVAL, LUTMAT
@@ -51,7 +51,6 @@ contains
       use quaternion_algebra
       use dirac_cfg, only: dirac_cfg_dft_calculation
       use aobasis_collector
-#include "dcbham.h"
 #include "dcborb.h"
 !#include "dcbprp.h"
 !#include "dcbxpr.h"
@@ -244,13 +243,12 @@ contains
 
   subroutine xamfi_set_cb(myway)
 
-!      use dcbham_mod, only: MDIRAC
 !      use dcborb_mod, only: NCMOT, NESH, NORB, NORB_SUB, NPSH, NTMO_SUB, N_SUB_BL
 !      use dcbdhf_mod, only: I2TMOT, N2TMO, NTMO
+      use dcbham_mod, only: MDIRAC
       use dgroup_mod, only: NZ
       use dcbbas_mod, only: I2BASX, I2TMT, N2BASTQ, N2BBASXQ, N2TMT, NFBAS, NTBAS, NZT
       use quaternion_algebra
-#include "dcbham.h"
 #include "dcborb.h"
 !#include "dcbprp.h"
 !#include "dcbxpr.h"

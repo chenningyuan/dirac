@@ -1137,7 +1137,7 @@ C***********************************************************************
       use infpar_mod, only: MYTID
 !      use dcborb_mod, only: N2ORBX, NASHT, NNASHX, NORBT
       use dgroup_mod, only: IPQTOQ, JBTOF, LINEAR, NBSYM, NFSYM, NZ
-!      use dcbham_mod, only: LEVYLE, SPINFR
+      use dcbham_mod, only: LEVYLE, SPINFR
       use mcscf_routines
       use memory_allocator
 #include "implicit.h"
@@ -1145,7 +1145,6 @@ C***********************************************************************
 !#include "maxash.h"
 C
 #include "dcborb.h"
-#include "dcbham.h"
 C
       real*8    FQ(NORBT,NASHT,NZ)
       real*8    PV(NASHT,NASHT,NNASHX,NZ,3)
@@ -1499,7 +1498,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: NASHT, NNASHX, NORBT
-!      use dcbham_mod, only: LEVYLE, SPINFR
+      use dcbham_mod, only: LEVYLE, SPINFR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -1508,7 +1507,6 @@ C
 C
 C dcbham.h : spinfr, levyle
 #include "dcborb.h"
-#include "dcbham.h"
 C
       DIMENSION H2XY(NORBT,NASHT,NZ,3)
       DIMENSION H2YX(NORBT,NASHT,NZ,3)
@@ -2349,6 +2347,7 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision : S. Knecht - modifications for spinfree MCSCF
 C
 C***********************************************************************
+      use dcbham_mod, only: LEVYLE, SPINFR
       use dgroup_mod, only: IPQTOQ, JBTOF, LINEAR, NBSYM, NFSYM, NZ
       use priunit_mod, only: LUPRI
       use memory_allocator
@@ -2357,7 +2356,6 @@ C***********************************************************************
 C
 #include "dcbxrs.h"
 #include "dcborb.h"
-#include "dcbham.h"
 C
       DIMENSION FQX(NORBT,NASHT,NZ,*)
       DIMENSION FQT(NORBT,NASHT,NZ,*)
@@ -3000,13 +2998,13 @@ C     Written by J. Thyssen - Dec 5 2000
 C     Last revision :
 C
 C***********************************************************************
+      use dcbham_mod, only: LEVYLE, SPINFR
       use dgroup_mod, only: NZ
 #include "implicit.h"
 C
 C dcbham.h : spinfr, levyle
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dcbham.h"
 C
       DIMENSION H2AC(NASHT,NASHT,NNASHX,NZ,3,*)
       DIMENSION H2ACO(NASHT,NASHT,NNASHX,NZ,3)

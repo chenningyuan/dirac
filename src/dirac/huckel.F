@@ -378,7 +378,7 @@ C
 C ========================================================================
       SUBROUTINE HUCFCK(FMAT,F2MAT,DENHUC,NBAS_LS,NBASHUC,WORK,LWORK)
 C
-!      use dcbham_mod, only: BSS, LEVYLE, NOSMLV
+      use dcbham_mod, only: BSS, LEVYLE, NOSMLV
       use dgroup_mod, only: IPQTOQ, NZ
       use dcbbas_mod, only: NTBAS
       use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
@@ -391,7 +391,6 @@ C
       DIMENSION F2MAT(*),DENHUC(*),WORK(LWORK)
       DIMENSION DNTSKP(8)
 ! dcbham.h : NOSMLV and BSS
-#include "dcbham.h"
 C
       CALL QENTER('HUCFCK')
 C

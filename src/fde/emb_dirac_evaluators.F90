@@ -660,10 +660,9 @@ module fde_evaluators_dirac
 #if defined (VAR_MPI)
       use dcbgen_mod, only: PARCAL
 #endif
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
   use memory_allocator 
 #include "dcborb.h"
-#include "dcbham.h"
 !   ----------------------------------------------------------------------------
       type(grid_function), intent(inout) :: gf
       type(fde_grid), intent(in)         :: grid

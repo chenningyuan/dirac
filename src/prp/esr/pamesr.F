@@ -458,7 +458,6 @@ C
 #include "dcbxpr.h"
 #include "dcbesr.h"
 #include "dcbprp.h"
-!#include "dcbham.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 C
@@ -2456,7 +2455,7 @@ C        3. DFCOEF with Hartree-Fock or DFT or MVO orbitals
 C
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUCOEF, LUKRMC
-!      use dcbham_mod, only: LEVYLE, SPINFR
+      use dcbham_mod, only: LEVYLE, SPINFR
       use dcbbas_mod, only: N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NESHT, NORB, NORBT
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
@@ -2472,7 +2471,6 @@ C  dcbham.h : SPINFR; LEVYLE
 C  dcbbas.h : N2BBASXQ, ...
 C  dcborb.h : NORBT, ..., NCMOTQ
 C  dgroup.h : IPQTOQ
-#include "dcbham.h"
 #include "dcborb.h"
 
 C

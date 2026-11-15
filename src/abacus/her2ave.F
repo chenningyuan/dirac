@@ -111,11 +111,10 @@ C
      &  TWOCEN
       use nuclei_mod, only: NBASIS, NUCNUM
       use priunit_mod, only: LUPRI
-!      use dcbham_mod, only: HFXFAC, SPINFR
+      use dcbham_mod, only: HFXFAC, SPINFR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "dcbham.h"
       REAL(dp), PARAMETER :: DP25 = 0.25D00, DP5 = 0.5D00, D1 = 1.0D00,
      &                       D2 = 2.0D00, ZERADD = 1.D-15, D0 = 0.0D00,
      &                       DP125 = 0.125D00, D4 = 4.0D00, D8 = 8.0D00
@@ -2136,7 +2135,7 @@ C
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: NBASIS
       use maxorb_mod, only: MXCORB
-!      use dcbham_mod, only: HFXFAC
+      use dcbham_mod, only: HFXFAC
       use maxaqn_mod, only: MXAQN, MXQN
       use twocom_mod
       use kinds_mod, only: dp
@@ -2160,7 +2159,6 @@ C     DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
      &     FT(NBASIS,NBASIS,NDMAT,*), FV(NBASIS,NBASIS,NDMAT,*),
      &     DINT(12), NCART(12), PINT(NCCINT,*), QINT(NCCINT,*),
      &     DIFAB(3), DIFCD(3), DINTSKP(*)
-#include "dcbham.h"
       logical :: allow=.false.
 C
 C     jth

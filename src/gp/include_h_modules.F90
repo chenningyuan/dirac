@@ -78,9 +78,9 @@ end module include_dgroup_h
 module include_dcbham_h
 !> module encapsulating the dcbham.h include file
 !> can pick up/set up some defined variables in dcbham.h
+      use dcbham_mod, only: IPRHAM
 implicit none
 private
-#include"dcbham.h"
 !> specify public variables and public methods
 public :: get_IPRHAM
 contains

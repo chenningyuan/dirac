@@ -23,9 +23,9 @@ C
 C     Output module for DIRAC
 C
 C***********************************************************************
-!      use dcbham_mod, only: E_PE, INTV1C, ONECAP, ONESYS, SOLVEN
 !      use dcborb_mod, only: NESH, NPSH
 !      use dcbdhf_mod, only: CACC, DHFCONV, DHFERG, DHF_INTTYP, ELERGY, ERGCNV, ERGVAL, ESOLVE, ESOLVN, EVCCNV, EVCVAL, FCKCNV, FCKVAL, INTFLG, IPREIG, ITRSCF, LUCYCL, NAELEC_DHF, NELECT_DHF, NITER, SCFCNV, SCFTID
+      use dcbham_mod, only: E_PE, INTV1C, ONECAP, ONESYS, SOLVEN
       use dgroup_mod, only: NFSYM
       use dirac_cfg
       use fde_evaluators_dirac, only: fde_calculate_interaction_energy
@@ -48,7 +48,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcbham.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
       LOGICAL LBIT,LVCON
@@ -471,7 +470,7 @@ C
 C     Written by T.Saue November 1994
 C     Last revision: Jan 7 1998 - jth NFBAS(IFRP,0) is now parameter
 C***********************************************************************
-!      use dcbham_mod, only: MC
+      use dcbham_mod, only: MC
       use dgroup_mod, only: JFSYM, NZ
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NFBAS
       use quaternion_algebra
@@ -481,7 +480,6 @@ C***********************************************************************
 C
       REAL(dp), PARAMETER :: DM1 = -1.0D0
 C
-#include "dcbham.h"
       DIMENSION CMO(KNFBAS,NVEC,NZ),CBUF(KNFBAS,NVEC,4)
 C
       IF(NVEC.EQ.0) RETURN
@@ -650,13 +648,12 @@ C     Written by T.Saue - November 1994
 C     Last revision : Nov 15 1994 - tsaue
 C
 C***********************************************************************
-!      use dcbham_mod, only: ESHIFT
+      use dcbham_mod, only: ESHIFT
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: CVAL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "dcbham.h"
       REAL(dp), PARAMETER :: D2=2.0D0
       DIMENSION EIG(NVAL)
 C
@@ -1026,9 +1023,9 @@ C     Written by J. Thyssen - 26 Aug 1999
 C     Modified by A. Sunaga - 20 Sep 2018 for Atomic output
 C
 C***********************************************************************
-!      use dcbham_mod, only: LEVYLE, SPINFR, SUB_BL
 !      use dcbdhf_mod, only: DF, MXOPEN, NOPEN
 !      use dcborb_mod, only: ID_SUB_BL, IORB, MAX_SUB_BL, NESH, NISH, NORBT, NPSH, N_SUB_BL
+      use dcbham_mod, only: LEVYLE, SPINFR, SUB_BL
       use dgroup_mod, only: ATOMIC, FREP, NBSYM, NFSYM
       use pgroup_mod, only: REP
       use priunit_mod, only: LUPRI
@@ -1039,7 +1036,6 @@ C***********************************************************************
       PARAMETER(NCOL=16)
 #include "dcborb.h"
 #include "dcbdhf.h"
-#include "dcbham.h"
 C     
       DIMENSION EIG(NORBT),IBEIG(NORBT),EIGBUF(NORBT),
      &          IFIRST(NORBT),NMULT(NORBT)
@@ -1527,7 +1523,7 @@ C***********************************************************************
 !      use dcborb_mod, only: IORB, NESH, NOCC, NPSH, NSSH
       use pgroup_mod, only: REP
       use priunit_mod, only: LUPRI
-!      use dcbham_mod, only: LEVYLE, SPINFR
+      use dcbham_mod, only: LEVYLE, SPINFR
       use dgroup_mod, only: FREP, NFSYM
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1539,7 +1535,6 @@ C
       CHARACTER CLUMO*3,CHOMO*3
 C
 #include "dcborb.h"
-#include "dcbham.h"
 C
 
 !     initialize EHOMO and ELUMO

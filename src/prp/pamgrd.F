@@ -119,12 +119,11 @@ C     Last revision: Jul 10 1996 - tsaue
 C
 C***********************************************************************
 !      use dcborb_mod, only: N2ORBXQ, NCMOTQ
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
       use dcbbas_mod, only: NTBAS
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "dcbham.h"
 C
       DIMENSION GPOE(*),GPOP(*),JXOPE(*),JXOPP(*),WORK(*)
 C
@@ -205,7 +204,7 @@ C***********************************************************************
 !      use dcborb_mod, only: ICMOQ, N2ASHXQ, NASHT, NORB, NORBT
       use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
 !      use dcbpsi_mod, only: DOKRMC
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -213,7 +212,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dcbxpr.h"
-#include "dcbham.h"
 #include "dcbpsi.h"
 C
       DIMENSION GPOE(*),GPOP(*),JXOPE(*),JXOPP(*),
@@ -473,7 +471,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NTBAS
-!      use dcbham_mod, only: NOSPIN, SPINFR
+      use dcbham_mod, only: NOSPIN, SPINFR
 !      use dcborb_mod, only: IORB, NORB
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
       use quaternion_algebra
@@ -482,7 +480,6 @@ C***********************************************************************
       INTEGER :: I, J
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
-#include "dcbham.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
 C

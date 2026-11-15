@@ -32,9 +32,9 @@
 !       Last revision: June 14 1996 - tsaue
 !
 !***********************************************************************
-!      use dcbham_mod, only: BSS, GAUNT, IBSS, X2C
 !      use dcbprp_mod, only: ABUND, BXLAO, BYLAO, BZLAO, DIPOLE, DOESR, DOEXCPRP, DOEXP, DOPCT, DOTPA, DOVDW, DOVER, DOXLR, DOXPP, DOXQR, DSO, EFFDE2, EFFDEN, EFG, EFN, EFT, EFTNTL, EPOLAR, ESRGTENS, ESR_HFCC, EXCPRPTYP, HDF5IO, IMAGOUT, IPRPRP, LONDON, MGRAD, MSUSCDIA, MSUSCP, MXPRP_WF, NOPCT, NPRP_WF, NQCC, NQCCCART, NSTDIA, OPTROT, PRP_WF, PVC, PVC_EFG, PVC_SHIELD, PVC_SPINRO, PVC_SPINSPIN, QUADRU, RHONUC, ROTG, SHIELD, SPINRO, SPNSPN
 !      use dcborb_mod, only: NASHT
+      use dcbham_mod, only: BSS, GAUNT, IBSS, X2C
       use dgroup_mod, only: NBSYM
          use memory_allocator
 #ifdef MOD_LAO_REARRANGED
@@ -58,7 +58,6 @@
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
       PARAMETER (NDIR = 11, NTABLE = 45)
-#include "dcbham.h"
 !
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,      &
      &          WORD1*7, WRDSRC*7
@@ -1543,7 +1542,7 @@
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
 !      use dcbprl_mod, only: NPRPLBL, PDOINT, PRPLBL
-!      use dcbham_mod, only: BSS, LEVYLE, RDSUSLLMOD, ZORA, ZORA4
+      use dcbham_mod, only: BSS, LEVYLE, RDSUSLLMOD, ZORA, ZORA4
       use dcbgen_mod, only: CVAL
 #include "implicit.h"
       INTEGER :: I, J
@@ -1556,7 +1555,6 @@
 !
 #include "dcbxpr.h"
 #include "dcbprl.h"
-#include "dcbham.h"
 !MI ... needs CVAL
 
       CHARACTER*4 PCOMB, PCOMB_SAVE
@@ -2987,11 +2985,10 @@
       use mxcent_mod, only: MXCOOR
       use dcbgrd_mod, only: DONGRD, DOTRCK, IGRD_INTFLG, IPRGRD, RELGRD, SCRGRD
       use dcbgen_mod, only: INTGEN
-!      use dcbham_mod, only: LEVYLE
+      use dcbham_mod, only: LEVYLE
 #include "implicit.h"
 !
 !
-#include "dcbham.h"
 !
 !     Initialize /CBIGRD/
 !     ===================
@@ -3022,7 +3019,7 @@
 !***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
-!      use dcbham_mod, only: BSS, GAUNT
+      use dcbham_mod, only: BSS, GAUNT
       use dcbgrd_mod, only: DONGRD, DOTRCK, IGRD_INTFLG, IPRGRD, SCRGRD
 !      use dcbprp_mod, only: IPRPRP, MGRAD
       use kinds_mod, only: dp
@@ -3031,7 +3028,6 @@
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0=0.0D0
       PARAMETER (NTABLE = 5)
 !
-#include "dcbham.h"
 #include "dcbprp.h"
 !
       LOGICAL SET, NEWDEF, RESET, LBIT

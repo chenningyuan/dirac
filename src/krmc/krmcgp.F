@@ -31,12 +31,11 @@ C     Output:
 C        VNZ3  : elements in (*,NZ,3) format
 C
 C***********************************************************************
-!      use dcbham_mod, only: LEVYLE, SPINFR
+      use dcbham_mod, only: LEVYLE, SPINFR
       use dgroup_mod, only: IPQTOQ, JBTOF, LINEAR, NBSYM, NZ
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcbham.h"
 C
       DIMENSION VCL(NELEM,NZ,NZ,*)
       DIMENSION VNZ3(NELEM,NZ,3)
@@ -2141,7 +2140,7 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use dcbopt_mod, only: CHCKPT_WRT, CINT_LOWSRT, CINT_REORD, CINT_SPLIT, CPBLCK_FILE, CSHMEMO, EMY, IDENSLR_STATE, IDOPARIO, IMEMFAC, IOPT_MK2DEL, IOPT_MK2REF, IOPT_SYMMETRY, IPROPT, IRESTRK, ISHMEM_TYPE, MAXCIT, MOPT_MXMACRO, MXCIV, NATOLCR, NCIROOT, NMAX_SYM, OPT_CIPROGRAM, OPT_THRECI, OPT_THRGRD, OPT_UCIBOS
 !      use dcborb_mod, only: IORB, MXGAS, NASH, NGASSP, NGAS_DC, NGSH, NGSHT, NISH, NORBT, NPSH
-!      use dcbham_mod, only: LEVYLE, SPINFR
+      use dcbham_mod, only: LEVYLE, SPINFR
       use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dcbbos_mod, only: IBOSYM
 !      use mxpdim_mod, only: IMAXLBLKSZ, MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXROOT
@@ -2165,7 +2164,6 @@ C***********************************************************************
 #include "parluci.h"
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dcbham.h"
 #include "dcbbos.h"
 #include "../luciarel/mxpdim.inc"
 #include "../luciarel/cstate.inc"

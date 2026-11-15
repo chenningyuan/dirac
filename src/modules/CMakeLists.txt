@@ -27,6 +27,7 @@ set(MODULE_SOURCES
     dcbbas.F90
     dcbgen.F90
     dcbgrd.F90
+    dcbham.F90
     dcbibt.F90
     dcbsusc.F90
     dcbwav.F90

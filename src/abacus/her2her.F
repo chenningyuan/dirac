@@ -156,7 +156,7 @@ C  /* Deck r0001 */
 C
 C     TUH 84
 C
-!      use dcbham_mod, only: HFXMU, IF
+      use dcbham_mod, only: HFXMU
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
       use twosta_mod, only: LWTOT, MWTOT
@@ -171,7 +171,6 @@ C
      &          EXP12 (*), EXP34(*), FAC12 (*), FAC34(*), SIGNT(3),
      &          WVALU(NUABCD), TALPHA(NUABCD), INDADR(NUABCD),
      &          SCLFAC(NUABCD)
-#include "dcbham.h"
       CALL QENTER('R0001')
       KWORK = 1
       KFREE = KWORK

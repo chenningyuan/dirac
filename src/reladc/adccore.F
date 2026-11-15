@@ -32,7 +32,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
       use priunit_mod, only: LUCMD, LUPRI
       use dgroup_mod, only: NZ
-!      use dcbham_mod, only: CAP, LEVYLE, SPINFR
+      use dcbham_mod, only: CAP, LEVYLE, SPINFR
 #if defined (VAR_MPI)
       use infpar_mod, only: MPARID, MYTID, NUMNOD
 #endif
@@ -41,7 +41,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
 #include "implicit.h"
       INTEGER :: I
-#include "dcbham.h"
 !#include "dcbpsi.h"
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/files.inc"
@@ -124,6 +123,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADCMAIN_NEW (IN123,IW123,CA,INTFCE)
 !
+      use dcbham_mod, only: X2CMMF
       use memory_allocator
       use interface_to_mpi
       use adc_cfg    !  in the general input reader the user data are provided.
@@ -160,7 +160,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "../relccsd/complex.inc"
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/waio.h"
-#include "dcbham.h"
 !
 !---------------Local variables--------------------------------------
 !

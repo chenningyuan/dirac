@@ -270,13 +270,12 @@ module electrostatic_potential
       use maxorb_mod, only: MXCORB, MXSHEL
       use ccom_mod, only: THRS
       use dgroup_mod, only: NBSYM
-!      use dcbham_mod, only: BSS, LEVYLE, NOSMLV, X2C
+      use dcbham_mod, only: BSS, LEVYLE, NOSMLV, X2C
       use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX, LCLASS, NCENT, NHKT, NLRGSH, NUCO, NUMCF
       use onecom_mod
       use symmet_mod, only: FMULT, MULT
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use nuclei_mod, only: NUCNUM
-#include "dcbham.h"
 
 ! Passed variables
       integer, intent(in) :: nr_points

@@ -5703,7 +5703,7 @@ C****************************************************************************
 !      use dcbxpr_mod, only: PRPNAM
 !      use dcbprp_mod, only: DOEXP, IMAGOUT, IPLONDON, IPMSUSC, IPRPRP, LONDON, MSUSCDIA
 !      use dcbexp_mod, only: IPDSUSC, LEXPP, MAXEXP, NEXPP
-!      use dcbham_mod, only: RDSUSLLMOD
+      use dcbham_mod, only: RDSUSLLMOD
 #include "implicit.h"
       INTEGER :: I, J
 C
@@ -5714,7 +5714,6 @@ C
 #include "dcbxpr.h"
 #include "dcbprp.h"
 #include "dcbexp.h"
-#include "dcbham.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),IOP(3)
 
@@ -7939,7 +7938,6 @@ C
       integer I,J
 C
 #include "spinro.h"
-!#include "dcbham.h"
 C
       integer K,KATOM,IPRINT,IATOM,ISYMOP,JATOM,NATTYP,NUMIS,IJ
 C
@@ -9065,7 +9063,7 @@ C***********************************************************************
       use nuclei_mod, only: NATOMS, NFLOAT, NUCDEP
 !      use rotg_mod, only: GFANUC, LINDET
       use dgroup_mod, only: LINEAR
-!      use dcbham_mod, only: SPINFR, URKBAL, ZORA
+      use dcbham_mod, only: SPINFR, URKBAL, ZORA
       use consts_mod, only: D0
       use memory_allocator
 C
@@ -9079,7 +9077,6 @@ C
 !#include "dcbprl.h"
 #include "dcbxlr.h"
 #include "rotg.h"
-#include "dcbham.h"
 C
       integer, allocatable :: NAT(:),ISOT(:)
       double precision, allocatable :: PMATL(:,:,:),PMATS(:,:,:),
@@ -11282,7 +11279,7 @@ C***********************************************************************
       use orgcom_mod, only: CMXYZ
 !      use spinro_mod, only: LINDET, SPRDNL
       use dgroup_mod, only: LINEAR
-!      use dcbham_mod, only: SPINFR, URKBAL, ZORA
+      use dcbham_mod, only: SPINFR, URKBAL, ZORA
       use consts_mod, only: D0
       use memory_allocator
 C
@@ -11294,7 +11291,6 @@ C
 #include "dcbexp.h"
 #include "dcbxlr.h"
 #include "spinro.h"
-#include "dcbham.h"
 C
       logical, allocatable :: DOATOM(:)
       integer, allocatable :: NAT(:),ISOT(:)
@@ -12635,7 +12631,7 @@ C***********************************************************************
       use symmet_mod, only: IPTAX
 !      use spinro_mod, only: LINDET
       use dgroup_mod, only: LINEAR
-!      use dcbham_mod, only: SPINFR, URKBAL, ZORA
+      use dcbham_mod, only: SPINFR, URKBAL, ZORA
       use consts_mod, only: D0
       use memory_allocator
 C
@@ -12644,7 +12640,6 @@ C
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "spinro.h"
-#include "dcbham.h"
 C
       logical, allocatable :: DOATOM(:)
       integer, allocatable :: NAT(:),ISOT(:)

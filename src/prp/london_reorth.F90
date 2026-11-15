@@ -18,6 +18,7 @@
 
 module london_reorth_hb
 
+      use dcbham_mod, only: NOSPIN, SPINFR
       use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
   use memory_allocator 
   use dirac_cfg
@@ -55,7 +56,6 @@ module london_reorth_hb
 #include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dcbprp.h"
-#include "dcbham.h"
 #include "dcbdhf.h"
 #include "dcbxlr.h"
 

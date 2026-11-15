@@ -27,13 +27,12 @@ C
 C     Written May 27 1998 by T.Saue and K.Mikkelsen
 C
 C***********************************************************************      
-!      use dcbham_mod, only: LSOLMX
+      use dcbham_mod, only: LSOLMX
       use dcbbas_mod, only: N2BBASX, NNBBASX
       use dummy_mod, only: DUMMY
 #include "implicit.h"
 C
 C
-#include "dcbham.h"
 C
       DIMENSION FOCK(*),DMAT(*),WORK(*)
       KWORK = 1
@@ -94,7 +93,7 @@ C***********************************************************************
       use dummy_mod, only: IDUMMY
       use dgroup_mod, only: NZ
       use orgcom_mod, only: CAVORG, DIPORG
-!      use dcbham_mod, only: EPSOL, LSOLMX, RSOLAV
+      use dcbham_mod, only: EPSOL, LSOLMX, RSOLAV
       use symmet_mod, only: ISYMAX
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
@@ -105,7 +104,6 @@ C
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0, D2 = 2.0D0
       REAL(dp), PARAMETER :: FLFAC = -0.5D0, DM2 = -2.0D0
 C
-#include "dcbham.h"
 C
       LOGICAL DOINT(2,2),FIRST
       DIMENSION FOCK(N2BBASX,NZ,NFMAT),DMAT(N2BBASX,NZ,NFMAT),
@@ -323,8 +321,9 @@ C/* Deck solvin */
       use nuclei_mod, only: ISOTOP, NATOMS
       use cbisol_mod, only: EPDIEL, LCAVMX, LMNTOT, LMTOT, RCAV, SOLVNT
       use orgcom_mod, only: CAVORG, CMXYZ
+      use dcbham_mod, only: EPSOL, EPSTAT, INERSF, INERSI, IPRHAM,
+     &  IPRSOL, LSOLMX, RSOLAV
 #include "implicit.h"
-!      use dcbham_mod, only: EPSOL, EPSTAT, INERSF, INERSI, IPRHAM, IPRSOL, LSOLMX, RSOLAV
       INTEGER :: I,II
 C
 C -- local variables and constants
@@ -334,7 +333,6 @@ C
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      &          MXFORM*6,FMT*6
       DIMENSION WORK(*)
-#include "dcbham.h"
 C
       SAVE SET
 

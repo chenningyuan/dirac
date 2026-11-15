@@ -27,14 +27,13 @@ C     Last revision : 1997/06/17 jth
 C
 C*****************************************************************************
 !      use dcbpsi_mod, only: DOCCM, DOCIM, DOKRMC, DOLUCIAR, DOLUCT, DOMP2, DORES
-!      use dcbham_mod, only: BSS, LEVYLE, SPINFR, ZORA
+      use dcbham_mod, only: BSS, LEVYLE, SPINFR, ZORA
       use dcbgrd_mod, only: DONGRD
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCOOR
          use dirac_cfg
 #include "implicit.h"
 C
-#include "dcbham.h"
 #include "dcbpsi.h"
 C
       LOGICAL NOGRAD
@@ -83,7 +82,7 @@ C*****************************************************************************
 !      use dcbdhf_mod, only: LUCYCL
       use dcbgen_mod, only: DOANA, DOPRP, DOPSI, INPTES
       use priunit_mod, only: LUPRI
-!      use dcbham_mod, only: IF, X2CMMF
+      use dcbham_mod, only: X2CMMF
       use dirac_cfg
 #include "implicit.h"
       LOGICAL FIRST
@@ -91,7 +90,6 @@ C*****************************************************************************
       DATA FIRST /.TRUE./
 C 
 #include "dcbdhf.h"
-#include "dcbham.h"
 C
       CALL QENTER('EXEDIR')
 C

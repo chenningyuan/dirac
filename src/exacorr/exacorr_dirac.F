@@ -15,7 +15,7 @@ C***********************************************************************
 
 !      use dcbtra_mod, only: IPRTRA, TH_CHOLESKY, TRA4_INDSTR
 !      use dcborb_mod, only: NESH
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
       use infpar_mod, only: MYTID
 #if defined (VAR_MPI)
       use infpar_mod, only: MPARID
@@ -36,7 +36,6 @@ C***********************************************************************
 ! we need to broadcast tra4_indstr
 #include "dcborb.h"
 ! to access nesh (number of positive energy "electronlike" orbitals)
-#include "dcbham.h"
 !information about the group
 
       character (len=72)   :: orbital_string(4) ! String with range of MO's to be transformed for each index

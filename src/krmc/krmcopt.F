@@ -37,7 +37,7 @@ C***********************************************************************
 !      use dcbopt_mod, only: E_LVCORR_MC, FOCKONLY, IKRMCCNO, IOPT_INTDEF, IPROPT, JCAS, JDHF, JGAS, JODHF, MCTYPE, MOPT_MXMACRO, NATONLY, NOPEN_MC, NZCONF, NZCONFQ, NZHOPEQ, NZXOPPQ, OPT_CIPROGRAM, SPINFR_KRMC, THQKVA
       use dcbgen_mod, only: DOLVC, LUITFO, LUKRM1, LUKRM2, LUKRM3,
      &  LUKRM4, LUKRM5, LUKRMC
-!      use dcbham_mod, only: INTV1C, LEVYLE, ONECAP, SPINFR
+      use dcbham_mod, only: INTV1C, LEVYLE, ONECAP, SPINFR
       use frame_mod, only: CORRLV
       use memory_allocator
 
@@ -50,7 +50,6 @@ C
 #include "dcborb.h"
 #include "dcbopt.h"
 !dcbgen.h needed for DOLVC for LVCORR
-#include "dcbham.h"
 !frame.h needed for CORRLV for LVCORR
 C
       LOGICAL EX
@@ -1651,7 +1650,7 @@ C***********************************************************************
 !      use dcborb_mod, only: I2ORBX, ICMOQ, N2ORBXQ, NISHT, NORB, NORBT
 !      use dcbopt_mod, only: CWRTFO_MAT, ECORE_LR, E_LVCORR_MC, IOPT_IFCKOP, IOPT_IHRMOP, IOPT_INTFLG, IOPT_ISYMOP, IPROPT
       use dcbgen_mod, only: LUKRM3, LUX2C
-!      use dcbham_mod, only: X2CMMF
+      use dcbham_mod, only: X2CMMF
       use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use frame_mod, only: POTNUC
@@ -1662,7 +1661,6 @@ C
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dcbham.h"
       LOGICAL   TOFILE
       DIMENSION CMO(*),FC(*), WORK(LWORK)
       DIMENSION IQBF(4)

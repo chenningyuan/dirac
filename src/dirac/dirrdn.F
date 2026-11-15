@@ -34,7 +34,7 @@ C
 C***********************************************************************
 
 !      use dcbimp_mod, only: DOIMPMOS, QCPACK
-!      use dcbham_mod, only: FAKE2C, GAUNT, LSCALE_DFT_GAUNT, X2C
+      use dcbham_mod, only: FAKE2C, GAUNT, LSCALE_DFT_GAUNT, X2C
       use dgroup_mod, only: NZ, NZC1
       use checkpoint
       use dirac_cfg
@@ -60,7 +60,6 @@ C***********************************************************************
       use cbirea_mod, only: IPREAD
       use dcbgen_mod, only: DOANA, DOJACO, DOPRP, DOPSI, DOTRA, INPTES
 #include "implicit.h"
-#include "dcbham.h"
 #include "dcbimp.h"
 
       integer, parameter   :: lwork = 100000
@@ -409,7 +408,7 @@ C***********************************************************************
 !      use logging_mod, only: LOGMEMGET
       use dcbgen_mod
       use infpar_mod, only: NUMNOD
-!      use dcbham_mod, only: MDIRAC
+      use dcbham_mod, only: MDIRAC
         use codata
 #include "implicit.h"
       INTEGER :: I
@@ -423,7 +422,6 @@ C
 C
 
 ! MDIRAC is needed for check of STOL(2)
-#include "dcbham.h"
 
 !#include "dcbxpr.h"
 #include "dcb_rkbimp.h"
@@ -1047,11 +1045,11 @@ C     Written by T.Saue - November 1992
 C     Last revision: 1997/09/15 - jth
 C
 C***********************************************************************
-!      use dcbham_mod, only: BSS, CONT2C, DO2C4C, DO4C2C, FREEPJ, INI2C, INTV1C, LEVYLE, ONECAP, ONECNV, PROJEC, PROOWN, SPINFR, START2C, URKBAL, USEDF, VEXTPJ, X2C, ZORA, ZORA4
 !      use dcbdhf_mod, only: AOC, ATHUCK, ATOMST, AUTOCC, BMCOND, CACC, CNVINT, CONVRG, DA, DALPHA, DAMPFC, DF, DHFCONV, DHFERG, DHFEXIT, DHF_INTTYP, DHF_SKIPEE, DHF_SKIPEP, DIISAO, DIISMO, DIISON, DIISTH, DLSHIF, DOBOSSEL, DOCCNV, DODAMP, DODIIS, DODSCF, DOLEVEL, DOMOFREEZE, DYNSEL, E1PART, E2PART, ELERGY, ERGBUF, ERGCNV, ERGCNV2, ERGVAL, EVCCNV, EVCCNV2, EVCVAL, FCKCNV, FCKCNV2, FCKVAL, FIXDIF, IMOFREEZE, INIOCC, INTBUF, INTDEF, INTFLG, IPREIG, IPRSCF, ITDIIS, ITRINT, ITRSCF, MAXBCK, MAX_BOS_BL, MAXITR, MAXITR2, MFRAG, MXDIIS, MXMACRO, MXMICRO, MXMOFREEZE, MXOPEN, NACSH, NACSH_BOS, NAELEC_DHF, NASH_DHF, NASHMFT, NELEC_DHF, NELECT_DHF, NEWOCC, NFRAG, NFRO_DHF, NISH_BOS, NISH_DHF, NMOFREEZE, NOPEN, NOQCDHF, NOSWIT, NPRJNUC, OLEV, OPEN_FAC, OVLSEL, PRJFIL, PRJTHR, SCFCNV, SCFCNV2, SCFPOP, SCFTID, SIRIFC, TDDG, TDF2, TRIFCK, TRIVEC, VCFROZ, VCPROJ, WRITE_FMO_MATRIX
 !      use dcborb_mod, only: MAX_SUB_BL
 !      use dcbatom_mod, only: ATOMFIL, NVECATOM, OCCATOM, VECATOM
 !      use dcbhoc_mod, only: HOCFIL, HUCPAR, MAXHOC, VECHOC
+      use dcbham_mod
       use dgroup_mod, only: ATOMIC, FREP, LINEAR, NBSYM, NFSYM
        use dirac_cfg
        use x2cmod_cfg
@@ -1099,7 +1097,6 @@ C
       INTEGER ATOM_NOPEN, ATOM_NKAPPA
 C
 #include "dcbdhf.h"
-#include "dcbham.h"
 #include "dcborb.h"
 #include "dcbatom.h"
 #include "dcbhoc.h"
@@ -3083,9 +3080,9 @@ C       Last revision: April 27 1996 - tsaue
 C
 C***********************************************************************
 !      use dcbreo_mod, only: IMOORD, IMOORF, IREORD, IREORF, LMOORD, LMOORF, MXREORD
-!      use dcbham_mod, only: SPINFR
 !      use dcbrot_mod, only: ROTANG, ROTORB, VECROT
 !      use dcbpsi_mod, only: DOADC, DOARDUC, DOCCM, DOCIM, DOCOSCI, DOEXACC, DOGASCIP, DOHSFS, DOKRCC, DOKRCI, DOKRMC, DOLAPLCE, DOLUCIAR, DOLUCT, DOMP2, DOMP2NO, DOMVO, DOPOLPRP, DORES, DOROSE, L1ORBM, L2ORBM, PHCOEF
+      use dcbham_mod, only: SPINFR
       use dgroup_mod, only: FREP, NFSYM
       use dcbgen_mod, only: CBKRINI, DIRAC_WF, DOTRA, NOTRA, N_WF,
      &  PARCAL
@@ -3103,7 +3100,6 @@ C
       DIMENSION WORK(LWORK)
 C
 #include "dcbpsi.h"
-#include "dcbham.h"
 #include "dcbreo.h"
 #include "dcbrot.h"
 C
@@ -4022,7 +4018,7 @@ C             - Modifications for adaptation to trunk
 C
 C***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
 !      use luctinp_mod, only: CALCTP, CALCTYP, CRDCCLR, CRDFRO, CRDGAS, CRDGOC, CRDINA, CRDRS1, CRDRS2, CRDRS3, IDENSD, IMOKW, IMULTD, INGASD, IPRNGD, IPRNLD, IRSTLT, ISSYMD, MXEL3D, MXHL1D, MXNGAS, NACTED, NROOTD, NSEQCD, NTABLE, SZCALD, TITLUC, WAFFCD
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -4030,7 +4026,6 @@ C***********************************************************************
 C
 #include "luctinp.h"
 C only SPINFR used on next block
-#include "dcbham.h"
 C
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
@@ -5388,7 +5383,7 @@ C***********************************************************************
 !      use dcbxpr_mod, only: WT1IN
 !      use dcb_effqed_mod, only: EFFQED_IPAR, EFFQED_NKAP, EFFQED_PAR, MAXKAP, MAXREF, REFFIL, VECREF
 !      use dcbdhf_mod, only: NFRAG, PRJFIL, PRJTHR, VCPROJ
-!      use dcbham_mod, only: BLOCKD, BSS, CAP, CMPEIG, CONT2C, DKH1, DKH2, DO2C4C, DO4C2C, DOASHIFT, DOEFFQED, ECPCALC, ESHIFT, FAKE2C, FREEPJ, GAUNT, HFXATT, HFXFAC, HFXMU, I2CHAM, IBSS, ICTLV1C, IMFCH, INI2C, INTV1C, IPANGMOM, IPBETAMT, IPKINERG, IPMOLFLD, IPOVRLAP, IPR1OP, IPRHAM, IPSPNMOM, IPSPNORB, IPVEMB0, ISORDER_AMFI_X2C, LEVYLE, LSCALE_DFT_GAUNT, MAX1OPER, MC, MDIRAC, N1OPER, NOAMFI, NONREL, NOPRTR, NOSFMU, NOSMLV, NOSPIN, ONECAP, ONECNV, ONECOFF, ONESYS, PROJEC, PROOWN, QDOTS, QED, SMLV1C, SOLVEN, SPINFR, SPINFR2, SSMTRC, START2C, TRMO4C2C, TRS_MIX, URKBAL, USEDF, VEXTPJ, WRITE_JZ_MATRIX, WRITE_K_MATRIX, X2C, X2CMMF, YREQ1, ZORA, ZORA4, ZORASC
+      use dcbham_mod
       use dgroup_mod, only: FREP, LINEAR, NBSYM, NFSYM, NZC1
       use dirac_cfg
       use fde_mod, only: fde_input_init,fde_dirac_input
@@ -5424,7 +5419,6 @@ C***********************************************************************
      &                       D2 = 2.00D00
 C
 C
-#include "dcbham.h"
 #include "dcb_effqed.h"
 #include "dcb_ashift.h"            
 #include "dcbdhf.h"
@@ -7390,7 +7384,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck op1ini */
       SUBROUTINE OP1INI(WORK,LWORK)
-!      use dcbham_mod, only: ECPCALC, ESHIFT, IPANGMOM, IPBETAMT, IPESHIFT, IPKINERG, IPMOLFLD, IPOVRLAP, IPRHAM, IPSOPP, IPSPNMOM, IPSPNORB, IPVEMB0, NONREL
+      use dcbham_mod, only: ECPCALC, ESHIFT, IPANGMOM, IPBETAMT,
+     &  IPESHIFT, IPKINERG, IPMOLFLD, IPOVRLAP, IPRHAM, IPSOPP,
+     &  IPSPNMOM, IPSPNORB, IPVEMB0, NONREL
       use dgroup_mod, only: ATOMIC, LINEAR
       use dcbgen_mod, only: CVAL
       use dirac_cfg
@@ -7415,7 +7411,6 @@ C***********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1=1.0D0, DM2 = -2.0D0, DHALF=0.5D0
 C
-#include "dcbham.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),WORK(LWORK)
       logical is_2c_rel_run
@@ -8059,8 +8054,9 @@ C
 C     Written by Luuk Visscher may 1999
 C
 C***********************************************************************
-!      use dcbham_mod, only: BSS, DKH1, DKH2, GAUNT, LEVYLE, SPINFR, URKBAL, X2C, ZORA, ZORA4
 !      use dcbpsi_mod, only: DOCCM, DOCIM, DOMP2, DORES
+      use dcbham_mod, only: BSS, DKH1, DKH2, GAUNT, LEVYLE, SPINFR,
+     &  URKBAL, X2C, ZORA, ZORA4
       use dgroup_mod, only: NBSYM
       use cbihr2_mod, only: SOFOCK
       use priunit_mod, only: LUPRI
@@ -8074,7 +8070,6 @@ C***********************************************************************
 C
 !#include "mxgas.h"
 #include "dcbpsi.h"
-#include "dcbham.h"
 #include "dcbana.h"
 #include "dcbprp.h"
       LOGICAL SS_COR, SS_COR_NEEDED
@@ -9063,12 +9058,11 @@ C     Last modifications: M.Ilias, Jan.2008 for 2c4c jumps
 C
 C***********************************************************************
       use priunit_mod, only: LUCMD
-!      use dcbham_mod, only: ECPCALC, LEVYLE, MDIRAC, NONREL
+      use dcbham_mod, only: ECPCALC, LEVYLE, MDIRAC, NONREL
       use cbirea_mod, only: CNTMAT
       use dcbgen_mod, only: TWOCOMP, TWOCOMPBSS
 #include "implicit.h"
 C
-#include "dcbham.h"
       CHARACTER WORD*7,PROMPT*1
       LOGICAL ISDO2C4C,ISDO4C2C,TWOCOMP_SAVE,TWOCOMPBSS_SAVE,CNTMAT_SAVE
       LOGICAL find_keyword
@@ -9608,10 +9602,9 @@ C
       END
 
       subroutine set_lscale_dft_gaunt()
-!      use dcbham_mod, only: LSCALE_DFT_GAUNT
+      use dcbham_mod, only: LSCALE_DFT_GAUNT
       use dcbgen_mod, only: PARCAL
       implicit none
-#include "dcbham.h"
       lscale_dft_gaunt = .true.
       IF (PARCAL) CALL QUIT('GAUNTSCALE keyword not working for'//
      &                      ' parallel calculations')

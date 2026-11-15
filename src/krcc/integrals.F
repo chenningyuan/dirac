@@ -1757,6 +1757,7 @@ C     Written by J. Thyssen - Jul 21 2000
 C     Last revision : L. Visscher - Mar 15 2001
 C
 C***********************************************************************
+      use dcbham_mod, only: SPINFR
       use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
@@ -1766,7 +1767,6 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbidx.h"
-#include "dcbham.h"
 C
       DIMENSION FQ(NORBT,NASHT,NZ)
       DIMENSION PV(NASHT,NASHT,NNASHX,NZ,3)

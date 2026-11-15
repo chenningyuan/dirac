@@ -383,12 +383,11 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NASH, NASHT, NNASHX
       use dgroup_mod, only: IPQTOQ, NBSYM, NFSYM, NZ, NZ_IN_CI
-!      use dcbham_mod, only: LEVYLE, SPINFR
+      use dcbham_mod, only: LEVYLE, SPINFR
 #include "implicit.h"
       INTEGER :: I, II, J, JJ, K, KK
 C
 #include "dcborb.h"
-#include "dcbham.h"
 C
       DIMENSION VDUUUU(NASHT,NASHT,NNASHX,NZ,*)
       DIMENSION VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
@@ -1729,7 +1728,7 @@ C
 !
 !***********************************************************************
 !      use dcborb_mod, only: IORB, NAELEC, NASH, NASHT, NGSH, NISH, NORB, NORBT, NPSH
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
       use dgroup_mod, only: LINEAR, NFSYM, NZ_IN_CI
       use dcbgen_mod, only: LUCOEF, LUKRMC
       use pgroup_mod, only: GROUP
@@ -1739,7 +1738,6 @@ C
       INTEGER :: I, II, J, JJ, K, KK
 C
 #include "dcborb.h"
-#include "dcbham.h"
 C
       DIMENSION  VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
       DIMENSION  hcore(2*NASHT,2*NASHT,*)

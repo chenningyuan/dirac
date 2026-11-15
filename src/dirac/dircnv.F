@@ -32,7 +32,7 @@ C*****************************************************************************
 !      use dcbdhf_mod, only: ATHUCK, CACC, CONVRG, DAMPFC, DHFCONV, DHFERG, DHFEXIT, DIISON, DIISTH, DODAMP, DODIIS, ERGBUF, ERGCNV, ERGVAL, EVCCNV, EVCVAL, FCKCNV, FCKVAL, I2TMOT, INTBUF, INTFLG, IPRSCF, ITDIIS, KITER, LUDIIS, LUFOCK, MAXITR, MXDIIS, N2TMOTQ, NITER, NOSWIT, NTMO, SCFCNV
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: DOLVC
-!      use dcbham_mod, only: DO4C2C, ONECAP, ONECNV, ONECOFF, START2C
+      use dcbham_mod, only: DO4C2C, ONECAP, ONECNV, ONECOFF, START2C
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -43,7 +43,6 @@ C Used from COMMON blocks
 C   DGROUP: NZ
 C
 #include "dcbdhf.h"
-#include "dcbham.h"
       LOGICAL OLDFMO, DAMPON, roundv
       DIMENSION FMO(*), EVEC(*),FBUF(*),BMAT(*),TMAT(*),
      &          DMAT(*),TINV(*),WORK(LWORK), FAO(*)
@@ -338,9 +337,9 @@ C   Last revision:   971029-jth
 C                    Nov 2005 - MI
 C
 C*****************************************************************************
-!      use dcbham_mod, only: SUB_BL, ZORA
 !      use dcbdhf_mod, only: AOC, DA, DF, DIISAO, EVCVAL, I2TMOT, IPRSCF, LUCMOS, N2TMOTQ, NACSHMF, NESHMF, NFMAT, NISHMF, NOCCMF, NOPEN, NPSHMF, NTMO
 !      use dcborb_mod, only: NOCC, NPSH, N_SUB_BL, NTMO_SUB
+      use dcbham_mod, only: SUB_BL, ZORA
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, NFBAS, NTBAS, NZT
       use priunit_mod, only: LUPRI
@@ -351,7 +350,6 @@ C*****************************************************************************
      &                       DM1 = -1.00D00, D4 = 4.00D00, DP5 = 0.50D00
 C
 #include "dcborb.h"
-#include "dcbham.h"
 #include "dcbdhf.h"
 C
 C Used from COMMON blocks:
@@ -783,7 +781,7 @@ C                   Miro ILIAS, febr.2007, Tel Aviv - fix for 2c->4c restart
 C
 C*****************************************************************************
 !      use dcbdhf_mod, only: BMCOND, IPRSCF, ITDIIS, LUDIIS, LUEVEC, MXDIIS, N2TMOTQ, NELMBM, NITER
-!      use dcbham_mod, only: DO4C2C, START2C
+      use dcbham_mod, only: DO4C2C, START2C
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -793,7 +791,6 @@ C
 C Used from COMMON blocks:
 C   dcbdhf: LUEVEC,IPRSCF,ITDIIS,MXDIIS
 C
-#include "dcbham.h"
 #include "dcbdhf.h"
       DIMENSION BMAT(MXDIIS*MXDIIS),EVEC(*),FOCK(*),EBUF(*),CVEC(*),
      &          WORK(*)

@@ -123,7 +123,6 @@ C***********************************************************************
       INTEGER :: I
 C
 !#include "dcbdhf.h"
-!#include "dcbham.h"
 #include "dcborb.h"
       REAL(dp), PARAMETER :: DP5 = 0.50D00, D0 = 0.00D00, D1 = 1.00D00,
      &                       DM1 = -1.00D00, D2 = 2.00D00

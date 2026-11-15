@@ -353,7 +353,8 @@ C*****************************************************************************
 !      use dcbprp_mod, only: DOXPP
 !      use dcbxpp_mod, only: ANGPLOT, BEDCHK, BEDECD, CNVXPP, DOBED, DOLENR, DOVELR, GCLEAN, GCLEAN_FAC, GNOISE, GNOISE_FAC, IBDOFF, IEPOFF, IMPOFF, INTXPP, IPRXPP, ITRIPP, ITRXPP, IVPOFF, KEXCNV, KEXSIM, KEXSTV, KVAL_OSC, LPPAPU, MAXEXC, MAXLPP, MAX_KVAL, NBED, NPPAP, NPPAPT, NROTAV, ORBXPP, ORIENTED, RESXPP, THCPP, UPOL, UWAVE, XPPANA, XPPFIL, XPPNRM, XPP_E2CHEK, XPP_INDSTR, XPP_LSFG, XPP_RSPEXP, XPP_SKIPEE, XPP_SKIPEP, XPP_TRIPLET
 !      use dcbxlr_mod, only: MAXRM, MXLOAD
-!      use dcbham_mod, only: BSS, ECPCALC, FREEPJ, LEVYLE, QED, SPINFR, VEXTPJ, X2C
+      use dcbham_mod, only: BSS, ECPCALC, FREEPJ, LEVYLE, QED, SPINFR,
+     &  VEXTPJ, X2C
       use dgroup_mod, only: NBSYM, NFSYM
       use pgroup_mod, only: REP
 !      use dcbxpr_mod, only: MAXPRPS, NPRPS
@@ -367,7 +368,6 @@ C
 #include "dcbprp.h"
 #include "dcbxpp.h"
 #include "dcbxlr.h"
-#include "dcbham.h"
 #include "dcbxpr.h"
 C
       LOGICAL SET, NEWDEF, RESET
@@ -1119,7 +1119,6 @@ C
 #include "dcbxpp.h"
 Chj: MAXRM, MXLOAD
 #include "dcbibn.h"
-!#include "dcbham.h"
 #include "dcborb.h"
       LOGICAL FIRST
       DIMENSION ATMPPF(MAXEXC,max(1,NPPAPT),NBSYM,*),
@@ -1274,7 +1273,7 @@ C*****************************************************************************
 !      use dcbibn_mod, only: JBENDX, JBPNDX
 !      use dcbxrs_mod, only: BVTYP, IMX, INTXRS, IPEP, IPPP, IPX, JSYMOP, JTIMOP, LUBOE, LUBOP, LUXVC, NERED, NEXCNV, NPRED, NREDM, RSPLAB
 !      use dcbxpp_mod, only: GCLEAN, GCLEAN_FAC, GNOISE, GNOISE_FAC, IPRXPP, JPPAP, LPPAPS, LPPAPU, MAXEXC, NPPAP, NPPAPT, ORBXPP
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NORB
       use dcbbas_mod, only: NFBAS
       use dgroup_mod, only: JBTOF, JSPINR, LINEAR, NBSYM, NFSYM, NZ
@@ -1288,7 +1287,6 @@ C
 #include "dcbibn.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"
-#include "dcbham.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
       LOGICAL FIRST,TEST
@@ -1520,7 +1518,7 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB
       use dgroup_mod, only: FREP, JFSYM, LINEAR, NBSYM, NFSYM, NZ
       use pgroup_mod, only: REP
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
 !      use dcbxpp_mod, only: JPPAP, KEXCNV, LPPAPS, LPPAPU, MAXEXC, NCLS_XPP, NPPAP, NPPAPT, ORBXPP, THCPP, XPP_SKIPEE, XPP_SKIPEP
       use symmet_mod, only: ISYMAX
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
@@ -1528,7 +1526,6 @@ C*****************************************************************************
       INTEGER :: I, J, K
 C
       PARAMETER ( D0 = 0.0D0, D2R3 = (2.0D0/3.0D0), D2 = 2.0D0 )
-#include "dcbham.h"
 #include "dcbxpp.h"
 !#include "dcbxlr.h"
 Chj: dcbxlr includes some general information
@@ -2089,14 +2086,13 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
       use dgroup_mod, only: JFSYM, LINEAR, NBSYM, NFSYM, NZ
       use pgroup_mod, only: REP
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
 !      use dcbxpp_mod, only: BEDECD, DOBED, DOLENR, DOVELR, JPPAP, KEXCNV, KVAL_OSC, LPPAPS, LPPAPU, MAXEXC, NBED, NPPAP, NPPAPT, ORIENTED, UPOL, UWAVE, XPPERG
       use symmet_mod, only: ISYMAX, MAXREP
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 #include "implicit.h"
       INTEGER :: I, II
 C
-#include "dcbham.h"
 #include "dcbxpp.h"
 C
 #include "dcbxpr.h"

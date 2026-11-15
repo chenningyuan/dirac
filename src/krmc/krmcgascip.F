@@ -54,7 +54,7 @@ C***********************************************************************
 !      use dcbidx_mod, only: IDXU2G
 !      use dcbbos_mod, only: IBOSYM
       use dgroup_mod, only: NFSYM, NZ
-!      use dcbham_mod, only: LEVYLE, SPINFR
+      use dcbham_mod, only: LEVYLE, SPINFR
 !      use dcbopt_mod, only: IOPT_MAXMK2, IOPT_MINMK2, IOPT_MK2DEL, IOPT_MK2REF
 !      use dcborb_mod, only: IASH, NAELEC, NASH, NASHT
 !      use dcbgascip_mod, only: IPTA2O, IPTB2O, IPTO2A, IPTO2B, IRP, IRPAMO, IRRP, MAXASH_GASCIP, MAXMK2, MINMK2, MK2DEL, MK2REF, MULTB, NREP, REPNA
@@ -72,7 +72,6 @@ C  dcborb.h : NAELEC, NASHT, NASH(), IASH()
 C
 #include "dcbidx.h"
 #include "dcbbos.h"
-#include "dcbham.h"
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbgascip.h"
@@ -1340,13 +1339,12 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUKRMC
-!      use dcbham_mod, only: LEVYLE, SPINFR
+      use dcbham_mod, only: LEVYLE, SPINFR
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NAELEC, NASHT, NNASHX, NORBT
       use dgroup_mod, only: LINEAR, NZ, NZ_IN_CI
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcbham.h"
 #include "dcborb.h"
 C
       DIMENSION WORK(*), EIGVAL(*), EIGVEC(*), CMO(*)
@@ -2609,7 +2607,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUKRMC, PARCAL
-!      use dcbham_mod, only: LEVYLE, SPINFR
+      use dcbham_mod, only: LEVYLE, SPINFR
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NAELEC, NASHT, NCMOTQ, NNASHX, NORBT
       use dgroup_mod, only: IPQTOQ, LINEAR, NZ, NZ_IN_CI
 #include "implicit.h"
@@ -2619,7 +2617,6 @@ C Used from include files:
 C  dcbgen.h : PARCAL, ...
 C  dcborb.h : NASHT,NCMOTQ,...
 C
-#include "dcbham.h"
 #include "dcborb.h"
 C
       INTEGER*8 IDET(2,*)
@@ -5169,7 +5166,7 @@ C
 !
 !***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
-!      use dcbham_mod, only: LEVYLE, SPINFR
+      use dcbham_mod, only: LEVYLE, SPINFR
       use dgroup_mod, only: NBSYM, NFSYM, NZ
       use pgroup_mod, only: REP
 !      use dcborb_mod, only: MXGAS
@@ -5184,7 +5181,6 @@ C
       DIMENSION WORK(LWORK),IMKSET(3)
       DIMENSION MULTB_TMP(64,64)
 !
-#include "dcbham.h"
 #include "dcborb.h"
 #include "dcbgascip.h"
 !

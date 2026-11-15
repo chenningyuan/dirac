@@ -28,7 +28,10 @@ C     Called from:  DIRCTL (after PAMINP)
 C                   EXEDIT ( -||-) - optimization
 C
 C***********************************************************************
-!      use dcbham_mod, only: ECPCALC, NOSMLV, ONESYS, X2C
+      use dcbham_mod, only: ECPCALC, NOSMLV, ONESYS, X2C
+#if defined (MOD_CAP)
+      use dcbham_mod, only: CAP
+#endif
       use checkpoint
       use memory_allocator
       use visual_cfg
@@ -44,7 +47,6 @@ C***********************************************************************
      &  TWOCOMPBSS
 #include "implicit.h"
 C
-#include "dcbham.h"
 C
 C
       LOGICAL TWOBUF,GOFAST,TOBE
@@ -217,7 +219,7 @@ C***********************************************************************
       use dcbbas_mod
       use maxorb_mod, only: MXCORB
       use inftap_mod, only: LUINTR
-!      use dcbham_mod, only: MDIRAC
+      use dcbham_mod, only: MDIRAC
       use maxaqn_mod, only: MXAQN, MXQN
       use pgroup_mod, only: REP
       use dcbgen_mod, only: LU1INT, LUCOEF, LUKRMC, LUOVLP, LUPMAT,
@@ -225,7 +227,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "dcbham.h"
       CHARACTER COMP(2)*1
 C
       IF(IPRINT.GE.2) CALL TITLER('Output from SETDC1','*',103)
@@ -430,14 +431,13 @@ C     Written by T.Saue - November 1994
 C     Last revision: Nov 23 1994 - tsaue
 C***********************************************************************
 !      use dcborb_mod, only: I2ASHX, I2OCCX, I2ORBX, IASH, I_DCBORB_SET, IOCC, IORB, N2ASHT, N2ASHX, N2ASHXQ, N2ESHT, N2ESHX, N2ISHT, N2ISHX, N2OCCT, N2OCCX, N2ORBT, N2ORBTQ, N2ORBX, N2ORBXQ, N2PSHT, N2PSHX, N2SSHT, N2SSHX, NASHT, NCMOT, NCMOTQ, NESHT, NFORB, NFROT, NISHT, NNASHX, NOCC, NOCCT, NORB, NORBT, NPSHT, NSSHT, NTORB
-!      use dcbham_mod, only: URKBAL
+      use dcbham_mod, only: URKBAL
       use dgroup_mod, only: FREP, NFSYM, NZ
       use dcbbas_mod, only: NFBAS
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "dcbham.h"
 #include "dcborb.h"
       CHARACTER COMP(2)*1
 C
@@ -806,13 +806,12 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use frame_mod, only: CORRLV
 !      use dcbdhf_mod, only: AOC, NOPEN
-!      use dcbham_mod, only: LEVYLE
+      use dcbham_mod, only: LEVYLE
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
 #include "dcbdhf.h"     
-#include "dcbham.h"
       DIMENSION DMAT(N2BBASXQ,*),WORK(*)
       KWORK = 1
       KFREE = KWORK
@@ -868,7 +867,7 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use dcbgen_mod, only: LVNEW
-!      use dcbham_mod, only: ICTLV1C, INTV1C, LEVYLE, ONECAP, SSMTRC
+      use dcbham_mod, only: ICTLV1C, INTV1C, LEVYLE, ONECAP, SSMTRC
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -876,7 +875,6 @@ C***********************************************************************
       LOGICAL TABSCQ
 C
 C
-#include "dcbham.h"
       DIMENSION SCQ(*),DMAT(*),WORK(LWORK)      
 C
       KWORK = 1
@@ -933,13 +931,12 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use frame_mod, only: CORRLV, POTNUC
       use nuclei_mod, only: CHARGE, NUCIND
-!      use dcbham_mod, only: INTV1C, ONECAP
+      use dcbham_mod, only: INTV1C, ONECAP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I
 C
 C
-#include "dcbham.h"
       DIMENSION SCQ(*)
 C
       IPRINT_local = IPRINT - 3
@@ -1047,7 +1044,7 @@ C     Written by Jesper K. Pedersen Aug. 2001
 C     (based on SCDENS by O. Fossgaard)
 C     
 C***********************************************************************
-!      use dcbham_mod, only: SSMTRC
+      use dcbham_mod, only: SSMTRC
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
@@ -1062,7 +1059,6 @@ C***********************************************************************
 C
 C
 !#include "dcborb.h"
-#include "dcbham.h"
       DIMENSION QLC(*),DMAT(*),WORK(LWORK)      
 C
       KWORK = 1
@@ -1183,7 +1179,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I,J
 C
-!#include "dcbham.h"
       DIMENSION QMAT(NUCDEP,NUCDEP,2,NMPOLOP),DMAT(*),WORK(LWORK)
       DIMENSION INDDIP(3)
       LOGICAL   DIPDONE
@@ -1441,12 +1436,11 @@ C***********************************************************************
       use dgroup_mod, only: NFSYM, NZ
 !      use dcbdhf_mod, only: N2TMOTQ, NACSH, NACSHMF, NESHMF, NISHMF, NOCCMF, NOPEN, NPSHMF, NTMO
 !      use dcborb_mod, only: ID_SUB_BL, NASH, NBORB, NESH, NFORB, NFRO, NISH, NORB, NORB_SUB, NPSH, N_SUB_BL
-!      use dcbham_mod, only: I2COFK, SUB_BL, URKBAL
+      use dcbham_mod, only: I2COFK, SUB_BL, URKBAL
       use dcbgen_mod, only: LUTMAT
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "dcbham.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 C
@@ -1582,7 +1576,7 @@ C
 C***********************************************************************
 !      use dcbdhf_mod, only: NACSH, NACSHMF, NESHMF, NISHMF, NOCCMF, NOPEN, NPSHMF, NTMO
 !      use dcborb_mod, only: ID_SUB_BL, NASH, NBORB, NESH, NFRO, NISH, NORB_SUB, NPSH, N_SUB_BL
-!      use dcbham_mod, only: I2COFK, SUB_BL, URKBAL
+      use dcbham_mod, only: I2COFK, SUB_BL, URKBAL
       use dgroup_mod, only: NFSYM, NZ
       use dcbbas_mod, only: NZT
       use dcbgen_mod, only: LUTMAT
@@ -1591,7 +1585,6 @@ C
       INTEGER :: J
 #include "dcborb.h"
 #include "dcbdhf.h"
-#include "dcbham.h"
 C
       NBRP = 4/NZ
       WRITE(LUTMAT) NZT,URKBAL,SUB_BL,I2COFK

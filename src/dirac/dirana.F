@@ -487,7 +487,7 @@ C***********************************************************************
       use dcbbas_mod, only: N2BBASX, NFBAS, NTBAS
 !      use dcbpop_mod, only: DONETP, DO_SCFPOP, ILABDF, IPOPLAB, IPRPOP, NPOPLAB, POPLAB
       use maxorb_mod, only: MXCORB
-!      use dcbham_mod, only: SSMTRC
+      use dcbham_mod, only: SSMTRC
       use dgroup_mod, only: FREP, NBSYM, NFSYM
 !      use dcborb_mod, only: NORB, NORBT, NPSH
       use xmlout
@@ -502,7 +502,6 @@ C  DGROUP: NZ
 C
 #include "dcbpop.h"
 #include "dcborb.h"
-#include "dcbham.h"
 C
       DIMENSION PMAT(NPOPLAB,NPOPLAB,2),SMAT(*),CMO(*),
      &          EIG(NORBT),IBEIG(NORBT),
@@ -644,7 +643,7 @@ C                                        account)
 C***********************************************************************
 !      use dcborb_mod, only: NISH, NPSH
 !      use dcbpop_mod, only: DONETP, IPRPOP, NPOPLAB, POPLAB
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
       use dgroup_mod, only: ATOMIC, FREP, LINEAR, NFSYM, NZ
       use dcbbas_mod, only: NTBAS
       use maxorb_mod, only: MXCORB
@@ -661,7 +660,6 @@ C  DCBBAS:
 C  DGROUP: NZ
 C  DCBDHF: NOPEN
 C
-#include "dcbham.h"
 #include "dcbpop.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
@@ -1329,7 +1327,6 @@ C***********************************************************************
 C
 #include "dcbprj.h"
 #include "dcborb.h"
-!#include "dcbham.h"
 C
       DIMENSION WORK(*)
       DIMENSION NSTR(2,0:2,0:MAXREF),KVEC(2,0:MAXREF),
@@ -1742,7 +1739,7 @@ C                                    numbers (and mj-values)
 C
 C***********************************************************************
 !      use dcbprj_mod, only: IPRPRJ, LWGPOP, MAXREF, NREFS, PROTHR, VECREF
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
       use dgroup_mod, only: FREP, LINEAR
       use priunit_mod, only: LUPRI
       use pgroup_mod, only: REP
@@ -1753,7 +1750,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0
 C
 #include "dcbprj.h"
-#include "dcbham.h"      
 C
       integer, intent(in)    :: ntot, nref, nmol, nzp, iopt
       integer, intent(in)    :: krmc_flg
@@ -2482,8 +2478,8 @@ C
 C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
-!      use dcbham_mod, only: MC
 !      use dcbrho1_mod, only: DSTEP
+      use dcbham_mod, only: MC
       use dcbbas_mod, only: NTBAS
       use codata_mod, only: XTANG
       use kinds_mod, only: dp
@@ -2492,7 +2488,6 @@ C***********************************************************************
 C
       DIMENSION DMAT(*),GAO(*),COORD(3,2),RHO(0:2),BUF(*),WORK(*)
       INTEGER :: I
-#include "dcbham.h"
 #include "dcbrho1.h"
 C
 C     Calculate distance between centers
@@ -2549,7 +2544,7 @@ C***********************************************************************
       use nuclei_mod, only: NUCDEP
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: N2BBASXQ, NTBAS
-!      use dcbham_mod, only: LEVYLE
+      use dcbham_mod, only: LEVYLE
       use dircmo
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2559,7 +2554,6 @@ C
       DIMENSION WORK(LWORK),CUBE(3,0:4),LUCUBE(2)
       real(8), allocatable:: cmo(:)
 #include "dcbrho.h"
-#include "dcbham.h"
 C
       CALL QENTER('GT3RHO')
 c
@@ -2641,7 +2635,7 @@ c     Write cube files for gerade orbitals orbs(1,1)..orbs(N1,1)
 c     and ungerade orbitals orbs(1,2)..orbs(N2,2).
 c     orbital indices are defined so that 1 is first occupied.
 c     Based on GT3RHO, this one by ulfek.
-!      use dcbham_mod, only: LEVYLE
+      use dcbham_mod, only: LEVYLE
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: N2BBASXQ, NTBAS
@@ -2659,7 +2653,6 @@ C
       character*16 filename
       real(8), allocatable :: cmo(:)
 #include "dcbrho.h"
-#include "dcbham.h"
 C
       CALL QENTER('GT3RHO')
 c
@@ -2781,7 +2774,6 @@ C
       DIMENSION LUCUBE(*),CUBE(3,0:3),RHO(2,*),DMAT(*),GAO(*),
      &          BUF(*),WORK(*)
       INTEGER :: I
-!#include "dcbham.h"
 #include "dcbrho.h"
 C
 C
@@ -3110,9 +3102,9 @@ C
 C     Written by T. Saue Sep 2013
 C
 C***********************************************************************
-!      use dcbham_mod, only: SSMTRC
 !      use dcborb_mod, only: NPSH
 !      use dcbprj_mod, only: IPRPRJ, NPROJNUC, NREFS, REFFIL, VECREF
+      use dcbham_mod, only: SSMTRC
       use dgroup_mod, only: NFSYM, NZ
       use dcbbas_mod, only: N2BAST, N2BBASXQ, NFBAS
       use priunit_mod, only: LUPRI
@@ -3122,7 +3114,6 @@ C***********************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
-#include "dcbham.h"
 #include "dcborb.h"
 #include "dcbprj.h"
       LOGICAL TOBE
@@ -3861,8 +3852,8 @@ C     KRMC_FLG = 0  Orbitals read from CHECKPOINT
 C
 C***********************************************************************
 !      use dcbprj_mod, only: IPRPRJ, MAXREF, NREFS, PATOMS, REFFIL, VECREF
-!      use dcbham_mod, only: SSMTRC
 !      use dcborb_mod, only: IOCC
+      use dcbham_mod, only: SSMTRC
       use dgroup_mod, only: FREP, IPQTOQ, IQDEF, NFSYM, NZ, NZC1
       use dcbbas_mod, only: N2BAS, N2BAST, N2BBASX, NFBAS, NTBAS
       use dcbgen_mod, only: LUCOEF
@@ -3873,7 +3864,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0=0.0D0
 C
 #include "dcbprj.h"
-#include "dcbham.h"
 #include "dcborb.h"
       DIMENSION NVECS(2,0:2),KVEC(2,0:MAXREF),NSTR(2,0:2,0:MAXREF),
      &          CSEL(*),ESEL(*),IBSEL(*),BVEC(*),
@@ -4812,14 +4802,13 @@ C
 C     Written by T. Saue June 6 2012
 C
 C***********************************************************************
-!      use dcbham_mod, only: SSMTRC
+      use dcbham_mod, only: SSMTRC
       use priunit_mod, only: LUPRI
       use dgroup_mod, only: IQDEF, NZC1
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,JJ
       REAL(dp), PARAMETER :: D0=0.0D0, DM1=-1.0D0
-#include "dcbham.h"
       CHARACTER*6 REFFIL(NONTYP)
       DIMENSION AMAT(NVECS,NVECS,NZC1),NCATOM(0:2,NONTYP),
      &          NATOMS(NONTYP),CSEL(NBAS,NVECS,NZC1),WORK(*)

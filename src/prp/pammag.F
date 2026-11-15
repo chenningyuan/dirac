@@ -32,8 +32,8 @@ C
 C*****************************************************************************
 !      use dcbprp_mod, only: EXPPED, FULMAT, IPRDEF, LONDON, MSUSCP, NOORTH, OPTROT, REGRAD, SEPTEP, SHIELD, SYMCON
 !      use dcbnmr_mod, only: EPREORTH, INTNMR, NOONEI, NOTWOL
-!      use dcbham_mod, only: BSS, LEVYLE, RDSUSLLMOD, X2C
 !      use dcbxlr_mod, only: XLR_SKIPEP
+      use dcbham_mod, only: BSS, LEVYLE, RDSUSLLMOD, X2C
       use dirac_cfg
 #ifdef MOD_LAO_REARRANGED
       use london_helper
@@ -51,7 +51,6 @@ C*****************************************************************************
       INTEGER :: I
 #include "dcbprp.h"
 #include "dcbnmr.h"
-#include "dcbham.h"
 #include "dcbxlr.h"
 C
 
@@ -454,7 +453,7 @@ C***********************************************************************
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBXQ, NCMOTQ, NISH, NOCC, NORB, NORBT, NPSH
       use dcbbas_mod, only: NTBAS
       use dcbgen_mod, only: LUCOEF
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
 !      use dcbprp_mod, only: DOPCT, IPCON, IPSHIELD
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM
 !      use dcbxlr_mod, only: LLRAPU
@@ -465,7 +464,6 @@ C***********************************************************************
 #include "implicit.h"
 C
 #include "dcborb.h"   
-#include "dcbham.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
 #include "dcbxlr.h"
@@ -642,10 +640,10 @@ C   the electronic shells.
 C
 C***********************************************************************
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBXQ, NCMOTQ, NISH, NOCC, NORB, NORBT, NPSH
-!      use dcbham_mod, only: SPINFR
 !      use dcbprp_mod, only: DOPCT, FULMAT, IPCON, IPSHIELD
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 !      use dcbxlr_mod, only: LLRAPU
+      use dcbham_mod, only: SPINFR
       use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NFSYM, NZ
 #ifdef MOD_LAO_REARRANGED
       use london_helper
@@ -665,7 +663,6 @@ C***********************************************************************
       INTEGER :: I
 C
 #include "dcborb.h"   
-#include "dcbham.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
 #include "dcbxlr.h"
@@ -1106,7 +1103,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUCOEF
 !      use dcborb_mod, only: ICMOQ, N2ORBXQ, NORB, NORBT
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
       use dgroup_mod, only: IPQTOQ, NZ
       use mxcent_mod, only: MXCENT, MXCOOR
@@ -1115,7 +1112,6 @@ C***********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1= 1.0D0
 #include "dcborb.h"
-#include "dcbham.h"
 #include "dcbxpr.h"
 #include "dcbprp.h"
 C
@@ -1878,11 +1874,10 @@ C
 C  Written by Miroslav Ilias, Prievidza, june 2003.
 C
 C*****************************************************************************
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
       use dcbbas_mod, only: N2BBASXQ, NTBAS
       use dcbgen_mod, only: LUCOEF
 #include "implicit.h"
-#include "dcbham.h"
 C
       DIMENSION WORK(*)
 

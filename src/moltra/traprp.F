@@ -292,13 +292,12 @@ C     ==============================================================
 C
       use priunit_mod, only: LUPRI
       use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
 C
-#include "dcbham.h"
       REAL(dp), PARAMETER :: DM1=-1.D0, ZEROTHRS=1.0D-7
       CHARACTER*32 ACHAR
       DIMENSION NSTR(2,0:2,2),PRCMO(NSTRT1*2,NSTRT2*2,2)

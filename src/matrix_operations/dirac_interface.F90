@@ -3,6 +3,7 @@
 
 module dirac_interface
 
+      use dcbham_mod, only: BSS, LEVYLE, MC, SPINFR, SSMTRC
       use dgroup_mod, only: JBTOF, NFSYM, NZ
       use dcbbas_mod, only: NFBAS, NTBAS
       use dcbgen_mod, only: INTGEN, PARCAL, TWOCOMP
@@ -82,7 +83,6 @@ module dirac_interface
   end interface
 
 #include "../abacus/cbinuc.h"
-#include "dcbham.h"
 #include "dcborb.h"
 
   real(8), pointer   :: f77_work(:)       ! Fortran 77 work array pointer

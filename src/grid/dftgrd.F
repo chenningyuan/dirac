@@ -205,7 +205,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use nuclei_mod, only: ISTBNU, NAMN, NOORBT, NUCIND
       use symmet_mod, only: MAXREP, MULT
       use ccom_mod, only: NHTYP
-!      use dcbham_mod, only: LEVYLE, MC
+      use dcbham_mod, only: LEVYLE, MC
        use num_grid_cfg
        use interface_grid
 
@@ -218,7 +218,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "dftwrk.h"
 
-#include "dcbham.h"
 
       DIMENSION ZAN(*), C(3,NAT)
       DIMENSION WRKSP(4*NUM),

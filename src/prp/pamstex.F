@@ -31,7 +31,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
       INTEGER :: I, II
 #include "dcbprp.h"
-!#include "dcbham.h"
 !#include "dcbxpr.h"
 #include "dcbstex.h"
       PARAMETER (NTABLE = 6)
@@ -211,7 +210,6 @@ C
 #include "implicit.h"
       INTEGER :: I, II
 #include "dcborb.h"
-!#include "dcbham.h"
 !#include "dcbxpr.h"
 #include "dcbdhf.h"
 #include "dcbstex.h"
@@ -444,7 +442,6 @@ C     on disk in DFFCK1
 #include "implicit.h"
       INTEGER :: II
 #include "dcborb.h"
-!#include "dcbham.h"
 #include "dcbdhf.h"
 #include "dcbstex.h"
       DIMENSION WORK(LWORK),FMAT(N2BBASXQ),CMO(NCMOTQ)
@@ -789,7 +786,6 @@ c     TODO: optimize write below (one big block is better)
 #include "implicit.h"
       INTEGER :: I, II, J, JJ, K, KK
 #include "dcborb.h"
-!#include "dcbham.h"
 !#include "dcbxpr.h"
 #include "dcbstex.h"
       DIMENSION FMAT(NORBT,NORBT,NZ), WORK(LWORK)
@@ -1102,7 +1098,6 @@ C
 !      use dcbstex_mod, only: STEX_NHOLES, STEX_NPARAM, STEX_NR_OP, STEX_NVIRT
 #include "implicit.h"
       INTEGER :: I, II
-!#include "dcbham.h"
 !#include "dcbxpr.h"
 #include "dcbstex.h"
       DOUBLE COMPLEX XMOM,PRPGRAD,DZDOT,REFGSOVL
@@ -1429,11 +1424,10 @@ C     AQ12 = sum j <i1|A|j1><j1|k2> = AQ*S
       SUBROUTINE STEX_OVL12(QOVL,CMO1,CMO2,WORK,LWORK)
 C     Calculate the overlap between the mo's in cmo1 and cmo2
 !      use dcborb_mod, only: N2ORBXQ, NCMOTQ
-!      use dcbham_mod, only: SSMTRC
+      use dcbham_mod, only: SSMTRC
       use dcbbas_mod, only: N2BBASX
 #include "implicit.h"
 #include "dcborb.h"
-#include "dcbham.h"
       DIMENSION CMO1(NCMOTQ),CMO2(NCMOTQ),QOVL(N2ORBXQ),WORK(LWORK)
       KWORK = 1
       KFREE = KWORK

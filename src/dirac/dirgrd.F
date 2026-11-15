@@ -35,14 +35,13 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: MAXREP
-!      use dcbham_mod, only: BSS, X2C
+      use dcbham_mod, only: BSS, X2C
       use mxcent_mod, only: MXCENT, MXCOOR
          use dirac_cfg
 #include "implicit.h"
 C
       DIMENSION WORK(LWORK)
       LOGICAL   LSAVE(3)
-#include "dcbham.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
 C
@@ -206,7 +205,7 @@ C*****************************************************************************
 #if defined (VAR_MPI)
       use dcbgen_mod, only: PARCAL
 #endif
-!      use dcbham_mod, only: ONECAP
+      use dcbham_mod, only: ONECAP
       use quaternion_algebra
       use xcint_main
       use dirac_cfg
@@ -219,7 +218,6 @@ C
       REAL(dp), PARAMETER :: D1 = 1.00D00, DP5 = 0.5D00, D0 = 0.0D00,
      &                       D2 = 2.00D00
 C
-#include "dcbham.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 C
@@ -848,7 +846,7 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use dcbdhf_mod, only: NFMAT
       use nuclei_mod, only: CHARGE, NUCDEP, NUCIND
-!      use dcbham_mod, only: INTV1C, LEVYLE, N1OPER, NOSMLV, ONECAP
+      use dcbham_mod, only: INTV1C, LEVYLE, N1OPER, NOSMLV, ONECAP
       use dummy_mod, only: DUMMY, IDUMMY
       use dcbgrd_mod
 !      use exeinf_mod, only: FTRONV
@@ -875,7 +873,6 @@ C     Timing variables
       DATA DPRTIM /D0,D0,D0,D0,D0,D0,D0,D0/
 C
 #include "dcbdhf.h"
-#include "dcbham.h"
 C two el. part
 C
 #include "exeinf.h"
@@ -1866,7 +1863,7 @@ C*****************************************************************************
       use nuclei_mod, only: NUCDEP
       use dcbgen_mod, only: DOLVC
       use taymol_mod, only: GRDMOL
-!      use dcbham_mod, only: INTV1C, ONECAP
+      use dcbham_mod, only: INTV1C, ONECAP
       use priunit_mod, only: LUPRI
       use dcbgrd_mod, only: GRADER, GRADKN, GRADLV, GRADNN, GRADNU,
      &  GRADRO, GRADXC, IGRD_INTBUF, IGRD_INTFLG
@@ -1876,7 +1873,6 @@ C*****************************************************************************
       INTEGER :: I
 C
 C
-#include "dcbham.h"
 C
       LOGICAL LBIT
       CHARACTER*(20) LABEL(3)
@@ -2228,7 +2224,7 @@ C
 C     Last revision: 1997/09/23 jth
 C
 C*****************************************************************************
-!      use dcbham_mod, only: INTV1C, ONECAP
+      use dcbham_mod, only: INTV1C, ONECAP
       use dorps_mod, only: DOREPS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEP, NUCIND, NUCNUM
@@ -2243,7 +2239,6 @@ C
      *           THREE = 3.0D0)
 C
       DIMENSION SCQ(NUCIND),WORK(LWORK)
-#include "dcbham.h"
 C
 C
       CALL QENTER('LVCGRD')

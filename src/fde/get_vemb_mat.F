@@ -14,7 +14,7 @@
      &  NFBAS, NNBBASX, NTBAS
       use dgroup_mod, only: JFSYM, NFSYM, NZ
       use symmet_mod, only: ICOS
-!      use dcbham_mod, only: NOSMLV
+      use dcbham_mod, only: NOSMLV
       use memory_allocator
 
       use kinds_mod, only: dp
@@ -22,7 +22,6 @@
       INTEGER :: I, J
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
-#include "dcbham.h"
       DIMENSION vemb_mat(*)
       CHARACTER*8 RTNLBL(2)
 

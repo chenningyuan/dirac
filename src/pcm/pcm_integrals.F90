@@ -221,6 +221,7 @@ contains
         !            density matrix as input, potentials vector as output.
         !
 
+      use dcbham_mod, only: BSS, NOSMLV, X2C
       use dgroup_mod, only: NBSYM, NZ
       use dcbbas_mod, only: NTBAS
       use ccom_mod, only: THRS
@@ -234,7 +235,6 @@ contains
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
 #include "dcbdhf.h"
-#include "dcbham.h"
 
         ! Passed variables
         integer(c_size_t), intent(in) :: nr_points

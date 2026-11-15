@@ -218,7 +218,6 @@ C
       LOGICAL LBIT
       DIMENSION DMAT(*), CMO(*)
 #include "dcborb.h"
-!#include "dcbham.h"
 C
 C
       CALL QENTER('GENDEN')

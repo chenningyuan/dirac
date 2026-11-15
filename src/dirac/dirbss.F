@@ -42,8 +42,9 @@ C     praise his holy name!'  (Psalm 103,1)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use dcbham_mod, only: DO4C2C, I2COFK, IF, IPRHAM, MC, SSMTRC, SSMTRC_SAVE, START2C, TRMO4C2C, USEDF
 !      use dcborb_mod, only: NESH, NORB, NPSH
+      use dcbham_mod, only: DO4C2C, I2COFK, IPRHAM, MC, SSMTRC,
+     &  SSMTRC_SAVE, START2C, TRMO4C2C, USEDF
       use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS, NZT
       use dcbgen_mod, only: INTGEN, LUBSS, TWOCOMPBSS
       use priunit_mod, only: LUPRI
@@ -52,7 +53,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
       INTEGER :: I
 #include "dcborb.h"
-#include "dcbham.h"
 #include "dcbdhf.h"
 
       DIMENSION VMAT(*),WORK(LWORK)
@@ -296,7 +296,7 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !     use x2c_utils, only: 
 !    &    print_x2cmat
-!      use dcbham_mod, only: BLOCKD, CMPEIG, CONT2C, DO2C4C, DO4C2C, I2CHAM, I2COFK, IBSS, IF, IMFCH, INI2C, IPRHAM, NOAMFI, NOPRTR, ONESYS, SPINFR, START2C, USEDF, YREQ1
+      use dcbham_mod
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: BNCRON, LUBSS
 !      use dcborb_mod, only: NORB
@@ -308,7 +308,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.00D00, D0 = 0.00D00
 #include "dcborb.h"
-#include "dcbham.h"
 C
       DIMENSION VMAT(*),WORK(LWORK)
       LOGICAL DK2SO1,ONLYSO1,SAVESO1,SF_BEG,FPB,FNDLAB,
@@ -902,10 +901,9 @@ C****************************************************************************
       use priunit_mod, only: LUPRI
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: N2BBASXQ, NFBAS, NTBAS
-!      use dcbham_mod, only: BSS, IPRHAM
+      use dcbham_mod, only: BSS, IPRHAM
       use dcbgen_mod, only: LUBSS, TWOCOMP
 #include "implicit.h"
-#include "dcbham.h"
       DIMENSION VMAT(*),WORK(LWORK)
       LOGICAL BSS_SAVE,TWOCOMP_SAVE
 
@@ -2313,7 +2311,7 @@ C
 C  Rewritten by Miro ILIAS, Strasburg, 2005 (after HJJ,MI, Odense,2002)
 C                                                         
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use dcbham_mod, only: IPRHAM, SUB_BL
+      use dcbham_mod, only: IPRHAM, SUB_BL
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, N2TMT, NFBAS, NTBAS
       use dcbgen_mod, only: CVAL, DOJACO, LUBSS
@@ -2326,7 +2324,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &                       THRNULL1 = 1.0D-4
 C  ...  THRNULL is round off error with 15 digits relative to 2c^2 = 3.7D4
 #include "dcborb.h"
-#include "dcbham.h"
       DIMENSION TBUF(*),VMAT(*),TMAT(*),EIG(*),IBEIG(*),WORK(LWORK)
       LOGICAL DBGDIAG, DOJACO_SAVE, FNDLAB, SBSAVE
 
@@ -2939,7 +2936,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use dcbgen_mod, only: LUBSS
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NESH, NORB, NPSH
-!      use dcbham_mod, only: BSS, CONT2C, DO4C2C, I2CHAM, IF, IPRHAM, SPINFR, START2C, USEDF
+      use dcbham_mod, only: BSS, CONT2C, DO4C2C, I2CHAM, IPRHAM, SPINFR,
+     &  START2C, USEDF
       use dcbbas_mod, only: I2BASX, NFBAS, NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"                                       
@@ -2947,7 +2945,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 #include "dcborb.h"   
 C ... needed due to the BSS,USEDF 
-#include "dcbham.h"  
       DIMENSION TBUF(*),TMAT(*),VMAT(*),IBEIG(*),WORK(LWORK)    
       LOGICAL SF_BEG, SAVESO1, FPB, LINAD, FNDLAB, EX
       CHARACTER*8 LBL
@@ -6311,9 +6308,10 @@ C
 C  Written by Miro Ilias, July, Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use dcbham_mod, only: BSS, CONT2C, I2CHAM, IF, IPRHAM, NOPRTR, ONESYS, SPINFR
 !      use dcborb_mod, only: NORB
 !      use dcbdhf_mod, only: LUFCK1, LUFCK2, NFMAT
+      use dcbham_mod, only: BSS, CONT2C, I2CHAM, IPRHAM, NOPRTR, ONESYS,
+     &  SPINFR
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
       use dcbgen_mod, only: LUBSS
@@ -6324,7 +6322,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       REAL(dp), PARAMETER :: D1=1.00D00, D0=0.00D00, DM1=-1.00D00
 #include "dcborb.h"   
 #include "dcbdhf.h"   
-#include "dcbham.h"    
 
       DIMENSION VMAT(*),IBEIG(*),WORK(LWORK)
       LOGICAL FPB, KEEPH1, BSS_SAVE
@@ -7280,8 +7277,8 @@ C  Written by Miro Ilias, Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dcbdhf_mod, only: LUFOCK, MXDIIS, NITER
-!      use dcbham_mod, only: IF, INI2C, IPRHAM, NOPRTR, START2C
 !      use dcborb_mod, only: NESH, NORB
+      use dcbham_mod, only: INI2C, IPRHAM, NOPRTR, START2C
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, N2TMT, NFBAS,
      &  NTBAS, NZT
@@ -7292,7 +7289,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D1=1.00D00, D0=0.00D00, DM1=-1.00D00
 #include "dcbdhf.h" 
-#include "dcbham.h" 
 #include "dcborb.h" 
 
       DIMENSION TBUF(*),TMAT(*),VMAT(*),WORK(*)
@@ -7797,8 +7793,8 @@ C     ... this flag must be deactivated for BSS2DC calculations
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CMOTR2C(VMAT,TBUF,CMO,EIG,IBEIG,WORK,LWORK)
 !      use dcbdhf_mod, only: IPRSCF, NTMO
-!      use dcbham_mod, only: IPRHAM
 !      use dcborb_mod, only: NESH, NORB, NPSH
+      use dcbham_mod, only: IPRHAM
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUBSS
       use dcbbas_mod, only: N2BBASXQ, NFBAS
@@ -7830,7 +7826,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       INTEGER :: I
       REAL(dp), PARAMETER :: D1=1.00D00, D0=0.00D00, DM1=-1.00D00
 #include "dcbdhf.h" 
-#include "dcbham.h" 
 #include "dcborb.h" 
 
       DIMENSION VMAT(*),CMO(*),EIG(*),TBUF(*),WORK(LWORK)
@@ -8020,7 +8015,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 !      use dcbdhf_mod, only: IPRSCF
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use priunit_mod, only: LUPRI
-!      use dcbham_mod, only: IF, INI2C, IPRHAM
+      use dcbham_mod, only: INI2C, IPRHAM
 !      use dcborb_mod, only: NESH
       use dcbgen_mod, only: LUBSS
       use dcbbas_mod, only: NFBAS
@@ -8047,7 +8042,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       INTEGER :: I
       REAL(dp), PARAMETER :: D1=1.00D00, D0=0.00D00, DM1=-1.00D00
 #include "dcbdhf.h" 
-#include "dcbham.h" 
 #include "dcborb.h" 
 
       DIMENSION TBUF(*),TMAT(*),CMO(*),EIG(*),IBEIG(*),WORK(LWORK)
@@ -8186,7 +8180,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       INTEGER :: I
       REAL(dp), PARAMETER :: D1=1.00D00, D0=0.00D00, DM1=-1.00D00
 C#include "dcbdhf.h" 
-C#include "dcbham.h" 
 #include "dcborb.h" 
 
       DIMENSION TBUF(*),CMO(*),TMAT(*),WORK(LWORK)
@@ -8312,7 +8305,7 @@ C  Written by Miro Ilias, August, Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
-!      use dcbham_mod, only: IPRHAM
+      use dcbham_mod, only: IPRHAM
 !      use dcbdhf_mod, only: IPRSCF
       use dcbgen_mod, only: LUBSS, LUCOEF
 !      use dcborb_mod, only: NCMOTQ, NESH, NORB, NORBT
@@ -8324,7 +8317,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       INTEGER :: I
       REAL(dp), PARAMETER :: D1=1.00D00, D0=0.00D00, DM1=-1.00D00
 #include "dcbdhf.h" 
-#include "dcbham.h" 
 #include "dcborb.h" 
 
       DIMENSION CMO(*),TMAT(*),EIG(*),IBEIG(*),WORK(LWORK)
@@ -10083,12 +10075,11 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUCMD, LUPRI
       use nuclei_mod, only: CHARGE, IAMFA, NAMFA, NUCDEG, NUCDEP, NUCIND
-!      use dcbham_mod, only: ALLAMFA, IF, IMFCH, ISORDER_AMFI_X2C, X2C
+      use dcbham_mod, only: ALLAMFA, IMFCH, ISORDER_AMFI_X2C, X2C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "dcbham.h"
 #include "amfi_if.h"
       PARAMETER (NTABLE = 20)
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0=0.0D0, D2=2.0D00,

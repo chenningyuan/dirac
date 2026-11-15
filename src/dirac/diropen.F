@@ -46,7 +46,7 @@ C
 C*****************************************************************************
 !      use dcbdhf_mod, only: AOC, DA, DALPHA, DF, I2TMOT, IPRSCF, N2TMO, NFMAT, NOPEN, NTMO, OPEN_FAC, TRIVEC
       use priunit_mod, only: LUPRI
-!      use dcbham_mod, only: SUB_BL
+      use dcbham_mod, only: SUB_BL
       use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, NFBAS, NTBAS, NZT
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use kinds_mod, only: dp
@@ -56,7 +56,6 @@ C*****************************************************************************
      &                       DM1 = -1.00D00, D2 = 2.00D00,
      &                       DFTHR = 1.0D-12
 #include "dcbdhf.h"
-#include "dcbham.h"
       DIMENSION FMO(*),FAO(N2BBASXQ,NFMAT),TMAT(*),CMO(*),
      &          DTEMP1(N2BBASXQ,*),DTEMP2(N2BBASXQ),
      &          DMAT(N2BBASXQ,NFMAT),TDINV(*),WORK(*)

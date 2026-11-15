@@ -106,8 +106,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirctl */
       SUBROUTINE DIRCTL()
 
-!      use dcbham_mod, only: BSS, X2C
 !      use dcbdhf_mod, only: NOPEN
+#if defined (HAS_PCMSOLVER)
+      use dcbham_mod, only: BSS, X2C
+#endif
       use dgroup_mod, only: NBSYM
       use checkpoint
       use interface_ao_specific
@@ -125,7 +127,6 @@ C  /* Deck dirctl */
       implicit none
 
 ! dcbgrd.h : DONGRD
-#include "dcbham.h"
 #include "dcbdhf.h"
 
       logical run_pamset, tobe
@@ -291,7 +292,7 @@ C     Restructured 2002 by Hans Joergen Aa. Jensen
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbham_mod, only: HFXMU
+      use dcbham_mod, only: HFXMU
       use dcbgen_mod, only: DOACIN, DOACUT, DOANA, DOPSI, DOPUT,
      &  DORKBIMP, DOTRA, IPRGEN
 !      use dcbpsi_mod, only: DOADC, DOCASCI, DOCASPT2, DOCCM, DOCIM, DOCOSCI, DOEXACC, DOHSCC, DOHSFS, DOIVO, DOKRCC, DOKRCI, DOKRMC, DOLAPLCE, DOLUCT, DOMP2, DOMP2NO, DOMVO, DOPOLPRP, DORES, DOROSE, L1ORBM, L2ORBM
@@ -299,7 +300,6 @@ C***********************************************************************
 !      use dcbimp_mod, only: DOIMPMOS
       use dirac_cfg
 #include "implicit.h"
-#include "dcbham.h"
 C
       LOGICAL   WFCONV
 C

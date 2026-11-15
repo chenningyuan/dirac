@@ -569,7 +569,13 @@ C     Written by Henrik Koch and Paal Dahle
 C
       use aovec_mod, only: MXAOVC
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use dcbham_mod, only: ECPCALC, HFXATT, HFXFAC, HFXMU, INTV1C, LEVYLE, NONREL, ONECAP, SMLV1C, SPINFR
+#if defined (PRG_DIRAC)
+      use dcbham_mod, only: ECPCALC, LEVYLE, NONREL
+#if defined (VAR_MPI)
+      use dcbham_mod, only: HFXATT, HFXFAC, HFXMU, INTV1C, ONECAP,
+     &  SMLV1C, SPINFR
+#endif
+#endif
       use priunit_mod, only: LUPRI
       use infpar_mod, only: IPRPAR, NODES, NTASK, TIMING
 #if defined (VAR_MPI)
@@ -606,9 +612,6 @@ C
 #include "implicit.h"
 C
       INTEGER :: I
-#if defined (PRG_DIRAC)
-#include "dcbham.h"
-#endif
 C
 C
 C
@@ -1453,7 +1456,13 @@ C
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMDEP, NAMDPX, NAMEX,
      &  NAMN, NATOMS, NUCDEP, NUCIND
       use maxaqn_mod, only: MXAQN, MXQN
-!      use dcbham_mod, only: ECPCALC, HFXATT, HFXFAC, HFXMU, INTV1C, LEVYLE, NONREL, ONECAP, SMLV1C, SPINFR
+#if defined (PRG_DIRAC)
+      use dcbham_mod, only: ECPCALC, LEVYLE, NONREL
+#if defined (VAR_MPI)
+      use dcbham_mod, only: HFXATT, HFXFAC, HFXMU, INTV1C, ONECAP,
+     &  SMLV1C, SPINFR
+#endif
+#endif
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use parint_mod, only: parint_t
@@ -1485,9 +1494,6 @@ C
 C
       INTEGER :: I
 C
-#if defined (PRG_DIRAC)
-#include "dcbham.h"
-#endif
 C
 C
       DIMENSION WORK(*), DSEND(2), ISEND(2)
@@ -1750,6 +1756,11 @@ C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 C     Minor revisions Oct 1996 T.Saue
 C
 CMI changes from TEC for LAO
+#ifdef PRG_DIRAC
+#if defined (VAR_MPI)
+      use dcbham_mod, only: SMLV1C
+#endif
+#endif
       use dummy_mod, only: DUMMY, IDUMMY
       use maxorb_mod, only: MXCORB, MXSHEL
       use nuclei_mod, only: NUCDEP
@@ -1794,9 +1805,6 @@ CMI changes from TEC for LAO
      &          GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*),
      &          IJSHEL(2),INDEX_IJ(*),TIMES(*)
 C
-#ifdef PRG_DIRAC
-#include "dcbham.h"
-#endif
 C
 C
       IF (JPRINT .GT. 5) CALL TITLER('Output from PARLOP','*',103)
@@ -2458,16 +2466,15 @@ C     IMODE 2 : Fill the array NPOS
 C
 C     Written by Luuk Visscher, august 2001
 C*****************************************************************************
-!      use dcbham_mod, only: SMLV1C
+#ifdef PRG_DIRAC
+      use dcbham_mod, only: SMLV1C
+#endif
       use blocks_mod, only: KHKTSH, LCLASH, MAXSHL, NCNTSH, NLRGBL,
      &  NORBSH
       use maxorb_mod, only: MXCORB, MXSHEL
       use priunit_mod, only: LUPRI
       use aovec_mod, only: MXAOVC
 #include "implicit.h"
-#ifdef PRG_DIRAC
-#include "dcbham.h"
-#endif
 C
       INTEGER  NPOS(*)
       REAL*8   TIMES(*)

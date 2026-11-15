@@ -33,7 +33,7 @@ contains
       use primit_mod, only: PRICCF, PRIEXP
       use dcbbas_mod, only: IBBAS, NBBAS
       use dgroup_mod, only: IPQTOQ, IQTOPQ, JBTOF, JM4POS, JQBAS, NBSYM, NFSYM, NZ
-!      use dcbham_mod, only: NOSMLV
+      use dcbham_mod, only: NOSMLV
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEG, NUCIND
       integer                 :: i, j, ic
       integer                 :: ishell, icount, iprim, irep, icent
@@ -41,7 +41,6 @@ contains
       character(1), parameter :: ls(2) = (/'L', 'S'/)
 !     --------------------------------------------------------------------------
 
-#include "dcbham.h"
 
       call interface_ao_clear()
 

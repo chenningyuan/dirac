@@ -3456,7 +3456,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
-!      use dcbham_mod, only: MC
+      use dcbham_mod, only: MC
       use dcbbas_mod, only: NBBAS
       use pgroup_mod, only: REP
       use quaternion_algebra
@@ -3465,7 +3465,6 @@ C***********************************************************************
       INTEGER :: I,II,III,J,K
       REAL(dp), PARAMETER :: D0=0.0D0, DTOL=1.0D-1
 C
-#include "dcbham.h"
       DIMENSION CMO(NB,NO,4),IBUF(NO,2)
       DIMENSION TMP(2),NBF(2),III(2),WB(4,8,2),IB(64,4)
 C
@@ -3639,7 +3638,7 @@ C
 C     Written by T.Saue Mar 4 2008
 C
 C***********************************************************************
-!      use dcbham_mod, only: MC
+      use dcbham_mod, only: MC
       use dgroup_mod, only: IPQTOQ, IQMAP, JFSYM, NZ
       use symmet_mod, only: ICOS, ISYMAX
       use mxcent_mod, only: MXCENT
@@ -3652,7 +3651,6 @@ C***********************************************************************
       INTEGER :: I,III,J,K
       REAL(dp), PARAMETER :: DM1=-1.0D0
 C
-#include "dcbham.h"
       DIMENSION CBU(NBU,NOU,4),CBS(NBS,NOS,NZ),III(2)
 C
 C.....III is the totally symmetric irrep for the large components
@@ -3697,7 +3695,7 @@ C
 C***********************************************************************
 
 !      use dcborb_mod, only: NCMOTQ, NORBT, NPSH
-!      use dcbham_mod, only: SUB_BL
+      use dcbham_mod, only: SUB_BL
       use dcbbas_mod, only: I2TMT, N2TMT, NFBAS, NZT
       use priunit_mod, only: LUPRI
       use dgroup_mod, only: NFSYM, NZ
@@ -3707,7 +3705,6 @@ C***********************************************************************
       use dircmo
 #include "implicit.h"
 C
-#include "dcbham.h"
 #include "dcborb.h"
       LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
@@ -3876,7 +3873,6 @@ C***********************************************************************
       INTEGER :: I,II
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0
 C
-!#include "dcbham.h"
       DIMENSION CMO(NBAS,NORB,NZ),EIG(NORB),
      &          TMAT(NBAS,NORB,NZ),CBUF(NORB,NORB,NZ)
       IF(IPRINT.GE.5) THEN
@@ -4238,7 +4234,6 @@ C***********************************************************************
 #include "implicit.h"
 C
       INTEGER :: I
-!#include "dcbham.h"
       DIMENSION CAO(*),CSO(*),NVEC(2)
       real(8), allocatable :: CBUF(:)
       integer, allocatable :: IBUF(:)
@@ -4301,13 +4296,12 @@ C     Written by Trond Saue
 C
 C***********************************************************************C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use dcbham_mod, only: MC
+      use dcbham_mod, only: MC
       use dcbbas_mod, only: NTBAS
       use nuclei_mod, only: NUCDEP
 #include "implicit.h"
       DIMENSION IBUF(*)
       integer, allocatable :: INUC(:)
-#include "dcbham.h"
 C
       allocate(INUC(NTBAS(0)))
       CALL LSQMA1(INUC)

@@ -31,7 +31,8 @@ C     The reduced density matrices are generated within this routine,
 C     whereas Cauchy-Schwarz integrals must be provided externally
 C
 C*****************************************************************************
-!      use dcbham_mod, only: HFXATT, HFXFAC, HFXMU, MDIRAC, ONECAP, SMLV1C, ZORA, ZORA4
+      use dcbham_mod, only: HFXATT, HFXFAC, HFXMU, MDIRAC, ONECAP,
+     &  SMLV1C, ZORA, ZORA4
       use dgroup_mod, only: IHQMAT, IPQTOQ, NZ
       use quaternion_algebra
 #ifdef MOD_SRDFT
@@ -45,7 +46,6 @@ C*****************************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
-#include "dcbham.h"
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),
      &          DMAT(N2BBASX,NZ,NFMAT),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),
@@ -1531,7 +1531,7 @@ C  /* Deck twoge1 */
 C*****************************************************************************
 C
 C*****************************************************************************
-!      use dcbham_mod, only: INTV1C, ONECAP
+      use dcbham_mod, only: INTV1C, ONECAP
       use dcbgen_mod, only: IDFLAG, INTGEN, OPTIMI
       use priunit_mod, only: LUPRI
       use cbihr2_mod, only: IPRTWO
@@ -1543,7 +1543,6 @@ C*****************************************************************************
       INTEGER IREPA(*), LWORK
       REAL(8) WORK(LWORK)
 C
-#include "dcbham.h"
       LOGICAL LBIT,TOBE,REGO
       real(8) :: TIMSTR(2), TIMEND(2)
 
@@ -3220,7 +3219,7 @@ C*****************************************************************************
       use dcbbas_mod, only: N2BBASX, NTBAS
       use blocks_mod, only: NSYMBL
       use cbihr2_mod, only: IPRTWO, SCRFCK
-!      use dcbham_mod, only: MDIRAC
+      use dcbham_mod, only: MDIRAC
       use dgroup_mod, only: IQTOPQ, IRQMAT, JBTOF, JQBAS, NBSYM, NZ,
      &  NZC1
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -3233,7 +3232,6 @@ C
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
       LOGICAL LBIT
-#include "dcbham.h"
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DMAT(N2BBASX,NZ,NFMAT),
      &          ISYMOP(*),IHRMOP(*),IFCKOP(*),
      &          WORK(LWORK)
@@ -3760,7 +3758,7 @@ C
 C     Written by T.Saue Sep 4 1996
 C
 C*****************************************************************************
-!      use dcbham_mod, only: HFXATT, HFXFAC, HFXMU
+      use dcbham_mod, only: HFXATT, HFXFAC, HFXMU
       use dgroup_mod, only: IHQMAT, IPQTOQ, IQTOPQ, IRQMAT, JBTOF,
      &  JQBAS, NZC1
       use quaternion_algebra
@@ -3774,7 +3772,6 @@ C*****************************************************************************
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
-#include "dcbham.h"
 C     External variables
       DIMENSION IFCTYP(MZ,NFMAT),IREPDM(MZ,NFMAT),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT)
@@ -4004,7 +4001,7 @@ C*****************************************************************************
       use maxaqn_mod, only: MXQN
       use ccom_mod, only: THRS
       use priunit_mod, only: LUPRI
-!      use dcbham_mod, only: HFXMU
+      use dcbham_mod, only: HFXMU
       use dgroup_mod, only: NZ
       use dcbbas_mod, only: N2BBASX
 #if defined (VAR_MPI)
@@ -4016,7 +4013,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D2 = 2.0D0, D4 = 4.0D0, D8 = 8.0D0,
      &                       D0=0.0D0
 C
-#include "dcbham.h"
       LOGICAl LBIT
       CHARACTER SECTID*12, INTTID*12, TOTTID*12, CPUTID*12, WALLTID*12,
      &          SOTEXT*9
@@ -4323,7 +4319,7 @@ C
 C     Written by T. Saue Sep 5 2006
 C
 C***********************************************************************
-!      use dcbham_mod, only: GAUNT, HFXFAC
+      use dcbham_mod, only: GAUNT, HFXFAC
       use dcbgen_mod, only: IDFLAG
       use cbihr2_mod, only: SOFOCK
       use kinds_mod, only: dp
@@ -4334,7 +4330,6 @@ C***********************************************************************
 
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
-#include "dcbham.h"
 C
       real(8) :: TIMSTR(2), TIMEND(2)
 C

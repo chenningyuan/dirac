@@ -16,7 +16,7 @@
 
 subroutine scf_energy_analysis(work, lwork)
 
-!      use dcbham_mod, only: INTV1C, ONECAP, SMLV1C
+      use dcbham_mod, only: INTV1C, ONECAP, SMLV1C
       use dcbbas_mod, only: N2BBASX, N2BBASXQ
       use dcbgen_mod, only: DOLVC
       use priunit_mod, only: LUPRI
@@ -31,7 +31,6 @@ subroutine scf_energy_analysis(work, lwork)
   real(8), parameter :: d2 = 2.0d0
 
 #include "dcbdhf.h"
-#include "dcbham.h"
 
   logical :: density_exists
   logical :: lvcon
@@ -232,8 +231,8 @@ end subroutine scf_energy_evaluation
 
 subroutine scf_energy_extensions(dmat_buf, work, lwork, jprint, lvcon, fmt, basis_elergy, elergy_out, dhferg_out)
 
-!      use dcbham_mod, only: IPRSOL, SOLVEN
 !      use dcbdhf_mod, only: DA, DF, ESOLVE, ESOLVN, NFMAT
+      use dcbham_mod, only: IPRSOL, SOLVEN
       use dgroup_mod, only: NZ
   use dirac_cfg
   use fde_mod
@@ -258,7 +257,6 @@ subroutine scf_energy_extensions(dmat_buf, work, lwork, jprint, lvcon, fmt, basi
   real(8), parameter :: dp25 = 0.25d0
 
 #include "dcbdhf.h"
-#include "dcbham.h"
 
   integer, intent(in) :: jprint
   integer, intent(in) :: lwork

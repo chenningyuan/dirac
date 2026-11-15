@@ -7,7 +7,7 @@
       use dcbgen_mod, only: LUCOEF, TITLE, TWOCOMP
       use dcbbas_mod, only: N2BBASX, N2BBASXQ, NFBAS
 !      use dcborb_mod, only: ICMOQ, IORB, I_DCBORB_SET, NCMOTQ, NESH, NISH, NORB, NORBT, NPSH
-!      use dcbham_mod, only: LEVYLE, SSMTRC, X2C
+      use dcbham_mod, only: LEVYLE, SSMTRC, X2C
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP
@@ -17,7 +17,6 @@
 
 #include "dcbloc.h"
 #include "dcborb.h"
-#include "dcbham.h"
 #include "thrzer.h"
 #include "dcbprj.h"
 

@@ -2259,6 +2259,11 @@ C
 !      use dcbpsi_mod, only: DOCCM, DOCIM, DOMP2
 !      use dcbmp2_mod, only: EMP2
 !      use dcbdhf_mod, only: DHFERG, EVCCNV, FCKCNV, SCFCNV
+#ifdef PRG_DIRAC
+#if defined (HAS_PCMSOLVER)
+      use dcbham_mod, only: BSS, X2C
+#endif
+#endif
       use dirac_cfg
       use dft_cfg
       use num_grid_gen
@@ -2281,7 +2286,6 @@ C
 #endif
 #include "implicit.h"
 #ifdef PRG_DIRAC
-#include "dcbham.h"
 #include "dcbdhf.h"
 #include "dcbmp2.h"
 #include "dcbpsi.h"

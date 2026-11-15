@@ -566,7 +566,9 @@ C  /* Deck Gabdr2 */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use dorps_mod, only: DOCOOR
-!      use dcbham_mod, only: HFXFAC, IF
+#ifdef PRG_DIRAC
+      use dcbham_mod, only: HFXFAC
+#endif
       use doxyz_mod, only: DOXYZ
       use blocks_mod, only: BIGVEC, IORBSH, NCNTSH
       use aovec_mod, only: MXAOVC
@@ -579,9 +581,6 @@ C  /* Deck Gabdr2 */
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
-#ifdef PRG_DIRAC
-#include "dcbham.h"
-#endif
 C
       CHARACTER COMP(2)*1,SPDCAR*1
       LOGICAL AACDX, AACDY, AACDZ, ABCCX, ABCCY, ABCCZ, NOPV, NODV,

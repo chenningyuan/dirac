@@ -27,11 +27,10 @@ C***********************************************************************
       use dgroup_mod, only: NBSYM, NZ
 !      use dcborb_mod, only: NCMOTQ
       use dcbbas_mod, only: NTBAS
-!      use dcbham_mod, only: SPINFR
+      use dcbham_mod, only: SPINFR
 #include "implicit.h"
 #include "dcbxqr.h"
 #include "dcborb.h"
-#include "dcbham.h"
 C
       PARAMETER ( LUCMO = 22 )
       DIMENSION RES_LR(3,MAXLQR,MAXLQR,MAXFQR)
@@ -334,7 +333,6 @@ C***********************************************************************
 !      use dcbxrs_mod, only: CNVINT, DIAGHE, INTDEF, IPRXRS, ITRINT, JOPSY, JTIMOP, LINEQ, LOFFTY, LSVCFG, MAXITR, MAXSIM, N2REDM, NREDM, NZXOPE, NZXOPP, RESFAC, STATIC, STERNH, THCXRS, TKNORM
 #include "implicit.h"
 #include "dcbxlr.h"
-!#include "dcbham.h"
 #include "dcbxqr.h"
 #include "dcbxrs.h"
 C

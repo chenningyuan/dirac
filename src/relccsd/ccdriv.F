@@ -140,6 +140,7 @@ C--------------------------------------------------------------------
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCINPT (IN,IW)
+      use dcbham_mod, only: X2CMMF
       use mxcent_mod, only: MXCENT, MXCOOR
       use relcc_cfg
 !     All initialization should be done in relcc_cfg, ultimately all common
@@ -172,7 +173,6 @@ C
 #include "ihm.inc"
 #include "symm.inc"
 #include "dcbprp.h"
-#include "dcbham.h"
 C
 C---------------Local variables--------------------------------------
 C

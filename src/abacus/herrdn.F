@@ -921,7 +921,6 @@ C***********************************************************************
       CHARACTER SPDCAR*1,BSET*5,ZMATL*1,BASFIL*20,AUXFIL*20,BSKEYWORD*14
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       DIMENSION IBLOCK(MXBSETS)
-#include "dcbham.h"
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     Additional scratch arrays needed for MULTIBASIS option
@@ -2724,6 +2723,7 @@ C*****************************************************************************
 C  /* Deck gtoinp */
       SUBROUTINE GTOINP(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,ISGEN,NBLOCK,KAOVEC,KPRIM)
+      use dcbham_mod, only: ECPCALC
       use cbirea_mod, only: DIRAC, INPTST
       use molinp_mod, only: MLINE, NMLINE
       use mxcent_mod, only: MXCENT
@@ -2740,7 +2740,6 @@ C
      &          ALPHA(KPRIM,KAOVEC),ISGEN(KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
 ! dcbham.h : ECPCALC
-#include "dcbham.h"
 C
       IF(DIRAC) THEN
 C
@@ -2928,6 +2927,7 @@ C
 C  /* Deck gtoinp */
       SUBROUTINE FAMBAS(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,ISGEN,NBLOCK,KAOVEC,KPRIM)
+      use dcbham_mod, only: ECPCALC
       use cbirea_mod, only: INPTST
       use priunit_mod, only: LUPRI
 #include "implicit.h"
@@ -2942,7 +2942,6 @@ C
      &          ALPHA(KPRIM,KAOVEC),ISGEN(KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
 ! dcbham.h : ECPCALC
-#include "dcbham.h"
 C
       NBLOCK = 0
       DO 100 I = 1, IQM
@@ -3144,6 +3143,7 @@ C old version of GTOINP ??? -hjaaj July 2000
 C  /* Deck orbinx */
       SUBROUTINE ORBINX(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,NBLOCK,KAOVEC,KPRIM)
+      use dcbham_mod, only: ECPCALC
       use cbirea_mod, only: INPTST
       use molinp_mod, only: MLINE, NMLINE
       use mxcent_mod, only: MXCENT
@@ -3151,7 +3151,6 @@ C  /* Deck orbinx */
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 ! dcbham.h : ECPCALC
-#include "dcbham.h"
       PARAMETER (DSM=1.0D-30)
       CHARACTER*1 FRMT
       CHARACTER*8 FMT1
