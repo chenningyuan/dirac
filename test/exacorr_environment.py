@@ -3,7 +3,7 @@
 import os
 
 #set environment for exatensor
-def set_exacorr_environment():
+def set_exacorr_environment(bind_threads=False):
   if os.environ.get("QF_PROCS_PER_NODE") is None:
     os.environ["QF_PROCS_PER_NODE"] = "4"
   if os.environ.get("QF_CORES_PER_PROCESS") is None:
@@ -26,10 +26,11 @@ def set_exacorr_environment():
     os.environ["OMP_WAIT_POLICY"] = "PASSIVE"
   if os.environ.get("OMP_STACKSIZE") is None:
     os.environ["OMP_STACKSIZE"] = "200M"
-  if os.environ.get("OMP_PLACES") is None:
-    os.environ["OMP_PLACES"] = "threads"
-  if os.environ.get("OMP_PROC_BIND") is None:
-    os.environ["OMP_PROC_BIND"] = "close,spread,spread"
+  if bind_threads:
+    if os.environ.get("OMP_PLACES") is None:
+      os.environ["OMP_PLACES"] = "threads"
+    if os.environ.get("OMP_PROC_BIND") is None:
+      os.environ["OMP_PROC_BIND"] = "close,spread,spread"
   if os.environ.get("MKL_NUM_THREADS_DEFAULT") is None:
     os.environ["MKL_NUM_THREADS_DEFAULT"] = "1"
   if os.environ.get("MKL_NUM_THREADS") is None:
