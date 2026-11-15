@@ -20,7 +20,7 @@ coverage:
     - !reference [.define-cores, script]
     - export DIRAC_MPI_COMMAND=''
     - echo "DIRAC_MPI_COMMAND was changed to '$DIRAC_MPI_COMMAND' (serial run)"
-    - python setup --coverage build-serial
+    - python setup --coverage --extra-fc-flags=-fprofile-update=single --extra-cc-flags=-fprofile-update=single --extra-cxx-flags=-fprofile-update=single build-serial
     - cd build-serial
     - make -j $N_PROC
     - ldd dirac.x    
