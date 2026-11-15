@@ -90,8 +90,9 @@ K(rhoa,grada,rhob,gradb,gradab):= 0.50 * lda * (FHJS(xa,rhoa) + FHJS(xb,rhob));
 #define __CVERSION__
  
 #include "functionals.h"
-#include "dcbham.h"
-#define MU dcrham_.hfxmu
+/* HFXMU of dcbham_mod (Fortran), bind(C) */
+extern double dcrham_hfxmu;
+#define MU dcrham_hfxmu
  
 /* INTERFACE PART */
 static int hjsx_isgga(void) { return 1; } /* FIXME: detect! */

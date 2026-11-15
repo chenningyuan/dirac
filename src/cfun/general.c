@@ -48,7 +48,8 @@
 #include "general.h"
 #include "functionals.h"
 #ifdef PRG_DIRAC
-#include "dcbham.h"
+/* HFXFAC and HFXMU of dcbham_mod (Fortran), bind(C) */
+extern double dcrham_hfxfac, dcrham_hfxmu;
 #endif
 
 #ifdef VAR_MPI
@@ -81,13 +82,13 @@ extern void dftsetcam_(real *w, real *b);
 static void
 dft_set_hf_weight(real hfxfac)
 {
-  dcrham_.hfxfac = hfxfac;
+  dcrham_hfxfac = hfxfac;
 }
 
 static real
 dft_get_hf_weight(void)
 {
-    return dcrham_.hfxfac;
+    return dcrham_hfxfac;
 }
 
 static void
@@ -646,7 +647,7 @@ dftsyncfunc_(int* amImaster)
     int success; /* jvs: this is not used !!! */
     int dft_conf_len =  DftConfString ? strlen(DftConfString)+1 : 0;
     
-    MPI_Bcast(&dcrham_.hfxmu,1,MPI_DOUBLE,diracinfpar_mparid,MPI_COMM_WORLD);
+    MPI_Bcast(&dcrham_hfxmu,1,MPI_DOUBLE,diracinfpar_mparid,MPI_COMM_WORLD);
     if(diracinfpar_nodes==0||Initialized) return;
     MPI_Bcast(&do_alda_hs,   1, MPI_INT, diracinfpar_mparid, MPI_COMM_WORLD);
     MPI_Bcast(&do_alda_ha,   1, MPI_INT, diracinfpar_mparid, MPI_COMM_WORLD);
