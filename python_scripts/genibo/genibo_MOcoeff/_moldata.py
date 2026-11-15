@@ -5,7 +5,7 @@ import h5py
 import numpy
 import os
 import uuid
-from ._utils import periodic_table, periodic_hash_table
+from ._utils import periodic_table, periodic_hash_table, basis_charge, nuclear_charge, is_ghost
 
 # Define a compatible basestring for checking between Python 2 and 3
 try:
@@ -40,13 +40,15 @@ def name_molecule(geometry,
         # Get sorted atom vector.
         atoms = [item[0] for item in geometry]
         atom_charge_info = [(atom, atoms.count(atom)) for atom in set(atoms)]
+        # (a ghost sorts behind the real atom of the same element; its label Gh(O) is written GhO in the name)
         sorted_info = sorted(atom_charge_info,
-                             key=lambda atom: periodic_hash_table[atom[0]])
+                             key=lambda atom: (basis_charge(atom[0]), is_ghost(atom[0])))
 
         # Name molecule.
-        name = '{}{}'.format(sorted_info[0][0], sorted_info[0][1])
+        def _tag(label): return label.replace('(', '').replace(')', '').replace('@', 'Gh')
+        name = '{}{}'.format(_tag(sorted_info[0][0]), sorted_info[0][1])
         for info in sorted_info[1::]:
-            name += '-{}{}'.format(info[0], info[1])
+            name += '-{}{}'.format(_tag(info[0]), info[1])
     else:
         name = geometry
 
@@ -165,8 +167,8 @@ class moldata(object):
         if not isinstance(geometry, basestring):
             self.n_atoms = len(geometry)
             self.atoms = sorted([row[0] for row in geometry],
-                                key=lambda atom: periodic_hash_table[atom])
-            self.protons = [periodic_hash_table[atom] for atom in self.atoms]
+                                key=lambda atom: (basis_charge(atom), is_ghost(atom)))
+            self.protons = [nuclear_charge(atom) for atom in self.atoms]   # 0 for ghost atoms
             self.n_electrons = sum(self.protons) - charge
         else:
             self.n_atoms = 0
@@ -211,9 +213,15 @@ class moldata(object):
         # Arrays are written as extendable datasets, single strings or scalars are fixed size
         h5file.create_dataset(section+'n_atoms',data=[self.n_atoms])
         # Write geometry in original (unsorted) form
-        nuc_charge = [periodic_hash_table[row[0]] for row in self.geometry]
+        nuc_charge = [nuclear_charge(row[0]) for row in self.geometry]
         xyz        = [float(coord) for row in self.geometry for coord in row[1][:]]
         h5file.create_dataset(section+'nuc_charge',data=nuc_charge)
+        # Ghost atoms: zero nuclear charge, but the basis functions of the element. ROSE reads bas_charge when
+        # it is present (otherwise it takes nuc_charge). Written only when needed, so that files of molecules
+        # without ghosts stay exactly as before.
+        if any(is_ghost(row[0]) for row in self.geometry):
+            bas_charge = [basis_charge(row[0]) for row in self.geometry]
+            h5file.create_dataset(section+'bas_charge',data=bas_charge)
         h5file.create_dataset(section+'geometry',data=xyz)
         h5file.close()
 

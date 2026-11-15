@@ -61,7 +61,9 @@ with open(xyz_file,"r") as f:
 fragments = []
 list_atom = []
 for token in geometry:
-    list_atom.append(token[0]) if token[0] not in list_atom else list_atom
+    # a ghost atom Gh(X) uses the atomic fragment of the real element X (its basis functions are those of X)
+    element = split_atom_label(token[0])[0]
+    list_atom.append(element) if element not in list_atom else list_atom
 for token in list_atom:
     fragments += [[(str(token),(0.0,0.0,0.0))]] # No need to specify coordinates for atomic fragments.
 nfragments = len(geometry)
