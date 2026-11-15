@@ -26,6 +26,30 @@ periodic_hash_table = {}
 for atomic_number, atom in enumerate(periodic_table):
     periodic_hash_table[atom] = atomic_number
 
+# Ghost atoms (centres that carry basis functions but no nucleus and no electrons), counterpoise corrections.
+# A ghost is written as "Gh(O)" (psi4 notation; "@O" is accepted as well).
+_ghost_re = re.compile(r"^\s*(?:[Gg][Hh]\(\s*([A-Za-z]{1,2})\s*\)|@([A-Za-z]{1,2}))\s*$")
+
+def split_atom_label(label):
+    """Return (element symbol, is_ghost). Real atoms are returned unchanged, so that a
+    mistyped symbol still gives the KeyError of periodic_hash_table where it is used."""
+    m = _ghost_re.match(label)
+    if m is None:
+        return label, False
+    return (m.group(1) or m.group(2)).capitalize(), True
+
+def basis_charge(label):
+    """Charge of the element that carries the basis functions (also for ghosts)."""
+    return periodic_hash_table[split_atom_label(label)[0]]
+
+def nuclear_charge(label):
+    """Nuclear charge: 0 for a ghost atom, otherwise the atomic number."""
+    element, ghost = split_atom_label(label)
+    return 0 if ghost else periodic_hash_table[element]
+
+def is_ghost(label):
+    return split_atom_label(label)[1]
+
 # Spin polarization of atoms on period table.
 periodic_polarization = [-1,
                          1, 0,
@@ -135,7 +159,7 @@ def create_geometry_string(geometry,minbas=False):
             geo_string += '\n'
         geo_string += line
 
-        nmo_minbas += atom_minbas_size(periodic_hash_table[atom])
+        nmo_minbas += atom_minbas_size(nuclear_charge(atom))   # a ghost has no minimal-basis orbitals
     if minbas: return geo_string, nmo_minbas
     if not minbas: return geo_string
 

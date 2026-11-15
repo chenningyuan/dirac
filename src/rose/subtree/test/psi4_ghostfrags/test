@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+
+# provides os.path.join
+import os
+
+# provides exit
+import sys
+
+# we make sure we can import runtest and runtest_config
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+# we import essential functions from the runtest library
+from runtest import version_info, get_filter, cli, run
+
+# this tells runtest how to run your code
+from runtest_config import configure
+
+# we stop the script if the major version is not compatible
+assert version_info.major == 2
+
+# Tolerances are 1e-3: the reference was made with psi4 1.10, CI uses psi4 1.11, and psi4's default SCF
+# convergence (1e-6) makes charges and virtual energies differ at the 1e-5 level between versions.
+# filters: the coordinates block checks that ghost atoms (nuclear charge 0, basis of O or H) reach ROSE
+f = [
+    get_filter(from_string='Molecular  Coordinates',
+               num_lines     = 12,
+               abs_tolerance=1.0e-6),
+    get_filter(from_string='Partial charges of fragments',
+               num_lines     = 10,
+               abs_tolerance=1.0e-3),
+    get_filter(from_string='Additional virtuals',
+               num_lines     = 40,
+               abs_tolerance=1.0e-3),
+    ]
+
+# invoke the command line interface parser which returns options
+options = cli()
+
+ierr = 0
+program = 'psi4'
+inp = ["[0,0,0] [1,3,2]"]
+i = 0
+for mol in ['water-ghost']:
+   # the run function runs the code and filters the outputs
+   ierr += run(options,
+               configure,
+               input_files=[program,mol,inp[i]],
+               filters={'stdout': f})
+   i+=1
+
+sys.exit(ierr)
