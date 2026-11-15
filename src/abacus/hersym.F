@@ -41,14 +41,13 @@ C*****************************************************************************
       use mxcent_mod, only: MXCENT
       use mxsymm_mod, only: IPRSYM, MAXAXS, MAXMIR, TOLLRN, TOLLRN_2,
      &  ZERTOL
-!      use infpar_mod, only: IF, MPARID, MYTID
+      use infpar_mod, only: MPARID, MYTID
       use priunit_mod, only: LUPRI
       use optinf_mod, only: VRML_SYM
 #include "implicit.h"
 
 ! infpar.h : MYTID, MPARID
 ! optinf.h : VRML_SYM
-#include "infpar.h"
 
       DIMENSION WORK(LWORK)
       CHARACTER KASYM(3,3)*1, POINT_GROUP*15
@@ -107,13 +106,12 @@ C
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use molinp_mod, only: MLINE, NCLINE, NMLAU
-!      use infpar_mod, only: IF, MPARID, MYTID
+      use infpar_mod, only: MPARID, MYTID
       use mxsymm_mod, only: IPRSYM, MAXAXS, MAXMIR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
 ! infpar.h: MPARID, MYTID
-#include "infpar.h"
 C ***********************************************************
 C *   ATMARR - Atomic coordinates and more
 C *   POINT_GROUP  - Full point group
@@ -767,14 +765,13 @@ C ::                                       ::
 C :::::::::::::::::::::::::::::::::::::::::::
 C
       use priunit_mod, only: LUPRI
-!      use infpar_mod, only: IF, MPARID, MYTID
+      use infpar_mod, only: MPARID, MYTID
 #include "implicit.h"
       INTEGER :: I
       DIMENSION ATMARR(6,0:*), CMXYZ(3)
       DIMENSION CINRTP(6),VPCMOM(3,3), TMP(3), ITMP(3)
 
 ! infpar.h : MYTID, MPARID
-#include "infpar.h"
 
       N_ATOMS = NINT(ATMARR(1,0))
 
@@ -856,14 +853,13 @@ C    - do it twice to minimize round-off errors
 C
       use mxsymm_mod, only: IPRSYM, TOLLRN
       use priunit_mod, only: LUPRI
-!      use infpar_mod, only: IF, MPARID, MYTID
+      use infpar_mod, only: MPARID, MYTID
 #include "implicit.h"
       INTEGER :: I
       DIMENSION ATMARR(6,0:*), CMXYZ(3)
       DIMENSION CINRTP(6),VPCMOM(3,3), TMP(3), ITMP(3)
 
 ! infpar.h: MPARID, MYTID
-#include "infpar.h"
 
       N_ATOMS = NINT(ATMARR(1,0))
 

@@ -54,7 +54,6 @@
 #include "comjep.inc"
 #include "cc_exc.inc"
 #if defined (VAR_MPI2)
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) ITEST_OFF
 #endif
@@ -948,9 +947,11 @@ C This routine is originally called from the Dirac menu.
 C In the case of a parallel run, the relevant nodes will be 
 C waken up and sent to sleep.
 C
+#if defined (VAR_MPI)
+      use infpar_mod, only: MPARID, MYTID, NUMNOD
+#endif
       use priunit_mod, only: LUCMD, LUPRI
       IMPLICIT REAL*8(A-H,O-Z)
-#include "infpar.h"
 #include "parluci.h"
 *
 *----------------Executable code--------------------------------------
@@ -1011,7 +1012,6 @@ C
       use memory_allocator
 
       IMPLICIT REAL*8(A-H,O-Z)
-#include "infpar.h"
 #if defined (VAR_MPI2)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
@@ -1636,9 +1636,6 @@ C
 #include "cgas.inc"
 #include "oper.inc"
 #include "machine.inc"
-#if defined (VAR_MPI2)
-#include "infpar.h"
-#endif
 #include "parluci.h"
 *./CECORE/
       COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
@@ -5634,7 +5631,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use dcbgen_mod, only: PARCAL
       use dirac_partask_mod, only: RELEASE_NODES
 #include "implicit.h"
-#include "infpar.h"
 #include "parluci.h"
 C
       IF (.NOT.PARCAL) RETURN
@@ -5648,6 +5644,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck LUCITA_NODE */
       SUBROUTINE LUCITA_NODE()
+      use infpar_mod, only: MPARID, MYTID, NUMNOD
       use priunit_mod, only: LUCMD
       use luci_wrkspc
 *
@@ -5660,7 +5657,6 @@ C/* Deck LUCITA_NODE */
 *
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       IMPLICIT REAL*8(A-H,O-Z)
-#include "infpar.h"
 #include "parluci.h"
 #include "files.inc"
 *. Parameters for dimensioning

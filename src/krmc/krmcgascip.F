@@ -4854,7 +4854,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbgascip_mod, only: IMK2, IPTA2O, IPTB2O, MAXASH_GASCIP, MAXMK2, MINMK2, NMK2
 !      use dcborb_mod, only: NAELEC, NASHT
-!      use infpar_mod, only: MYTID, NUMNOD
+      use infpar_mod, only: MYTID, NUMNOD
       use dgroup_mod, only: NZ, NZ_IN_CI
 #include "implicit.h"
       INTEGER :: I, II, J, K
@@ -4864,7 +4864,6 @@ C  infpar.h : MYTID
 C
 #include "dcbgascip.h"
 #include "dcborb.h"
-#include "infpar.h"
 C
       DIMENSION SVEC(NDET,*), BVEC(NDET,*)
       DIMENSION VMUUUU(*), HCORE(*)
@@ -5628,8 +5627,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
 #ifdef VAR_MPI
       use dcbgen_mod, only: PARCAL
+      use infpar_mod, only: MPARID
 #endif
-!      use infpar_mod, only: MPARID
 !      use dcbgascip_mod, only: I1_DCI_GASCIP, I2_DCI_GASCIP
 !      use dcborb_mod, only: I1_DCBORB, I2_DCBORB
 #ifdef VAR_MPI
@@ -5639,7 +5638,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 #include "implicit.h"
 C
-#include "infpar.h"
 C
 C send info to slaves with MPI_BCAST from these common blocks:
 C
@@ -5694,8 +5692,8 @@ C     master: release slaves from GASCIP tasks
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-!      use infpar_mod, only: MPARID
 #ifdef VAR_MPI
+      use infpar_mod, only: MPARID
       use dcbgen_mod, only: PARCAL
 #endif
       use dirac_partask_mod, only: RELEASE_NODES
@@ -5704,7 +5702,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 #include "implicit.h"
 C
-#include "infpar.h"
 C
       IF (PARCAL) THEN
          itask = -1
@@ -5727,15 +5724,14 @@ C             CI information and one- and two-electron operator matrices
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-!      use infpar_mod, only: MPARID
 !      use dcborb_mod, only: NASHT
 #ifdef VAR_MPI
+      use infpar_mod, only: MPARID
       use dgroup_mod, only: NZ_IN_CI
       use interface_to_mpi
 
 #include "implicit.h"
 C
-#include "infpar.h"
 #include "dcborb.h"
 C
       REAL*8    HCORE(*), VMUUUU(*)
@@ -5794,8 +5790,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       use priunit_mod, only: LUPRI
-!      use infpar_mod, only: MPARID, NUMNOD
 #ifdef VAR_MPI
+      use infpar_mod, only: MPARID, NUMNOD
       use dgroup_mod, only: NZ_IN_CI
       use interface_to_mpi
 
@@ -5804,7 +5800,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INTEGER ISTAT(df_MPI_STATUS_SIZE)
 
 C
-#include "infpar.h"
 C
       REAL*8    BCVEC(*)
       REAL*8    SCVEC(NDET,NZ_in_CI,N_CSIM)
@@ -5940,17 +5935,19 @@ C     Slave node driver for GASCIP
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-!      use infpar_mod, only: MPARID, MYTID
 !      use dcbgascip_mod, only: I1_DCI_GASCIP, I2_DCI_GASCIP
 !      use dcborb_mod, only: I1_DCBORB, I2_DCBORB
 #ifdef VAR_MPI
+      use infpar_mod, only: MPARID
+#if GASCIP_DEBUG > 0
+      use infpar_mod, only: MYTID
+#endif
       use memory_allocator
       use interface_to_mpi
       use dgroup_bcast_mod, only: dgroup_bcast
 
 #include "implicit.h"
 C
-#include "infpar.h"
 C
 C common blocks to receive info from MPI_BCAST:
 C
@@ -6032,7 +6029,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       use priunit_mod, only: LUPRI
-!      use infpar_mod, only: MPARID, MYTID
+#if defined (VAR_MPI)
+      use infpar_mod, only: MPARID, MYTID
+#endif
 !      use dcborb_mod, only: NASHT
 #if defined (VAR_MPI)
       use dgroup_mod, only: NZ_IN_CI
@@ -6048,7 +6047,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! dcbgascip.h :
 ! dcborb.h    :
 ! dgroup.h    : NZ_in_CI
-#include "infpar.h"
 !#include "dcbgascip.h"
 #include "dcborb.h"
 C

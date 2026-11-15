@@ -200,12 +200,11 @@ C     written by Stefan Knecht - April 2007
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use infpar_mod, only: MPARID, MYTID, NUMNOD
+#if defined (VAR_MPI)
+      use infpar_mod, only: MPARID, MYTID, NUMNOD
+#endif
 !      use parluci_mod, only: LUWRT, MASTER, MYPROC, NMPROC
 #include "implicit.h"
-#if defined (VAR_MPI)
-#include "infpar.h"
-#endif
 #include "parluci.h"
       CHARACTER*6 CIRUN
 C     initial definitions
@@ -329,7 +328,6 @@ CTF
 CTF  global reference values for Z_BLKFO needed in MV7 !!
       common/glbref/ISPC,ISM,ITERGLB
       DIMENSION F1(*),F2(*),WRK(LWRK)
-!#include "infpar.h"
 #include "parluci.h"
       integer global_scratch_disk
       real(8) :: eref = 0.0d0
@@ -2186,7 +2184,7 @@ C     Last revision: S. Knecht           - Nov  2008
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use infpar_mod, only: MPARID, MYTID, NUMNOD
+      use infpar_mod, only: MPARID, MYTID, NUMNOD
 !      use parluci_mod, only: IIOMOD_REL, LEN_ALL_INT, LF2_ZERO, LUWRT, MASTER, MSLVOUT_REL, MYPROC, NMPROC
 !      use mxpdim_mod, only: MXNDGIRR, MXPICI
 !      use cicisp_mod, only: ISYM_KRMC, XISPSM
@@ -2198,7 +2196,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
 C
 #include "implicit.h"
-#include "infpar.h"
 #include "parluci.h"
       LOGICAL LUEND
       CHARACTER LUCITABASF_REL*12, LUCIFILN_REL*16

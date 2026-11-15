@@ -54,6 +54,7 @@ set(MODULE_SOURCES
     infinp.F90
     infinp_dalton.F90
     inforb.F90
+    infpar.F90
     inftap.F90
     iratdef.F90
     lmns.F90

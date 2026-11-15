@@ -1055,7 +1055,6 @@ C!    Call Abend2( ' ENFORCED STOP AT END OF DIHDJ ' )
       use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #if defined (VAR_MPI2)
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
@@ -2109,10 +2108,12 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
 * Input
 * =====
 *
+#if defined (VAR_MPI2)
+      use infpar_mod, only: TIMING
+#endif
       use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #if defined (VAR_MPI2)
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET
       DIMENSION LUCLIST(*), IBLOCKL(*), NPARBLOCK(*), IGROUPLIST(*)
@@ -5164,7 +5165,6 @@ C?     WRITE(6,*) ' DIATERM2_GAS will be called '
       use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #if defined (VAR_MPI2)
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
@@ -5569,7 +5569,6 @@ C
       use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #if defined (VAR_MPI2)
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"

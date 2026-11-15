@@ -2399,7 +2399,6 @@ C
 #include "implicit.h"
 
 #ifndef PRG_DIRAC
-#include "infpar.h"
 #include "pario.h"
 #include "pvibav.h"
 #include "rspprp.h"

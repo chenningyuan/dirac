@@ -58,7 +58,7 @@ C
 C***********************************************************************
       use dirac_partask_mod, only: EXIT_NODEMENU
       use priunit_mod, only: LUPRI
-!      use infpar_mod, only: MPARID, MYTID
+      use infpar_mod, only: MPARID, MYTID
       use dcbgen_mod, only: PARCAL
 !      use dcbtra_mod, only: NFPCK12, NFPCK12T, NFPCK34T, NOMDCINT, SCRTRA
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
@@ -67,7 +67,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
-#include "infpar.h"
 #if defined (VAR_MPI)
       DIMENSION IBUFMPI(5)
 #endif
@@ -396,7 +395,7 @@ C
 C***********************************************************************
       use dirac_partask_mod, only: MOLTRA_PAR
       use priunit_mod, only: LUPRI
-!      use infpar_mod, only: MPARID, MYTID, NODES
+      use infpar_mod, only: MPARID, MYTID, NODES
 !      use dcbtra_mod, only: IPAR4BS, NFPCK12T
       use comdis_mod, only: ISHLA, ISHLB
       use dgroup_mod, only: NBSYM
@@ -404,7 +403,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
-#include "infpar.h"
       INTEGER ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
 #include "dcbtra.h"
       DIMENSION LSORT(3,NFPCK12T,0:7)
@@ -585,13 +583,12 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: IFPCK12, NFPCK12T
       use dgroup_mod, only: JBTOF, NBSYM, NFSYM
-!      use infpar_mod, only: NODE, NUMNOD
+      use infpar_mod, only: NODE, NUMNOD
       use memory_allocator
 #include "implicit.h"
       INTEGER :: KK
 C
 #include "dcbtra.h"
-#include "infpar.h"
       LOGICAL TRIAN(2)
       DIMENSION NSTR(2,0:2,4)
       DIMENSION LDIST(NSTR2T),LSORT(3,NFPCK12T,0:7)
@@ -1233,7 +1230,7 @@ C
       use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 !      use dcbtra_mod, only: DO_FINESORT, IFPCK34, NFPCK12, NFPCK12T, NFPCK34
       use comdis_mod, only: NSPCK
-!      use infpar_mod, only: MYTID
+      use infpar_mod, only: MYTID
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
@@ -1248,7 +1245,6 @@ C
       LOGICAL INIT
       Real(8), Allocatable :: HTMP(:),HMAT(:),GMAT(:)
 #include "dcbtra.h"
-#include "infpar.h"
 C
       CALL QENTER('MS6IN2')
 #if defined (VAR_PFS)

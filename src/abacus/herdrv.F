@@ -1103,7 +1103,7 @@ C  /* Deck hr2inp */
       use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
      &  IPRTWO, RTNTWO, RUNTWO, SCRFCK, SOFOCK, THRFAC, TKTIME, USRSCR
       use mxcent_mod, only: MXCENT
-!      use infpar_mod, only: NUMNOD
+      use infpar_mod, only: NUMNOD
       use cbiher_mod, only: IPRDEF, NOTWO
       use kinds_mod, only: dp
 #ifdef PRG_DIRAC
@@ -1117,7 +1117,6 @@ C
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
 ! infpar.h : NUMNOD
-#include "infpar.h"
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.PANAS ', '.RETURN', '.SOFOCK',
      &            '.TIME  ', '.ICEDIF', '.SCREEN', '.THRFAC', '.AOFOCK'/

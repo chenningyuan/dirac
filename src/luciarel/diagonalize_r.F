@@ -1708,7 +1708,6 @@ CTF     end do
 #include "implicit.h"
       INTEGER :: I
 #if defined (VAR_MPI2)
-!#include "infpar.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
 #endif
@@ -3358,7 +3357,6 @@ C      END IF
 !      use parluci_mod, only: LUWRT, LU_INFO, MASTER, MYPROC, SYMFLABEL
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 #if defined (VAR_MPI2)
-!#include "infpar.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
 #endif

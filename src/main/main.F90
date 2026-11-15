@@ -18,6 +18,7 @@
 
 program dirac_program
 
+      use infpar_mod, only: IPAREX, MPARID, MYTID, NUMNOD
       use dcbgen_mod, only: CDIRNOD, LENDND, PARCAL
       use priunit_mod, only: LUPRI
   use os_utils
@@ -46,7 +47,6 @@ interface
    end subroutine
 end interface
 
-#include "infpar.h"
 #include "dcbpsi.h"
 
 

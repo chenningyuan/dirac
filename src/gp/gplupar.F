@@ -49,7 +49,6 @@ C
 !      use parluci_mod, only: MASTER, MYPROC, MY_ACT_BLK1, MY_ACT_BLK2, MY_VEC1_IOFF, MY_VEC2_IOFF
       use interface_to_mpi
 #include "implicit.h"
-!#include "infpar.h"
       INTEGER ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SEGMNT(*), NDISTND( NBLOCK ), LBLOCKL(*)
@@ -419,7 +418,6 @@ C
 !      use parluci_mod, only: MASTER, MYPROC, MY_VEC2_IOFF
       use interface_to_mpi
 #include "implicit.h"
-!#include "infpar.h"
       INTEGER ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SEGMNT(*), NDISTND( NBLOCK ), LBLOCKL(*)
@@ -580,7 +578,6 @@ C**********************************************************************
 !      use parluci_mod, only: CSCREEN, RNORM_FAC, TRUNC_FAC
       use interface_to_mpi
 #include "implicit.h"
-!#include "infpar.h"
 #include "parluci.h"
 *
 * =====
@@ -737,7 +734,6 @@ C
 !      use parluci_mod, only: L_COMBI, MY_ACT_BLK2, MY_VEC2_IOFF
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-!#include "infpar.h"
 #include "parluci.h"
       DIMENSION SCR(*),LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUOUTLIST(*), IBLOCKL(*)
@@ -856,7 +852,6 @@ C
 ************************************************************************
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-!#include "infpar.h"
       INTEGER ISTAT(df_mpi_status_size)
 !#include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*) 
@@ -937,7 +932,6 @@ C
 ************************************************************************
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-!#include "infpar.h"
       INTEGER ISTAT(df_mpi_status_size)
 !#include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_OUT(*)
@@ -1015,11 +1009,10 @@ C
 C     Written by  S. Knecht         - May 23 2007
 C
 C**********************************************************************
-!      use infpar_mod, only: TIMING
 !      use parluci_mod, only: IBLOCKCOMM, LUWRT, L_COMBI, MYPROC, NEWCOMM_PROC, NMPROC
+      use infpar_mod, only: TIMING
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
       INTEGER ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SEGMNT(*), IBLOCKD(NBLOCK), IBLOCKL(NBLOCK)
@@ -1294,7 +1287,6 @@ C
 !      use parluci_mod, only: LUWRT, MASTER, MYPROC, MY_ACT_BLK1, MY_ACT_BLK2, MY_VEC1_IOFF, MY_VEC2_IOFF
       use interface_to_mpi
 #include "implicit.h"
-!#include "infpar.h"
       INTEGER ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION VEC1(*)
@@ -1622,7 +1614,6 @@ C
       use interface_to_mpi
 #include "implicit.h"
 C
-!#include "infpar.h"
 #include "parluci.h"
 !#define DEBUG_MPI_KRCI
 #ifdef DEBUG_MPI_KRCI
@@ -1792,7 +1783,6 @@ C
       use interface_to_mpi
 #include "implicit.h"
 C
-!#include "infpar.h"
 #include "parluci.h"
 C
 C     INPUT
@@ -1833,7 +1823,6 @@ C
 *
 !      use parluci_mod, only: MASTER, MYPROC, NMPROC
 #include "implicit.h"
-!#include "infpar.h"
 #include "parluci.h"
 !#include "../lucita/clunit.inc"
 *
@@ -2002,7 +1991,6 @@ CSK      END IF
 *
 !      use parluci_mod, only: IAM_NOT_INV, MYPROC, NFLGRPS, NMPROC
 #include "implicit.h"
-!#include "infpar.h"
 #include "parluci.h"
 C     INPUT
       INTEGER ICOUNTABLK, NTEST,MWEIGHT
@@ -2413,7 +2401,6 @@ C
 !      use parluci_mod, only: IAM_NOT_INV, MYPROC, NMPROC
       use interface_to_mpi
 #include "implicit.h"
-!#include "infpar.h"
 #include "parluci.h"
 C     -----
 C     INPUT
@@ -2667,7 +2654,6 @@ CSK      END IF
 *
 !      use parluci_mod, only: MASTER, MYPROC, NMPROC
 #include "implicit.h"
-!#include "infpar.h"
 #include "parluci.h"
 !#include "../lucita/clunit.inc"
 *
@@ -3080,7 +3066,6 @@ CSK            END IF
 *
 !      use parluci_mod, only: MYPROC
 #include "implicit.h"
-!#include "infpar.h"
 #include "parluci.h"
 *     ==========
 *       INPUT
@@ -3123,7 +3108,6 @@ C
       use interface_to_mpi
 #include "implicit.h"
 C
-!#include "infpar.h"
 #include "parluci.h"
 C
       INTEGER IPROCLIST(NMPROC),NAMELENGTHLIST(NMPROC)
@@ -3234,7 +3218,6 @@ C
 * Jeppe Olsen, September 1993
 *
 #include "implicit.h"
-!#include "infpar.h"
 !#include "parluci.h"
 *. Input
       INTEGER IGAT(NGAT)
@@ -3460,7 +3443,6 @@ C
 !      use parluci_mod, only: L_COMBI, MY_ACT_BLK1, MY_ACT_BLK2, MY_ACT_BLK_ALL, MY_VEC1_IOFF, MY_VEC2_IOFF
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-!#include "infpar.h"
 #include "parluci.h"
       DIMENSION SCR(*),LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUOUTLIST(*), IBLOCKL(*)
@@ -3659,7 +3641,6 @@ C
 !      use parluci_mod, only: MY_ACT_BLK1, MY_VEC1_IOFF
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-!#include "infpar.h"
 #include "parluci.h"
       DIMENSION VEC1(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -3754,7 +3735,6 @@ C
 !      use parluci_mod, only: MY_ACT_BLK1, MY_ACT_BLK2, MY_VEC1_IOFF, MY_VEC2_IOFF
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-!#include "infpar.h"
 #include "parluci.h"
       DIMENSION VEC1(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -3917,7 +3897,6 @@ C
 !      use parluci_mod, only: MY_ACT_BLK_ALL
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-!#include "infpar.h"
       INTEGER ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_OUT(*)
@@ -3984,7 +3963,6 @@ C
 ************************************************************************
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-!#include "infpar.h"
       INTEGER ISTAT(df_mpi_status_size)
 !#include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_IN1(*)
@@ -4046,7 +4024,6 @@ C
 !      use parluci_mod, only: LUWRT
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-!#include "infpar.h"
       INTEGER ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_IN1(*)
@@ -4112,7 +4089,6 @@ C
 ************************************************************************
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-!#include "infpar.h"
       INTEGER ISTAT(df_mpi_status_size)
 !#include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*)
@@ -4171,7 +4147,6 @@ C
 ************************************************************************
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-!#include "infpar.h"
 !#include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), XMAT(NVEC,NVEC2)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -4230,7 +4205,6 @@ C
 !      use parluci_mod, only: MY_ACT_BLK1, MY_VEC1_IOFF
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-!#include "infpar.h"
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), FAC(NVEC)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -4395,11 +4369,10 @@ C
 C     Last revision:     S. Knecht       - March 2008
 C
 ************************************************************************
-!      use infpar_mod, only: TIMING
 !      use parluci_mod, only: LUWRT, MY_ACT_BLK1, MY_VEC1_IOFF
+      use infpar_mod, only: TIMING
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-#include "infpar.h"
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION SUBSPH(*), SCRRED(*), SCRRED2(*)
@@ -4598,7 +4571,6 @@ C
 !      use parluci_mod, only: MY_ACT_BLK1, MY_VEC1_IOFF
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-!#include "infpar.h"
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -4867,7 +4839,6 @@ C
 !      use parluci_mod, only: MY_ACT_BLK1, MY_VEC1_IOFF
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-!#include "infpar.h"
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION FACIN1(*), FACIN3(1)
@@ -5047,7 +5018,6 @@ C
 !      use parluci_mod, only: MY_ACT_BLK1, MY_VEC1_IOFF
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-!#include "infpar.h"
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION SCRRED(*)
@@ -5244,7 +5214,6 @@ C
 !      use parluci_mod, only: MYPROC
       use interface_to_mpi
 #include "implicit.h"
-!#include "infpar.h"
 #include "parluci.h"
 C     Input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
@@ -5421,7 +5390,6 @@ C
 !      use parluci_mod, only: MYPROC
       use interface_to_mpi
 #include "implicit.h"
-!#include "infpar.h"
 #include "parluci.h"
 C     input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
@@ -5591,7 +5559,6 @@ C
 *
 !      use parluci_mod, only: MASTER, MYPROC
 #include "implicit.h"
-!#include "infpar.h"
 #include "parluci.h"
       DIMENSION LBATC(*),LEBATC(*),I1BATC(*),IBATC(8,*)
       DIMENSION ICCTOS(NBLOCK,NBLOCK),ICWEIGHT(NBLOCK)
@@ -5684,7 +5651,6 @@ C THE LOWER HALF OF THE MATRIX IS SUPPOSED TO BE IN VECTOR A.
 *. used in the reduce-call. NOP is the reduce-operation.
 *
 #include "implicit.h"
-!#include "infpar.h"
 !#include "parluci.h"
       DIMENSION VECIN(*),VECOUT(*)
       INTEGER DATATYPE
@@ -5727,7 +5693,6 @@ C     Last revision:     S. Knecht       - April  2007
 C
 ************************************************************************
 #include "implicit.h"
-!#include "infpar.h"
 !#include "parluci.h"
       DIMENSION VEC1(*), VEC2(*),IVCOFF(*),NBATCH_INF(8,*)
       INTEGER JOFF,ILEN
@@ -5763,7 +5728,6 @@ C     Last revision:     S. Knecht       - April  2007
 C
 ************************************************************************
 #include "implicit.h"
-!#include "infpar.h"
 !#include "parluci.h"
       DIMENSION VEC1(*), VEC2(*),IVCOFF(*),NBATCH_INF(8,*)
       INTEGER JOFF,ILEN
@@ -5802,7 +5766,6 @@ C
 ************************************************************************
 !      use parluci_mod, only: MYPROC
 #include "implicit.h"
-!#include "infpar.h"
 #include "parluci.h"
       DIMENSION VEC(NDIM), IAMACTIVE(NDIM)
 C
@@ -5939,7 +5902,6 @@ C
 !      use parluci_mod, only: ILU1, MYPROC, MY_ACT_BLK2, MY_LU1_OFF, MY_VEC2_IOFF
       use interface_to_mpi
 #include "implicit.h"
-!#include "infpar.h"
       INTEGER ISTAT(df_mpi_status_size)
 #include "parluci.h"
 *     input
@@ -6067,7 +6029,6 @@ C
 !      use parluci_mod, only: MY_ACT_BLK1, MY_VEC1_IOFF
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-!#include "infpar.h"
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)

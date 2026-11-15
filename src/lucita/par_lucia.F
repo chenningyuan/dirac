@@ -46,7 +46,6 @@ C
 ************************************************************************
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*)
@@ -224,7 +223,6 @@ C
 ************************************************************************
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*)
@@ -601,7 +599,6 @@ C
 ************************************************************************
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
@@ -1101,7 +1098,6 @@ C
 ************************************************************************
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
@@ -1283,7 +1279,6 @@ C
 ************************************************************************
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
@@ -1462,7 +1457,6 @@ C
 C**********************************************************************
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION ISCLFAC_GROUP(*), LUCLIST(*) 
@@ -1581,7 +1575,6 @@ C
       use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 C
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C
@@ -1774,7 +1767,6 @@ C
       use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 C
-#include "infpar.h"
 #include "parluci.h"
 C
       DIMENSION IPROCLIST(NMPROC),IGROUPLIST(NMPROC)
@@ -1861,7 +1853,6 @@ C
       use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 C
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C
@@ -1908,7 +1899,6 @@ C
 ************************************************************************
       use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       CHARACTER*10 PLU1,PLU2,PLU3,PLU4,PLU5,PLU6,PLU7,PLU8,PLUC,PDIA
@@ -2075,7 +2065,6 @@ C
 ************************************************************************
       use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C
@@ -3088,7 +3077,6 @@ C
 
       use interface_to_mpi
       IMPLICIT REAL*8           ( A-H,O-Z)
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       

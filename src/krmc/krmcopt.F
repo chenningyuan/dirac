@@ -6622,12 +6622,11 @@ C
 C     Last revision: S. Knecht           - June  2008, Odense
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use infpar_mod, only: MYTID, NUMNOD
 !      use parkrmc_mod, only: IKRMCPARF, LMCPRI, NUMCPU, PARMCSCF
+      use infpar_mod, only: MYTID, NUMNOD
       use memory_allocator
 C
 #include "implicit.h"
-#include "infpar.h"
 #include "mpif.h"
 #include "parkrmc.h"
       INTEGER ISTAT(MPI_STATUS_SIZE)

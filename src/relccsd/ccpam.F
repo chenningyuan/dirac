@@ -42,7 +42,9 @@ C
 !      use dcbham_mod, only: CAP, LEVYLE, SPINFR
 !      use dcbpsi_mod, only: DOMP2NO
 !      use dcbmp2no_mod, only: IAOMOSCHEME, MP2_DENRUN, RUN_CCMOD
-!      use infpar_mod, only: MPARID, MYTID, NUMNOD
+#if defined (VAR_MPI)
+      use infpar_mod, only: MPARID, MYTID, NUMNOD
+#endif
 !      use ccpar_mod, only: MASTER, MYPROC, NMPROC
 !      use files_mod, only: IN, IW
       use interface_to_mpi
@@ -52,7 +54,6 @@ C
 #include "dcbham.h"
 #include "dcbpsi.h"
 #include "dcbmp2no.h"
-#include "infpar.h"
 #include "ccpar.inc"
 #include "files.inc"
 C
@@ -163,11 +164,13 @@ C     Written by Luuk Visscher, August 1997
 C     Release the slaves if we run in parallel
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use infpar_mod, only: NODE, NUMNOD
+      use infpar_mod, only: NUMNOD
+#if defined (VAR_MPI)
+      use infpar_mod, only: NODE
+#endif
       use dirac_partask_mod, only: RELEASE_NODES
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
 #ifdef VAR_MPI
       integer   istat(df_mpi_status_size)
 #endif
@@ -202,7 +205,7 @@ C     The slave RELCCSD routine (DIRAC interface)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbmp2no_mod, only: IAOMOSCHEME, MP2_DENRUN
-!      use infpar_mod, only: MPARID, MYTID, NUMNOD
+      use infpar_mod, only: MPARID, MYTID, NUMNOD
       use priunit_mod, only: LUCMD
 !      use ccpar_mod, only: MASTER, MYPROC, NMPROC
 !      use files_mod, only: CCBASF, CCFILN, LCCFIL, MSLVOUT
@@ -210,7 +213,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 #include "implicit.h"
 #include "dcbmp2no.h"
-#include "infpar.h"
 #if defined (VAR_MPI)
       integer   istat(df_mpi_status_size)
 #endif

@@ -2577,7 +2577,7 @@ C
 C***********************************************************************
       use dirac_partask_mod, only: EXIT_NODEMENU, MOLTRA_PAR
       use priunit_mod, only: LUPRI
-!      use infpar_mod, only: MPARID, NODE, NODES
+      use infpar_mod, only: MPARID, NODE, NODES
 !      use dcbtr3_mod, only: ICMOQR
 !      use dcbmp2_mod, only: CMMNFO, SRTSHL, TPRI44
       use interface_to_mpi
@@ -2586,7 +2586,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
-#include "infpar.h"
 !#include "dcborb.h"
 !#include "dcbtra.h"
 #include "dcbtr3.h"
@@ -2918,7 +2917,7 @@ C     Vebjorn Bakken, Summer 2003
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use infpar_mod, only: MPARID, MYTID
+      use infpar_mod, only: MPARID, MYTID
 !      use dcbtra_mod, only: SCRTRA
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
 !      use dcbmp2_mod, only: CMMNFO, TPRI34, TPRI44
@@ -2927,7 +2926,6 @@ C***********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
-#include "infpar.h"
 !#include "dcborb.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
@@ -3152,15 +3150,14 @@ C
 C     Written by T.Saue Sep 17 1998
 C
 C***********************************************************************
-!      use infpar_mod, only: MPARID
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
+      use infpar_mod, only: MPARID
       use dgroup_mod, only: NFSYM
       use interface_to_mpi
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
-#include "infpar.h"
 !#include "dcborb.h"
 !#include "dcbtra.h"
 #include "dcbtr3.h"

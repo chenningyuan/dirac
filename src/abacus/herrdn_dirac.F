@@ -573,11 +573,10 @@ C     IQM - (L+1)-value of actual SC block
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use infpar_mod, only: IF, SLAVE
+      use infpar_mod, only: SLAVE
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "infpar.h"
 C
       REAL(dp), PARAMETER :: D1=1.0D0, SML = 1.0D-6
 C

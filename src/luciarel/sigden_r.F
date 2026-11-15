@@ -167,7 +167,6 @@ C
        use interface_to_mpi
 #include "implicit.inc"
 #if defined (VAR_MPI2)
-!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
@@ -1081,9 +1080,6 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
       use interface_to_mpi
 #include "implicit.h"
 !#include "ipoist8.inc"
-#if defined (VAR_MPI2)
-!#include "infpar.h"
-#endif
 *. General input
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -2853,6 +2849,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                     ,IBLOCKL_S,NPARBLOCK_S
 #endif
      &                 )
+#if defined (VAR_MPI2)
+      use infpar_mod, only: TIMING
+#endif
       use dgroup_mod, only: NZ
       use luci_wrkspc
 C***********************************************************************
@@ -2895,7 +2894,6 @@ C***********************************************************************
 #include "ctcc.inc"
 #include "clunit.inc"
 #if defined (VAR_MPI2)
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       DIMENSION LUCLIST(*), IBLOCKL_C(*), NPARBLOCK_C(*), IGROUPLIST(*)
       DIMENSION IPROCLIST(*), IBLOCKL_S(*), NPARBLOCK_S(*)
@@ -3449,7 +3447,6 @@ C
       use interface_to_mpi
 #include "implicit.inc"
 #if defined (VAR_MPI2)
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE), NPARBLOCK_C(*)
       DIMENSION LUCLIST(*), ISCLFAC_GROUP(*), IBLOCKL_C(*)
       DIMENSION LUHCLIST(*), IBLOCKL_S(*), NPARBLOCK_S(*) 
@@ -3619,7 +3616,6 @@ C     integer array may become very long
       INTEGER*8 INTSCR
 C
 #if defined (VAR_MPI)
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "cintfo.inc"
@@ -3955,7 +3951,6 @@ C end of preprocessing for cray compiler
 #include "ipoist8.inc"
 *
 #if defined (VAR_MPI2)
-!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE), NPARBLOCK_S(*), IBLOCKL_S(*)
       DIMENSION LUCLIST(*), ISCLFAC_GROUP(*), LUHCLIST(*)
       DIMENSION NPARBLOCK_C(*), IBLOCKL_C(*), IT_TTPL(*)
@@ -4781,7 +4776,6 @@ C**********************************************************************
 #include "krciprop.h"
 #include "parluci.h"
 #if defined (VAR_MPI2)
-!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE), IBLOCKL_X(NUM_BLOCKS,*)
       DIMENSION NPARBLOCK_X(NUM_BLOCKS,*) 
       DIMENSION IXSYMPAIRS(MXPROPKRCI_SYM,*), LU1LIST(*), LU2LIST(*)

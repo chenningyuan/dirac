@@ -610,7 +610,6 @@ C
 #include "cgas.inc"
 #include "clunit.inc"
 #if defined (VAR_MPI2)
-!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP
 #endif
@@ -1319,7 +1318,6 @@ C
 #include "cgas.inc"
 #include "clunit.inc"
 #if defined (VAR_MPI2)
-!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP
 #endif
@@ -2091,7 +2089,6 @@ C
 #include "implicit.h"
       INTEGER :: I
 #if defined (VAR_MPI2)
-!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET
 #endif
@@ -3265,7 +3262,6 @@ csk               write(LUWRT,*) ' continuing ...'
 *
       use interface_to_mpi
 #include "implicit.h"
-!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "krmc_shmem.h"
@@ -3533,7 +3529,6 @@ csk               write(LUWRT,*) ' continuing ...'
 *
       use interface_to_mpi
 #include "implicit.h"
-!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -3808,7 +3803,6 @@ csk               write(LUWRT,*) ' continuing ...'
 *
       use interface_to_mpi
 #include "implicit.h"
-!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "ipoist8.inc"
 #include "mxpdim.inc"

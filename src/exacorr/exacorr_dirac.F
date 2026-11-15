@@ -14,9 +14,12 @@ C
 C***********************************************************************
 
 !      use dcbtra_mod, only: IPRTRA, TH_CHOLESKY, TRA4_INDSTR
-!      use infpar_mod, only: MPARID, MYTID
 !      use dcborb_mod, only: NESH
 !      use dcbham_mod, only: SPINFR
+      use infpar_mod, only: MYTID
+#if defined (VAR_MPI)
+      use infpar_mod, only: MPARID
+#endif
       use dgroup_mod, only: NZ
       use exacorr_cfg
       use exacorr_ao_to_mo,only     : exacorr_compute_mo_integrals
@@ -30,7 +33,6 @@ C***********************************************************************
 
 #include "../moltra/dcbtra.h"
 ! to access tra4_indstr
-#include "infpar.h"
 ! we need to broadcast tra4_indstr
 #include "dcborb.h"
 ! to access nesh (number of positive energy "electronlike" orbitals)

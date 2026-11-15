@@ -38,7 +38,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
 #include "ccpar.inc"
-#include "infpar.h"
 C
 C---------------Local variables--------------------------------------
 C

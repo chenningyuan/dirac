@@ -1133,7 +1133,6 @@ C
 C
 #include "ipoist8.inc"
 #if defined (VAR_MPI2)
-!#include "infpar.h"
 #include "mpif.h"
 #endif
 #include "parluci.h"
@@ -3695,7 +3694,6 @@ C
 * new
 #include "parluci.h"
 #if defined (VAR_MPI2)
-!#include "infpar.h"
 #include "mpif.h"
       INTEGER ISTAT(MPI_STATUS_SIZE)
 #endif
@@ -3973,7 +3971,6 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
 * new
 #include "parluci.h"
 #if defined (VAR_MPI2)
-!#include "infpar.h"
 #include "mpif.h"
       INTEGER ISTAT(MPI_STATUS_SIZE)
 #endif

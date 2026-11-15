@@ -4056,7 +4056,6 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #if defined (VAR_MPI2)
-#include "infpar.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"

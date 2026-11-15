@@ -26,13 +26,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  
       use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: LUASCII, LUMLF2, N2EFIL, NTKL, TRA_ASCII
-!      use infpar_mod, only: MYTID
+      use infpar_mod, only: MYTID
       Use moltra_labeling
 
 #include "implicit.h"
       INTEGER :: I
 #include "dcbtra.h"
-#include "infpar.h"
       CHARACTER*8 CDATE,TIMEX,DATEX*10
       CHARACTER*10 FNODE,LFNAM
 C
@@ -78,10 +77,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: LUASCII, LUMLF2, TRA_ASCII
-!      use infpar_mod, only: MYTID
+      use infpar_mod, only: MYTID
 #include "implicit.h"
 #include "dcbtra.h"
-#include "infpar.h"
       WRITE (LUMLF2) 0,0,0
       CLOSE (LUMLF2,STATUS='KEEP')
       IF (TRA_ASCII) THEN
@@ -715,11 +713,10 @@ C     the integral transformation)
 C     Written by Luuk Visscher, May 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use infpar_mod, only: MPARID, MYTID
 !      use dcbtra_mod, only: LUMLF3, MDCSCAT, NOMDCINT
+      use infpar_mod, only: MPARID, MYTID
       use dgroup_mod, only: NFSYM
 #include "implicit.h"
-#include "infpar.h"
 #include "dcbtra.h"
 C
       DO IREPIJ = 1, NFSYM

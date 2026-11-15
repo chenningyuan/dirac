@@ -81,7 +81,6 @@
 #include "mxpdim.inc"
 #include "luci.inc"
 #include "units.inc"
-#include "infpar.h"
 #include "parluci.h"
 *
       parameter (NCMD = 21)
@@ -4300,7 +4299,6 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
       implicit real*8 (A-H,O-Z)
 *
 #include "units.inc"
-#include "infpar.h"
 #include "parluci.h"
 *
       logical MSCOMB
@@ -7477,9 +7475,6 @@ C**********************************************************************
       implicit real*8 (A-H,O-Z)
 *
 #include "parluci.h"
-#if defined (VAR_MPI)
-#include "infpar.h"
-#endif
 #include "files.inc"
 *
       character*8 DIRACTWO
@@ -7866,12 +7861,14 @@ c
      &                        NFSYM,NZ,MORB,IBOSYM,NSTR,NCORE,
      &                        NDELE,NACTELD,WAFFCT,IRETISH,IPRNT)
 *
+#if defined (VAR_MPI)
+      use infpar_mod, only: MPARID, MYTID, NUMNOD
+#endif
       use interface_to_mpi
       implicit real*8 (A-H,O-Z)
 *
 #include "mxpdim.inc"
 #include "dcborb.h"
-#include "infpar.h"
 #include "parluci.h"
 *
       character*6 WAFFCT

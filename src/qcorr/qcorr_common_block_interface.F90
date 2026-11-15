@@ -119,9 +119,6 @@ contains
 #ifndef PRG_DIRAC
       use inforb_mod, only: NSYM
 #endif
-#ifndef PRG_DIRAC
-#include "infpar.h"
-#endif
 #include "../lucita/mxpdim.inc"
 
 ! contains NACTEL

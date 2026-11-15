@@ -222,7 +222,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
 C
-!#include "infpar.h"
 C
 !#include "dcborb.h"
 #include "dcbxlr.h"

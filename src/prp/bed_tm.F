@@ -990,7 +990,9 @@ C***********************************************************************
 !      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
 !      use dcbibn_mod, only: JBENDX, JBPNDX
       use dcbwav_mod, only: WAVEVEC
-!      use infpar_mod, only: MPARID, TOTWAL
+#if defined (VAR_MPI)
+      use infpar_mod, only: MPARID, TOTWAL
+#endif
       use orbital_rotation_indices
       use interface_to_mpi
       use shared_bedled_var_module
@@ -1011,7 +1013,6 @@ C
 !#include "dcbidx.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
-#include "infpar.h"
 #endif
 C     ************************************************************
 C     * Most variables have been moved to shared_bedled_var_module
@@ -1494,7 +1495,7 @@ C     * for entering BEDLED                                            C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use dcbbas_mod, only: N2BBASXQ, NTBAS
       use mxcent_mod, only: MXCOOR
-!      use infpar_mod, only: MPARID
+      use infpar_mod, only: MPARID
 !      use dcbxpp_mod, only: BEDECD, DOBED, MAXEXC
       use memory_allocator                                 
       use interface_to_mpi                                 
@@ -1504,7 +1505,6 @@ C
 c TODO added due to NESH
 
 C TODO commented out due to dcborb.hç
-#include "infpar.h"                                        
 #include "dcbxpp.h"
 C
 C                                                          
@@ -1574,7 +1574,7 @@ C                                                                      C
      &                                    CPUTIME)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dcbxrs_mod, only: NEXCNV, NZXOPE, NZXOPP
-!      use infpar_mod, only: MPARID
+      use infpar_mod, only: MPARID
       use orbital_rotation_indices
       use interface_to_mpi
       use shared_bedled_var_module
@@ -1590,7 +1590,6 @@ C
 !#include "dcbxpr.h"
 !#include "dcbidx.h"
 #include "mpif.h"
-#include "infpar.h"
       integer MASTER, NMPROC, MYPROC
 C
       call MPI_COMM_SIZE(global_communicator, NMPROC, ierr)
@@ -1742,7 +1741,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use codata_mod, only: CVEL
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IFSMO, IOBTYP
-!      use infpar_mod, only: MPARID
+      use infpar_mod, only: MPARID
       use orbital_rotation_indices
       use interface_to_mpi
       use shared_bedled_var_module
@@ -1760,7 +1759,6 @@ C
 #include "dcbprl.h"            
 #include "dcbidx.h"
 #include "mpif.h"
-#include "infpar.h"
       integer MASTER, NMPROC, MYPROC
 C
       call MPI_COMM_SIZE(global_communicator, NMPROC, ierr)

@@ -31,14 +31,13 @@ SUBROUTINE MPIXINIT()
 !
 !**********************************************************************************
 !
-!      use infpar_mod, only: IPAREX, MPARID, MYTID, NUMNOD
+      use infpar_mod, only: IPAREX, MPARID, MYTID, NUMNOD
       use dcbgen_mod, only: PARCAL
 use os_utils
 use integer_kind_mpilib
 use integer_model_in_mpi
 use interface_to_mpi
 implicit none
-#include "infpar.h"
 INTEGER             :: IERR, NUMPROC
 CHARACTER (LEN=6)   :: DIRPAR
 !
@@ -156,11 +155,10 @@ SUBROUTINE DIST_ENV(ITASK)
 !
 !**********************************************************************************
 !
-!      use infpar_mod, only: MPARID, MYTID, NUMNOD
+      use infpar_mod, only: MPARID, MYTID, NUMNOD
       use dcbgen_mod, only: BASDIR, CDIRNOD, LBASDIR, LENDND
 use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
 INTEGER                 :: LEN_LOCAL, IERR, LDIRWRK,LDIRNOD
 PARAMETER (LDIRWRK=255,LDIRNOD=255)
 ! local scratch
@@ -295,10 +293,9 @@ SUBROUTINE SYNC_NODES(IVARIABLE,ITASK)
 !**********************************************************************************
 !
       use priunit_mod, only: LUPRI
-!      use infpar_mod, only: MPARID, MYTID, NUMNOD
+      use infpar_mod, only: MPARID, MYTID, NUMNOD
 use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
   INTEGER :: IERR, IJ, LHOST, ILEN
   CHARACTER(len=255) :: HOST
   integer (kind=8) :: ivariable

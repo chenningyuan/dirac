@@ -961,14 +961,16 @@ C         - NAME   : Name of the timer (max 30 characters)
 C
 !      use timtbl_mod, only: CPUTF, CPUTFT, CPUTT, MXTIMF, TCLEAR, TIMERF_NAME, TINIT, TPRNTA, TPRNTI, TSTART, TSTOP
       use priunit_mod, only: LUPRI
-!      use infpar_mod, only: MPARID, MYTID, NUMNOD
+      use infpar_mod, only: MPARID, MYTID
+#if defined (VAR_MPI)
+      use infpar_mod, only: NUMNOD
+#endif
       use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
       CHARACTER*(*) NAME_IN
       CHARACTER*30  NAME, T_REPORT
       PARAMETER ( D0 = 0.0D0 )
 #include "timtbl.h"
-#include "infpar.h"
       REAL*8 A,MY_T,CPU_AV,CPU_MI,CPU_MA
 C
       NAME = NAME_IN   ! extend with blanks if NAME_IN shorter than 30 chars
@@ -1238,10 +1240,9 @@ C     Written by Luuk Visscher, February 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-!      use infpar_mod, only: MYTID, NODE
+      use infpar_mod, only: MYTID, NODE
 #include "implicit.h"
       INTEGER :: I
-#include "infpar.h"
       CHARACTER*5  FILNAM
       CHARACTER*10 LFILNAM
       NODE = MYTID
@@ -1353,11 +1354,12 @@ C     Written by Luuk Visscher, August 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use bucket_sort_mod, only: LGBUF, NGBFSZ, N_DELETED, N_WRITTEN
-!      use infpar_mod, only: MYTID
+#if defined (VAR_PFS) || defined (VAR_MPI)
+      use infpar_mod, only: MYTID
+#endif
 #include "implicit.h"
       INTEGER :: I
 #include "bucket_sort.h"
-#include "infpar.h"
       REAL*8 RGBUF(NGBFSZ,*), A(NROWS)
       DIMENSION IGBUF(2,NGBFSZ,*)
       DIMENSION IROWS(3,NROWS)
@@ -1454,11 +1456,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
 !      use bucket_sort_mod, only: LGBUF, NGBFSZ, N_DELETED, N_WRITTEN
-!      use infpar_mod, only: MYTID
+      use infpar_mod, only: MYTID
 #include "implicit.h"
       INTEGER :: I
 #include "bucket_sort.h"
-#include "infpar.h"
       REAL*8 RGBUF(NGBFSZ,*)
       DIMENSION IGBUF(2,NGBFSZ,*)
       DIMENSION IROWS(3,NROWS)
@@ -1668,11 +1669,10 @@ C     Written by Luuk Visscher, October 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use bucket_sort_mod, only: IREQ, MAX_SEND_BUFFERS
-!      use infpar_mod, only: MPARID, MYTID, NODES
+      use infpar_mod, only: MPARID, MYTID, NODES
       use interface_to_mpi
 #include "implicit.h"
 #include "bucket_sort.h"
-#include "infpar.h"
       INTEGER ISTAT(df_MPI_STATUS_SIZE)
       INTEGER ISTATS(df_MPI_STATUS_SIZE,MAX_SEND_BUFFERS)
       LOGICAL NEWMAIL

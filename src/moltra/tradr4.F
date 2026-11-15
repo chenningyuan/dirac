@@ -55,7 +55,9 @@ C
 C***********************************************************************
       use dirac_partask_mod, only: EXIT_NODEMENU, MOLTRA_PAR
       use priunit_mod, only: LUPRI
-!      use infpar_mod, only: NODES
+#if defined (VAR_MPI)
+      use infpar_mod, only: NODES
+#endif
 !      use dcbtra_mod, only: IPAR4BS, ISAME, LUMLF2, NFPCK12, NFPCK12T, NFPCK34, NFPCK34T, NOMDCINT, SCRTRA
       use comdis_mod, only: ISHLA
 #if defined (VAR_MPI)
@@ -71,7 +73,6 @@ C***********************************************************************
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
 #endif
-#include "infpar.h"
 #include "dcbtra.h"
       LOGICAL ANTIS,LMP2,TRIAN(2),LBIT
       DIMENSION NSTR(2,0:2,4),
@@ -942,15 +943,16 @@ C     - Q4           Coefficients for index 4
 C
 C     Output is written directly in the MOLFDIR-type file MDCINT
 C
-!      use infpar_mod, only: MPARID, MYTID
 !      use dcbtra_mod, only: MDCSCAT, NFPCK34, NOMDCINT
+#if defined (VAR_MPI)
+      use infpar_mod, only: MPARID, MYTID
+#endif
       use dgroup_mod, only: NBSYM, NFSYM, NZ
 #if defined (VAR_MPI)
       use dcbgen_mod, only: PARCAL
 #endif
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
       INTEGER   NSTR3(2),NSTR4(2)
       DIMENSION WORK(*)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
@@ -1118,14 +1120,13 @@ C     Written by T.Saue Sep 17 1998
 C     Revised May 15 2001 jth/hjaaj
 C
 C***********************************************************************
-!      use infpar_mod, only: MPARID
 !      use dcbtra_mod, only: ISAME, MDCSCAT, NFPCK12, NFPCK12T, NFPCK34, NFPCK34T
+      use infpar_mod, only: MPARID
       use dgroup_mod, only: NFSYM
       use comdis_mod, only: ISHLA
       use interface_to_mpi
 #include "implicit.h"
 C
-#include "infpar.h"
 #include "dcbtra.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4),NSTR(2,0:2,4)

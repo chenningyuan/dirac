@@ -1109,11 +1109,10 @@ C***********************************************************************
       use dgroup_mod, only: LINEAR, NZ
       use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dcbham_mod, only: SPINFR
-!      use infpar_mod, only: MPARID, MYTID
+      use infpar_mod, only: MPARID, MYTID
 #include "implicit.h"
 #include "dcborb.h"
 #include "dcbham.h"
-#include "infpar.h"
 C
       DIMENSION DMO(NORBT,NORBT,NZ)
       LOGICAL NOZG

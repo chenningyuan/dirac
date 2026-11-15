@@ -85,7 +85,6 @@
 #include "units.inc"
 #if defined (VAR_MPI2)
 #include "mpif.h"
-#include "infpar.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
 #endif

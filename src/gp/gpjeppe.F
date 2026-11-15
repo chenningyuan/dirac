@@ -588,7 +588,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-!#include "infpar.h"
       REAL(dp), PARAMETER :: THRES=1.0D-4
       DIMENSION VECOUT(*),VECIN(*),DIAG(*)
 C

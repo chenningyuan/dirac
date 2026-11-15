@@ -293,9 +293,6 @@ C
 C**********************************************************************
 !      use parluci_mod, only: IRC_SAVE, LUWRT
 #include "implicit.h"
-#if defined (VAR_MPI2)
-!#include "infpar.h"
-#endif
 #include "parluci.h"
       DIMENSION IT_CTALL(*), IT_CTONE(*)
       INTEGER ICOUNT_TBLK, IOFF_ONE
@@ -358,9 +355,6 @@ C**********************************************************************
 !      use parluci_mod, only: IT_SHL, MYNEW_ID_SM, NINT_TOTAL, SPLIT_IJKL
 !      use ctcc_mod, only: N2ELINT
 #include "implicit.h"
-#if defined (VAR_MPI2)
-!#include "infpar.h"
-#endif
 #include "parluci.h"
 #include "ipoist8.inc"
 #include "ctcc.inc"
@@ -418,9 +412,6 @@ C
 !      use clunit_mod, only: LUSC95
 !      use files_r_mod, only: LUSC95_MPIL, NLUSC95_MPI
 #include "clunit.inc"
-#if defined (VAR_MPI2)
-!#include "infpar.h"
-#endif
 #include "files_r.inc"
       integer*8 NINTS_I8
       dimension IN(4,NINTS_I8)
@@ -476,7 +467,6 @@ C***********************************************************************
 !#include "gasstr.inc"
 #include "oper.inc"
 #if defined (VAR_MPI2)
-!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET, IOFF_T_IJKL
 #if defined (INT_STAR8)
@@ -627,7 +617,6 @@ C***********************************************************************
       use interface_to_mpi
 #include "implicit.h"
 #if defined (VAR_MPI2)
-!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP, IOFFSET
       INTEGER(KIND=df_MPI_OFFSET_KIND) IS_BYTE8 
@@ -874,7 +863,6 @@ C***********************************************************************
       use interface_to_mpi
 #include "implicit.h"
 #if defined (VAR_MPI2)
-!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP, IOFFSET
       INTEGER(KIND=df_MPI_OFFSET_KIND) IS_BYTE8 
@@ -1070,7 +1058,6 @@ C***********************************************************************
       use interface_to_mpi
 #include "implicit.h"
 #if defined (VAR_MPI2)
-!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP,IOFFSET,IREAD_MAX,IMOD_READ
       INTEGER(KIND=df_MPI_OFFSET_KIND) IS_BYTE8,IOFFSET_T, IT_TOFFW

@@ -57,12 +57,11 @@ C Written by Walter.Lioen@sara.nl, 2007.
 C
       SUBROUTINE GLOBAL_FILE_OPEN_WRITE
 !      use bucket_sort_mod, only: GF_BREC, GF_HANDLE, GF_NAME, GF_NREC, N_BUFFER, WRITE_REQUEST
-!      use infpar_mod, only: NUMNOD
+      use infpar_mod, only: NUMNOD
       use interface_to_mpi
       IMPLICIT NONE
 
 #include "bucket_sort.h"
-#include "infpar.h"
 
       INTEGER IERR
       INTEGER GF_INFO
@@ -101,12 +100,11 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
 
       SUBROUTINE GLOBAL_FILE_OPEN_READ
 !      use bucket_sort_mod, only: GF_BREC, GF_HANDLE, GF_NAME, GF_NREC, N_BUFFER
-!      use infpar_mod, only: NUMNOD
+      use infpar_mod, only: NUMNOD
       use interface_to_mpi
       IMPLICIT NONE
 
 #include "bucket_sort.h"
-#include "infpar.h"
 
       INTEGER IERR
       INTEGER GF_INFO
@@ -174,13 +172,12 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       INTEGER FUNCTION GLOBAL_FILE_RECORD(
      +   TARGET_NODE, SOURCE_NODE, LOCAL_RECORD)
 !      use bucket_sort_mod, only: GF_MAXREC
-!      use infpar_mod, only: NUMNOD
+      use infpar_mod, only: NUMNOD
       use interface_to_mpi
       IMPLICIT NONE
       INTEGER TARGET_NODE, SOURCE_NODE, LOCAL_RECORD
 
 #include "bucket_sort.h"
-#include "infpar.h"
       INTEGER IERR
 
       IF (TARGET_NODE .LT. 0 .OR. TARGET_NODE .GT. NUMNOD) THEN
@@ -356,7 +353,7 @@ CSK   ... zero NUMREAD, otherwise it may fail
 
       SUBROUTINE GLOBAL_FILE_READ(A,NROW,ICOL,IBUF)
 !      use bucket_sort_mod, only: GF_BREC, GF_RECBUF, GF_RECLEN, NGBFSZ
-!      use infpar_mod, only: MYTID, NUMNOD
+      use infpar_mod, only: MYTID, NUMNOD
       use interface_to_mpi
       IMPLICIT NONE
       INTEGER NROW, ICOL,IBUF
@@ -365,7 +362,6 @@ C
 C     Read back the sorted integrals and put them at the right position
 C
 #include "bucket_sort.h"
-#include "infpar.h"
       INTEGER SOURCE_NODE
       REAL*8 RGBUF(NGBFSZ)
       INTEGER IGBUF(2,NGBFSZ)
@@ -431,12 +427,11 @@ C           Pick out the integrals that we need.
 
       SUBROUTINE LOCAL_FILE_OPEN_WRITE
 !      use bucket_sort_mod, only: LF_HANDLE, LF_NAME, WRITE_REQUEST
-!      use infpar_mod, only: MYTID
+      use infpar_mod, only: MYTID
       use interface_to_mpi
       IMPLICIT NONE
 
 #include "bucket_sort.h"
-#include "infpar.h"
 
       INTEGER IERR
       INTEGER GF_INFO
@@ -483,12 +478,11 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
 
       SUBROUTINE SELECT_LOCAL_FROM_GLOBAL
 !      use bucket_sort_mod, only: GF_HANDLE, GF_NREC, GF_RECBUF, GF_RECLEN, LF_HANDLE, WRITE_REQUEST
-!      use infpar_mod, only: MYTID, NUMNOD
+      use infpar_mod, only: MYTID, NUMNOD
       use interface_to_mpi
       IMPLICIT NONE
 
 #include "bucket_sort.h"
-#include "infpar.h"
       CHARACTER LF_RECBUF(GF_RECLEN)
       INTEGER SOURCE_NODE,LOCAL_RECORD
       INTEGER I
@@ -537,12 +531,11 @@ CSK         ... zero NUMREAD, otherwise it may fail
 
       SUBROUTINE LOCAL_FILE_OPEN_READ
 !      use bucket_sort_mod, only: GF_NREC, GF_RECLEN, LF_NAME, LF_OFFSET, LF_UNIT
-!      use infpar_mod, only: MYTID, NUMNOD
+      use infpar_mod, only: MYTID, NUMNOD
       use interface_to_mpi
       IMPLICIT NONE
 
 #include "bucket_sort.h"
-#include "infpar.h"
 
       INTEGER SOURCE_NODE
 
@@ -562,13 +555,12 @@ CSK         ... zero NUMREAD, otherwise it may fail
 
       INTEGER FUNCTION LOCAL_FILE_RECORD(SOURCE_NODE, LOCAL_RECORD)
 !      use bucket_sort_mod, only: GF_MAXREC, LF_OFFSET
-!      use infpar_mod, only: NUMNOD
+      use infpar_mod, only: NUMNOD
       use interface_to_mpi
       IMPLICIT NONE
       INTEGER SOURCE_NODE, LOCAL_RECORD
 
 #include "bucket_sort.h"
-#include "infpar.h"
 
       IF (SOURCE_NODE .LT. 1 .OR. SOURCE_NODE .GT. NUMNOD) THEN
          PRINT *, 'ERROR: LOCAL_FILE_RECORD: SOURCE_NODE = ',

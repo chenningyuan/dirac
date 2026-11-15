@@ -31,7 +31,10 @@
 !      use dcbham_mod, only: CAP, LEVYLE, SPINFR
       use dcbgen_mod, only: PARCAL
 !      use dcbtra_mod, only: ISTRAT
-!      use infpar_mod, only: MPARID, MYTID, NODE, NUMNOD
+      use infpar_mod, only: NUMNOD
+#if defined (VAR_MPI)
+      use infpar_mod, only: MPARID, MYTID, NODE
+#endif
 !      use ccpar_mod, only: MASTER, MYPROC, NMPROC
 !      use files_mod, only: IN, IW
       use interface_to_mpi
@@ -40,7 +43,6 @@
 #include "dcbham.h"
 !#include "dcbpsi.h"
 #include "../moltra/dcbtra.h"
-#include "infpar.h"
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/files.inc"
 !#include "../relccsd/complex.inc"
@@ -143,7 +145,9 @@
 !  similar to CC_NOD due to identical requirements
 !
 !      use dcbtra_mod, only: ISTRAT
-!      use infpar_mod, only: MPARID, MYTID, NUMNOD
+#if defined (VAR_MPI)
+      use infpar_mod, only: MPARID, MYTID, NUMNOD
+#endif
       use priunit_mod, only: LUCMD
 !      use ccpar_mod, only: MASTER, MYPROC, NMPROC
 !      use files_mod, only: CCBASF, CCFILN, LCCFIL, MSLVOUT
@@ -152,7 +156,6 @@
 #include "implicit.h"
 !#include "dcbham.h"
 #include "../moltra/dcbtra.h"
-#include "infpar.h"
 #if defined (VAR_MPI)
       integer istat(df_mpi_status_size)
 #endif

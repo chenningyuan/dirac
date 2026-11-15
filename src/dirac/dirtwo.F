@@ -3373,7 +3373,9 @@ C*****************************************************************************
       use dcbbas_mod, only: N2BBASX, NTBAS
       use dirac_partask_mod, only: HERFCK_PAR
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use infpar_mod, only: TOTWAL
+#if defined (VAR_MPI)
+      use infpar_mod, only: TOTWAL
+#endif
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
       use symmet_mod, only: MAXREP
@@ -3400,9 +3402,6 @@ C   CCOM  : THRS,NHTYP,KHK
 C   SHELLS: KMAX
 C   symmet.h : MAXREP
 C
-#if defined (VAR_MPI)
-#include "infpar.h"
-#endif
       LOGICAL PERTUR, EXPECT, UNDIFF, SPNORB, DIRFCK, DISTRI, SQ12EL,
      &        LONDON, SUSCEP, DDFOCK, ADISTR, LBIT, FIRST
       CHARACTER SECTID*12, TOTTID*12, WALLTID*12, CPUTID*12,
@@ -4008,7 +4007,9 @@ C*****************************************************************************
 !      use dcbham_mod, only: HFXMU
       use dgroup_mod, only: NZ
       use dcbbas_mod, only: N2BBASX
-!      use infpar_mod, only: TOTWAL
+#if defined (VAR_MPI)
+      use infpar_mod, only: TOTWAL
+#endif
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -4016,9 +4017,6 @@ C*****************************************************************************
      &                       D0=0.0D0
 C
 #include "dcbham.h"
-#if defined (VAR_MPI)
-#include "infpar.h"
-#endif
       LOGICAl LBIT
       CHARACTER SECTID*12, INTTID*12, TOTTID*12, CPUTID*12, WALLTID*12,
      &          SOTEXT*9

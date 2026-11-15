@@ -61,7 +61,6 @@
 #include "implicit.h"
       INTEGER :: II
 #if defined (VAR_MPI2)
-!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"

@@ -649,7 +649,6 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
       use interface_to_mpi
 #include "implicit.h"
 #if defined (VAR_MPI2)
-!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"

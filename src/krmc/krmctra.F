@@ -1134,7 +1134,7 @@ C                     S. Knecht   - Aug 14 2010
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use infpar_mod, only: MYTID
+      use infpar_mod, only: MYTID
 !      use dcborb_mod, only: N2ORBX, NASHT, NNASHX, NORBT
       use dgroup_mod, only: IPQTOQ, JBTOF, LINEAR, NBSYM, NFSYM, NZ
 !      use dcbham_mod, only: LEVYLE, SPINFR
@@ -1142,7 +1142,6 @@ C***********************************************************************
       use memory_allocator
 #include "implicit.h"
       INTEGER :: I
-#include "infpar.h"  
 !#include "maxash.h"
 C
 #include "dcborb.h"

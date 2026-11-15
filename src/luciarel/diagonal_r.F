@@ -49,7 +49,6 @@
       use interface_to_mpi
 #include "implicit.h"
 #if defined (VAR_MPI2)
-!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
@@ -360,7 +359,6 @@ C?          WRITE(6,*)  ' IA = ', IA
 #include "cgas.inc"
 #include "gasstr.inc"
 #if defined (VAR_MPI2)
-!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"

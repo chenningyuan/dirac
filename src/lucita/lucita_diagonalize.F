@@ -47,7 +47,6 @@
       IMPLICIT REAL*8(A-H,O-Z)
 C
 #if defined (VAR_MPI2)
-#include "infpar.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
       DIMENSION LU1LIST(*), LU2LIST(*), LU3LIST(*)
@@ -3319,10 +3318,12 @@ C     CALL COPVCD(LU3,LU4,VEC1,1,LBLK)
 * On input LU1 is supposed to hold initial guesses to eigenvectors
 *
 *
+#if defined (VAR_MPI2)
+      use infpar_mod, only: NUMNOD
+#endif
        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 #include "parluci.h"
 #if defined (VAR_MPI2)
-#include "infpar.h"
 #include "mpif.h"
        INTEGER   ISTAT(MPI_STATUS_SIZE)
        INTEGER   STATUS_ARRAY(MPI_STATUS_SIZE,NUMNOD), IERR

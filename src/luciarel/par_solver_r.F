@@ -69,11 +69,10 @@
 * On input ILU1 is supposed to hold initial guesses to eigenvectors
 
 
-!      use infpar_mod, only: TIMING
 !      use parluci_mod, only: CHECKPOINT_LUCIX, CSCREEN, IALL_LU3, IALL_LU4, IALL_LU5, IDIA, ILU1, ILU2, ILU3, ILU4, ILU5, ILUC, JVEC_SF, LUWRT, LU_INFO, MASTER, MYNEW_COMM, MYPROC, MY_ACT_BLK1, MY_ACT_BLK2, MY_ACT_BLK_ALL, MY_DIA_OFF, MY_LU1_OFF, MY_LU2_OFF, MY_LU3_OFF, MY_LU4_OFF, MY_LU5_OFF, MY_LUC_OFF, NUM_BLOCKS, NUM_BLOCKS2, SYMFLABEL
+      use infpar_mod, only: TIMING
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       DIMENSION LU1LIST(*), LU2LIST(*), LU3LIST(*)
       DIMENSION LU4LIST(*), LU5LIST(*), LUCLIST(*)
@@ -1797,13 +1796,12 @@ C          Call wrtmat(X(1,JVec),2*NDim,1,2*NDim,1)
 * The real and imaginary parts are separated by end of vector marks
 * (-1) in my simple world
 *
-!      use infpar_mod, only: TIMING
 !      use parluci_mod, only: CHECKPOINT_LUCIX, CSCREEN, IALL_LU3, IALL_LU4, IALL_LU5, IDIA, ILU1, ILU2, ILU3, ILU4, ILU5, ILUC, JVEC_SF, LUWRT, LU_INFO, MASTER, MYNEW_COMM, MYPROC, MY_ACT_BLK1, MY_ACT_BLK2, MY_DIA_OFF, MY_LU1_OFF, MY_LU2_OFF, MY_LU3_OFF, MY_LU4_OFF, MY_LU5_OFF, MY_LUC_OFF, NUM_BLOCKS, NUM_BLOCKS2, SYMFLABEL
 !      use krmcluci_inf_mod, only: ECI
+      use infpar_mod, only: TIMING
       use interface_to_mpi
 #include "implicit.h"
 !#include "ipoist8.inc"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       REAL * 8   INPROD,INPRDD

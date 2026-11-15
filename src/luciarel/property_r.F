@@ -259,7 +259,9 @@ C
 !      use glbbas_mod, only: KT_CC
 !      use krciprop_mod, only: DOPROPREOD, IHTYPE_X, IN1ELPRP_KRCI, ISYMOPPRP_KRCI, LPROP_KRCI, NPROP_KRCI
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
-!      use infpar_mod, only: MPARID, MYTID, NUMNOD
+#if defined (VAR_MPI)
+      use infpar_mod, only: MPARID, MYTID, NUMNOD
+#endif
 !      use parluci_mod, only: LUWRT, MASTER, MYPROC, NMPROC
       use luci_wrkspc
 !***********************************************************************
@@ -295,7 +297,6 @@ C information for property run
 #include "krciprop.h"
 #include "dcbxpr.h"
 #if defined (VAR_MPI)
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"

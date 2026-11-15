@@ -32,14 +32,14 @@ C***********************************************************************
       use dirac_partask_mod, only: FINISH_PAR_SIGNAL, RELEASE_NODES
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: PARCAL
-!      use infpar_mod, only: MAX_OMP_THREADS, MPARID, MYTID, NUMNOD, PARHER, SLAVE
+      use infpar_mod, only: MAX_OMP_THREADS, MPARID, MYTID, NUMNOD,
+     &  PARHER, SLAVE
       implicit none
 
       integer IPARCAL, IMYTID, IMPARID, INUMNOD
 
 
 
-#include "infpar.h"
 
 #ifdef HAVE_OPENMP
       INTEGER omp_get_num_procs
@@ -1220,7 +1220,10 @@ C     Written by L.Visscher July 1997
 C     Last revision: July 29 1996
 C
 C***********************************************************************
-!      use infpar_mod, only: MAX_OMP_THREADS, MPARID, MYTID, NUMNOD, PARHER, SLAVE
+      use infpar_mod, only: MPARID, MYTID, NUMNOD, PARHER, SLAVE
+#ifndef HAVE_OPENMP
+      use infpar_mod, only: MAX_OMP_THREADS
+#endif
       use interface_to_mpi
       use iso_c_binding
 
@@ -1255,7 +1258,6 @@ C***********************************************************************
 #endif
 
 !#include "dcbdhf.h"
-#include "infpar.h"
       INTEGER :: ISTAT(df_mpi_status_size)
       LOGICAL :: NEWTASK
       integer :: IMPARID, INUMNOD, IMYTID, ITASK, IPARCAL, mytid_print
@@ -1594,14 +1596,13 @@ C     other like in RELCCSD when doing the AO Lagrangian).
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use infpar_mod, only: MPARID
+      use infpar_mod, only: MPARID
       use interface_to_mpi
       use fde_mod, only : fde_launch_slave_process
       !use visual_dirac, only : visual_initialize_nodes
 #include "implicit.h"
 !#include "dcbdhf.h"
 C
-#include "infpar.h"
       LOGICAL NEWTASK
 C
 C
@@ -1715,13 +1716,14 @@ C ITASK .eq. 0: send slaves to sleep ("0" makes sure they are in menu)
 C ITASK .lt. 0: release slaves from current task and send them to sleep
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-!      use infpar_mod, only: MPARID, NODE, NUMNOD
+#if defined (VAR_MPI)
+      use infpar_mod, only: MPARID, NODE, NUMNOD
+#endif
       use interface_to_mpi
 #include "implicit.h"
 C
 C
 #if defined (VAR_MPI)
-#include "infpar.h"
 C
 
       IF (NUMNOD .EQ. 0) RETURN   ! MPI version of DIRAC, but no slaves (i.e. sequential)
@@ -1759,7 +1761,6 @@ C
       use dcbgen_mod, only: PARCAL
 #endif
 #include "implicit.h"
-!#include "infpar.h"
 C
 C     Check environment variable BASDIR
 C

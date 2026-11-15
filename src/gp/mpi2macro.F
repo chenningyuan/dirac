@@ -56,8 +56,8 @@ C
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
+      use interface_to_mpi, only: df_my_MPI_INTEGER
 #include "implicit.h"
-#include "infpar.h"
 #include "mpif.h"
 !#include "mxdim_mpi2.h"
       INTEGER ISTAT(MPI_STATUS_SIZE)
@@ -67,7 +67,7 @@ C***********************************************************************
       INTEGER(KIND=MPI_ADDRESS_KIND) IDISPL
 C
       IF( NTYPE_R .eq. 1 ) THEN
-        DATATYPE_OUT = my_MPI_INTEGER
+        DATATYPE_OUT = df_my_MPI_INTEGER
       ELSE IF ( NTYPE_R .eq. 2 ) THEN
         DATATYPE_OUT = MPI_REAL8
       ELSE
@@ -77,7 +77,7 @@ C
       END IF
 C
       IF( NTYPE_T .eq. 1 ) THEN
-        DATATYPE_IN = my_MPI_INTEGER
+        DATATYPE_IN = df_my_MPI_INTEGER
       ELSE IF ( NTYPE_T .eq. 2 ) THEN
         DATATYPE_IN = MPI_REAL8
       ELSE
@@ -128,8 +128,8 @@ C
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
+      use interface_to_mpi, only: df_my_MPI_INTEGER
 #include "implicit.h"
-#include "infpar.h"
 #include "mpif.h"
 !#include "mxdim_mpi2.h"
       INTEGER ISTAT(MPI_STATUS_SIZE)
@@ -139,7 +139,7 @@ C***********************************************************************
       INTEGER(KIND=MPI_ADDRESS_KIND) IDISPL
 C
       IF( NTYPE_T .eq. 1 ) THEN
-        DATATYPE_OUT = my_MPI_INTEGER
+        DATATYPE_OUT = df_my_MPI_INTEGER
       ELSE IF ( NTYPE_T .eq. 2 ) THEN
         DATATYPE_OUT = MPI_DOUBLE_PRECISION
       ELSE
@@ -149,7 +149,7 @@ C
       END IF
 C
       IF( NTYPE_R .eq. 1 ) THEN
-        DATATYPE_IN = my_MPI_INTEGER
+        DATATYPE_IN = df_my_MPI_INTEGER
       ELSE IF ( NTYPE_R .eq. 2 ) THEN
         DATATYPE_IN = MPI_DOUBLE_PRECISION
       ELSE
@@ -200,7 +200,6 @@ C
 C***********************************************************************
 !      use typesz_mpi2_mod, only: ISIZE_DP, ISIZE_INT8, ISIZE_LOG, ISIZE_MY_INT
 #include "implicit.h"
-!#include "infpar.h"
 #include "mpif.h"
 !#include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
@@ -266,7 +265,6 @@ C
 C
 C***********************************************************************
 #include "implicit.h"
-!#include "infpar.h"
 #include "mpif.h"
 C
       CALL MPI_FREE_MEM(RBUF,IERR)
@@ -290,7 +288,6 @@ C***********************************************************************
 !      use typesz_mpi2_mod, only: ISIZE_DP, ISIZE_INT8, ISIZE_INTDEF, ISIZE_LOG, ISIZE_MY_INT
       use interface_to_mpi
 #include "implicit.h"
-!#include "infpar.h"
 #include "typesz_mpi2.h"
 C
       call interface_MPI_TYPE_EXTENT(df_MPI_REAL8,ISIZE_DP)
@@ -331,7 +328,6 @@ C
 C***********************************************************************
 !      use typesz_mpi2_mod, only: ISIZE_DP
 #include "implicit.h"
-!#include "infpar.h"
 #include "mpif.h"
 !#include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
@@ -391,7 +387,6 @@ C
 C
 C***********************************************************************
 #include "implicit.h"
-!#include "infpar.h"
 #include "mpif.h"
 C
 C     close memory window on each process shared by IWIN_COMM
@@ -423,7 +418,6 @@ C
 C
 C***********************************************************************
 #include "implicit.h"
-!#include "infpar.h"
 #include "mpif.h"
 C
 C     get group information
@@ -458,7 +452,6 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-!#include "infpar.h"
 #include "mpif.h"
       INTEGER IKEY_VAL
       INTEGER(KIND=MPI_ADDRESS_KIND) IWIN_ATTR

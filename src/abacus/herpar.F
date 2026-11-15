@@ -280,7 +280,7 @@ C
      &   task_order_is_valid, mark_task_order_valid
       use dirac_partask_mod, only: EXIT_NODEMENU
       use mxcent_mod, only: MXCOOR
-!      use infpar_mod, only: IPRPAR, NODES, TIMING
+      use infpar_mod, only: IPRPAR, NODES, TIMING
       use inforb_mod, only: N2BASX, NNBASX
       use priunit_mod, only: LUPRI
       use twocom_mod, only: SCRTHR
@@ -291,7 +291,6 @@ C
 C
 C dirac_partask.h : symbols for DIRAC_PARCTL codes
 C
-#include "infpar.h"
 C
 !     DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), WORK(LWORK),
       DIMENSION FMAT(*), DMAT(*), WORK(LWORK),
@@ -479,7 +478,7 @@ C
 C     Written by Paal Dahle May 1994.
 C     Revised Oct 1996 by T.Saue
 C
-!      use infpar_mod, only: ICOUNT, IPRPAR, NODES, NTASK
+      use infpar_mod, only: ICOUNT, IPRPAR, NODES, NTASK
 #ifndef PRG_DIRAC
       use gnrinf_mod, only: NEWBAS, RELCAL
 #endif
@@ -491,7 +490,6 @@ C
 #endif
 #include "implicit.h"
       INTEGER :: I
-#include "infpar.h"
 C
       INTEGER INDEX_IJ(MTOTTK), NPOS(MTOTTK)
       REAL*8  TIMES(MTOTTK)
@@ -573,7 +571,10 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbham_mod, only: ECPCALC, HFXATT, HFXFAC, HFXMU, INTV1C, LEVYLE, NONREL, ONECAP, SMLV1C, SPINFR
       use priunit_mod, only: LUPRI
-!      use infpar_mod, only: IPRPAR, MPARID, NODES, NTASK, TIMING
+      use infpar_mod, only: IPRPAR, NODES, NTASK, TIMING
+#if defined (VAR_MPI)
+      use infpar_mod, only: MPARID
+#endif
       use maxorb_mod, only: MXCORB, MXSHEL
       use nuclei_mod, only: NUCDEG
       use symmet_mod, only: MAXREP
@@ -609,7 +610,6 @@ C
 #include "dcbham.h"
 #endif
 C
-#include "infpar.h"
 C
 C
       LOGICAL NODMAT,NOFMAT
@@ -800,14 +800,13 @@ C
 C     Written by Henrik Koch and Paal Dahle Nov-1993
 C
       use priunit_mod, only: LUPRI
-!      use infpar_mod, only: IPRPAR, NODE, NODES, NTASK
+      use infpar_mod, only: IPRPAR, NODE, NODES, NTASK
       use interface_to_mpi
 #include "implicit.h"
 #ifdef VAR_MPI
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
       INTEGER :: I,J
-#include "infpar.h"
 C
       DIMENSION INDEX_IJ(MTOTTK), NSTAT(NODES), ISHELL(2)
 C
@@ -914,7 +913,10 @@ C
 #endif
       use mxcent_mod, only: MXCOOR
       use priunit_mod, only: LUPRI
-!      use infpar_mod, only: ICOUNT, MPARID, NODES, TIMING
+      use infpar_mod, only: ICOUNT
+#if defined (VAR_MPI)
+      use infpar_mod, only: MPARID, NODES, TIMING
+#endif
       use interface_to_mpi
       use kinds_mod, only: dp
 #if defined (VAR_MPI)
@@ -931,7 +933,6 @@ C
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
       INTEGER :: I,J,K
-#include "infpar.h"
 
 C
       REAL*8    FMAT(*),WORK(NREQUI),TIMES(MTOTTK),DINTSKP(LDINTSKP),
@@ -1064,12 +1065,11 @@ C  /* Deck parsrt */
 C
 C     Written by Paal Dahle December 1993.
 C
-!      use infpar_mod, only: IPRPAR
+      use infpar_mod, only: IPRPAR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
 C
-#include "infpar.h"
 C
       DIMENSION  TIMES(MTOTTK), NPOS(0:MTOTTK+1), SORTED(0:MTOTTK+1)
 C
@@ -1142,7 +1142,10 @@ C     Written by Henrik Koch and Paal Dahle Nov-1993
 #if defined (PRG_DIRAC) && defined (VAR_MPI)
       use dcbgrd_mod, only: DMXCPT, DMXWLT, RELGRD
 #endif
-!      use infpar_mod, only: IPRPAR, NODE, NODES
+      use infpar_mod, only: NODES
+#if defined (VAR_MPI)
+      use infpar_mod, only: IPRPAR, NODE
+#endif
       use mxcent_mod, only: MXCOOR
       use interface_to_mpi
       use kinds_mod, only: dp
@@ -1152,7 +1155,6 @@ C     Written by Henrik Koch and Paal Dahle Nov-1993
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
       INTEGER :: I
-#include "infpar.h"
 C
 C
       INTEGER   NSTAT(NODES)
@@ -1291,7 +1293,7 @@ CMI  TEC changes for LAO (2003,2006)
       use dcbgrd_mod, only: GRADEE
 #endif
       use mxcent_mod, only: MXCOOR
-!      use infpar_mod, only: MYTID, PARHER
+      use infpar_mod, only: MYTID, PARHER
       use priunit_mod, only: LUPRI
       use memory_allocator
       use interface_to_mpi
@@ -1309,7 +1311,6 @@ CMI  TEC changes for LAO (2003,2006)
 C
 C
 C
-#include "infpar.h"
 C
       DIMENSION DINTSKP(14*3*3)
       LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH
@@ -1443,7 +1444,10 @@ C
 C     Written by Henrik Koch and Paal Dahle
 C     Revised Oct 4 1996 - tsaue
 C
-!      use infpar_mod, only: IPRPAR, MPARID, NODES, NTASK, TIMING
+      use infpar_mod, only: IPRPAR, NODES, NTASK, TIMING
+#if defined (VAR_MPI)
+      use infpar_mod, only: MPARID
+#endif
       use symmet_mod, only: MAXREP
       use maxorb_mod, only: MXCORB
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMDEP, NAMDPX, NAMEX,
@@ -1484,7 +1488,6 @@ C
 #if defined (PRG_DIRAC)
 #include "dcbham.h"
 #endif
-#include "infpar.h"
 C
 C
       DIMENSION WORK(*), DSEND(2), ISEND(2)
@@ -1713,10 +1716,9 @@ C
       use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP,
      &                      resize_primitives
       use aovec_mod, only: MXCONT
-!      use infpar_mod, only: MPARID
+      use infpar_mod, only: MPARID, MYTID
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
 C........primit_mod: the slaves take the master's size N.
          IF (MYTID .EQ. MPARID) N = SIZE(PRIEXP)
          CAll interface_mpi_BCAST(N,1,MPARID,global_communicator)
@@ -1759,7 +1761,10 @@ CMI changes from TEC for LAO
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: MULT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use infpar_mod, only: ICOUNT, MPARID, MYTID, NTASK, TIMING
+      use infpar_mod, only: ICOUNT
+#if defined (VAR_MPI)
+      use infpar_mod, only: MPARID, MYTID, NTASK, TIMING
+#endif
       use aovec_mod, only: MXAOVC
       use taymol_mod, only: GRDMOL, HESMOL
       use taysol_mod, only: GSOLNN, GSOLTT
@@ -1792,7 +1797,6 @@ C
 #ifdef PRG_DIRAC
 #include "dcbham.h"
 #endif
-#include "infpar.h"
 C
 C
       IF (JPRINT .GT. 5) CALL TITLER('Output from PARLOP','*',103)
@@ -2178,7 +2182,9 @@ C
       use dcbgrd_mod, only: GRADEE
 #endif
       use mxcent_mod, only: MXCOOR
-!      use infpar_mod, only: ICOUNT, IPRPAR, MPARID, TIMING
+#if defined (VAR_MPI)
+      use infpar_mod, only: ICOUNT, IPRPAR, MPARID, TIMING
+#endif
       use interface_to_mpi
 #if defined (VAR_MPI)
       use dcbsusc_mod, only: SUS2EL
@@ -2188,7 +2194,6 @@ C
 #endif
 #include "implicit.h"
       INTEGER :: I
-#include "infpar.h"
 C
       INTEGER   LFMAT, NUMGRA, MAXDIF, NUMHES, NUMSUS, ITYPE
       REAL*8    CPU1, WALL1
@@ -2287,12 +2292,14 @@ C
 C  /* Deck prlinp */
       SUBROUTINE PRLINP(WORD)
       use priunit_mod, only: LUCMD, LUPRI
-!      use infpar_mod, only: IPRPAR, NODES, NTASK, NUMNOD, TOTWAL
+      use infpar_mod, only: IPRPAR, NODES, NTASK, TOTWAL
+#if defined (VAR_MPI)
+      use infpar_mod, only: NUMNOD
+#endif
       use interface_to_mpi
 #include "implicit.h"
       INTEGER :: I
       PARAMETER (NTABLE = 4)
-#include "infpar.h"
       LOGICAL FIRST, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       SAVE FIRST

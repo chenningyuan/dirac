@@ -33,7 +33,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUCMD, LUPRI
       use dgroup_mod, only: NZ
 !      use dcbham_mod, only: CAP, LEVYLE, SPINFR
-!      use infpar_mod, only: MPARID, MYTID, NUMNOD
+#if defined (VAR_MPI)
+      use infpar_mod, only: MPARID, MYTID, NUMNOD
+#endif
 !      use ccpar_mod, only: MASTER, MYPROC, NMPROC
 !      use files_mod, only: IN, IW
       use interface_to_mpi
@@ -41,7 +43,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INTEGER :: I
 #include "dcbham.h"
 !#include "dcbpsi.h"
-#include "infpar.h"
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/files.inc"
 !#include "../relccsd/complex.inc"

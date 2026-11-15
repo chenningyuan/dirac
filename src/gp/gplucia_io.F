@@ -488,7 +488,6 @@ C    &     I_BLK_TO_CLS(IBLK)
 #include "implicit.h"
       INTEGER :: I
 #if defined (VAR_MPI2)
-!#include "infpar.h"
 #include "mpif.h"
       INTEGER ISTAT(MPI_STATUS_SIZE)
 #endif

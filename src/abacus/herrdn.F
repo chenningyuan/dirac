@@ -233,13 +233,13 @@ C
 C
 C     Initialize /CBIREA/
 C
+      use infpar_mod, only: MPARID, MYTID
       use ccom_mod, only: THRS
       use cbirea_mod
       use numder_mod, only: NOMOVE
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
       LOGICAL RELCAL, TSTINP
-#include "infpar.h"
 Caspg adding numder to set NOMOVE
 Caspg
       THRS = 1.0D-15
@@ -498,6 +498,7 @@ C       ISHELL - runs over all shells
 C       IPRIM  - runs over all primitives
 C       NUCIND - runs over all symmetry independent centers
 C******************************************************************************
+      use infpar_mod, only: MYTID, SLAVE
       use dgroup_mod, only: ATOMIC, LINEAR
 #ifndef PRG_DIRAC
       use gnrinf_mod, only: KCHARG
@@ -546,7 +547,6 @@ C     JHS The following variables come from a common block and are thus kept in 
       INTEGER   IFXYZ(3), blk
       LOGICAL   ANG, ADDSYM
 
-#include "infpar.h"
 #ifndef PRG_DIRAC
       LOGICAL LINEAR, ATOMIC
 #endif
@@ -5394,11 +5394,11 @@ C     Note that we only allow decrements of one /jth-20000621.
 C     (This is used to check if SMALL basis keyword has been specified,
 C     or if default - kinetic balance - should be used.)
 C
+      use infpar_mod, only: MYTID
       use molinp_mod, only: KMLINE, MLINE, NMLINE
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "infpar.h"
 
       PARAMETER (len_NEXT_INPUT_LINE = 120)
       CHARACTER*(len_NEXT_INPUT_LINE) NEXT_INPUT_LINE
@@ -6169,6 +6169,9 @@ C     Point charges are not included. /June2000,jth+hjaaj
 C     Yes, but not if too close, and not pc-pc (pc=point charge). /May2010,hjaaj
 C
 C***********************************************************************
+#if defined (VAR_MPI)
+      use infpar_mod, only: MYTID
+#endif
       use nuclei_mod, only: CORD, ISTBNU, NOORBT, NUCIND
       use symmet_mod, only: FMULT, ISYMAX, MAXREP, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -6186,7 +6189,6 @@ C***********************************************************************
       ! to use nitrogen basis on oxygen, first specify nitrogen and
       ! then a point charge of +1 with the same coordinates.
 C
-#include "infpar.h"
       REAL*8   Q(*)
       REAL*8   DIPNUC(3,2)
 C
@@ -6662,6 +6664,7 @@ C     Added and modified by Miro Ilias for the AMFI part
 C     Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use infpar_mod, only: MPARID, MYTID
       use ccom_mod, only: NHKOFF
       use nuclei_mod, only: CHARGE, NONT, NONTYP, NUCDEG
       use primit_mod, only: PRIEXP
@@ -6671,7 +6674,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "infpar.h"
 
       LOGICAL SEG
 C     CHARACTER KASYM(3,3)*1, CRT*1

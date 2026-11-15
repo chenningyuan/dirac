@@ -53,7 +53,12 @@
 
 #ifdef VAR_MPI
 #include <mpi.h>
-#include "infpar.h"
+/* MPARID and NODES of infpar_mod (Fortran), bind(C) */
+#if defined (INT_STAR8)
+extern long diracinfpar_mparid, diracinfpar_nodes;
+#else
+extern int  diracinfpar_mparid, diracinfpar_nodes;
+#endif
 #endif
 
 /* =================================================================== */
@@ -641,18 +646,18 @@ dftsyncfunc_(int* amImaster)
     int success; /* jvs: this is not used !!! */
     int dft_conf_len =  DftConfString ? strlen(DftConfString)+1 : 0;
     
-    MPI_Bcast(&dcrham_.hfxmu,1,MPI_DOUBLE,diracinfpar_.mparid,MPI_COMM_WORLD);
-    if(diracinfpar_.nodes==0||Initialized) return; 
-    MPI_Bcast(&do_alda_hs,   1, MPI_INT, diracinfpar_.mparid, MPI_COMM_WORLD);
-    MPI_Bcast(&do_alda_ha,   1, MPI_INT, diracinfpar_.mparid, MPI_COMM_WORLD);
-    MPI_Bcast(&do_xalda,     1, MPI_INT, diracinfpar_.mparid, MPI_COMM_WORLD);
-    MPI_Bcast(&dft_conf_len, 1, MPI_INT, diracinfpar_.mparid, MPI_COMM_WORLD);
+    MPI_Bcast(&dcrham_.hfxmu,1,MPI_DOUBLE,diracinfpar_mparid,MPI_COMM_WORLD);
+    if(diracinfpar_nodes==0||Initialized) return;
+    MPI_Bcast(&do_alda_hs,   1, MPI_INT, diracinfpar_mparid, MPI_COMM_WORLD);
+    MPI_Bcast(&do_alda_ha,   1, MPI_INT, diracinfpar_mparid, MPI_COMM_WORLD);
+    MPI_Bcast(&do_xalda,     1, MPI_INT, diracinfpar_mparid, MPI_COMM_WORLD);
+    MPI_Bcast(&dft_conf_len, 1, MPI_INT, diracinfpar_mparid, MPI_COMM_WORLD);
     if(dft_conf_len>0) {
         char* line = malloc(dft_conf_len);
         if(*amImaster)
             strcpy(line, DftConfString);
        
-        MPI_Bcast(line, dft_conf_len, MPI_CHAR, diracinfpar_.mparid, MPI_COMM_WORLD);
+        MPI_Bcast(line, dft_conf_len, MPI_CHAR, diracinfpar_mparid, MPI_COMM_WORLD);
 
         if(!*amImaster)
             dftinput_(line, &success, dft_conf_len);

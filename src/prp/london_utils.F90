@@ -24,7 +24,6 @@ module london_utils
 #include "dcborb.h"
 #include "dcbxlr.h"
 
-#include "infpar.h"
 #ifdef VAR_MPI
 #include "mpif.h"
   integer istat(mpi_status_size)

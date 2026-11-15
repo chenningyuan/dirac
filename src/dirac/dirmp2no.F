@@ -333,7 +333,7 @@ C***********************************************************************
 
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUKRMC
-!      use infpar_mod, only: ICOUNT, IF, MPARID, MYTID
+      use infpar_mod, only: ICOUNT, MPARID, MYTID
 !      use dcborb_mod, only: NASHT, NCMOTQ, NESH, NESHT, NORBT
 !      use dcbmp2no_mod, only: IF2MP2NO, IMO_NAT, IOCC_NAT, LUNATORB, MP2NATPOP, MP2NATPOP2, NACTMP2NO, SKIP_MP2DEN, VECNOSEL
       use dgroup_mod, only: LINEAR, NFSYM, NZ
@@ -346,7 +346,6 @@ C
 #include "dcborb.h"
 #include "dcbmp2no.h"
 !#include "dcbham.h"
-#include "infpar.h"
 #if defined (VAR_MPI)
 !#include "mpif.h"
 #endif

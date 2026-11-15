@@ -2725,7 +2725,6 @@ C
 !      use ctcc_mod, only: N1ELINT, N2ELINT, NSPOBEX_TP
       use interface_to_mpi
 #include "implicit.h"
-!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "ipoist8.inc"
 !#include "mxpdim.inc"
@@ -4597,11 +4596,10 @@ C
 C     Written by  S. Knecht         - April 30 2007
 C
 C**********************************************************************
-!      use infpar_mod, only: ICOUNT
 !      use parluci_mod, only: LUWRT, MASTER, MYPROC, NMPROC
+      use infpar_mod, only: ICOUNT
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SUBVAL(*),ISCAT(*),RECVARRAY(*),TESTARR(*)

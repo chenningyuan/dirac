@@ -234,15 +234,16 @@ C  /* Deck twocal */
       use maxaqn_mod, only: MXQN
       use twosta_mod, only: LWTOT, MWHRND
       use hertop_mod, only: JTOP, NRTOP
+#if defined (VAR_MPI)
+      use infpar_mod, only: PARHER
+#endif
 #include "implicit.h"
-!      use infpar_mod, only: IF, PARHER
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK, RETUR,
      &        NOCONT, LONDON, SPNORB, DISTRI, SQ12EL, SUSCEP, ADISTR,
      &        SOFOCK, RELCAL, GENCNT
       DIMENSION DMAT(*), FMAT(*), GMAT(*), IREPDM(*), IFCTYP(*),
      &        INDX(2,*),INDXAB(*), GABRAO(*),DMRAO(*), DMRSO(*),
      &        DINTSKP(*), INDEX(*),TIMES(*),WORK(LWORK)
-#include "infpar.h"
 C
       CALL QENTER('TWOCAL')
       KWORK = 1

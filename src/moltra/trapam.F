@@ -4570,7 +4570,7 @@ C    *******************************************************************
 C    *   Initializes the nodes for the parallel 4-index transformation *
 C    *******************************************************************
 C
-!      use infpar_mod, only: MYTID
+      use infpar_mod, only: MYTID
       use mxcent_mod, only: MXCENT
       use dorps_mod, only: DOCOOR, DOREPS
 !      use dcborb_mod, only: NASHT
@@ -4581,7 +4581,6 @@ C
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
-#include "infpar.h"
 C
 C
 #include "dcborb.h"
@@ -4678,7 +4677,7 @@ C                                 dcbtr3, dcbmp2, comdis and symmet
 C
 C     Written by Luuk Visscher, august 1997.
 C
-!      use infpar_mod, only: MPARID, MYTID
+      use infpar_mod, only: MPARID, MYTID
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
       use mxcent_mod, only: MXCENT
@@ -4703,7 +4702,6 @@ C
       REAL(dp), PARAMETER :: D0=0.0D0
       INTEGER, PARAMETER :: ICOMM = global_communicator
 C
-#include "infpar.h"
 C
 #include "dcborb.h"
 #include "dcbham.h"
@@ -5034,7 +5032,7 @@ C     Extensions by T.Saue Sep 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use infpar_mod, only: MPARID, PARHER
+      use infpar_mod, only: MPARID, PARHER
       use dcbgen_mod, only: MP2ORG
 !      use dcbtra_mod, only: ISTRAT
       use memory_allocator
@@ -5042,7 +5040,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 #include "implicit.h"
 C
-#include "infpar.h"
 C
 #include "dcbtra.h"
 !#include "dcbtr3.h"
@@ -5140,7 +5137,7 @@ C     Slave --> Master:
 C       - Screening information
 C       - MP2 results
 C***********************************************************************
-!      use infpar_mod, only: MPARID, MYTID, NODES
+      use infpar_mod, only: MPARID, MYTID, NODES
       use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: ISTRAT
       use interface_to_mpi
@@ -5148,7 +5145,6 @@ C***********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 C
 C

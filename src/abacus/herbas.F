@@ -59,6 +59,7 @@ C
       SUBROUTINE BASLIB (IQM, JCO, NUC, NRC, SEG, ALPHA, CPRIM,
      &                   CPRIMU, NBLOCK, KAOVEC, KPRIM,
      &                   Q, QEFF, DSM, UNCONT, BASNAM, BASREF, IPRBAS)
+      use infpar_mod, only: MPARID, MYTID
 #ifdef PRG_DIRAC
       use aobasis_collector, only: add_aobasis2container
 #endif
@@ -70,7 +71,6 @@ C
      +          ALPHA(KPRIM, KAOVEC), CPRIMU(KPRIM, KPRIM, KAOVEC),
      +          CPRIM(KPRIM,KPRIM, KAOVEC)
 ! infpar.h : MYTID, MPARID
-#include "infpar.h"
 #include "dcbham.h"
 C*************************************************************
 C* Variable declarations:                                    *
@@ -322,7 +322,6 @@ C djw Feb 2005 - notation changed from 'd' to 'd-' for consistency with EMSL
 !         i need them to test high-order response
 !         use at own risk
 !      use dcbham_mod, only: ECPCALC, LEVYLE, NONREL
-!      use infpar_mod, only: IF, MPARID, MYTID
             else if (basnam(1:2) .eq. '5-') then
                iaug = 4
             else if (basnam(1:2) .eq. '6-') then
@@ -1026,8 +1025,8 @@ C/* Deck find_element */
 #if (defined (PRG_DIRAC))
       use dcbgen_mod, only: BASDIR
 #endif
+      use infpar_mod, only: MPARID, MYTID
 #include "implicit.h"
-!      use infpar_mod, only: IF, MPARID, MYTID
       INTEGER :: J
 C*********************************************************
 C* Variable declarations:                                *
@@ -1048,7 +1047,6 @@ C
       CHARACTER SIGN
       LOGICAL EXST, EXST2, USE_BASNAM
 ! infpar.h : MYTID, MPARID
-#include "infpar.h"
 
 #if defined (SYS_WINDOWS)
       CHARACTER, PARAMETER :: SLASH = '\\' ! Specify trailing slash: \\ for Windows

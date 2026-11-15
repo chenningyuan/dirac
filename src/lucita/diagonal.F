@@ -1046,7 +1046,6 @@ C?    WRITE(6,*) ' Mission DIATERMS finished '
       use interface_to_mpi
       IMPLICIT REAL*8           (A-H,O-Z)
 #if defined (VAR_MPI2)
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDIA_OFFSET
 #endif
@@ -1273,9 +1272,6 @@ C         new offset
 #include "cgas.inc"
 #include "gasstr.inc"
 C
-#if defined (VAR_MPI2)
-#include "infpar.h"
-#endif
 #include "parluci.h"
 
 *

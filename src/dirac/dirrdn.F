@@ -408,7 +408,7 @@ C***********************************************************************
 !      use dcb_rkbimp_mod, only: RKBIMP_PRJTHR
 !      use logging_mod, only: LOGMEMGET
       use dcbgen_mod
-!      use infpar_mod, only: NUMNOD
+      use infpar_mod, only: NUMNOD
 !      use dcbham_mod, only: MDIRAC
         use codata
 #include "implicit.h"
@@ -429,7 +429,6 @@ C
 #include "dcb_rkbimp.h"
 #include "dcbimp.h"
 #include "logging.h"
-#include "infpar.h"
 C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/

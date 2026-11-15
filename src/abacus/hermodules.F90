@@ -733,7 +733,7 @@
       use dgroup_mod, only: ATOMIC, LINEAR, NONATM
 #endif
       use maxaqn_mod, only: MXAQN, MXQN
-!      use infpar_mod, only: MYTID
+      use infpar_mod, only: MYTID
       use RECP_NTR
       IMPLICIT NONE
 !     CONSTANTS
@@ -741,7 +741,6 @@
 !     COMMON BLOCKS
 ! cbirea.h : UNCONT, IPREAD, TOL_SYMADD, ...
 ! infpar.h : mytid
-#include "infpar.h"
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
 
       INTEGER,INTENT(IN) :: lupri,infile,KANG,KSETS,KBLOCK,KPRIM
