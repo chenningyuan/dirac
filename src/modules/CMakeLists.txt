@@ -26,6 +26,7 @@ set(MODULE_SOURCES
     crsdir.F90
     csym1.F90
     dcbbas.F90
+    dcbbos.F90
     dcbgen.F90
     dcbgrd.F90
     dcbham.F90

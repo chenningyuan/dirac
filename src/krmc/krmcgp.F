@@ -2142,7 +2142,9 @@ C***********************************************************************
 !      use dcborb_mod, only: IORB, MXGAS, NASH, NGASSP, NGAS_DC, NGSH, NGSHT, NISH, NORBT, NPSH
       use dcbham_mod, only: LEVYLE, SPINFR
       use dcbgen_mod, only: LUCOEF, LUKRMC
-!      use dcbbos_mod, only: IBOSYM
+#if defined (VAR_MPI)
+      use dcbbos_mod, only: IBOSYM
+#endif
 !      use mxpdim_mod, only: IMAXLBLKSZ, MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXROOT
 !      use cstate_mod, only: IDC, IREFL, IREFML, IREFPA, IREFSM, IROOT, NMAX_SYM_CI, NROOT, PLSIGN, PSSIGN
 !      use crun_mod, only: C_CONV, C_THRE, ENVIRO, E_CONV, E_THRE, ICISTR, ICJKAIB, ICLSSEL, IDCOMH, IDENSI, IDIAG, INCORE, INIDEG, INTIMP, IRESTR, ISEQCI, ISKIPEI, ISPINFREE, MK2DEL_CI, MK2REF_CI, MXCIV_CI, MXINKA, MXP1, MXP2, MXQ, NATITER, NOINT, NPROP, NSEQCI, SIGDEN_ROUTE, THRES_E, THRES_G, XLAMBDA
@@ -2164,7 +2166,6 @@ C***********************************************************************
 #include "parluci.h"
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dcbbos.h"
 #include "../luciarel/mxpdim.inc"
 #include "../luciarel/cstate.inc"
 #include "../luciarel/crun.inc"

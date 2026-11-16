@@ -4796,6 +4796,7 @@ C
 C     Counts the coordinates of all symmetries.
 C
       SUBROUTINE CNTCRD
+      use prkoor_mod, only: NPRREP
       use optinf_mod, only: IPRINT, NCART, NCRTOT, NPROJ, NTMAT
       use trkoor_mod, only: NTRREP
       use symmet_mod, only: MAXREP, NCRREP
@@ -4804,10 +4805,8 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "prkoor.h"
 #include "cbiwlk.h"
 !      use cbiwlk_mod, only: DOREPW
-!      use prkoor_mod, only: NPRREP
       NCRTOT = 0
       NTMAT = 0
       NCART = NCRREP(0,1)
@@ -4880,6 +4879,7 @@ C
 
 C  /* Deck projgh */
       SUBROUTINE PROJGH(EGRAD,EHESS,ALLHES,TMAT,TMPMAT,TMPMT2,PROJOP)
+      use prkoor_mod, only: NPRREP
       use optinf_mod, only: IPRINT, NCART, NCRTOT, NTMAT
       use symmet_mod, only: MAXREP, NCRREP
       use mxcent_mod, only: MXCENT, MXCOOR
@@ -4888,9 +4888,7 @@ C  /* Deck projgh */
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "cbiwlk.h"
-#include "prkoor.h"
 !      use cbiwlk_mod, only: THRLDP
-!      use prkoor_mod, only: NPRREP
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT), TMAT(NTMAT)
       DIMENSION TMPMAT(MXCOOR,MXCOOR), TMPMT2(MXCOOR)

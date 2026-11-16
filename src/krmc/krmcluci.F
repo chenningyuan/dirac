@@ -33,7 +33,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
-!      use dcbbos_mod, only: IBOSYM
+      use dcbbos_mod, only: IBOSYM
 !      use cprnt_mod, only: IPRORB, IPRSTR, IPRTRA
 !      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
 !      use cgas_mod, only: NGAS
@@ -45,7 +45,6 @@ C***********************************************************************
       use symmetry_setup_krci
 #include "implicit.h"
 C
-#include "../krmc/dcbbos.h"
 #include "../luciarel/cprnt.inc"
 #include "../luciarel/mxpdim.inc"
 #include "../luciarel/cgas.inc"
@@ -280,7 +279,7 @@ C***********************************************************************
 *
 !      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXPWRD, MXROOT
       use maxorb_mod, only: MXCORB
-!      use dcbbos_mod, only: IBOSYM
+      use dcbbos_mod, only: IBOSYM
       use dgroup_mod, only: NZ
 !      use ipoist8_mod, only: KDUM, KGROUPLIST, KPCBLTP, KPCI1BT, KPCIBT, KPCLBT, KPCLEBT, KPROCLENGTH, KPROCLIST, KPROCLIST2, KVEC1, K_OFFSET
 !      use clunit_mod, only: LUC, LUIN, LUOUT, LUSC1, LUSC2, LUSC39
@@ -302,7 +301,6 @@ C***********************************************************************
 *. Parameters for dimensioning
 #include "../luciarel/mxpdim.inc"
 *. Boson symmetry info
-#include "dcbbos.h"
 *.Memory
 #include "../luciarel/ipoist8.inc"
 *.File numbers

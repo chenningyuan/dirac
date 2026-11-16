@@ -1909,7 +1909,7 @@ C***********************************************************************
 !      use dcbopt_mod, only: IOPTST, IPROPT, LZXOPE, LZXOPP, N2DSHX, N2DSHXQ, N2VSHX, N2VSHXQ, NDSH, NDSHT, NVSH, NVSHT, NZCONF, NZHOPE, NZXOPE, NZXOPP, OPT_CHCKJZ, OPT_CIPROGRAM, OPT_DELSTR, OPT_INDSTR, OPT_SKIPEE, OPT_SKIPEP, OPT_UCIBOS, SPINFR_KRMC
 !      use dcborb_mod, only: IORB, NASH, NCMOTQ, NESH, NFRO, NGAS_DC, NISH, NOCC, NORB, NORBT, NPSH, NSSH
       use dgroup_mod, only: LINEAR, NFSYM, NZ
-!      use dcbbos_mod, only: IBOSYM
+      use dcbbos_mod, only: IBOSYM
       use dcbnrt_mod, only: LNOROT, NOROT, NOROTC
 !      use dcbidx_mod, only: IDXD2G, IDXG2D, IDXG2V, IDXV2G
       use orbital_rotation_indices
@@ -1922,7 +1922,6 @@ C
 C
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dcbbos.h"
 #include "dcbidx.h"
 C
       DIMENSION WORK(*), ILIST(MXCORB)

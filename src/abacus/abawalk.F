@@ -568,6 +568,7 @@ C
       END
 C  /* Deck wlkdrv */
       SUBROUTINE WLKDRV(POLDD,POLDQ,POLDL,POLDA,SPNTOT,WORK,LWORK)
+      use prkoor_mod, only: NPRREP
       use cbisol_mod, only: SOLVNT
       use trkoor_mod, only: NTRREP
       use nuclei_mod, only: NUCDEP, NUCIND
@@ -583,7 +584,6 @@ C
 C
 #include "cbiwlk.h"
 #include "cbilnr.h"
-#include "prkoor.h"
 C
       CALL QENTER('WLKDRV')
       IF (IPRWLK .GT. 3) CALL TIMER ('START ',TIMEIN,TIMOUT)
@@ -752,6 +752,7 @@ C  /* Deck wlkdr1 */
      &                  CSTRA,SCTRA,SRC0,SRCF,POLAR0,POLARF,
      &                  EFG0,EFGF,SPNTOT,SSJ0,SSJF,WORK,LWORK,NCRIND,
      &                  NCRTOT,N2CRT,NTMAT,NCART)
+      use prkoor_mod, only: NPRREP
       use abainf_mod, only: DIPDER, RAMAN, VIB, VROA
       use taymol_mod, only: ERGMOL
       use nuclei_mod, only: CORD, NUCDEP
@@ -787,7 +788,6 @@ C
      *          EFG0(*), EFGF(*), SPNTOT(*), SSJ0(*), SSJF(*)
 C
 #include "cbiwlk.h"
-#include "prkoor.h"
 C
 C
       IF (IPRWLK .GT. 5) CALL TITLER('Output from WLKDR1','*',103)
@@ -1429,6 +1429,7 @@ C
 C  /* Deck wlkprj */
       SUBROUTINE WLKPRJ(GRDCAR,HESCAR,SCAL,TMAT,WORK,THRLDP,
      *                  LWORK,DOREPW,NCRTOT,N2CRT,NTMAT,ISOTPS,IPRINT)
+      use prkoor_mod, only: NPRREP
       use trkoor_mod, only: NCOOR, NTRREP
       use iratdef_mod, only: IRAT
       use symmet_mod, only: MAXREP, NCRREP
@@ -1442,7 +1443,6 @@ C
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), SCAL(NCRTOT),
      *          TMAT(NTMAT), WORK(LWORK), ISOTPS(*)
 C
-#include "prkoor.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from WLKPRJ','*',103)
 C
@@ -1590,15 +1590,14 @@ C  /* Deck wlkeig */
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use symmet_mod, only: MAXREP, NCRREP
+      use prkoor_mod, only: NPRREP
 #include "implicit.h"
-!      use prkoor_mod, only: NPRREP
       LOGICAL PRJTRO, DOREPW(0:7)
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), TMAT(NTMAT),
      *          EVEC(N2CRT), EVAL(NCRTOT),  WORK(LWORK),
      *          CNDHES(0:7), INDHES(0:7), GRDDIA(NCRTOT),
      *          IZEROG(NZEROG)
 C
-#include "prkoor.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from WLKEIG','*',103)
 C
@@ -2461,6 +2460,7 @@ C  /* Deck wlkres */
 C
 C     Print of results
 C
+      use prkoor_mod, only: NPRREP
       use codata_mod, only: AUTIME, XKCMOL, XKJMOL, XTANG
       use facang_mod, only: FACANG
       use nuclei_mod, only: CORD, IZATOM, NAMDEP, NAMEX, NUCDEG, NUCIND
@@ -2484,7 +2484,6 @@ C
      &          ANHARM(NCART), TRSDIA(NCART), GRDCAR(NCART),
      &          ISOTPS(NUCIND), ERGDIA(NCRTOT), WORK(LWORK)
 C
-#include "prkoor.h"
 C
       CHARACTER*1 STARM, STARE, STARG, STARS, STARH
       CHARACTER*42 WLKTYP(0:8)
@@ -5694,12 +5693,12 @@ C
       END
 C  /* Deck wlkirm */
       SUBROUTINE WLKIRM(GRDDIA,EVAL,Q,NCART,RADIUS,DONWTN,IPRINT)
+      use prkoor_mod, only: NPRREP
       use mxcent_mod, only: MXCOOR
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0, SMALL = 1.0D-03, SMALL2 = 1.0D-10)
       LOGICAL DONWTN, INDXOK
       DIMENSION GRDDIA(NCART), EVAL(NCART), Q(NCART)
-#include "prkoor.h"
 C
       DONWTN = .FALSE.
       CALL DZERO(Q,NCART)

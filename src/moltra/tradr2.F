@@ -319,13 +319,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use comdis_mod, only: ISHLA, ISHLB, KIGBUF, KLGBUF, KLGREC,
      &  KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS
 !      use dcborb_mod, only: NASHT
-!      use dcbmpt_mod, only: MAXSCL, TESTLS, TESTSL
+      use dcbmpt_mod, only: MAXSCL, TESTLS, TESTSL
       use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 #include "implicit.h"
       INTEGER :: I, K
 #include "dcbtra.h"
 #include "dcborb.h"
-#include "dcbmpt.h"
       LOGICAL ANTIS,LMP2,NODV,NOPV,L2TYP(0:3),IBEQJB,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,2),NSTR(2,0:2,4),INDX(3,*),
      &          NSTRT(4),ITQMT(0:7,0:7,2),
@@ -1076,10 +1075,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
       use comdis_mod, only: ISHLA, ISHLB, NINSHA, NINSHB
-!      use dcbmpt_mod, only: MAXSCL, TESTLS, TESTSL
+      use dcbmpt_mod, only: MAXSCL, TESTLS, TESTSL
 #include "implicit.h"
       INTEGER :: I, J
-#include "dcbmpt.h"
       DIMENSION IDSLST(6,NDSLST), INDX(3,*), IJP12(0:7)
       LOGICAL SORTDS, DONE
 C
@@ -1187,12 +1185,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use comdis_mod, only: ISHLA, ISHLB, KIGBUF, KLGBUF, KLGREC,
      &  KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS
 !      use dcborb_mod, only: NASHT
-!      use dcbmpt_mod, only: MAXSCL
+      use dcbmpt_mod, only: MAXSCL
       use dgroup_mod, only: JBTOF, NBSYM, NZ
 #include "implicit.h"
 #include "dcbtra.h"
 #include "dcborb.h"
-#include "dcbmpt.h"
       DIMENSION IDSNFO(6), KQ(2,4), KE(2,2), INDX(3,*),
      &     NSTR(2,0:2,4), NSTRT(4), DINTSKP(*), GABRAO(*), WORK(*),
      &     NDMOQR(2,2,4), ICMOQR(2,4), TIM1(7), DRIJ(*),
@@ -1901,9 +1898,8 @@ C     Parallel polish by T.Saue Sep 18 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use dcbmpt_mod, only: IJTSK
+      use dcbmpt_mod, only: IJTSK
 #include "implicit.h"
-#include "dcbmpt.h"
 C
 C     Maximum number of active occupied spinors in each
 C     task is either set in input (IJTSK) or
@@ -2127,12 +2123,11 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
       use dgroup_mod, only: NZ
-!      use dcbmpt_mod, only: TESTLS, TESTSL
+      use dcbmpt_mod, only: TESTLS, TESTSL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: II
       REAL(dp), PARAMETER :: D0=0.0D0
-#include "dcbmpt.h"
       LOGICAL IBEQJB
       DIMENSION NSTR(2,0:2,4)
       DIMENSION E1(N1),E2(N2),E3(N3),E4(N4)
@@ -2515,9 +2510,8 @@ C
 C     Setup routine for 4/4 transformation
 C
 C***********************************************************************
-!      use dcbmpt_mod, only: TESTLS, TESTSL
+      use dcbmpt_mod, only: TESTLS, TESTSL
 #include "implicit.h"
-#include "dcbmpt.h"
       LOGICAL L2TYP(0:3)
 C
       ICS2 = 1

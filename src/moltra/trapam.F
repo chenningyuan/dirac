@@ -4765,7 +4765,7 @@ C
       use comdis_mod, only: ISPCK, NSPCK
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
 !      use dcbmp2_mod, only: CMMNFO, TPRI34, TPRI44
-!      use dcbmpt_mod, only: TESTLS, TESTSL
+      use dcbmpt_mod, only: TESTLS, TESTSL
       use dcbbas_mod
       use symmet_mod
       use dgroup_mod, only: NFSYM, NZ
@@ -4784,7 +4784,6 @@ C
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbmp2.h"
-#include "dcbmpt.h"
 C
       LOGICAL ANTIS,LMP2,NSAME
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)

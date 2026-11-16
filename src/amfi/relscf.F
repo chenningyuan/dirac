@@ -8,6 +8,16 @@
       integer :: IDK(MXB+1)
       end module relscf_ijpair_mod
 
+!-----------------------------------------
+! Module with variables previously defined
+! at relscf_crelop.h include file (COMMON /CRELOP/)
+!-----------------------------------------
+      module relscf_crelop_mod
+      implicit none
+      real*8 :: PI, ZWP, SQPI, VELIT, PREA, CSQ, ZWPH32, FAK(26),
+     &    ZWPH12, BCO(210), GA(20)
+      end module relscf_crelop_mod
+
 C
 C
 C NOTE: The previous  value of NDIMPQ was 500000. 
@@ -692,10 +702,9 @@ CMI   STOP
       END
 
       DOUBLE PRECISION FUNCTION DCOF(E,LX,IX)
-!     use relscf_crelop_mod, only: FAK
+      use relscf_crelop_mod, only: FAK
 #include "implicit.h"
       INTEGER :: I,K
-#include "relscf_crelop.h"
 C
 C     FUNCTION DCOF CALCULATES COEFFICIENT D NEEDED FOR FT
 C     DCOF(E,LX,IX)= ((-E)**IX * FAK(LX))/(FAK(LX-2*IX)*FAK(IX))
@@ -784,11 +793,10 @@ C    CALCULATE INTEGRAL OVER DERIVATIVE OF THE FUNCTIONS
 C
       DOUBLE PRECISION FUNCTION DER(IDER,IS1,IS2,AL,BE)
       use priunit_mod, only: LUPRI
+      use relscf_crelop_mod, only: GA
 #include "implicit.h"
 !      use amfi_if_mod, only: IPR_RELSCF
-!     use relscf_crelop_mod, only: GA, FAK
       INTEGER :: I,II,J,JJ,KK
-#include "relscf_crelop.h"
 #include "amfi_if.h"
       INTEGER IS1(3),IS2(3),I1(2,3),I2(2,3)
       REAL*8 F(2),G(2)
@@ -1325,10 +1333,9 @@ C
 C *** PVP V 1.0 - 19.1.84 - BERND HESS
 C *** PVP V 1.1 -  5.6.86 - BERND HESS
       DOUBLE PRECISION FUNCTION EXTC(LAMBDA,AL,BE,L1,M1,N1,L2,M2,N2)
+      use relscf_crelop_mod, only: GA
 #include "implicit.h"
-!      use relscf_crelop_mod, only: GA
       INTEGER :: II,JJ,KK
-#include "relscf_crelop.h"
       INTEGER IS1(3),IS2(3)
 C
 C    CALCULATE ANGULAR AND RADIAL PART
@@ -1543,10 +1550,9 @@ C***** NAME FILLMA
       END
 
       DOUBLE PRECISION FUNCTION GAM(M)
+      use relscf_crelop_mod, only: SQPI
 #include "implicit.h"
-!      use relscf_crelop_mod, only: GA, SQPI
       INTEGER :: I
-#include "relscf_crelop.h"
       
       IF (MOD(M,2).EQ.0) GOTO 10
       MA=(M+1)/2
@@ -4900,9 +4906,8 @@ CMI   IF(NPENFA.EQ.1) WRITE(1,1233) WIG,WIGNER
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DOUBLE PRECISION FUNCTION PHI(M,N)
-!     use relscf_crelop_mod, only: GA
+      use relscf_crelop_mod, only: GA
 #include "implicit.h"
-#include "relscf_crelop.h"
       IF (MOD(N,2).EQ.1.OR.MOD(M,2).EQ.1) GOTO 10
       PHI=2.D0*GA(M+1)*GA(N+1)/GA(M+N+2)
       RETURN
@@ -5073,10 +5078,10 @@ C      V 1.0 - 12.3.86 - BERND HESS
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use amfi_if_mod, only: IPR_RELSCF
       use priunit_mod, only: LUPRI
-!      use relscf_crelop_mod, only: BCO, CSQ, FAK, PI, PREA, SQPI, VELIT, ZWP, ZWPH12, ZWPH32
+      use relscf_crelop_mod, only: BCO, CSQ, FAK, GA, PI, PREA, SQPI,
+     &  VELIT, ZWP, ZWPH12, ZWPH32
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "relscf_crelop.h"
 C
 C     SUBROUTINE RELOP INITIALIZES THE COMMON BLOCK USED BY
 C     THE RELOP PACKAGE
@@ -5332,10 +5337,9 @@ C      INTEGRALS ARE CALCULATED BETWEEN   NORMALIZED FUNCTIONS
 
       DOUBLE PRECISION FUNCTION
      *SQROPY(AA,AB,LA,MA,NA,LB,MB,NB)
+      use relscf_crelop_mod, only: CSQ, GA, VELIT
 #include "implicit.h"
-!      use relscf_crelop_mod, only: CSQ, GA, VELIT
       INTEGER :: I,II,JJ,KK
-#include "relscf_crelop.h"
 C
 C     SUBROUTINE SQROPY CALCULATES MATRIXELEMENT BETWEEN FUNCTION
 C     XA**LA * YA**MA * ZA**NA * EXP(-AA*RA**2) AND
@@ -5466,9 +5470,8 @@ C
       END
 
       DOUBLE PRECISION FUNCTION THETA(M,N)
-!     use relscf_crelop_mod, only: GA
+      use relscf_crelop_mod, only: GA
 #include "implicit.h"
-#include "relscf_crelop.h"
 C
 C     INTEGRATION OVER THETA. INCLUDES A FACTOR SIN(TH)
 C     FOR THE VOLUME ELEMENT

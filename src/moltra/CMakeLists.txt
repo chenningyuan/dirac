@@ -23,6 +23,7 @@ set(FIXED_MOLTRA_FORTRAN_SOURCES
 )
 
 set(FREE_MOLTRA_FORTRAN_SOURCES
+    dcbmpt.F90
     dcbres.F90
     dcbtrp.F90
     dcbtra_h.F90

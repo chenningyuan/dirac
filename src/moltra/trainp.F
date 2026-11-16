@@ -33,7 +33,7 @@ C*****************************************************************************
       use dcbbas_mod, only: NFBAS
       use dgroup_mod, only: FREP, NFSYM
 !      use dcbmp2_mod, only: CMMNFO, DMP2_VIRTHR, IPRMP2, ISTRMP2, MP2NOP, MP2_ANTIS, MP2_INDSTR, MP2_INTFLG, MP2_MSOUT, SCRMP2, SRTSHL, TPRI34, TPRI44
-!      use dcbmpt_mod, only: IJTSK, MAXSCL, TESTLS, TESTSL
+      use dcbmpt_mod, only: IJTSK, MAXSCL, TESTLS, TESTSL
       use dcbham_mod, only: BSS, LEVYLE, X2C
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -48,7 +48,6 @@ C
 #include "dcbpsi.h"
 #include "dcborb.h"
 #include "dcbmp2.h"
-#include "dcbmpt.h"
       DIMENSION WORK(LWORK),IR(2,2)
 C
       SAVE SET
