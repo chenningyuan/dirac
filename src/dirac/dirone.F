@@ -11083,7 +11083,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       real*8               :: delta_xc_energy_aoosoc
       real*8               :: xxxBLUBB
       integer              :: len_fmat      
+      integer              :: lux2c
 
+      lux2c     = 40   ! as in gmotra
       len_fmat  = ntbas(0)**2*nz
       allocate(tmat_mmf(len_fmat))
       allocate(tbuf_mmf(len_fmat))
