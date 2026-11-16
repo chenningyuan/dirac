@@ -1390,12 +1390,11 @@ c
 cbs ##################################################################
       use pi_mod, only: PI
 !      use param_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
-!      use dofuc_mod, only: DFFRAC
+      use dofuc_mod, only: DFFRAC
       use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML, NDFMX
 #include "implicit.h"
       INTEGER :: K
 #include "param.h"
-#include "dofuc.h"
       dimension expo1(nprim1),
      *expo2(nprim2),
      *expo3(nprim3),

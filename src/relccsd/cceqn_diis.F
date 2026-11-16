@@ -3,10 +3,10 @@
 C
 !      use param_mod, only: A0, A1, AR0, AR1, D0
 !      use complex_mod, only: CARITH, RCW
-!      use diis_mod, only: MAXDIM, NST1, NST2
 !      use files_mod, only: ITAMPD, ITAMPL
 !      use waio_mod, only: NWORDS_ON_RECORD
 !      use ccpar_mod, only: MASTER, MYPROC
+      use diis_mod, only: MAXDIM, NST1, NST2
       IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
@@ -28,7 +28,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
 #include "complex.inc"
-#include "diis.inc"
 #include "files.inc"
 #include "waio.h"
 #include "ccpar.inc"

@@ -3,6 +3,7 @@
 
 module dirac_interface
 
+      use cbinuc_mod, only: IPRINT, MAXDIF
       use dcbham_mod, only: BSS, LEVYLE, MC, SPINFR, SSMTRC
       use dgroup_mod, only: JBTOF, NFSYM, NZ
       use dcbbas_mod, only: NFBAS, NTBAS
@@ -82,7 +83,6 @@ module dirac_interface
     module procedure get_G
   end interface
 
-#include "../abacus/cbinuc.h"
 #include "dcborb.h"
 
   real(8), pointer   :: f77_work(:)       ! Fortran 77 work array pointer

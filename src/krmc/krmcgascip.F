@@ -5548,14 +5548,13 @@ C
 C***********************************************************************
 !      use mxgas_mod, only: MXGAS
 !      use dcbgascip_mod, only: GASCIP_UCIBOS, IGASCIP_MAXMK2, IGASCIP_MINMK2, IGASCIP_MK2DEL, IGASCIP_MK2REF, IGASCIP_NAELEC, IGASCIP_NASH, IGASCIP_NGAS, IGASCIP_NGASSP, IGASCIP_NGSH, IGASCIP_NISH, IGASCIP_REP
-!      use dcbkrmc_mod, only: IKRMC_STATE, IKRMC_SYMMETRY, IPRKRMC, KRMC_CIPROGRAM, KRMC_UCIBOS, NKRMCAELEC, NKRMCASH, NKRMCGAS, NKRMCGSH, NKRMCGSP, NKRMCISH, NKRMC_MAXMK2, NKRMC_MINMK2, NKRMC_MK2DEL, NKRMC_MK2REF
+      use dcbkrmc_mod
       use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I, J
 #include "mxgas.h"
 C
 #include "dcbgascip.h"
-#include "dcbkrmc.h"
 C
 C
       return ! we try ...

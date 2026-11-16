@@ -2133,7 +2133,6 @@ C  /* Deck dp0pri */
       use chrxyz_mod, only: CHRXYZ
 #include "implicit.h"
       INTEGER :: I
-!#include "cbidip.h"
       DIMENSION DIPOLE(3)
       IF (NAXREP(0,1) .EQ. 0) THEN
          WRITE (LUPRI,'(20X,A)')

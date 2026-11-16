@@ -847,7 +847,7 @@ C  /* Deck vibana */
      &                  NSPEC,IFRQCM,NUMMOD,
      &                  IMAGIN,IREPS,INTENS,ROAAFQ,ROAGNQ,ROAGLQ,ROAAQ,
      &                  WORK,LWORK,NCORD,NOTALL,DOVCD,LINEAR,IPRINT)
-!      use hotfccom_mod, only: HOTFC, IHOTFC, IHOTFF
+      use hotfccom_mod, only: HOTFC, IHOTFC, IHOTFF
       use codata_mod, only: CCM, DEBYE, ECHARGE, EMASS, HBAR, XFAMU,
      &  XKCMOL, XKJMOL, XTANG, XTKAYS, XTKMML
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -886,7 +886,6 @@ C
 C
 #include "molde.h"
 #include "cbiwlk.h"
-#include "hotfccom.h"
 C
       LOGICAL  INTENS, NEWSPC, ACTIVE, CNTAIN, LINEAR
       DIMENSION DMYLAB(3), DMYMOL(3), AATMOL(3), NUMODX(8)
@@ -1489,7 +1488,7 @@ C      Project out translational and rotational coordinates from the
 C      molecular Hessian
 C
 C
-!      use hotfccom_mod, only: IHOTFF
+      use hotfccom_mod, only: IHOTFF
       use cbisol_mod, only: SOLVNT
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
@@ -1500,7 +1499,6 @@ C
      &          NATTYP(*), WRK(*)
       LOGICAL   LINDEP(6)
 C
-#include "hotfccom.h"
       AMASS(I) = DISOTP(NATTYP(I),ISOTOP(I),'MASS')
 C
 C     Construct 6 vectors that span the translational and rotational

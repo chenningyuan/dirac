@@ -194,7 +194,7 @@ C*****************************************************************************
       use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: I2ORBX, N2ORBXQ, NORBT
       use dcbham_mod, only: BSS, SPINFR, X2CMMF
-!      use dcbres_mod, only: COREDENS, NOVXC
+      use dcbres_mod, only: COREDENS, NOVXC
          use dirac_cfg
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -204,7 +204,6 @@ C
 #include "dcbpsi.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
-#include "dcbres.h"
       LOGICAL TOBE
       LOGICAL ::  remove_spinfree_terms=.false.
       LOGICAL :: dirac_cfg_dft_calculation_save

@@ -126,11 +126,11 @@ C      DIPDER = .true.
 
       subroutine GRADNN_ifc(n,G)
       !ajt Used in prop_contribs.f90
+#ifndef PRG_DIRAC
+      use cbinuc_mod, only: IPRINT, MAXDIF
+#endif
       use energy_mod, only: GRADNN
       use mxcent_mod, only: MXCOOR
-#ifndef PRG_DIRAC
-#include "cbinuc.h"
-#endif /* ifndef PRG_DIRAC */
       integer n
       real(8) G(3*n)
       IPRINT = 0; MAXDIF = 1
@@ -141,10 +141,10 @@ C      DIPDER = .true.
 
       subroutine HESSNN_ifc(na,H)
 C     ajt aug09 Used in prop_integrals.f90
-      use mxcent_mod, only: MXCOOR
 #ifndef PRG_DIRAC
-#include "cbinuc.h"
-#endif /* ifndef PRG_DIRAC */
+      use cbinuc_mod, only: IPRINT, MAXDIF
+#endif
+      use mxcent_mod, only: MXCOOR
       integer na, i, j
       real(8) H(3*na,3*na)
 #ifndef PRG_DIRAC
@@ -164,8 +164,8 @@ C     ajt This might come out with halved diagonal
 
 
       subroutine WRITE_HOTFCHT_SPECTRA(STRING,NATOMS)
+      use hotfccom_mod, only: HOTFC, IHOTFC
       use codata_mod, only: XTANG
-#include "hotfccom.h"
       CHARACTER STRING*(*)
       LOGICAL OptionA,ANGSTROM
       INTEGER IDUMMY,LUINFO,IPOS,IPOS2,numbertypes,atomtypes,J
@@ -273,7 +273,7 @@ C
       END SUBROUTINE
 
       SUBROUTINE WRITE_HBT_DIPOL(X,Y,Z)
-#include "hotfccom.h"
+      use hotfccom_mod, only: IHOTFC
       DOUBLE PRECISION X,Y,Z,AC !AngstromConvert
       WRITE(IHOTFC,'(A)')' '
       WRITE(IHOTFC,'(A)')'ElectronicTransitionDipoleMoment ='      

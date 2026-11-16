@@ -3679,11 +3679,9 @@ C
 C
 C
 #include "moldip.h"
-#include "rotg.h"
 #include "quadru.h"
 #include "sigma.h"
 #include "spinro.h"
-#include "nqcc.h"
 #include "cbiwlk.h"
 C
       FACTOR = 1.D6*ALPHA2
@@ -5895,7 +5893,6 @@ C   INFORB : N2BAST,NCMOT
 C   INFOPT : EMCSCF,EMCOLD,DEPRED,REJWMI,REJWMA, NREDL
 C
 #include "cbiwlk.h"
-#include "infdim.h"
 #include "infvar.h"
 C
 C     kludge to avoid tranformation to natural orbitals
@@ -6153,6 +6150,7 @@ C  a) calculate second order prediction for energy change.
 C  b) if WFPRED, calculate first order prediction for change
 C     in MC wave function.
 C
+      use infdim_mod, only: NVARMA
       use abainf_mod, only: GDALL
       use dorps_mod, only: DCORD, DCORGD
       use nuclei_mod, only: NUCIND
@@ -6180,7 +6178,6 @@ C
 #include "cbiwlk.h"
 #include "anrinf.h"
 #include "infvar.h"
-#include "infdim.h"
 C
       CHARACTER*1 CXYZ(3)
       DATA CXYZ/'X','Y','Z'/

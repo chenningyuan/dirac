@@ -73,9 +73,9 @@
 *
       subroutine dirluct
 *
+      use luctinp_mod
       implicit real*8 (A-H,O-Z)
 *
-#include "luctinp.h"
 *
 #include "clunit.inc"
 #include "mxpdim.inc"
@@ -1946,7 +1946,6 @@ C?    WRITE(6,*) ' GET_PROP : NELMNT= ', NELMNT
 *
       Implicit Real*8 (A-H,O-Z)
 *
-#include "SysDef.inc"
 *
       Parameter( LuOne = 14)
 *
@@ -3106,7 +3105,6 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
 *
       IMPLICIT REAL*8(A-H,O-Z)
 
-#include "SysDef.inc"
 
 #include "mxpdim.inc"
 #include "orbinp.inc"
@@ -4190,7 +4188,6 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
 *
       IMPLICIT REAL*8(A-H,O-Z)
 
-#include "SysDef.inc"
 
 *.ORBINP
 #include "mxpdim.inc"
@@ -6558,7 +6555,6 @@ C    &           ' MO orbitals obtained from LUCIA ')
       implicit real*8 (A-H,O-Z)
 *
 #include "mxpdim.inc"
-#include "SysDef.inc"
 #include "luci.inc"
 #include "units.inc"
 *

@@ -17,6 +17,7 @@ set(FIXED_AMFI_FORTRAN_SOURCES
 )
 
 set(FREE_AMFI_FORTRAN_SOURCES
+    dofuc.F90
     ired.F90
     alphac.F90
     para.F90

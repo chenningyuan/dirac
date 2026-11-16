@@ -419,6 +419,7 @@ C     call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
 * Don't think just do
 * Much is a copy paste from KRCI_CALC and KRCI_CALC1
 *
+      use dcbnrt_mod, only: LNOROT, NOROT
       use dgroup_mod, only: NZ
       use dcbgen_mod, only: LUCOEF, LUKRMC
       use consts_mod, only: D0
@@ -430,7 +431,6 @@ C
 C
 #include "ipoist8.inc"
 !hope we don't need it
-#include "../krmc/dcbnrt.h"
 #include "dcbpsi.h"
 #include "dcbkrmc_itinfo.h"
 #include "dcbopt.h"

@@ -261,6 +261,7 @@ C
       END
 C  /* Deck lnraba */
       SUBROUTINE LNRABA(POLDD,POLDQ,POLDL,POLDA,WORK,LWORK,PASS)
+      use infdim_mod, only: LCINDX
       use inforb_mod, only: N2ASHX, NASHT, NCMOT, NORBT, NSYM
       use inftap_mod, only: LUSIFC
       use dummy_mod, only: DUMMY, IDUMMY
@@ -282,7 +283,6 @@ C
 #include "cbiexc.h"
 #include "inflin.h"
 #include "infvar.h"
-#include "infdim.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
 #include "infsop.h"

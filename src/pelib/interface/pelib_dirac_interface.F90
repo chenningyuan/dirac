@@ -1196,7 +1196,6 @@ module pelib_dirac_interface
 !
 !#include "infvar.h"
 !#include "inflin.h"
-!#include "infdim.h"
 !
 !      integer :: ncsim, nwrk
 !      real*8, dimension(*) :: bcvecs, cref, cmo, cindx, dv
@@ -1875,7 +1874,6 @@ module pelib_dirac_interface
 !         implicit none
 !
 !#include "infvar.h"
-!#include "infdim.h"
 !#include "qrinf.h"
 !#include "infrsp.h"
 !#include "wrkrsp.h"
@@ -2562,7 +2560,6 @@ module pelib_dirac_interface
 !
 !#include "infvar.h"
 !#include "infrsp.h"
-!#include "infdim.h"
 !#include "qrinf.h"
 !
 !         integer :: kzyva, kzyvb, kzyvc
@@ -2677,7 +2674,6 @@ module pelib_dirac_interface
 !
 !#include "infvar.h"
 !#include "infrsp.h"
-!#include "infdim.h"
 !#include "qrinf.h"
 !
 !         integer :: kzyva, kzyvb, kzyvc, kzyvd

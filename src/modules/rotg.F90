@@ -1,12 +1,9 @@
 !-----------------------------------------
 ! Module with variables previously defined
-! at rotg.h include file
+! at rotg.h include file (COMMON /ROTG/)
 !-----------------------------------------
-module rotg_mod
+   module rotg_mod
    implicit none
-   save
-!
-   real*8  :: GFANUC(3,3)
+   real*8 :: GFANUC(3,3)
    logical :: LINDET
-!
-end module rotg_mod
+   end module rotg_mod

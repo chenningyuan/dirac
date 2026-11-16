@@ -1801,7 +1801,7 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbprp_mod, only: EFG, NQCCCART
       use nuclei_mod, only: IZATOM, NAMDEP, NUCDEG, NUCIND
-!      use nqcc_mod, only: EFGEL, EFGNUC, EFGTOT
+      use nqcc_mod, only: EFGEL, EFGNUC, EFGTOT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
@@ -1813,7 +1813,6 @@ C
       DIMENSION EXP_CORR(*)
       LOGICAL   DOATOM(*), CORR
       CHARACTER*4 HZUNIT
-#include "nqcc.h"
 C
       IF (.NOT.EFG) THEN
 C
@@ -1951,14 +1950,13 @@ C***********************************************************************
 !      use dcbexp_mod, only: IPEFG
       use nuclei_mod, only: ISTBNU, NAMDEP, NUCDEG, NUCIND
       use symmet_mod, only: ISYMAX, MAXREP, PT
-!      use nqcc_mod, only: EFGEL
+      use nqcc_mod, only: EFGEL
 #include "implicit.h"
       INTEGER :: I, J
 C
 #include "dcbexp.h"
       DIMENSION EXPVAL(*), TEMP(3,3,MXCENT)
       LOGICAL DOATOM(*)
-#include "nqcc.h"
       CALL DZERO(EFGEL,9*MXCENT)
       CALL DZERO(TEMP,9*MXCENT)
       ITYP = 0
@@ -2061,7 +2059,7 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbexp_mod, only: IPREXP
       use nuclei_mod, only: NAMDEP, NUCDEG, NUCIND
-!      use nqcc_mod, only: EFGEL, EFGNUC, EFGTOT, EFG_METHOD
+      use nqcc_mod, only: EFGEL, EFGNUC, EFGTOT, EFG_METHOD
 #include "implicit.h"
       INTEGER :: I, J
 C
@@ -2070,7 +2068,6 @@ C
       DIMENSION TMP(3),ITMP(3),PVAL(9)
       LOGICAL   DOATOM(*), CORR
       CHARACTER FMTEFG*80, FMTEFGA*6, FMTEFGB*6, FMTEFGC*6
-#include "nqcc.h"
 C
 C
       CALL PRSYMB(LUPRI,'-',76,0)
@@ -2939,7 +2936,6 @@ C***********************************************************************
       DIMENSION EXPVAL(*),TEMP(*),DMPV(*),QW(*),
      &          IS(*)
       LOGICAL   DOATOM(*)
-!#include "nqcc.h"
 C
       CALL QENTER('PRP_PVC')
 C
@@ -8684,7 +8680,6 @@ C
 #include "dcbexp.h"
       DIMENSION EXPVAL(*), TEMP(3,NUCIND),EFNEL(3,NUCDEP)
       LOGICAL DOATOM(*)
-!#include "nqcc.h"
       CALL DZERO(EFNEL,3*NUCDEP)
       CALL DZERO(TEMP,3*NUCIND)
       ITYP = 0
@@ -8830,7 +8825,7 @@ C*****************************************************************************
       use dcbgen_mod, only: CVAL
 !      use dcbprp_mod, only: IPROTG
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
-!      use rotg_mod, only: LINDET
+      use rotg_mod, only: LINDET
       use dgroup_mod, only: LINEAR
       use memory_allocator
 C
@@ -8840,7 +8835,6 @@ C
 C
 #include "dcbprp.h"
 #include "dcbxlr.h"
-#include "rotg.h"
 C
       INTEGER IPRINT,INDOP1,INDXPR,IOP,IPTYP,ISYXPR,ITRXPR,NPCOMP
       DOUBLE PRECISION PFAC,DL,DS
@@ -9061,7 +9055,7 @@ C***********************************************************************
 !      use dcbprp_mod, only: IPROTG, IPRPRP
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEE, XLR_SKIPEP
       use nuclei_mod, only: NATOMS, NFLOAT, NUCDEP
-!      use rotg_mod, only: GFANUC, LINDET
+      use rotg_mod, only: GFANUC, LINDET
       use dgroup_mod, only: LINEAR
       use dcbham_mod, only: SPINFR, URKBAL, ZORA
       use consts_mod, only: D0
@@ -9076,7 +9070,6 @@ C
 !#include "dcbxpr.h"
 !#include "dcbprl.h"
 #include "dcbxlr.h"
-#include "rotg.h"
 C
       integer, allocatable :: NAT(:),ISOT(:)
       double precision, allocatable :: PMATL(:,:,:),PMATS(:,:,:),
@@ -9256,14 +9249,13 @@ C
       use maxorb_mod, only: MXCORB
       use nuclei_mod, only: CHARGE, ISTBNU, NATOMS, NFLOAT, NUCIND
       use symmet_mod, only: MAXOPR
-!      use rotg_mod, only: GFANUC
+      use rotg_mod, only: GFANUC
       use priunit_mod, only: LUPRI
       use consts_mod, only: D0
       implicit none
 C
       integer I,J
 C
-#include "rotg.h"
 C
       double precision GEOM,CMXYZ,ORIGIN
 C
@@ -9337,7 +9329,7 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
       use nuclei_mod, only: CORD, ISOTOP, ISTBNU, IZATOM, NUCIND
       use symmet_mod, only: IPTAX, ISYMAX, MAXOPR, PT
-!      use rotg_mod, only: GFANUC
+      use rotg_mod, only: GFANUC
       use orgcom_mod, only: CMXYZ
       use dgroup_mod, only: LINEAR
 !      use dcbprp_mod, only: LONDON
@@ -9347,7 +9339,6 @@ C***********************************************************************
 C
       integer I,J
 C
-#include "rotg.h"
 #include "dcbprp.h"
 C
       integer IATOM,IX,IY,IPRINT,ISYMOP,JATOM,JX,JY,
@@ -10604,14 +10595,13 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMDEP, NUCDEG, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-!      use nqcc_mod, only: EFGNUC
+      use nqcc_mod, only: EFGNUC
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: KK
       REAL(dp), PARAMETER :: D0=0.0D0, D3 = 3.0D0
       DIMENSION  GEOM(3*8*MXCENT)
       LOGICAL    DOATOM(*)
-#include "nqcc.h"
 C
 C     Initialization of GEOM
 C     (copied from abacus/hergp.F:CMMASS)

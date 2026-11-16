@@ -1207,9 +1207,9 @@ C
       SUBROUTINE ZCORE(T1,T2)
 C
 !      use param_mod, only: A0
-!      use freeze_mod, only: IFROZ
 !      use symm_mod, only: MULTB, NE, NO, NREP, NV, NVVT
 !      use complex_mod, only: RCW
+      use freeze_mod, only: IFROZ
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1229,7 +1229,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
-#include "freeze.inc"
 #include "symm.inc"
 #include "complex.inc"
 C

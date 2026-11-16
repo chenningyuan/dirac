@@ -2740,6 +2740,7 @@ C!    Call Abend2( ' Enforced stop in RSBB1E ' )
 *
 * Jeppe Olsen, Winter of 1991
 *
+      use comjep_mod, only: MXACIJ
       IMPLICIT REAL*8(A-H,O-Z)
 *. General input
       INTEGER ADSXA(MXPOBS,2*MXPOBS),DXSTST(NSMDX,NSMST)
@@ -2768,7 +2769,6 @@ C!    Call Abend2( ' Enforced stop in RSBB1E ' )
 CTF   PARAMETER(MXTSOB=40)
 CTF   COMMON/SOMESCR/SCR(MXTSOB*MXTSOB*MXTSOB*MXTSOB)
 *
-#include "comjep.inc"
 *
       DIMENSION IACAR(2),ITPAR(2)
       CALL QENTER('RS2A')
@@ -3886,6 +3886,7 @@ C         END IF
 *             Cleaned and shaved, only IROUTE = 3 option active
 * October   97 : allowing for N-1/N+1 switch
 *
+      use comjep_mod, only: MXACJ
       IMPLICIT REAL*8(A-H,O-Z)
 *. General input
       INTEGER ADSXA(MXPOBS,MXPOBS),STSTSX(NSMST,NSMST)
@@ -3918,7 +3919,6 @@ CTF   DIMENSION H(MXTSOB*MXTSOB)
       DIMENSION NADDEL(6),IADDEL(4,6),IADOP(4,6),ADSIGN(6)
 C    &          SIGNREO,NADOP,NADDEL,IADDEL,ADSIGN)
 *
-#include "comjep.inc"
       CALL QENTER('RS2B ')
 *
       NTESTL = 0
@@ -4285,6 +4285,7 @@ C    &                     LTYP,LSM,IXCHNG,0,0,ICOUL)
 * March 98   : Allows for splitting of strings into active and passive groups
 *
 *
+      use comjep_mod, only: MXACJ
       IMPLICIT REAL*8(A-H,O-Z)
 *. General input
       INTEGER ADSXA(MXPOBS,MXPOBS),STSTSX(NSMST,NSMST)
@@ -4329,7 +4330,6 @@ C     DIMENSION SIRESPA(10000),CJRESPA(10000)
       DIMENSION SIRESPA(*),CJRESPA(*)
 *     ^ Dimension : Same as SIRES and CJRES
 
-#include "comjep.inc"
       CALL QENTER('RS2B ')
       NTESTL = 0
       NTEST = MAX(NTESTL,NTESTG)
@@ -5615,7 +5615,6 @@ C
       CHARACTER CPUTIDX*12, WALLTIDX*12
       CHARACTER CPUTIDXX*12, WALLTIDXX*12
       DIMENSION ISCLFAC_GROUP(*)
-#include "comjep.inc"
 *
       CALL QENTER('SBLOC')
       NTEST = 0

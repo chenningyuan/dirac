@@ -168,10 +168,9 @@ contains
 ! stefan: please add bcast here if a new variable has been added to the list
 !         above
 !
-!      use freeze_mod, only: IFROZ, IFROZ_SET_IN_INPUT, MAXFROZ, MAXIREP
+      use freeze_mod, only: IFROZ, IFROZ_SET_IN_INPUT, MAXFROZ, MAXIREP
   use interface_to_mpi
 
-#include "freeze.inc"
   
   call interface_mpi_BCAST(relcc_nelec,   size(relcc_nelec),   0,global_communicator)
   call interface_mpi_BCAST(relcc_nelec_open,size(relcc_nelec_open),   0,global_communicator)

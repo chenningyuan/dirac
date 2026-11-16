@@ -1181,14 +1181,13 @@ cbs   to(i,j,k,l)=to(i,j,k,l)+fact*from(i,k,j,l)
       subroutine gen1overR3(Lhigh)
       use pi_mod, only: PI
       use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML, NDFMX
+      use dofuc_mod, only: DF
 #include "implicit.h"
 cbs   generates the radial integrals  for the one electron spin orbit integrals   
 cbs   taken the 1/r**3 formula from the documentation and included additional 
 cbs   factors for normalization   
-!      use dofuc_mod, only: WRK
 !      use param_mod, only: EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
 #include "param.h"
-#include "dofuc.h"
       do L=1,Lhigh    
       icount=0
       do iprim2=1,nprimit(L)
@@ -1662,12 +1661,11 @@ cbs   now generate OVLPinv
       return 
       end   
       subroutine genpowers(Lhigh)   
+      use dofuc_mod, only: DF
       use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML, NDFMX
 #include "implicit.h"
 #include "param.h"
-#include "dofuc.h"
 cbs   set some often used powers of exponents 
-!      use dofuc_mod, only: DF
 !      use param_mod, only: EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
       do L2=0,Lhigh 
       do L1=0,L2    
@@ -2745,12 +2743,11 @@ cbs
  
       subroutine inidf
 cbs   initializes the df on common block  with double facultatives
-!      use dofuc_mod, only: DF, NDFMX
 !      use param_mod, only: EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
+      use dofuc_mod, only: DF, DFFRAC
       use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML, NDFMX
 #include "implicit.h"
 #include "param.h"
-#include "dofuc.h"
       df(0)=1.d0
       df(1)=1.d0
       do irun=2,ndfmx

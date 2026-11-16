@@ -3998,9 +3998,9 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
 *
 * Ratio between real and integer
 *
+      use SysDef_mod, only: RTOI
       IMPLICIT REAL*8(A-H,O-Z)
 *. Input
-#include "SysDef.inc"
 *. Output
 #include "irat.inc"
 *. For CRAY or explicit 64 bit architecture : IRAT = 1

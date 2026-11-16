@@ -622,7 +622,7 @@ C***********************************************************************
       use dcbbas_mod, only: NFBAS
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXD2G, IDXI2G, IDXP2G, IDXU2G, IDXV2G
-!      use dcbkrmc_mod, only: DKRMC_MVOFAC
+      use dcbkrmc_mod, only: DKRMC_MVOFAC
 #include "implicit.h"
       INTEGER :: I
 #include "maxash.h"
@@ -632,7 +632,6 @@ C
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dcbidx.h"
-#include "dcbkrmc.h"
 C
       DIMENSION CREF(*), CMO(*), EIG(*), WORK(*)
       CHARACTER KEYCNO*6

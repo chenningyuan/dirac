@@ -297,7 +297,7 @@ C***********************************************************************
      &  DORKBIMP, DOTRA, IPRGEN
 !      use dcbpsi_mod, only: DOADC, DOCASCI, DOCASPT2, DOCCM, DOCIM, DOCOSCI, DOEXACC, DOHSCC, DOHSFS, DOIVO, DOKRCC, DOKRCI, DOKRMC, DOLAPLCE, DOLUCT, DOMP2, DOMP2NO, DOMVO, DOPOLPRP, DORES, DOROSE, L1ORBM, L2ORBM
 !      use dcbdhf_mod, only: MAXITR, MAXITR2, NOQCDHF
-!      use dcbimp_mod, only: DOIMPMOS
+      use dcbimp_mod, only: DOIMPMOS
       use dirac_cfg
 #include "implicit.h"
 C
@@ -305,7 +305,6 @@ C
 C
 #include "dcbpsi.h"
 #include "dcbdhf.h"
-#include "dcbimp.h"
 C
       CALL QENTER('PAMPSI')
 
@@ -884,7 +883,7 @@ C***********************************************************************
 !      use maxash_mod, only: MAXASH
       use dgroup_mod, only: NBSYM, NFSYM
 !      use dcborb_mod, only: MXGAS, NAELEC, NASH, NESH, NFRO, NGASSP, NGAS_DC, NGSH, NGSHT, NISH, NOCC, NSSH
-!      use dcbkrmc_mod, only: DKRMC_CNVINT, DKRMC_THRGRD, DKRMC_THRPCI, IKRMC_INTBUF, IKRMC_INTDEF, IKRMC_INTFLG, IKRMC_ITRINT, IKRMC_MEMFAC, IKRMC_STATE, IKRMC_SVRONO, IKRMC_SYMMETRY, IPRKRMC, KRMC_CHCKJZ, KRMC_CIPROGRAM, KRMC_DELSTR, KRMC_FRZSTR, KRMC_FULL_CI, KRMC_NO1PDENS, KRMC_NOCI, KRMC_SAVE_REORDERED_NOS, KRMC_SKIPEE, KRMC_SKIPEP, KRMC_UCIBOS, MCFLAG, MKRMC_MAXBCK, MKRMC_MXMACRO, MKRMC_MXMICRO, NKRMCAELEC, NKRMCASH, NKRMCFRO, NKRMCGAS, NKRMCGSH, NKRMCGSP, NKRMCISH, NKRMCSSH, NKRMC_MAXMK2, NKRMC_MINMK2, NKRMC_MK2DEL, NKRMC_MK2REF
+      use dcbkrmc_mod
 !      use dcbopt_mod, only: CANA_MCSCF, CHCKPT_WRT, CINT_LOWSRT, CINT_REORD, CINT_SPLIT, CPBLCK_FILE, CSHMEMO, E_LVCORR_MC, FLAG, IMEMFAC, IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ITRINT, IOPT_MAXMK2, IOPT_MINMK2, IOPT_MK2DEL, IOPT_MK2REF, IOPT_STATE, IOPT_SYMMETRY, IPROPT, ISHMEM_TYPE, ISVRONO, JKRRUNTYPE, MOPT_MAXBCK, MOPT_MXMACRO, MOPT_MXMICRO, NCIROOT, NMAX_SYM, NO1PDENS_SAVE, NOPEN_MC, NOPTFLAGS, OPT_CHCKJZ, OPT_CIPROGRAM, OPT_CNVINT, OPT_DELSTR, OPT_FRZSTR, OPT_NOCI, OPT_SKIPEE, OPT_SKIPEP, OPT_THRECI, OPT_THRGRD, OPT_THR_CVEC, OPT_UCIBOS, SAVE_REORDERED_NOS, THRPCI
 !      use dcbdhf_mod, only: NOPEN
 #include "implicit.h"
@@ -892,7 +891,6 @@ C***********************************************************************
 C
 #include "maxash.h"
 #include "dcborb.h"
-#include "dcbkrmc.h"
 !#include "dcbkrci.h"
 #include "dcbopt.h"
 !#include "dcbgascip.h"

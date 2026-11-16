@@ -3887,7 +3887,7 @@ C***********************************************************************
       use dcbbas_mod, only: N2BBASXQ, NFBAS
 !      use dcborb_mod, only: ICMOQ, IORB, NAELEC, NASH, NGAS_DC, NISH, NORB, NORBT, NPSH
       use dgroup_mod, only: ATOMIC, NBSYM, NFSYM, NZ
-!      use dcbres_mod, only: INTRES, IPRRES, ISTRES, RESOUT, SCRRES
+      use dcbres_mod, only: INTRES, IPRRES, ISTRES, RESOUT, SCRRES
       use dcbgen_mod, only: LUCOEF, PARCAL
 !      use dcbdhf_mod, only: NACSH, NOPEN
       Use memory_allocator
@@ -3899,7 +3899,6 @@ C
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcborb.h"
-#include "dcbres.h"
 #include "dcbdhf.h"
       CHARACTER DAYTID*24,SECTID*12,CPUTID*12
       LOGICAL TOBE,TRANOP,SKPONE,SKPTWO
@@ -4223,7 +4222,7 @@ C***********************************************************************
       use dcbbas_mod, only: N2BBASXQ, NFBAS
 !      use dcborb_mod, only: NAELEC, NASH, NISH, NORBT
       use dgroup_mod, only: ATOMIC, NBSYM, NFSYM, NZ
-!      use dcbres_mod, only: IPRRES, ISTRES, RESOUT, SCRRES
+      use dcbres_mod, only: IPRRES, ISTRES, RESOUT, SCRRES
       use dcbgen_mod, only: LUCOEF
 !      use dcbdhf_mod, only: NACSH, NOPEN
 !      use cossya_mod, only: SYA_IELC, SYA_MAXE, SYA_NOPEN
@@ -4235,7 +4234,6 @@ C
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcborb.h"
-#include "dcbres.h"
 #include "dcbdhf.h"
 !
 !     ...SYA_MAXE

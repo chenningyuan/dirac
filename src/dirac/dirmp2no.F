@@ -563,6 +563,7 @@ C     written by S. Knecht - June 2008, Odense
 C
 C***********************************************************************
 !      use dcbdhf_mod, only: NASH_DHF, NFRO_DHF, NISH_DHF, NOPEN
+      use freeze_mod, only: IFROZ_SET_IN_INPUT
       use dgroup_mod, only: NBSYM, NFSYM, NZ
       use dcbbas_mod, only: N2BBASXQ, NFBAS
       use dcbgen_mod, only: INTGEN
@@ -583,7 +584,6 @@ C
 #include "dcbmp2no.h"
 #include "../moltra/dcbtra.h"
 #include "../moltra/dcbtr3.h"
-#include "../relccsd/freeze.inc"
 C
 
       CHARACTER DAYTID*24, VECMP2NO_occ(2)*400, TEMP_TRA4_INDSTR*400

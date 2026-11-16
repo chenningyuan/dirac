@@ -762,7 +762,6 @@ C     COMMON/BIGGY/WORK(MXPWRD)
       COMMON/SSAVE/NELIS(4), NSTRKS(4)
       COMMON/UMMAGUMMA/NSTRIA(4)
       INTEGER KELFGRP(MXPNGAS),KGRP(MXPNGAS)
-      COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
 *
 * =======
 *. Output
@@ -1106,6 +1105,7 @@ C?    END IF
       SUBROUTINE ADAST_GAS(IOBSM,IOBTP,NIGRP,IGRP,ISPGPSM,
      &                    I1,XI1S,NKSTR,IEND,IFRST,KFRST,KACT,SCLFAC,
      &                    IAC)
+      use comjep_mod, only: MXAADST
       use luci_wrkspc
 *
 *
@@ -1166,7 +1166,6 @@ C?    END IF
       PARAMETER(LOFFI=8*8*8*8*8)
       DIMENSION IOFFI(LOFFI)
 *
-#include "comjep.inc"
 *
 * =======
 *. Output

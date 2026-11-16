@@ -14,17 +14,27 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
+!-----------------------------------------
+! Module with variables previously defined
+! at cbidip.h include file (COMMON /CBIDIP/)
+!-----------------------------------------
+      module cbidip_mod
+      implicit none
+      integer :: IPRINT
+      logical :: SKIP, NODC, NODV, TEST, AOMAT, CUT
+      end module cbidip_mod
+
 #ifndef PRG_DIRAC
 C
 C  /* Deck dipinp */
       SUBROUTINE DIPINP(WORD)
+      use cbidip_mod, only: CUT, IPRINT, NODC, NODV, SKIP, TEST
       use abainf_mod, only: IPRDEF
       use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
       PARAMETER (NTABLE = 7)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include "cbidip.h"
       DATA TABLE /'.SKIP  ', '.PRINT ', '.NODC  ', '.NODV  ',
      *            '.XXXXXX', '.XXXXXX', '.STOP  '/
 C
@@ -108,9 +118,9 @@ C  /* Deck dipini */
 C
 C     Initialize /CBIDIP/
 C
+      use cbidip_mod, only: AOMAT, CUT, IPRINT, NODC, NODV, SKIP, TEST
       use abainf_mod, only: DIPDER, IPRDEF, POLAR
 #include "implicit.h"
-#include "cbidip.h"
       IPRINT = IPRDEF
       NODC   = .FALSE.
       NODV   = .FALSE.
@@ -127,6 +137,8 @@ C
 C     tuh 1985
 C     Rewritten for symmetry January 1990, tuh
 C
+      use infdim_mod, only: NVARMA
+      use cbidip_mod, only: CUT, IPRINT, SKIP
       use inforb_mod, only: N2ASHX, N2BASX, NCMOT, NNASHX, NNBASX
       use nuclei_mod, only: NUCDEP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -134,8 +146,6 @@ C
 #include "implicit.h"
       LOGICAL PASS
       DIMENSION WORK(LWORK)
-#include "cbidip.h"
-#include "infdim.h"
 C
       IF (SKIP) RETURN
       CALL TIMER('START ',TIMSTR,TIMEND)
@@ -170,6 +180,8 @@ C  /* Deck dipct1 */
 C
 C     December 1989, tuh
 C
+      use infdim_mod, only: NVARMA
+      use cbidip_mod, only: AOMAT, IPRINT, NODC, NODV
       use inforb_mod, only: NASHT, NBAST, NCMOT, NNASHX, NNBASX
       use inftap_mod, only: LUSIFC
       use abainf_mod, only: DIPDER
@@ -192,11 +204,9 @@ C
      *          WORK(LWORK), SOINT(NBAST,NBAST)
 C
 #include "moldip.h"
-#include "cbidip.h"
 C
 #include "linaba.h"
 #include "infvar.h"
-#include "infdim.h"
 #include "inflin.h"
       LOGICAL OLDDX
 C

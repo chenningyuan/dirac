@@ -42,7 +42,7 @@ C               Febr.2006 - MI to modify for pure two-comp. mode
 C
 C***********************************************************************
 
-!      use dcbimp_mod, only: DOIMPMOS, QCPACK
+      use dcbimp_mod, only: DOIMPMOS, QCPACK
       use dcbham_mod, only: FAKE2C, GAUNT, LSCALE_DFT_GAUNT, X2C
       use dgroup_mod, only: NZ, NZC1
       use checkpoint
@@ -69,7 +69,6 @@ C***********************************************************************
       use cbirea_mod, only: IPREAD
       use dcbgen_mod, only: DOANA, DOJACO, DOPRP, DOPSI, DOTRA, INPTES
 #include "implicit.h"
-#include "dcbimp.h"
 
       integer, parameter   :: lwork = 100000
       real(8), allocatable :: WORK(:)
@@ -412,7 +411,7 @@ C       Last revision: Nov 14 1994 - tsaue
 C
 C***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
-!      use dcbimp_mod, only: DOIMPMOS, FILIMP, QCPACK
+      use dcbimp_mod, only: DOIMPMOS, FILIMP, QCPACK
       use dcb_rkbimp_mod, only: RKBIMP_PRJTHR
       use logging_mod, only: LOGMEMGET
       use dcbgen_mod
@@ -433,7 +432,6 @@ C
 ! MDIRAC is needed for check of STOL(2)
 
 !#include "dcbxpr.h"
-#include "dcbimp.h"
 C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
@@ -3773,13 +3771,12 @@ C       Written by Timo Fleig, December 2001
 C       (modified SCFINP routine)
 C
 C***********************************************************************
-!      use luctinp_mod, only: CALCTP, CRDFRO, CRDGAS, CRDGOC, CRDINA, CRDRS1, CRDRS2, CRDRS3, CTRUNC_FAC, ICIMAXITER, IDENSD, IMAXBLKSIZE, IMOKW, IMULTD, INGASD, IN_MEMFAC, IPRNGD, IPRNLD, IRSTLT, ISSYMD, I_USE_DIST_ROUTE, MXCIVE, MXEL3D, MXHL1D, MY_CONVERGENCE, NACTED, NROOTD, NSEQCD, NTABLE, SZCALD, TITLUC, WAFFCD
+      use luctinp_mod
       use priunit_mod, only: LUCMD, LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
 C
-#include "luctinp.h"
 C
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
@@ -4024,12 +4021,11 @@ C
 C***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
       use dcbham_mod, only: SPINFR
-!      use luctinp_mod, only: CALCTP, CALCTYP, CRDCCLR, CRDFRO, CRDGAS, CRDGOC, CRDINA, CRDRS1, CRDRS2, CRDRS3, IDENSD, IMOKW, IMULTD, INGASD, IPRNGD, IPRNLD, IRSTLT, ISSYMD, MXEL3D, MXHL1D, MXNGAS, NACTED, NROOTD, NSEQCD, NTABLE, SZCALD, TITLUC, WAFFCD
+      use luctinp_mod
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
 C
-#include "luctinp.h"
 C only SPINFR used on next block
 C
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
@@ -8415,14 +8411,14 @@ C
 C***********************************************************************
 !      use dcbana_mod, only: DO3RHO
       use priunit_mod, only: LUCMD, LUPRI
-!      use dcbrho_mod, only: CUBADJ, ICUBORB, ILSCUB, IPRRHO, NCUBE, NCUBORB
+      use dcbrho_mod, only: CUBADJ, ICUBORB, ILSCUB, IPRRHO, NCUBE,
+     &  NCUBORB
       use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I
       PARAMETER (NTABLE = 8)
 C
 #include "dcbana.h"
-#include "dcbrho.h"
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,

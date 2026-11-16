@@ -410,9 +410,8 @@ C
 * Read indices from file INDICES
 *
 !      use clunit_mod, only: LUSC95
-!      use files_r_mod, only: LUSC95_MPIL, NLUSC95_MPI
+      use files_r_mod, only: LUSC95_MPIL, NLUSC95_MPI
 #include "clunit.inc"
-#include "files_r.inc"
       integer*8 NINTS_I8
       dimension IN(4,NINTS_I8)
 *

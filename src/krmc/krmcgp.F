@@ -2150,8 +2150,8 @@ C***********************************************************************
 !      use cgas_mod, only: ICMBSPC, IDOGAS, IGSOCCX, LCMBSPC, NACTEL, NCISPC, NCMBSPC, NGAS
 !      use oper_mod, only: IHAM12
 !      use cands_mod, only: IELCI
-!      use noccn_inf_mod, only: IDENSI_STATE, NOOCCN_DENS_RUN
-!      use krmcluci_inf_mod, only: IRIQ
+      use noccn_inf_mod, only: IDENSI_STATE, NOOCCN_DENS_RUN
+      use krmcluci_inf_mod, only: IRIQ
 !      use krciprop_mod, only: DOPROPREOD, DOSIGPROP
       use symmetry_setup_krci
       use memory_allocator
@@ -2172,8 +2172,6 @@ C***********************************************************************
 #include "../luciarel/cgas.inc"
 #include "../luciarel/oper.inc"
 #include "../luciarel/cands.inc"
-#include "../luciarel/noccn_inf.inc"
-#include "krmcluci_inf.h"
 #include "krciprop.h"
 C
       CHARACTER*6 CIRUN

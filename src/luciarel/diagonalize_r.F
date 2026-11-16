@@ -1704,7 +1704,7 @@ CTF     end do
 * (-1) in my simple world
 *
 !      use parluci_mod, only: LUWRT, LU_INFO, MASTER, MYPROC, SYMFLABEL
-!      use krmcluci_inf_mod, only: ECI
+      use krmcluci_inf_mod, only: ECI
 #include "implicit.h"
       INTEGER :: I
 #if defined (VAR_MPI2)
@@ -1716,7 +1716,6 @@ CTF     end do
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12, FILELAB*8
       LOGICAL CONVER,RTCNV(NROOT),EXSTOP
 *
-#include "krmcluci_inf.h"
 *
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION RNRM(NROOT,MAXIT),EIG(2*MAXVEC,MAXIT)

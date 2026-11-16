@@ -1383,7 +1383,8 @@ C*****************************************************************************
       use priunit_mod, only: LUCMD, LUPRI
       use dcbgen_mod, only: INTGEN, PARCAL
 !      use dcbpsi_mod, only: DORES
-!      use dcbres_mod, only: COREDENS, INTRES, IPRRES, ISTRES, NOVXC, RESOUT, SCRRES
+      use dcbres_mod, only: COREDENS, INTRES, IPRRES, ISTRES, NOVXC,
+     &  RESOUT, SCRRES
       use dcbham_mod, only: BSS, DO4C2C, LEVYLE, X2C
       use include_dcbtra_h, only : set_tra_ascii
       use dirac_cfg
@@ -1398,7 +1399,6 @@ C
       CHARACTER*2 WS
 C
 #include "dcbpsi.h"
-#include "dcbres.h"
       DIMENSION WORK(LWORK),IR(2,2)
 C
       SAVE SET

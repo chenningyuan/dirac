@@ -10,6 +10,7 @@ set(MODULE_SOURCES
     cbiher.F90
     cbihr1.F90
     cbihr2.F90
+    cbinuc.F90
     cbione.F90
     cbirea.F90
     cbisol.F90
@@ -29,8 +30,11 @@ set(MODULE_SOURCES
     dcbgrd.F90
     dcbham.F90
     dcbibt.F90
+    dcbimp.F90
+    dcbkrmc.F90
     dcblap.F90
     dcbloc.F90
+    dcbnrt.F90
     dcbsusc.F90
     dcbwav.F90
     dcbwt1.F90
@@ -48,30 +52,37 @@ set(MODULE_SOURCES
     exeinf.F90
     expcom.F90
     frame.F90
+    freeze.F90
     gamcom.F90
     gen1int.F90
     gencon.F90
     gnrinf.F90
     hertop.F90
+    hotfccom.F90
     hrunit.F90
     huckel.F90
     ibtpar.F90
+    infdim.F90
     infinp.F90
     infinp_dalton.F90
     inforb.F90
     infpar.F90
     inftap.F90
     iratdef.F90
+    krmcluci_inf.F90
     lapdim.F90
     lmns.F90
     logging.F90
+    luctinp.F90
     maxaqn.F90
     maxmom.F90
     maxorb.F90
     molinp.F90
     mxcent.F90
     mxsymm.F90
+    noccn_inf.F90
     nodint.F90
+    nqcc.F90
     nucdata.F90
     nuclei.F90
     nuctap.F90
@@ -85,6 +96,7 @@ set(MODULE_SOURCES
     precision.F90
     primit.F90
     priunit.F90
+    rotg.F90
     shells.F90
     siripc.F90
     sotabs.F90
@@ -102,9 +114,6 @@ set(MODULE_SOURCES
     # drafts, not migrated yet
     #dcbesr.F90
     #dcbnmr.F90
-    #infdim.F90
-    #nqcc.F90
-    #rotg.F90
 )
 
 # Create TARGET

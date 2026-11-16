@@ -29,7 +29,7 @@ subroutine impmos()
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NCMOTQ, NESHT
       use dcbbas_mod, only: NTBAS
-!      use dcbimp_mod, only: FILIMP, QCPACK
+      use dcbimp_mod, only: FILIMP, QCPACK
       use maxorb_mod, only: MXCORB, MXSHEL
       use blocks_mod, only: NCNTSH, NHKTSH, NLRGBL, NORBSH
       use aovec_mod, only: MXAOVC
@@ -43,7 +43,6 @@ subroutine impmos()
 
 ! common blocks
 #include "dcborb.h"
-#include "dcbimp.h"
 
 ! parameter:
  character(len=*), parameter :: chrdbg = "impmos>"

@@ -36,8 +36,8 @@
 !      use ctcc_mod, only: KLABEXTP, KLIHIND, KLOP_REO, KSIGNNHX, KSIOPREO, N1ELINT, N2ELINT, NALLINT, NSPOBEX_TP
 !      use cintfo_mod, only: ISM2D, NL2D
 !      use cands_mod, only: ICSM, ICSPC, ISSM, ISSPC
-!      use noccn_inf_mod, only: IDENSI_STATE, NOOCCN_DENS_RUN
 !      use integrals_off_mod, only: NTERMS
+      use noccn_inf_mod, only: IDENSI_STATE, NOOCCN_DENS_RUN
       use dgroup_mod, only: ITERSEOUT, NZ
       use maxorb_mod, only: MXCORB
 !      use dcbbos_mod, only: IBOSYM
@@ -90,7 +90,6 @@
 *. Common block for communicating with sigma
 #include "cands.inc"
 *  nat. orb. occ. num.
-#include "noccn_inf.inc"
 #include "integrals_off.inc"
 #include "../krmc/dcbbos.h"
 *     /CECORE/

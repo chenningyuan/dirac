@@ -571,8 +571,9 @@ C
 !      use cgas_mod, only: NGAS
 !      use clunit_mod, only: LUSC94, LUSC95
 !      use parluci_mod, only: IJKL_PRE, LOWSRT_IJKL, LUWRT, REORD_IJKL
-!      use files_r_mod, only: LUSC94_MPIL, LUSC95_MPIL, NLUSC94_MPI, NLUSC95_MPI
 !      use integrals_off_mod, only: IBTSOSO_TP, IPOSDIA
+      use files_r_mod, only: LUSC94_MPIL, LUSC95_MPIL, NLUSC94_MPI,
+     &  NLUSC95_MPI
       use dgroup_mod, only: NZ
       use luci_wrkspc
 ***********************************************************************
@@ -614,7 +615,6 @@ C
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP
 #endif
 #include "parluci.h"
-#include "files_r.inc"
 #include "integrals_off.inc"
 *
 *
@@ -1302,8 +1302,9 @@ C
 !      use cgas_mod, only: NGAS
 !      use clunit_mod, only: LUSC94, LUSC95
 !      use parluci_mod, only: IJKL_PRE, LOWSRT_IJKL, LUWRT, REORD_IJKL
-!      use files_r_mod, only: LUSC94_MPIL, LUSC95_MPIL, NLUSC94_MPI, NLUSC95_MPI
 !      use integrals_off_mod, only: IBTSOSO_TP, IPOSDIA
+      use files_r_mod, only: LUSC94_MPIL, LUSC95_MPIL, NLUSC94_MPI,
+     &  NLUSC95_MPI
       use dgroup_mod, only: IPQTOQ, NZ
       use luci_wrkspc
 *
@@ -1322,7 +1323,6 @@ C
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP
 #endif
 #include "parluci.h"
-#include "files_r.inc"
 #include "integrals_off.inc"
 *
 *
@@ -3537,7 +3537,6 @@ csk               write(LUWRT,*) ' continuing ...'
 *
 #include "dcborb.h"
 #include "parluci.h"
-!#include "noccn_inf.inc"
 #include "krmc_shmem.h"
 *
       dimension F1(*), DENS_SCR(*), IT_TTPL(*)
@@ -3811,7 +3810,6 @@ csk               write(LUWRT,*) ' continuing ...'
 *
 #include "dcborb.h"
 #include "parluci.h"
-!#include "noccn_inf.inc"
 #include "krmc_shmem.h"
 *
       dimension F1(*),F2(*), DENS_SCR(*), IT_TTPL(*)

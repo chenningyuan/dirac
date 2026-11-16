@@ -2188,7 +2188,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use parluci_mod, only: IIOMOD_REL, LEN_ALL_INT, LF2_ZERO, LUWRT, MASTER, MSLVOUT_REL, MYPROC, NMPROC
 !      use mxpdim_mod, only: MXNDGIRR, MXPICI
 !      use cicisp_mod, only: ISYM_KRMC, XISPSM
-!      use noccn_inf_mod, only: NOOCCN_DENS_RUN
+      use noccn_inf_mod, only: NOOCCN_DENS_RUN
 !      use krciprop_mod, only: LXPRPKRCI, NPROP_KRCI, NPROP_ROOTS_KRCI, RUNXPROP
 !      use dcborb_mod, only: NASHT, NNASHX, NORBT
       use dcbgen_mod, only: PARCAL
@@ -2203,7 +2203,6 @@ C
 C
 #include "../luciarel/mxpdim.inc"
 #include "../luciarel/cicisp.inc"
-#include "../luciarel/noccn_inf.inc"
 #include "krciprop.h"
 !#include "dcbopt.h"
 #include "dcborb.h"

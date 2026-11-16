@@ -1046,7 +1046,6 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
 #include "gasstr.inc"
 #include "strbas.inc"
 *
-!#include "krmcluci_inf.h"
 *
 *. output
       INTEGER ISTR(NEL,*)

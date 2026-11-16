@@ -1066,6 +1066,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   NSP,EPS1,EPS,IREPSP,IREPSPI,
      &                   FOCKSP,REPORT,NELEC_F1,NELEC_F2)
 C
+      use freeze_mod, only: IFROZ, IFROZ_SET_IN_INPUT, MAXFROZ, NFROZEN
       use spinor_indexing
       IMPLICIT NONE
 C
@@ -1084,7 +1085,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
 #include "symm.inc"
-#include "freeze.inc"
 #include "ihm.inc"
 #include "ccpar.inc"
 C---------------Calling variables--------------------------------------
@@ -2332,6 +2332,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCENER (ICALC,MXCORR,EPS)
+      use diis_mod, only: MAXDIM, MAXIT
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
       use xmlout
@@ -2362,7 +2363,6 @@ C---------------Calling variables--------------------------------------
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "diis.inc"
 #include "inpt.inc"
 #include "symm.inc"
 #include "eqns.inc"
@@ -2737,6 +2737,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     CCFOPR - CC First Order PRoperties, aka gradients
 C
+      use diis_mod, only: MAXDIM, MAXIT
       use dgroup_mod, only: NZ
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
@@ -2773,7 +2774,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
 #include "files.inc"
-#include "diis.inc"
 #include "inpt.inc"
 #include "eqns.inc"
 #include "symm.inc"
@@ -3322,6 +3322,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCHESS (ICALC,MXCORR,EPS,NSP,IREPSPI)
 C
+      use diis_mod, only: MAXDIM, MAXIT
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
 C
@@ -3355,7 +3356,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "diis.inc"
 #include "inpt.inc"
 #include "symm.inc"
 #include "param.inc"
@@ -3494,6 +3494,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCEXC (ICALC,MXCORR,EPS,NSP,IREPSPI)
 C
+      use diis_mod, only: MAXDIM, MAXIT
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
 C
@@ -3526,7 +3527,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "diis.inc"
 #include "inpt.inc"
 #include "symm.inc"
 #include "complex.inc"
@@ -3645,6 +3645,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCFSPC (ICALC,MXCORR,EPS1,EPS,NSP,IREPSP,IREPSPI)
 C
+      use diis_mod, only: MAXDIM, MAXIT
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
 
@@ -3675,7 +3676,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "diis.inc"
 #include "ihm.inc"
 #include "eqns.inc"
 #include "results.inc"

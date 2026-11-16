@@ -28,7 +28,7 @@ C
 C***********************************************************************
 
 !      use dcbana_mod, only: DO1RHO, DO1WT, DO3RHO, DOLOC, DOPOP, DOPRJ, DOVEC
-!      use dcbrho_mod, only: ICUBORB, NCUBORB
+      use dcbrho_mod, only: ICUBORB, NCUBORB
       use dirac_cfg
       use second_order_minimization
       use memory_allocator
@@ -37,7 +37,6 @@ C***********************************************************************
 #include "implicit.h"
 C
 #include "dcbana.h"
-#include "dcbrho.h"
       real(8), allocatable :: WORK(:)
 C Used from COMMON blocks:
 C  CBIANA: DOPOP,DOANA,DOEXP
@@ -2536,7 +2535,7 @@ C
 C     Written by Trond Saue Nov 5 2002
 C
 C***********************************************************************
-!      use dcbrho_mod, only: ILSCUB, IPRRHO, NCUBE
+      use dcbrho_mod, only: ILSCUB, IPRRHO, NCUBE
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP
       use priunit_mod, only: LUPRI
@@ -2550,7 +2549,6 @@ C
       LOGICAL TOBE,LBIT
       DIMENSION WORK(LWORK),CUBE(3,0:4),LUCUBE(2)
       real(8), allocatable:: cmo(:)
-#include "dcbrho.h"
 C
       CALL QENTER('GT3RHO')
 c
@@ -2637,7 +2635,7 @@ c     Based on GT3RHO, this one by ulfek.
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: N2BBASXQ, NTBAS
       use nuclei_mod, only: NUCDEP
-!      use dcbrho_mod, only: ILSCUB, IPRRHO, NCUBE
+      use dcbrho_mod, only: ILSCUB, IPRRHO, NCUBE
       use dircmo
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2649,7 +2647,6 @@ C
       DIMENSION WORK(LWORK),CUBE(3,0:4),LUCUBE(2),orbs(1000,2)
       character*16 filename
       real(8), allocatable :: cmo(:)
-#include "dcbrho.h"
 C
       CALL QENTER('GT3RHO')
 c
@@ -2761,7 +2758,7 @@ C
 C     Written by Trond Saue Nov 5 2002
 C
 C***********************************************************************
-!      use dcbrho_mod, only: ILSCUB, IPRRHO, NCUBE
+      use dcbrho_mod, only: ILSCUB, IPRRHO, NCUBE
       use dcbbas_mod, only: NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2771,7 +2768,6 @@ C
       DIMENSION LUCUBE(*),CUBE(3,0:3),RHO(2,*),DMAT(*),GAO(*),
      &          BUF(*),WORK(*)
       INTEGER :: I
-#include "dcbrho.h"
 C
 C
       DO I1 = 1,NCUBE(1)
@@ -2831,7 +2827,7 @@ C
 C     Written by Trond Saue Nov 6 2002
 C
 C***********************************************************************
-!      use dcbrho_mod, only: CUBADJ, NCUBE
+      use dcbrho_mod, only: CUBADJ, NCUBE
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: ISYMAX, MAXOPR, PT
@@ -2841,7 +2837,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "dcbrho.h"
       DIMENSION CUBE(3,0:3),ATOMS(4,NUCDEP)
 C
 C
@@ -2889,14 +2884,13 @@ C
 C     Write header for formatted Gaussian cube file
 C
 C***********************************************************************
-!      use dcbrho_mod, only: NCUBE
+      use dcbrho_mod, only: NCUBE
       use dcbgen_mod, only: TITLE
       use nuclei_mod, only: NUCDEP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "dcbrho.h"
 C
       DIMENSION CUBE(3,0:3),ATOMS(4,NUCDEP)
       WRITE(LUCUBE,10) TITLE

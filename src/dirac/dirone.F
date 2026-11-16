@@ -10682,15 +10682,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SET_INTFL1(NEW_INTFLG)
 C***********************************************************************      
 !      use dcbxlr_mod, only: INTXLR
-!      use dcbkrmc_mod, only: IKRMC_INTBUF, IKRMC_INTDEF, IKRMC_INTFLG
 !      use dcbxrs_mod, only: INTBUF, INTDEF, INTFLG, INTXRS
 !      use mxgas_mod, only: MXGAS
 !      use dcbnmr_mod, only: INTNMR
+      use dcbkrmc_mod, only: IKRMC_INTBUF, IKRMC_INTDEF, IKRMC_INTFLG
       implicit none
       integer, intent(in) :: new_intflg
 #include "mxgas.h"
 #include "dcbxrs.h"
-#include "dcbkrmc.h"
 #include "dcbxlr.h"
 #include "dcbnmr.h"
       INTXRS       = new_intflg

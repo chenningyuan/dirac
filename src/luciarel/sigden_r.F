@@ -2849,6 +2849,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                     ,IBLOCKL_S,NPARBLOCK_S
 #endif
      &                 )
+#if !defined (VAR_MPI2)
+      use files_r_mod, only: LUSC344_MPIL, NLUSC37_MPI
+#endif
 #if defined (VAR_MPI2)
       use infpar_mod, only: TIMING
 #endif
@@ -2906,7 +2909,6 @@ C***********************************************************************
 #endif /* if def VAR_MPI2 */
 #include "parluci.h"
 #include "krciprop.h"
-#include "files_r.inc"
 *
       LOGICAL SBLK_READS2
 *

@@ -32,6 +32,7 @@ set(FIXED_LUCIAREL_FORTRAN_SOURCES_noruntimecheck
 )
 
 set(FREE_LUCIAREL_FORTRAN_SOURCES
+    files_r.F90
     mxdim_mpi2.F90
    io_ttss_r.F90
    krci_cfg.F90

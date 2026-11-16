@@ -327,7 +327,7 @@ C***********************************************************************
       use consts_mod, only: D0
 !      use thrzer_mod, only: THRZER
       use maxorb_mod, only: MXCORB
-!      use dcbnrt_mod, only: LNOROT, NOROT
+      use dcbnrt_mod, only: LNOROT, NOROT
 !      use dcbkrmc_itinfo_mod, only: DINFO, IINFO, LDINFO, LIINFO
       use dcbgen_mod, only: LUITFO, LUKRMC
 !      use dcbopt_mod, only: BETA, BETMAX, BETMIN, COMPROT, CPUOPT, DEPRED, DONR, EACTIV, EMCOLD, EMCSCF, EMY, E_LVCORR_MC, FLAG, FROZCI, GNORM, IDENSLR_STATE, IOPTST, IOPT_IFCKOP, IOPT_IHRMOP, IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ISYMOP, IOPT_ITRINT, IPROPT, ITABS, ITBCK, ITMAC, ITMACN, JKRRUNTYPE, JMCMIN, JTRLVL, KTRLVL, LDIRNR, MCTYPE, MOPT_MAXBCK, MOPT_MXMACRO, NATOLCR, NCIROOT, NO1PDENS_SAVE, NOPTTIM, OPT_CHCKJZ, OPT_CIPROGRAM, OPT_CNVINT, OPT_INTTYP, OPT_NOCI, OPT_THRGRD, RTRUST, SPINFR_KRMC, STPLCI, STPLEE, STPLEN, STPLEP, WLLOPT
@@ -341,7 +341,6 @@ C***********************************************************************
 C
 #include "thrzer.h"
 C
-#include "dcbnrt.h"
 #include "dcbkrmc_itinfo.h"
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -1911,7 +1910,7 @@ C***********************************************************************
 !      use dcborb_mod, only: IORB, NASH, NCMOTQ, NESH, NFRO, NGAS_DC, NISH, NOCC, NORB, NORBT, NPSH, NSSH
       use dgroup_mod, only: LINEAR, NFSYM, NZ
 !      use dcbbos_mod, only: IBOSYM
-!      use dcbnrt_mod, only: LNOROT, NOROT, NOROTC
+      use dcbnrt_mod, only: LNOROT, NOROT, NOROTC
 !      use dcbidx_mod, only: IDXD2G, IDXG2D, IDXG2V, IDXV2G
       use orbital_rotation_indices
 
@@ -1924,7 +1923,6 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbbos.h"
-#include "dcbnrt.h"
 #include "dcbidx.h"
 C
       DIMENSION WORK(*), ILIST(MXCORB)
@@ -3061,13 +3059,12 @@ C***********************************************************************
 !      use dcbopt_mod, only: CINT_REORD, IANACI, IOPT_INTDEF, IOPT_INTFLG, IPROPT, JKRRUNTYPE, JMCMIN, JTRLVL, KTRLVL, MAXCIT, MCTYPE, MOPT_MXMACRO, NATOLCR, NZCONF, NZCONFQ, OPT_CIPROGRAM, SPINFR_KRMC
       use dcbbas_mod, only: NFBAS
       use dgroup_mod, only: ATOMIC, IPQTOQ, LINEAR, NFSYM, NZ
-!      use dcbnrt_mod, only: LNOROT, NOROT
+      use dcbnrt_mod, only: LNOROT, NOROT
 #include "implicit.h"
       INTEGER :: I
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dcbnrt.h"
 C
       LOGICAL EX, FNDLAB, FILEOPEN, MJVEC_AVAIL, readmj_df
       DIMENSION WORK(*)
@@ -3614,14 +3611,13 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ASHXQ, NORBT
 !      use dcbopt_mod, only: CINT_REORD, FCIDUMP, IANACI, IDENSLR_STATE, IOPT_STATE, IPROPT, JKRRUNTYPE, KZCONF, MAXCIT, NATOLCR, NCIROOT, NZCONF, NZCONFQ, OPT_CIPROGRAM, OPT_THRGRD, OPT_THR_CVEC, THRPCI, TRA_NATO
-!      use krmcluci_inf_mod, only: ECI
+      use krmcluci_inf_mod, only: ECI
       use mc_energies
       use qcorr_cfg
 #include "implicit.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "krmcluci_inf.h"
 C
 !     REAL*8  CMO(*), CREF(NZCONFQ,*), WORK(*)
       REAL*8  CMO(*), CREF(*), WORK(*) ! because NZCONFQ=-1 for KR_CI with LUCIAREL
@@ -3822,14 +3818,13 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use dummy_mod, only: DUMMY
       use maxorb_mod, only: MXCORB
-!      use dcbnrt_mod, only: NOROTC
+      use dcbnrt_mod, only: NOROTC
 !      use dcbopt_mod, only: COMPROT, EACTIV, FROZCI, IOPT_INTDEF, IOPT_INTFLG, IPROPT, JMCMIN, JTRLVL, KTRLVL, KZCONF, MCTYPE, MOPT_MXMICRO, NZCONF, NZCONFQ, NZHOPE, NZHOPEQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZXOPT, NZXOPTQ, OPT_CIPROGRAM, OPT_NOFQX, OPT_NOPFQ, RBETA, STPLCI, STPLEE, STPLEN, STPLEP
       use dgroup_mod, only: NZ
 !      use dcbkrmc_itinfo_mod, only: DINFO
       use orbital_rotation_indices
 #include "implicit.h"
 C
-#include "dcbnrt.h"
 #include "dcbopt.h"
 #include "dcbkrmc_itinfo.h"
 C
@@ -6118,7 +6113,7 @@ C
 C***********************************************************************
       use consts_mod, only: D0
       use maxorb_mod, only: MXCORB
-!      use dcbnrt_mod, only: NOROT, NOROTC
+      use dcbnrt_mod, only: NOROT, NOROTC
       use dcbgen_mod, only: LUKRM3
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NORBT
       use dgroup_mod, only: IPQTOQ, NZ
@@ -6126,7 +6121,6 @@ C***********************************************************************
       INTEGER :: I, J
 C
 C
-#include "dcbnrt.h"
 #include "dcborb.h"
 C
       DIMENSION GOEE(NXOPE,*), GOEP(NXOPP,*), JXOPE(*), JXOPP(*)
