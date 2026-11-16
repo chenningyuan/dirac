@@ -33,7 +33,6 @@ variables:
 # exatensor stuff
   WRAP: "NOWRAP"
   BUILD_TYPE: "OPT"
-  BLASLIB: "NONE"
   GPU_CUDA: "NOCUDA"
   EXA_OS: "LINUX"
   MPILIB: "MPICH"
