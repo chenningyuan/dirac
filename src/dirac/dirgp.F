@@ -2195,12 +2195,11 @@ C***********************************************************************
 !      use dcborb_mod, only: NCMOTQ, NORBT
       use dcbbas_mod, only: NFBAS
       use dgroup_mod, only: NFSYM
-!      use dcbrot_mod, only: ROTANG
+      use dcbrot_mod, only: ROTANG, VECROT
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D180=180.0D0
 C
-#include "dcbrot.h"
 #include "dcborb.h"
       DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT)
 
@@ -2263,8 +2262,8 @@ C     Manipulation of CHECKPOINT prior to wave function calculation
 C
 C***********************************************************************
 
-!      use dcbreo_mod, only: IMOORD, IREORD, LMOORD, MXREORD
-!      use dcbrot_mod, only: ROTORB
+      use dcbrot_mod, only: ROTORB
+      use dcbreo_mod, only: IMOORD, IREORD, LMOORD, MXREORD
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NCMOTQ, NORBT
       use dcbgen_mod, only: LUCOEF
@@ -2275,8 +2274,6 @@ C***********************************************************************
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "dcbreo.h"
-#include "dcbrot.h"
       LOGICAL TOBE
       real(8), allocatable :: cmo(:)
       real(8), allocatable :: eig(:)
@@ -2331,7 +2328,6 @@ C     Manipulation of CHECKPOINT after a wave function calculation
 C
 C***********************************************************************
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NORB, NORBT
-!      use dcbreo_mod, only: IMOORF, IREORF, LMOORF, MXREORD
       use dcbgen_mod, only: LUCOEF, LUKRMC
       use priunit_mod, only: LUPRI
       use memory_allocator
@@ -2365,8 +2361,8 @@ C
       contains
 
       subroutine pstor1 (cmo,eig,ibeig,read_mcscf)
-!      use dcbreo_mod, only: IMOORF, IREORF, LMOORF, MXREORD
 !      use dcbpsi_mod, only: PHCOEF
+      use dcbreo_mod, only: IMOORF, IREORF, LMOORF, MXREORD
       use dcbbas_mod, only: NFBAS
       use dircmo
 C***********************************************************************
@@ -2378,7 +2374,6 @@ C***********************************************************************
 #include "implicit.h"
 C
 #include "dcbpsi.h"
-#include "dcbreo.h"
       real(8)             :: CMO(:),EIG(:)
       integer             :: IBEIG(:)
       logical             :: read_mcscf

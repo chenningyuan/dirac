@@ -636,7 +636,6 @@ C***********************************************************************
       DIMENSION   T_BUFF(*), T(*), F1(*), ibeig(*)
 #if defined (VAR_MPI2)
 !#include "krmc_shmem.h"
-!#include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
       real*8,  allocatable :: t_buffx(:)
 #endif

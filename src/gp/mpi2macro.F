@@ -59,7 +59,6 @@ C***********************************************************************
       use interface_to_mpi, only: df_my_MPI_INTEGER
 #include "implicit.h"
 #include "mpif.h"
-!#include "mxdim_mpi2.h"
       INTEGER ISTAT(MPI_STATUS_SIZE)
       DIMENSION RBUF(*), MY_WIN(*)
       INTEGER NTYPE_R, NTYPE_T, DATATYPE_OUT, DATATYPE_IN
@@ -131,7 +130,6 @@ C***********************************************************************
       use interface_to_mpi, only: df_my_MPI_INTEGER
 #include "implicit.h"
 #include "mpif.h"
-!#include "mxdim_mpi2.h"
       INTEGER ISTAT(MPI_STATUS_SIZE)
       DIMENSION RBUF(*), MY_WIN(*)
       INTEGER NTYPE_R, NTYPE_T, DATATYPE_OUT, DATATYPE_IN
@@ -201,7 +199,6 @@ C***********************************************************************
 !      use typesz_mpi2_mod, only: ISIZE_DP, ISIZE_INT8, ISIZE_LOG, ISIZE_MY_INT
 #include "implicit.h"
 #include "mpif.h"
-!#include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
       INTEGER(kind=MPI_ADDRESS_KIND) MY_MM_NEEDS, MY_MM_NEEDSSCR
       INTEGER(kind=MPI_ADDRESS_KIND) MY_POINT
@@ -329,7 +326,6 @@ C***********************************************************************
 !      use typesz_mpi2_mod, only: ISIZE_DP
 #include "implicit.h"
 #include "mpif.h"
-!#include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
       INTEGER(kind=MPI_ADDRESS_KIND) IBUF_LEN, IBUF_LENSCR
       INTEGER(kind=MPI_ADDRESS_KIND) NELEMENT

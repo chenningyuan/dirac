@@ -1,3 +1,13 @@
+!-----------------------------------------
+! Module with variables previously defined
+! at relscf_ijpair.h include file (COMMON /IJPAIR/)
+!-----------------------------------------
+      module relscf_ijpair_mod
+      use scfarr_mod, only: MXB
+      implicit none
+      integer :: IDK(MXB+1)
+      end module relscf_ijpair_mod
+
 C
 C
 C NOTE: The previous  value of NDIMPQ was 500000. 
@@ -135,12 +145,11 @@ C     MXBAS IS MAXIMAL NUMBER OF BASIS FUNCTIONS
 C     MXOCC IS MAXIMAL SUM OF ALL OCCUPATION NUMBERS (OPEN AND CLOSED)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use scfarr_mod, only: LDIMC, MXB, MXO
 !      use amfi_if_mod, only: IPR_RELSCF
 !      use relscf_v10_mod, only: MXBAS, MXOCC
+      use scfarr_mod, only: LDIMC, MXB, MXO
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "scfarr.h"
 #include "relscf_v10.h"
       DIMENSION WORK(LWORK)
 #include "amfi_if.h"
@@ -354,15 +363,13 @@ C   Called from INPUT_AT34.
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use relscf_v10_mod, only: LPQ, LQM, MX100, NOR
-!      use relscf_ijpair_mod, only: IDK, MXB
 !      use amfi_if_mod, only: IPR_RELSCF
-!      use scfarr_mod, only: LDIMC, MXB
 !      use relscf_dim_mod, only: FACTO, MXBF, OCCUP
+      use relscf_ijpair_mod, only: IDK
+      use scfarr_mod, only: LDIMC, MXB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
-#include "scfarr.h"
-#include "relscf_ijpair.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
 C
@@ -1111,9 +1118,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use amfi_if_mod, only: IPR_RELSCF
 !      use relscf_dim_mod, only: CIN, ENERG, FACTO, IDATA, MXBF, N1T, NBVAR1, NDIMPQ, NITSCF, NUMVAR, OCCUP, POT, VIR, ZN
       use priunit_mod, only: LUPRI
-!      use scfarr_mod, only: NDIMPQPAR
+      use scfarr_mod, only: NDIMPQPAR
 #include "implicit.h"
-#include "scfarr.h"
 #include "relscf_dim.h"
 #include "amfi_if.h"
       INTEGER :: I,J
@@ -1914,11 +1920,10 @@ C  GMIN(MXBF,1) ->  GMIN(MXBF,*)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use scfarr_mod, only: NDIMPQPAR
+      use scfarr_mod, only: NDIMPQPAR
 !      use relscf_dim_mod, only: FACTO, IDATA, MXBF, N1, N1T, NBAS, NBAS1, NCSH, NDIMPQ, NOSH, NSTEP, NSYM, OCCUP, ZN
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "scfarr.h"
 #include "relscf_dim.h"
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
      *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
@@ -2086,7 +2091,7 @@ C   C(MXBF,1) -> C(MXBF,*)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use amfi_if_mod, only: IPR_RELSCF
-!      use scfarr_mod, only: LDIMC, MXB
+      use scfarr_mod, only: LDIMC, MXB
       use priunit_mod, only: LUPRI
 !      use relscf_v10_mod, only: IPARM, LPQ, MX100, NOR
 !      use relscf_dim_mod, only: AJMN, BIAS, DMNXP, ENERG, EXPMN, FACTO, FATT, IEX, IIII, MVAR, MXBF, MXVAR, N0, N1, NALARM, NBAS, NBAS1, NBVAR1, NCONV, NCSH, NDIMPQ, NEXTRA, NITSC1, NITSC2, NITSCF, NOSH, NRUN, NSAVF, NSHT, NSTEP, NSVD, NSYM, NUMVAR, NVAR, OCCUP, RED, RMNED, RMXED, ZETDIF
@@ -2094,7 +2099,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       INTEGER :: I,J
 #include "relscf_dim.h"
 #include "relscf_v10.h"
-#include "scfarr.h"
 
 CMI   DIMENSION P(LQM),Q(LQM),S(LPQ),U(LPQ),T(LPQ),DT(LPQ,2),
 CMI   DIMENSION P(LQM),Q(LQM),S(LPQ),U(*),T(LPQ),DT(LPQ,*),
@@ -2751,11 +2755,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use relscf_v10_mod, only: GJ0, GK0, IPARM, ISIZE, LPQ, LQM, MX100, MXBAS, MXOCC, NBF, NEXPND, NOR, TRHI, TRLO
       use priunit_mod, only: LUPRI
 !      use amfi_if_mod, only: IPR_RELSCF, IRELSCF_INFO, MXRELSCF_INFO, MXXTRP_INP, RELSCFLABI, RELSCFLABX
-!      use scfarr_mod, only: LDIMC, MXB, MXO, NDIMPQPAR
+      use scfarr_mod, only: LDIMC, MXB, MXO, NDIMPQPAR
 !      use relscf_dim_mod, only: AJMN, BIAS, CON1, CON2, DGATH, DMNXP, EXPMN, FACTO, IDATA, IPRINT, MXBF, MXCC, MXVAR, MXXTRP, NBAS, NBAS1, NBASM, NBAST, NBLOCK, NCSH, NDIAG, NDIMPQ, NEXTRA, NORBIT, NOSH, NOSHT, NPBAFI, NPCOFI, NPENFA, NPOEFA, NPRINT, NPVEFA, NSAVF, NSHT, NSIZE, NSVD, NSYM, NVAR, NXTRP, OCCUP, RADINC, RMNED, RMXED, SCFAT, ZN
 #include "implicit.h"
       INTEGER :: I,II,J,K
-#include "scfarr.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
 C***********************************************************************
@@ -3691,12 +3694,10 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use relscf_dim_mod, only: FACTO, MXBF, NBAS, NBAS1, NCSH, NOSH, NSTEP, NSYM, OCCUP, THRSH
 !      use relscf_v10_mod, only: LPQ
-!      use scfarr_mod, only: MXB
-!      use relscf_ijpair_mod, only: IDK, MXB
+      use relscf_ijpair_mod, only: IDK
+      use scfarr_mod, only: MXB
 #include "implicit.h"
       INTEGER :: I,J,JJ,K
-#include "scfarr.h"
-#include "relscf_ijpair.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
 CMI   DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),V(2),PCAP(2),
@@ -4245,15 +4246,14 @@ C  P(2)      -> P(*)
 C  U(2)       --> U(*)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use scfarr_mod, only: LDIMC, MXB, NDIMPQPAR
 !      use relscf_dim_mod, only: AJMN, CIN, ENCOR, ENERG, ENORM, FACTO, IDATA, MXBF, MXCC, N1T, NALARM, NBAS, NBAS1, NBASM, NBCON, NBLOCK, NCSH, NDIMPQ, NEWBAS, NITSCF, NORBIT, NOSH, NPBAFI, NPCOFI, NPOEFA, NPRINT, NSAVF, NSHT, NSIZE, NSVD, NSYM, OCCUP, POT, RADINC, THRSCF, THRSH, VIR, ZN
 !      use relscf_v10_mod, only: LPQ, LQM
+      use scfarr_mod, only: LDIMC, MXB, NDIMPQPAR
       use dummy_mod, only: DUMMY
       use priunit_mod, only: LUPRI
 !      use amfi_if_mod, only: IPR_RELSCF, IRELSCF_INFO, MXRELSCF_INFO, RELSCFLABI, RELSCFLABX
 #include "implicit.h"
       INTEGER :: I,II,J,JJ,K,KK
-#include "scfarr.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
 

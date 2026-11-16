@@ -123,6 +123,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADCMAIN_NEW (IN123,IW123,CA,INTFCE)
 !
+      use adcinpt_mod
       use dcbham_mod, only: X2CMMF
       use memory_allocator
       use interface_to_mpi
@@ -156,7 +157,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "../relccsd/inpt.inc"
 #include "../relccsd/symm.inc"
 #include "../relccsd/eqns.inc"
-#include "adcinpt.inc"
 #include "../relccsd/complex.inc"
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/waio.h"
@@ -495,6 +495,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Modules------------------------------------------------
 !
+      use adcinpt_mod, only: ADCLEVEL, ADCPRINT, DOCONST, DOFULL,
+     &  DOINCORE, READQKL, SIPEIGV, SIPITER, SIPPRNT, SIPREPS, VCONV
       use dgroup_mod, only: NZ
       use adc_cfg
       use adc_fano
@@ -524,7 +526,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include  "../relccsd/files.inc"
-#include  "adcinpt.inc"
 #include  "../relccsd/symm.inc"
 #include  "../relccsd/complex.inc"
 #include  "../relccsd/param.inc"

@@ -1,3 +1,14 @@
+!-----------------------------------------
+! Module with variables previously defined
+! at aatens.h include file (COMMON /AATENS/)
+!-----------------------------------------
+      module aatens_mod
+      use mxcent_mod, only: MXCOOR
+      implicit none
+      real*8 :: AATNUC(3,MXCOOR), AATORB(3,MXCOOR), AATCI(3,MXCOOR),
+     &    AAT2ND(3,MXCOOR), AATTOT(3,MXCOOR)
+      end module aatens_mod
+
 !dalton_copyright_start
 !      Dalton, a molecular electronic structure program
 !      Copyright (c) by the authors of Dalton.
@@ -2138,15 +2149,14 @@ C  /* Deck getnos */
       use nuclei_mod, only: CORD, ISTBNU, IZATOM, NUCIND
       use taymol_mod, only: GRDMOL, HESMOL
       use energy_mod, only: GRADNN
+      use aatens_mod, only: AATTOT
 #include "implicit.h"
-!      use aatens_mod, only: AATTOT
 !      use moldip_mod, only: DIPFLT
       LOGICAL DIPDER, DOVCD,HESPUN
       DIMENSION ICHRG(NOATOM), GEOM(NCORD), GRAD(NCORD), GRDN(NCORD),
      &          HESS(NCORD,NCORD), WRK(LWRK),
      &          DGRAD(3,NCORD), CAAT(3,NCORD)
 #include "moldip.h"
-#include "aatens.h"
 C
 C
 C     Atomic numbers and geometry

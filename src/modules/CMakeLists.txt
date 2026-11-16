@@ -29,8 +29,11 @@ set(MODULE_SOURCES
     dcbgrd.F90
     dcbham.F90
     dcbibt.F90
+    dcblap.F90
+    dcbloc.F90
     dcbsusc.F90
     dcbwav.F90
+    dcbwt1.F90
     derzer.F90
     dgroup.F90
     dipole.F90
@@ -42,6 +45,7 @@ set(MODULE_SOURCES
     dummy.F90
     efield.F90
     energy.F90
+    exeinf.F90
     expcom.F90
     frame.F90
     gamcom.F90
@@ -58,7 +62,9 @@ set(MODULE_SOURCES
     infpar.F90
     inftap.F90
     iratdef.F90
+    lapdim.F90
     lmns.F90
+    logging.F90
     maxaqn.F90
     maxmom.F90
     maxorb.F90

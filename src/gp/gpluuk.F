@@ -14,6 +14,26 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
+!-----------------------------------------
+! Module with variables previously defined
+! at timtbl.h include file (COMMON /TFIELDR/, /TFIELDC/)
+!-----------------------------------------
+!     Include block for parallel timing routine XTIME
+      module timtbl_mod
+      implicit none
+      integer, parameter :: MXTIMF = 100
+      integer, parameter :: TCLEAR = 0
+      integer, parameter :: TSTART = 1
+      integer, parameter :: TSTOP = 2
+      integer, parameter :: TPRNTI = 3
+      integer, parameter :: TPRNTA = 4
+      integer, parameter :: TINIT = -1
+      character(len=30), parameter :: TIMERF_NAME = '.... Empty timer
+     &    slot ........'
+      real*8 :: CPUTF(MXTIMF), CPUTFT(MXTIMF)
+      character(len=30) :: CPUTT(MXTIMF)
+      end module timtbl_mod
+
 C
 C
 C  /* Deck inpck */
@@ -959,7 +979,8 @@ C                    TPRNTA=4 : Write contents of all timers to output
 C                    TINIT=-1 : Initialize all timers
 C         - NAME   : Name of the timer (max 30 characters)
 C
-!      use timtbl_mod, only: CPUTF, CPUTFT, CPUTT, MXTIMF, TCLEAR, TIMERF_NAME, TINIT, TPRNTA, TPRNTI, TSTART, TSTOP
+      use timtbl_mod, only: CPUTF, CPUTFT, CPUTT, MXTIMF, TCLEAR,
+     &  TIMERF_NAME, TINIT, TPRNTA, TPRNTI, TSTART, TSTOP
       use priunit_mod, only: LUPRI
       use infpar_mod, only: MPARID, MYTID
 #if defined (VAR_MPI)
@@ -970,7 +991,7 @@ C
       CHARACTER*(*) NAME_IN
       CHARACTER*30  NAME, T_REPORT
       PARAMETER ( D0 = 0.0D0 )
-#include "timtbl.h"
+      SAVE LAST_MPE_ACTION, LAST_MPE_STATE
       REAL*8 A,MY_T,CPU_AV,CPU_MI,CPU_MA
 C
       NAME = NAME_IN   ! extend with blanks if NAME_IN shorter than 30 chars
@@ -1214,12 +1235,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C  purpose:  read out a specific timer previously set by XTIME
 C
-!      use timtbl_mod, only: CPUTFT, CPUTT, MXTIMF
+      use timtbl_mod, only: CPUTFT, CPUTT, MXTIMF
       IMPLICIT INTEGER (A-Z)
       CHARACTER*30 NAME
       REAL*8 ELTIM
       PARAMETER ( D0 = 0.0D0 )
-#include "timtbl.h"
       TIMERN = -1
       DO I = 1, MXTIMF
          IF (NAME.EQ.CPUTT(I)) TIMERN = I

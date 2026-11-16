@@ -37,6 +37,8 @@ set(FIXED_LUCITA_FORTRAN_SOURCES_noruntimecheck
 )
 
 set(FREE_LUCITA_FORTRAN_SOURCES
+    machine.F90
+    intform.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)

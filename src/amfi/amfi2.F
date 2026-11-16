@@ -1,5 +1,8 @@
       subroutine initired
       use priunit_mod, only: LUPRI
+      use para_mod, only: LMAX, MXCART
+      use ired_mod, only: IPOW2IRED, IREDORDER, IREDORDERINV, IRWITHLX,
+     &  IRWITHLY, IRWITHLZ, MULT
 #include "implicit.h"
 cbs   initialize all information for ireducible representations 
 cbs   later on, it might be useful to have a switch for 
@@ -17,10 +20,6 @@ c   3. assign the right IRs to L_X, L_Y and L_Z
 c
 c   that is  all. Good luck!!!
 c
-!      use para_mod, only: LMAX, MXCART
-!      use ired_mod, only: IPOW2IRED, IREDORDER, LMAX, MULT, MXCART
-#include "para.h"
-#include "ired.h"
       character*3 symmetry 
       symmetry='D2H'  ! MOLCAS-Version
       if (symmetry.eq.'D2H') then 
@@ -388,8 +387,8 @@ cbs   ensure normalization of the vectors.
       return   
       end   
       Subroutine kinemat(L,ndim,evtkin,type1,type2,Energy)
+      use alphac_mod, only: CVEL, SPEED2, SPEED4
 #include "implicit.h"
-#include "alphac.h"
 cbs   at least it's identical with Odd's valuE
 CMI .... these values are defined in alphac.h, and are calculated at the start of AMFI !
 CMI   parameter (speed2=CVEL*CVEL) 
@@ -399,7 +398,6 @@ cbs   this routine generates the kinematic A-factors=dsqrt((E+mc^2)/(2E))
 cbs   (type1) and   c*A/(E+mc^2) (type2)
 cbs   The c in the second kinematic factor comes from Jan Almloef and 
 cbs   Odd Gropen in Rev in Comp.Chem. 8(1996)
-!      use alphac_mod, only: CVEL, SPEED2, SPEED4
       dimension evtkin(*),type1(*),type2(*),Energy(*)  
 c     E= dsqrt(p**2 c**2 + m**2 c**4) 
 c     p**2= 2*m*TKIN    

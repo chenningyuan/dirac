@@ -23,10 +23,8 @@ subroutine pamlaplce()
  implicit none
 
 ! parameters
-!#include "lapdim.h"
 
 ! common blocks:
-!#include "dcblap.h"
 #include "dcborb.h"
 
 ! local parameter:

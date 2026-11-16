@@ -14,6 +14,16 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
+!-----------------------------------------
+! Module with variables previously defined
+! at thrldp.h include file
+!-----------------------------------------
+!     PARAMETER ( THRLDP = THRZER ** 2 )
+      module thrldp_mod
+      implicit none
+      real*8, parameter :: THRLDP = 1.0D-28
+      end module thrldp_mod
+
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrsctl */
@@ -1180,12 +1190,11 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
-!      use thrldp_mod, only: THRLDP
+      use thrldp_mod, only: THRLDP
 !      use dcbxrs_mod, only: LINEQ, LUBCI, LUBOE, LUBOP, NZCONFQ, NZXOPEQ, NZXOPPQ
 #include "implicit.h"
 C
 #include "dcbibn.h"
-#include "thrldp.h"
       DIMENSION BVECS(*),IBVEC(*),IBTYP(2,*),IVECS(*),WORK(*)
 C
 C

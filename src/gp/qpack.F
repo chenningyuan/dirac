@@ -14,6 +14,18 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
+!-----------------------------------------
+! Module with variables previously defined
+! at qnames.h include file (COMMON /QSTACC/)
+!-----------------------------------------
+! Common used variables for qpack.F
+      module qnames_mod
+      implicit none
+      integer, parameter :: MXQLVL = 100
+! was DATA in BLOCK DATA QBDINIT
+      character(len=30) :: QNAMES(MXQLVL) = '-noname-'
+      end module qnames_mod
+
 C
 C
 #ifdef UNDEF
@@ -92,12 +104,11 @@ C
 C  Package for tracebacks and statistics.
 C
       use priunit_mod, only: LUPRI
-!      use qnames_mod, only: MXQLVL, QNAMES
+      use qnames_mod, only: MXQLVL, QNAMES
       CHARACTER*(*) IDENT
 C
 C
       COMMON /QSTACK/ LEVELQ, LQTREE
-#include "qnames.h"
 CMI   PARAMETER (MXQLVL = 100)
 CMI   CHARACTER*8  QNAMES(MXQLVL)
 CMI   COMMON /QSTACC/ QNAMES
@@ -156,10 +167,8 @@ C  /* Deck qbdinit */
 CMI   PARAMETER (MXQLVL = 100)
 CMI   CHARACTER*8  QNAMES(MXQLVL)
 CMI   COMMON /QSTACC/ QNAMES
-#include "qnames.h"
 C
       DATA LEVELQ, LQTREE /0, 0/
-      DATA QNAMES /MXQLVL*'-noname-'/
       END
 C  /* Deck qdump */
       SUBROUTINE QDUMP(LUPRI)
@@ -168,7 +177,6 @@ C
 CMI   PARAMETER (MXQLVL = 100)
 CMI   CHARACTER*8   QNAMES(MXQLVL)
 CMI   COMMON /QSTACC/ QNAMES
-!#include "qnames.h"
 C
 #ifdef VAR_MPI
 #include "mpif.h"
@@ -194,10 +202,9 @@ C  1-Mar-1989 Hans Joergen Aa. Jensen
 C
 C  Printe traceback from Q stack
 C
-!      use qnames_mod, only: MXQLVL, QNAMES
+      use qnames_mod, only: MXQLVL, QNAMES
       CHARACTER BLA*1
       COMMON /QSTACK/ LEVELQ, LQTREE
-#include "qnames.h"
 C
       IF (LEVELQ .EQ. 0) GO TO 9000
       WRITE (LUPRI,'(//A)') ' QTRACE dump of internal trace stack'

@@ -35,6 +35,14 @@ set(FIXED_DIRAC_FORTRAN_SOURCES
 )
 
 set(FREE_DIRAC_FORTRAN_SOURCES
+    dcbrot.F90
+    dcbrho1.F90
+    dcbreo.F90
+    dcbmvo.F90
+    dcbvec.F90
+    dcbhoc.F90
+    dcb_effqed.F90
+    dcb_ashift.F90
    atomic_occupations.F90
    dirimpmos.F90
    scf_energy_analysis.F90

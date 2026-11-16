@@ -14,6 +14,19 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
+!-----------------------------------------
+! Module with variables previously defined
+! at cosbit.h include file (COMMON /DCIBIT0/)
+!-----------------------------------------
+! AUTHOR  : sya
+! PURPOSE : a table of 1-byte integer to speed counting bits in a
+!           4-byte integer
+!*** COSCI calculations ***
+      module cosbit_mod
+      implicit none
+      integer :: IBTAB1(0:255)
+      end module cosbit_mod
+
 C
       SUBROUTINE PAMGOS(CI,MAXCORE,NELECT,NGAS,IGAS,
      &                  MINE,MAXE,NGASO)
@@ -207,7 +220,6 @@ C
       CHARACTER*8 DATEX*10,TIMEX
 C
 !.s/sya,2007.01.30
-!#include "cosbit.h"
 !.q
 !
       EXTERNAL INIT
@@ -430,7 +442,6 @@ C
       INTEGER N(N2)
 !
 !.s/sya,2007.01.30
-!#include "cosbit.h"
 !.q
 C
 !----------------------------------------------------------------------
@@ -504,7 +515,6 @@ C
 #include "goscom.h"
 !
 !.s/sya,2007.01.30
-!#include "cosbit.h"
 !.q
 C
 C
@@ -1184,7 +1194,6 @@ C
 #include "goscom.h"
 !
 !.s/sya,2007.01.30
-!#include "cosbit.h"
 !.q
 !
 !.s/sya,2007.06.09
@@ -1612,8 +1621,7 @@ C***********************************************************************
 !     Last revision : sya, Fri Mar  2 16:06:00 JST 2007
 !
 !***********************************************************************
-!      use cosbit_mod, only: IBTAB1
-#include "cosbit.h"
+      use cosbit_mod, only: IBTAB1
       INTEGER IDD(4)
       INTRINSIC IBITS
 !----------------------------------------------------------------------
@@ -1645,12 +1653,11 @@ C     Last revision :
 !     Modified by sya, 2007.01.31.
 C
 C***********************************************************************
-!      use cosbit_mod, only: IBTAB1
+      use cosbit_mod, only: IBTAB1
 #include "implicit.h"
       INTEGER :: I, J
 !
 !.s/sya,2007.01.31
-#include "cosbit.h"
 !.q
 C
 C
@@ -1862,7 +1869,6 @@ C
 !
 !     ...for MSTATE
 #include "cossya.h"
-!#include "cosbit.h"
       DIMENSION CL(NDETMX,NRIVEC,MSTATE)
       DIMENSION CR(NDETMX,NRIVEC,MSTATE)
       INTEGER DET_I(NDETMX),DET_J(NDETMX)
@@ -2076,7 +2082,6 @@ C
 #include "implicit.h"
 #include "goscom.h"
 #include "cossya.h"
-!#include "cosbit.h"
 !
 !     ...for NZ
       DIMENSION CL(NDETMX,NRIVEC,MSTATE),CR(NDETMX,NRIVEC,MSTATE)

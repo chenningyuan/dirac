@@ -33,9 +33,9 @@ C
 !      use parluci_mod, only: CHECK_TC, COMPDISTL, CPBLCK_FILE_LUCIX, CXPROPRUN, IAM_NOT_INV, ICOMM, ICOMM_SIZE, IRC_SAVE, IT_SHL, I_NZERO_LEN_C, I_NZERO_LEN_S, MASTER, MYNEW_COMM, MYNEW_COMM_SM, MYNEW_ID, MYPROC, NEWCOMM_PROC_SM, NMPROC, NUM_BLOCKS, NUM_BLOCKS2, N_MASTER, SHARED_M, SPLIT_IJKL, SYMFLABEL
 !      use ipoist8_mod, only: KACT_NUM, KAM_BLK_ACTC, KAM_BLK_ACTS, KCWEIGHTF, KDUM, KICCTOS, KXRCCTOS
 !      use krmc_shmem_mod, only: MY_BPROC_LEN, MY_BPROC_PTR, MY_BWEIGHT_LEN, MY_BWEIGHT_PTR, MY_IAPROC_PTR, MY_RCCTOS_PTR, MY_TCTR_PTR, MY_TRED_PTR
-!      use mxdim_mpi2_mod, only: IDUMMY_BUFF_SZ
 !      use ctcc_mod, only: NSPOBEX_TP
 !      use cands_mod, only: ISSM
+      use mxdim_mpi2_mod, only: IDUMMY_BUFF_SZ
       use luci_wrkspc
 C
 C     Driver routine for non-vanishing TTSS-block distribution among 
@@ -65,7 +65,6 @@ C**********************************************************************
 #include "parluci.h"
 #include "ipoist8.inc"
 #include "krmc_shmem.h"
-#include "mxdim_mpi2.h"
 #include "ctcc.inc"
 #include "cands.inc"
 !#include "mxpdim.inc"

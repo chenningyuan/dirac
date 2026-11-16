@@ -4000,7 +4000,6 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *. Input
-#include "machine.inc"
 #include "SysDef.inc"
 *. Output
 #include "irat.inc"

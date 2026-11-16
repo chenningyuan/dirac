@@ -673,6 +673,7 @@ C            TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
 ***********************************************************************
       SUBROUTINE TRACID(T,LUCIN,LUCOUT,LUSC1,LUSC2,LUSC3,
      &           VEC1,VEC2)
+      use intform_mod, only: IH1FORM
       use luci_wrkspc
 *
 * Transform CI vector on LUCIN with T matrix after
@@ -691,7 +692,6 @@ C            TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
 #include "mxpdim.inc"
 #include "glbbas.inc"
 #include "oper.inc"
-#include "intform.inc"
 #include "lucinp.inc"
 #include "orbinp.inc"
       COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC

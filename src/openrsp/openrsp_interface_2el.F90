@@ -1,5 +1,6 @@
 module openrsp_interface_2el
 
+      use exeinf_mod, only: FTRONV
       use dcbbas_mod, only: N2BBASXQ
       use dcbgen_mod, only: RELCAL
       use dcbgrd_mod, only: INTCLASS, RELGRD
@@ -14,7 +15,6 @@ module openrsp_interface_2el
 
    private
 
-#include "exeinf.h"
 
 contains
 

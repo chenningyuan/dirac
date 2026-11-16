@@ -42,7 +42,9 @@
       use maxorb_mod, only: MXCORB
 !      use dcbbos_mod, only: IBOSYM
 !      use krmc_shmem_mod, only: LEN_T_BUFF, LEN_T_D_BUFF, MY_DL_PTR, MY_DL_TMP_LEN, MY_TTOL_LEN, MY_TTOL_PTR, MY_TTPL_LEN, MY_TTPL_PTR, MY_T_D_PTR, MY_T_PTR, MY_VEC1_PTR, MY_VEC2_PTR, MY_XT_BUFF_LEN, MY_XT_PTR
-!      use mxdim_mpi2_mod, only: IDUMMY_BUFF_SZ
+#if defined (VAR_MPI2)
+      use mxdim_mpi2_mod, only: IDUMMY_BUFF_SZ
+#endif
       use luci_wrkspc
 *
 !     external modules
@@ -111,7 +113,6 @@ C     memory pointer for C1 vector block
 C     memory pointer for C2 vector block
 #if defined (VAR_MPI2)
 #include "krmc_shmem.h"
-#include "mxdim_mpi2.h"
       INTEGER(KIND=df_MPI_OFFSET_KIND) ITEST_OFF
 #if defined VAR_SHMEM
       INTEGER(KIND=df_MPI_OFFSET_KIND) IT_TTOL

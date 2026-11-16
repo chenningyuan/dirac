@@ -3359,7 +3359,8 @@ C***********************************************************************
       use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
       use dcbgen_mod, only: LUCOEF
       use priunit_mod, only: LUPRI
-!      use dcbmvo_mod, only: ADDREP, IF2MVO, INTMVO, IONMVO, IPRMVO, MVOWEIGHT
+      use dcbmvo_mod, only: ADDREP, IF2MVO, INTMVO, IONMVO, IPRMVO,
+     &  MVOWEIGHT
       use dircmo
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3368,7 +3369,6 @@ C***********************************************************************
      &                       DM2=-2.0D0, D2=2.0D0
 C
 #include "dcborb.h"
-#include "dcbmvo.h"
       LOGICAL   TOBE
       DIMENSION CMO(*),EIG(*),IBEIG(*),FOCK(*),DMAT(*),WORK(*)
       DIMENSION IC(2),IE(2),ID(2)
@@ -3512,8 +3512,8 @@ C
 C     Generate density matrix for chosen MVO vectors
 C
 C***********************************************************************
-!      use dcbmvo_mod, only: IPRMVO, VECMVO
 !      use dcborb_mod, only: I2ORBT, NESH, NISH, NPSH, NSSH
+      use dcbmvo_mod, only: IPRMVO, VECMVO
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
       use priunit_mod, only: LUPRI
@@ -3523,7 +3523,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
 #include "dcborb.h"
-#include "dcbmvo.h"
       DIMENSION DMAT(*),CMO(*),BUF(*),WORK(*)
       DIMENSION NR(2),IR(2,2),KVEC(2,2),NVEC(2,0:2)
       DIMENSION ICMV(2)
@@ -5780,7 +5779,7 @@ C.......transform atomic start to actual symmetry
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADHOC(CMO,EIG,IBEIG,EIGSUM,IPRINT,WORK,KFREE,LFREE)
-!      use dcbhoc_mod, only: HUCPAR, MAXHOC, VECHOC
+      use dcbhoc_mod, only: HOCFIL, HUCPAR, MAXHOC, VECHOC
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: NFBAS, NTBAS
 !      use dcborb_mod, only: I2ORBT, NISH, NPSH, NSSH
@@ -5807,7 +5806,6 @@ C***********************************************************************
       INTEGER :: J
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0
 C
-#include "dcbhoc.h"
 #include "dcborb.h"
       type(file_info_t)    :: fragfile
       LOGICAL FNDLAB

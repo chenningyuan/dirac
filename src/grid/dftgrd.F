@@ -14,6 +14,16 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
+!-----------------------------------------
+! Module with variables previously defined
+! at dftwrk.h include file (COMMON /DFTCWM/)
+!-----------------------------------------
+      module dftwrk_mod
+      implicit none
+      real*8 :: RNDMAX, RADERR
+      integer :: NSCHEME
+      end module dftwrk_mod
+
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck dftgrd */
@@ -29,7 +39,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP, NUCIND
       use ccom_mod, only: NHTYP
-!      use dftwrk_mod, only: NSCHEME, RADERR, RNDMAX
+      use dftwrk_mod, only: NSCHEME, RADERR, RNDMAX
         use num_grid_cfg
         use memory_allocator
 
@@ -37,7 +47,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 
-#include "dftwrk.h"
 
       DIMENSION DMAT(*)
       real(8), allocatable :: kzan(:)
@@ -198,7 +207,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use codata_mod, only: XTANG
       use priunit_mod, only: LUPRI
       use consts_mod, only: D0, D1
-!      use dftwrk_mod, only: NSCHEME, RADERR
+      use dftwrk_mod, only: NSCHEME, RADERR
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -216,7 +225,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION X8(IBIG),Y8(IBIG),Z8(IBIG),WT8(IBIG)
 
 
-#include "dftwrk.h"
 
 
       DIMENSION ZAN(*), C(3,NAT)

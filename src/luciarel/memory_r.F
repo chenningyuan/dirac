@@ -14,6 +14,23 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
+!-----------------------------------------
+! Module with variables previously defined
+! at memory_r.inc include file (COMMON /CMEMOR/)
+!-----------------------------------------
+! luciarel/memory_r.inc : memory information for LUCIAREL
+! only used in luciarel/memory_r.F, which contains the memory manager routines for LUCIAREL
+      module memory_r_mod
+      implicit none
+      integer, parameter :: MAXLVL = 5000
+      integer, parameter :: MAXMRK = 100
+      integer, parameter :: NPAD = 1
+      integer :: LENGTH(MAXLVL), NS, NL, NM, MARKL(MAXMRK),
+     &    MARKS(MAXMRK)
+      integer*8 :: NWORD, KFREES, KFREEL, IBASE(MAXLVL), IMARK(MAXMRK)
+      character(len=6) :: IIDENT(MAXLVL), MARKC(MAXMRK), MARK_ACT
+      end module memory_r_mod
+
 ***********************************************************************
 
       SUBROUTINE RMEMCHK_opt(check_label)
@@ -42,9 +59,9 @@
 ***********************************************************************
 
       SUBROUTINE MEMMAR(KBASE,KADD,TASK,IR,IDENT)
-!      use memory_r_mod, only: IBASE, IDENT, IIDENT, IMARK, JBASE, JBASEN, KBASE, KFREEL, KFREES, MARKC, MARKL, MARKS, MARK_ACT, MAXLVL, MAXMRK, NL, NM, NPAD, NS, NWORD, TASK
 !      use mxpdim_mod, only: MXPWRD
 !      use parluci_mod, only: LMEMFREE_PTR, LUWRT
+      use memory_r_mod
       use luci_wrkspc
 C
 C     Memory manager routine for LUCIAREL "R"
@@ -76,7 +93,8 @@ C
 C
 C     memory common block
 C
-#include "memory_r.inc"
+      INTEGER*8   KBASE,JBASE,JBASEN
+      CHARACTER*6 TASK, IDENT
 C
 C     Two REAL*8 words, one added NPAD times before each array, another
 C     added NPAD times after each array
@@ -433,8 +451,9 @@ C
 ***********************************************************************
 
       SUBROUTINE MEMMAR_I8(KBASE,KADD,TASK,IR,IDENT)
-!      use memory_r_mod, only: IBASE, IDENT, IIDENT, IMARK, JBASE, JBASEN, KBASE, KFREEL, KFREES, MARKC, MAXLVL, NL, NM, NPAD, NS, NWORD, TASK
 !      use parluci_mod, only: LUWRT
+      use memory_r_mod, only: IBASE, IIDENT, IMARK, KFREEL, KFREES,
+     &  MARKC, MAXLVL, NL, NM, NPAD, NS, NWORD
       use luci_wrkspc
 C
 C     Memory manager routine for LUCIAREL "R"
@@ -466,7 +485,8 @@ C
 C
 C     memory common block
 C
-#include "memory_r.inc"
+      INTEGER*8   KBASE,JBASE,JBASEN
+      CHARACTER*6 TASK, IDENT
 C
 C     MEMMAR_I8 specific
 C

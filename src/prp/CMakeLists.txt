@@ -35,6 +35,7 @@ set(FIXED_PRP_FORTRAN_SOURCES
 
 
 set(FREE_PRP_FORTRAN_SOURCES
+    gauss_legendre.F90
    conf_parameters.F90
    london_helper.F90
    london_utils.F90

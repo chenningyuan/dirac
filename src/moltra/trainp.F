@@ -1189,7 +1189,7 @@ C*****************************************************************************
       use priunit_mod, only: LUCMD, LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: DIPOLE, DONMQM, EFG, NQCC, QUADRU
-!      use dcbtrp_mod, only: IPRTRP, LTRPP, MAXTRP, NTRPP
+      use dcbtrp_mod, only: IPRTRP, LTRPP, MAXTRP, NTRPP
       use dgroup_mod, only: NFSYM
 !      use dcbtra_mod, only: IPRTRA, PRPSYA, PRPTRA, TRA2_INDPRP
       use dcbham_mod, only: BSS
@@ -1200,7 +1200,6 @@ C*****************************************************************************
       PARAMETER (NTABLE = 8)
 C
 #include "dcbprp.h"
-#include "dcbtrp.h"
 #include "dcbtra.h"
 ! Added temporarily to test for bss (where transform is not working)
 C

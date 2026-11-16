@@ -29,6 +29,7 @@ set(FIXED_RELADC_FORTRAN_SOURCES_noruntimecheck
 
 #Miro: proper order  of these (mostly module) sources is important to enable faultless compilation
 set(FREE_RELADC_FORTRAN_SOURCES
+    adcinpt.F90
     adc_mat.F90
     adc_cfg.F90
     adc_fano_exchange.F90

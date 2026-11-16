@@ -30,7 +30,7 @@ C
 C     Written by Trond Saue
 C
 C***********************************************************************
-!      use dcb_effqed_mod, only: REFFIL
+      use dcb_effqed_mod, only: REFFIL
       use dgroup_mod, only: NZC1
       use dcbgen_mod, only: LUCOEF
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -41,7 +41,6 @@ C***********************************************************************
       INTEGER :: J
 C
 C
-#include "dcb_effqed.h"      
       DIMENSION FOCK(*),WORK(*)
       CHARACTER TEXT*74
       KFRSAV = KFREE

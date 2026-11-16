@@ -14,6 +14,30 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
+!-----------------------------------------
+! Module with variables previously defined
+! at gdvec.h include file (COMMON /GDVEC/)
+!-----------------------------------------
+      module gdvec_mod
+      use mxcent_mod, only: MXCENT, MXCOOR
+      implicit none
+      integer :: NGDTOT(2), NGDVEC(8,2), IGDCOR(MXCOOR+3,8,2),
+     &    IGDREC(MXCOOR+3,8,2), NTRVEC(8), ITRCOR(10*MXCENT,8),
+     &    ITRREC(10*MXCENT,8), IDORCT(80*MXCENT),
+     &    IDORCI(24*(MXCENT+1),2)
+      end module gdvec_mod
+
+!-----------------------------------------
+! Module with variables previously defined
+! at spnout.h include file (COMMON /SPNOUT/)
+!-----------------------------------------
+      module spnout_mod
+      implicit none
+      real*8 :: ABUND
+      integer :: ISPPRI
+      logical :: DOSD, DODSO, DOFC, DOPSO, DOSDFC, DOSELE, ANISON, FCFIN
+      end module spnout_mod
+
 C
 C  /* Deck troinp */
       SUBROUTINE TROINP(WORD)
@@ -162,7 +186,7 @@ C     Fully analytic expression for Hessian December 1986 tuh
 C     Rewritten for symmetry Nov/Dec 1988 tuh
 C
 !      use infvar_mod, only: NVAR
-!      use exeinf_mod, only: FTRONV, GTRONV, HTRONV, RTRONV
+      use exeinf_mod, only: FTRONV, GTRONV, HTRONV, RTRONV
       use abainf_mod, only: GDALL
       use trkoor_mod, only: NCOOR
       use maxorb_mod, only: MXCORB
@@ -178,7 +202,6 @@ C
 C
 #include "cbitro.h"
 #include "infvar.h"
-#include "exeinf.h"
 C
 C     The variable FIRST has been replaced with FTRONV in /EXEINF/,
 C     which can be controlled from outside. This is necessary because
@@ -293,9 +316,10 @@ C     Sets DCORD, DCORGD, NGDVEC, IGDREC, IGDCOR, NGDTOT
 C
       use dorps_mod, only: DCORD, DCORGD, DOPERT, NDCORD
       use priunit_mod, only: LUPRI
-!      use spnout_mod, only: ABUND, DOFC, DOPSO, DOSD, DOSDFC, DOSELE
+      use spnout_mod, only: ABUND, DOFC, DOPSO, DOSD, DOSDFC, DOSELE
       use chrnos_mod, only: CHRNOS
-!      use gdvec_mod, only: IDORCI, IDORCT, NGDTOT, NGDVEC
+      use gdvec_mod, only: IDORCI, IDORCT, IGDCOR, IGDREC, ITRCOR,
+     &  ITRREC, NGDTOT, NGDVEC, NTRVEC
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, NAXREP
       use abainf_mod, only: DIPDER, MAGSUS, MOLHES, POLAR, RESTAR, ROTG,
      &  SHIELD, SPINRO, SPNSPN, VCD, VROA
@@ -308,8 +332,6 @@ C
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
-#include "spnout.h"
-#include "gdvec.h"
 C
 C
 C     Some initialization for spin-spin couplings

@@ -2099,6 +2099,7 @@ C           GET_SX_BLK(HBLK,H,IGAS,ISM,JGAS,JSM)
 *                                                                     *
 ***********************************************************************
       FUNCTION GETH1E(IORB,ITP,ISM,JORB,JTP,JSM)
+      use intform_mod, only: IH1FORM
       use luci_wrkspc
 *
 * One-electron integral for active
@@ -2114,7 +2115,6 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 #include "lucinp.inc"
 #include "orbinp.inc"
 #include "multd2h.inc"
-#include "intform.inc"
 *
       IJSM = MULTD2H(ISM,JSM)
       IF(IH1FORM.EQ.1) THEN
@@ -4678,12 +4678,12 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
       subroutine mol2luc(NTIT,NGAS,NCISPC,IPRT,CARD,CARD2,CARD3,
      &                   energy_convergence)
 *
+      use machine_mod, only: MACHINE
       implicit real*8 (A-H,O-Z)
 *
 #include "mxpdim.inc"
 #include "luci.inc"
 #include "orbinf_lucita.inc"
-#include "machine.inc"
 #include "irat.inc"
 *
       logical MSCOMB

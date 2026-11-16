@@ -14,6 +14,19 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
+!-----------------------------------------
+! Module with variables previously defined
+! at parkrmc.h include file (COMMON /KRMCPARICB/, /KRMCPARLCB/)
+!-----------------------------------------
+!                     PARALLEL INFORMATION
+!     ======================================================
+      module parkrmc_mod
+      implicit none
+      integer, parameter :: IKRMCPARF = 8
+      integer :: NUMCPU, LMCPRI
+      logical :: PARMCSCF
+      end module parkrmc_mod
+
 C FILE    : krmcopt.F
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
@@ -6620,13 +6633,12 @@ C
 C     Last revision: S. Knecht           - June  2008, Odense
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use parkrmc_mod, only: IKRMCPARF, LMCPRI, NUMCPU, PARMCSCF
+      use parkrmc_mod, only: IKRMCPARF, LMCPRI, NUMCPU, PARMCSCF
       use infpar_mod, only: MYTID, NUMNOD
       use memory_allocator
 C
 #include "implicit.h"
 #include "mpif.h"
-#include "parkrmc.h"
       INTEGER ISTAT(MPI_STATUS_SIZE)
       CHARACTER KRMC_NODEFN*17, KRMC_NODEF*13
 

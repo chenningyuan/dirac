@@ -849,7 +849,7 @@ C*****************************************************************************
       use dcbham_mod, only: INTV1C, LEVYLE, N1OPER, NOSMLV, ONECAP
       use dummy_mod, only: DUMMY, IDUMMY
       use dcbgrd_mod
-!      use exeinf_mod, only: FTRONV
+      use exeinf_mod, only: FTRONV
       use maxaqn_mod, only: MXAQN, MXQN
       use blocks_mod, only: NLRGBL, NSMLBL, NSYMBL
       use quaternion_algebra
@@ -875,7 +875,6 @@ C
 #include "dcbdhf.h"
 C two el. part
 C
-#include "exeinf.h"
 C
 C
       CALL QENTER('RMOLGRD1')

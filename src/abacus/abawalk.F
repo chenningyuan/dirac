@@ -14,6 +14,19 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
+!-----------------------------------------
+! Module with variables previously defined
+! at infopt.h include file (COMMON /INFOPT/)
+!-----------------------------------------
+      module infopt_mod
+      implicit none
+      real*8 :: EMCSCF, EMCOLD, DEPRED, BETA, BETMIN, BETMAX, GNORM(3),
+     &    RTRUST, RTTOL, RATMIN, RATGOD, EPOT, EMY, EACTIV, RATREJ,
+     &    SHFLVL, REJWMI, REJWMA, STPLEN, STPMAX, STPINC, STPRED,
+     &    THQMIN, THQLIN, THQKVA, GAMMA, RBETA, STPC, STPO, ESOLT
+      integer :: ITMAC, ITMICT, NREDL, NROOTC, JROOT(10)
+      end module infopt_mod
+
 C
 #ifndef PRG_DIRAC
 C  /* Deck wlkinp */
@@ -5857,6 +5870,8 @@ C  /* Deck wlksav */
 C
 C     Save second-order MC prediction for found step
 C
+      use infopt_mod, only: DEPRED, EACTIV, EMCOLD, EMCSCF, EMY, EPOT,
+     &  NREDL, REJWMA, REJWMI
       use inforb_mod, only: NCMOT
       use infinp_DALTON_mod, only: FLAG, POTNUC
       use inftap_mod, only: LUIT1, LUSIFC
@@ -5882,7 +5897,6 @@ C
 #include "cbiwlk.h"
 #include "infdim.h"
 #include "infvar.h"
-#include "infopt.h"
 C
 C     kludge to avoid tranformation to natural orbitals
 C     I must talk to HJJ / tuh Jun 92

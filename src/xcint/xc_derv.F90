@@ -80,7 +80,7 @@ module xc_derv
    private
 
 #ifdef PRG_DIRAC
-#include "../cfun/functionals.h"
+logical, external :: dftisgga
 #endif
 
    integer, parameter :: max_dim = 99

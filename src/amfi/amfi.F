@@ -1,3 +1,21 @@
+!-----------------------------------------
+! Module with the read-only table previously DATA-initialized
+! in datapow.h (odd/even powers of x,y,z per angular component).
+!-----------------------------------------
+      module datapow_mod
+      implicit none
+      integer, parameter :: LPOWMAX = 6
+      integer, parameter :: IXYZPOW(3*(LPOWMAX+1)*(LPOWMAX+1)) = [ 0,
+     &    0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0,
+     &    1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0,
+     &    0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0,
+     &    0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1,
+     &    0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0,
+     &    0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1,
+     &    1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0,
+     &    1, 0, 1, 0, 0, 0]
+      end module datapow_mod
+
 CMI AMFI include files:
 C=====================================================================================
 C in AMFI directory: 
@@ -24,12 +42,11 @@ CMI              (is in alphac.h )
 CMI
 CMI=====================================================================
 !      use amfi_if_mod, only: IPR_AMFI
-!      use alphac_mod, only: ALPHA2, ALPHAC, CVEL, SPEED2, SPEED4
-!      use para_mod, only: LMAX
-!      use datapow_mod, only: LPOWMAX
+      use alphac_mod, only: ALPHA2, ALPHAC, CVEL, SPEED2, SPEED4
+      use datapow_mod, only: IXYZPOW, LPOWMAX
+      use para_mod, only: LMAX
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "alphac.h"
 c###########################################################################
 c
 c          A M F I 
@@ -118,7 +135,6 @@ c
 c  New version for DALTON canibalized from the MOLCAS version september 2000
 c                                                           
 c###########################################################################
-#include "para.h"
       logical keep    ! parameter to decide about keeping angular 
 cbs                     ! integrals in memory 
       logical keepcart    ! parameter to decide about keeping cartesian
@@ -135,7 +151,6 @@ cbs                         ! integrals in memory
       LOGICAL DOEXIT ! Exit AMFi when charge in readbas is 0
       LOGICAL EXAMF ! if .true., leave AMFI after readbas
       character*4  symmetry  
-#include "datapow.h"
       common ipowxyz(3,-Lmax:Lmax,0:Lmax)
       dimension WRK(LFREE)
 
@@ -338,10 +353,9 @@ cbs
 cbs   subroutine to set up parameters for finite nucleus. The s-functions are replaced 
 cbs   by just one exponent which models the nucleus.
 cbs
-!      use para_mod, only: LMAX, LMAX_OCC, MXCART, MXCONTL, MXPRIML
 !      use param_mod, only: EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NCONTRAC_KEEP, NOCCORB, NPRIMIT, NPRIMIT_KEEP, OCCUP
+      use para_mod, only: LMAX, LMAX_OCC, MXCART, MXCONTL, MXPRIML
 #include "implicit.h"
-#include "para.h"
 #include "param.h"
       common /nucleus/ charge,Exp_finite    
       noccorb(0)=1  
@@ -374,11 +388,10 @@ cbs   in order not to waste to much memory, the atomic
 cbs   integrals are thrown away after each l,l,l,l-block 
       use priunit_mod, only: LUPRI
 !      use amfi_if_mod, only: IPR_AMFI
-!      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
+      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
 !      use param_mod, only: CLEBSCH, IPOWXYZ, ISIGNM, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, ONECARTX, ONECARTY, ONECARTZ, PREROOTS, SCRATCH4
 #include "implicit.h"
       INTEGER :: I,J
-#include "para.h"
 #include "param.h"
       logical keep,keepcart,icheck,mcheckxy,mcheckz,makemean,bonn,   
      *breiT,sameorb,cleaner,NFINI
@@ -1378,10 +1391,9 @@ cbs ##################################################################
       use pi_mod, only: PI
 !      use param_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
 !      use dofuc_mod, only: DFFRAC
-!      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML, NDFMX
+      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML, NDFMX
 #include "implicit.h"
       INTEGER :: K
-#include "para.h"
 #include "param.h"
 #include "dofuc.h"
       dimension expo1(nprim1),
@@ -1972,9 +1984,8 @@ cbs   cont prepares all required contraction coefficients for functions
 cbs   with angular momentum L
 cbs###########################################################################
 !      use param_mod, only: ENERGY, EVAL, EVEC, EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NORMOVLP, NPRIMIT, ROOTOVLPINV, TKIN, TYPE1, TYPE2
-!      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
+      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
 #include "implicit.h"
-#include "para.h"
 #include "param.h"
       dimension tkintria((MxprimL*MxprimL+MxprimL)/2)
       logical breit,breit_finite

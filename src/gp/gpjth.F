@@ -14,6 +14,17 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
+!-----------------------------------------
+! Module with variables previously defined
+! at cb_bitdef.h include file (COMMON /CB_BITDEF/)
+!-----------------------------------------
+!     Written by H. J. Aa. Jensen - July 2016
+!     Initialized by ini_cb_bittab
+      module cb_bitdef_mod
+      implicit none
+      integer :: BIT_CNT(0:255), BIT_DIF(0:255,0:255)
+      end module cb_bitdef_mod
+
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck SUMMMH */
@@ -107,8 +118,7 @@ C     Last revision :
 C
 C***********************************************************************
 C
-!      use cb_bitdef_mod, only: BIT_CNT, BIT_DIF
-#include "cb_bitdef.h"
+      use cb_bitdef_mod, only: BIT_CNT, BIT_DIF
 ! from cb_bitdef.h:
 !     integer bit_cnt(0:255), bit_dif(0:255,0:255)
 !

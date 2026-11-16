@@ -32,14 +32,13 @@ C***********************************************************************
       use dgroup_mod, only: JBTOF, NFSYM, NZ
       use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
-!      use dcbtrp_mod, only: IPRTRP, LTRPP, NTRPP
+      use dcbtrp_mod, only: IPRTRP, LTRPP, NTRPP
 #include "implicit.h"
       INTEGER :: I
 C
 #include "dcbtra.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
-#include "dcbtrp.h"
       LOGICAL TOBE,TOBEK,TRASAM
       DIMENSION WORK(*),NSTR(2,0:2,2),NSTRT(2),KVEC(2,2),KQ(2,2),
      &          IR(2,2),NR(2),NQ(2,2),NQT(2),

@@ -11,10 +11,11 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADCDBLE_MAIN (MXCORR,NSP,IREPSPI,EPS)
 !      use files_mod, only: ITAPADC, IW
-!      use adcinpt_mod, only: ADCTHR, DIPITER, DIPPRNT, DIPREPS, DOADCPOP, DOFULL, DOINCORE
 !      use symm_mod, only: IO, IOO, IOOOOTT, IV, IVOOOT, IVOVO, IVVOOTT, KVVOOT, LOVOOT, MULTB, MXREP, NE, NO, NOOT, NREP, NV1, NVVOT
 !      use complex_mod, only: CARITH, RCW
 !      use param_mod, only: D0
+      use adcinpt_mod, only: ADCTHR, DIPITER, DIPPRNT, DIPREPS,
+     &  DOADCPOP, DOFULL, DOINCORE
       use adc_mat
 C
 C---------------Description-----------------------------------------------
@@ -37,7 +38,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include  "../relccsd/files.inc"
-#include  "adcinpt.inc"
 #include  "../relccsd/symm.inc"
 #include  "../relccsd/complex.inc"
 #include  "../relccsd/param.inc"

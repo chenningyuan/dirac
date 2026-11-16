@@ -1,3 +1,41 @@
+!-----------------------------------------
+! Module with the read-only tables previously DATA-initialized
+! in Regge.h (prime numbers, prime decomposition of factorials).
+! IWORK(NPRIM) of the header was a local work array: it stays local.
+!-----------------------------------------
+      module regge_mod
+      implicit none
+      integer, parameter :: NPRIM = 11
+      integer, parameter :: MXLINRE = 36
+      integer, parameter :: PRIM(NPRIM) = [2, 3, 5, 7, 11, 13, 17, 19,
+     &    23, 29, 31]
+      integer, parameter :: FACUL(NPRIM,0:MXLINRE) = reshape([ 0, 0, 0,
+     &    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+     &    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+     &    0, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 1, 0, 0, 0, 0, 0,
+     &    0, 0, 0, 4, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 4, 2, 1, 1, 0, 0,
+     &    0, 0, 0, 0, 0, 7, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 7, 4, 1, 1,
+     &    0, 0, 0, 0, 0, 0, 0, 8, 4, 2, 1, 0, 0, 0, 0, 0, 0, 0, 8, 4,
+     &    2, 1, 1, 0, 0, 0, 0, 0, 0, 10, 5, 2, 1, 1, 0, 0, 0, 0, 0, 0,
+     &    10, 5, 2, 1, 1, 1, 0, 0, 0, 0, 0, 11, 5, 2, 2, 1, 1, 0, 0, 0,
+     &    0, 0, 11, 6, 3, 2, 1, 1, 0, 0, 0, 0, 0, 15, 6, 3, 2, 1, 1, 0,
+     &    0, 0, 0, 0, 15, 6, 3, 2, 1, 1, 1, 0, 0, 0, 0, 16, 8, 3, 2, 1,
+     &    1, 1, 0, 0, 0, 0, 16, 8, 3, 2, 1, 1, 1, 1, 0, 0, 0, 18, 8, 4,
+     &    2, 1, 1, 1, 1, 0, 0, 0, 18, 9, 4, 3, 1, 1, 1, 1, 0, 0, 0, 19,
+     &    9, 4, 3, 2, 1, 1, 1, 0, 0, 0, 19, 9, 4, 3, 2, 1, 1, 1, 1, 0,
+     &    0, 22, 10, 4, 3, 2, 1, 1, 1, 1, 0, 0, 22, 10, 6, 3, 2, 1, 1,
+     &    1, 1, 0, 0, 23, 10, 6, 3, 2, 2, 1, 1, 1, 0, 0, 23, 13, 6, 3,
+     &    2, 2, 1, 1, 1, 0, 0, 25, 13, 6, 4, 2, 2, 1, 1, 1, 0, 0, 25,
+     &    13, 6, 4, 2, 2, 1, 1, 1, 1, 0, 26, 14, 7, 4, 2, 2, 1, 1, 1,
+     &    1, 0, 26, 14, 7, 4, 2, 2, 1, 1, 1, 1, 1, 31, 14, 7, 4, 2, 2,
+     &    1, 1, 1, 1, 1, 31, 15, 7, 4, 3, 2, 1, 1, 1, 1, 1, 32, 15, 7,
+     &    4, 3, 3, 1, 1, 1, 1, 1, 32, 15, 8, 5, 3, 3, 1, 1, 1, 1, 1,
+     &    34, 17, 8, 5, 3, 3, 1, 1, 1, 1, 1], [NPRIM, MXLINRE+1])
+      integer, parameter :: IHIGH(0:MXLINRE) = [ 0, 0, 1, 2, 2, 3, 3,
+     &    4, 4, 4, 4, 5, 5, 6, 6, 6, 6, 7, 7, 8, 8, 8, 8, 9, 9, 9, 9,
+     &    9, 9, 10, 10, 11, 11, 11, 11, 11, 11]
+      end module regge_mod
+
 
       subroutine readbas(Lhigh,makemean,bonn,breit,
      *symmetry,AIMP,ncont4,numballcart,IN,ifinite,
@@ -5,15 +43,13 @@
 cbs   suposed to read the maximum of l-values, the number of primitive and contracted 
 cbs   functions, the exponents and contraction coefficients
 !      use amfi_if_mod, only: IPR_AMFI
-!      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
-!      use ired_mod, only: INCRLM, IREDLM, ITOTALPERIR, LMAX, LOFFUNCTION, MXCART, NMBMPERIRL, NUMBOFCART, NUMBOFSYM, SHIFTIRED, SHIFTIRIR
+      use ired_mod
+      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
       use priunit_mod, only: LUPRI
 !      use param_mod, only: EXPONENTS, ICORE, IKEEPORB, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NPRIMIT
 #include "implicit.h"
       INTEGER :: I
-#include "para.h"
 #include "param.h"
-#include "ired.h"
       character*4 WORD                         
       character*4 symmetry   
       character*13 Llimit 
@@ -454,12 +490,12 @@ cbs   |  j1+m1        j2+m2            j3+m3             |
 cbs   |                                                  |
 cbs    ---                                            ---
 cbs 
-!      use Regge_mod, only: FACUL, IHIGH, IWORK, MXLINRE, PRIM
+      use regge_mod, only: FACUL, IHIGH, MXLINRE, NPRIM, PRIM
 #include "implicit.h"
       dimension MAT(3,3)
       logical testup,testdown
       INTEGER :: I,J
-#include "Regge.h"
+      Integer iwork(nprim)
 cbs  facul,   integer array (nprim,0:mxLinRE) prime-expansion of factorials 
 cbs  mxLinRE,    integer max. number for facul is given
 cbs  nprim,   number of primes for expansion of factorials 
@@ -715,10 +751,9 @@ cbs
 cbs   due to symmetry, there can be only integrals 
 cbs   with indices one or three  (sigma_+ and sigma_-)- combinations 
 cbs
-!      use para_mod, only: LMAX
+      use para_mod, only: LMAX
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "para.h"
       logical cleaner
       dimension mcombina(2,-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax),
      *angint(ncontl1,ncontl2,ncontl3,ncontl4,*),
@@ -967,10 +1002,9 @@ cbs
 cbs   due to symmetry, there can be only integrals 
 cbs   with one or three (sigma_+ and sigma_-)  - combinations 
 cbs
-!      use para_mod, only: LMAX
+      use para_mod, only: LMAX
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "para.h"
       dimension mcombina(2,-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax),
      *angint(ncontl1,ncontl2,ncontl3,ncontl4,*),
 cbs  !!!!!!!!!!!changing now to the order of chemists notation!!!!!!!!!!
@@ -1236,9 +1270,8 @@ cbs
 cbs   only angular integrals of type 2 (sigma_0) contribute  
 cbs
       use priunit_mod, only: LUPRI
-!      use para_mod, only: LMAX
+      use para_mod, only: LMAX
 #include "implicit.h"
-#include "para.h"
       dimension mcombina(2,-Lmax:Lmax,-Lmax:Lmax,
      *-Lmax:Lmax,-Lmax:Lmax),
      *angint(ncontl1,ncontl2,ncontl3,ncontl4,*),
@@ -1615,9 +1648,8 @@ cbs   calculate overlap of contracted functions
 
       subroutine two2mean12a(carteSO,carteOO,occup,AOcoeffs,onecart,
      *ncontmf,norbsum,noccorb,sameorb)
+      use para_mod, only: MXCONTL
 #include "implicit.h"
-#include "para.h"
-!      use para_mod, only: MXCONTL
       logical sameorb 
       dimension 
      *carteSO(ncontmf,norbsum,ncontmf,norbsum),
@@ -1664,9 +1696,8 @@ cbs   calculate overlap of contracted functions
       
       subroutine two2mean12b(carteSO,carteOO,occup,AOcoeffs,onecart,
      *ncontmf,norbsum,noccorb,sameorb)
+      use para_mod, only: MXCONTL
 #include "implicit.h"
-#include "para.h"
-!      use para_mod, only: MXCONTL
       logical sameorb 
       dimension 
      *carteSO(ncontmf,norbsum,ncontmf,norbsum),
@@ -1716,9 +1747,8 @@ cbs   calculate overlap of contracted functions
 cbs   gives the two first contributions
 cbs   < i M | j M >  with Malpha  and Mbeta 
 cbs   the other orbit parts cancel    
-!      use para_mod, only: MXCONTL
+      use para_mod, only: MXCONTL
 #include "implicit.h"
-#include "para.h"
       dimension carteSO(ncontmf,ncontmf,norbsum,norbsum),
      *occup(*),AOcoeffs(MxcontL,*),onecart(MxcontL,MxcontL)
       do icartleft=1,norbsum
@@ -1745,9 +1775,8 @@ c     enddo
       
       subroutine two2mean34a(carteSO,carteOO,occup,AOcoeffs,onecart,
      *ncontmf,norbsum,noccorb,sameorb)
+      use para_mod, only: MXCONTL
 #include "implicit.h"
-#include "para.h"
-!      use para_mod, only: MXCONTL
       logical sameorb 
       dimension 
      *carteSO(norbsum,ncontmf,norbsum,ncontmf),
@@ -1794,9 +1823,8 @@ c     enddo
       
       subroutine two2mean34b(carteSO,carteOO,occup,AOcoeffs,onecart,
      *ncontmf,norbsum,noccorb,sameorb)
+      use para_mod, only: MXCONTL
 #include "implicit.h"
-#include "para.h"
-!      use para_mod, only: MXCONTL
       logical sameorb 
       dimension 
      *carteSO(norbsum,ncontmf,norbsum,ncontmf),

@@ -2075,14 +2075,13 @@ C***********************************************************************
       use dcbgen_mod, only: LUKRMC
       use priunit_mod, only: LUPRI
       use dgroup_mod, only: IPQTOQ, NFSYM
-!      use dcbvec_mod, only: ILABDF, IPRCMP, IPRVEC, VECPRI
+      use dcbvec_mod, only: ILABDF, IPRCMP, IPRVEC, VECPRI
       use dcbbas_mod, only: N2BBASXQ, NFBAS
 !      use dcborb_mod, only: ICMOQ, NOCC, NORB, NORBT, NPSH
       use dircmo
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcbvec.h"
 #include "dcborb.h"
 C
       LOGICAL TOBE
@@ -2328,7 +2327,7 @@ C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbrho1_mod, only: IOPTDD, IPRHO1
+      use dcbrho1_mod, only: IOPTDD, IPRHO1
 !      use dcbdhf_mod, only: NFMAT
       use dcbbas_mod, only: N2BBASXQ, NTBAS
       use dircmo
@@ -2339,7 +2338,6 @@ C
       LOGICAL TOBE
       DIMENSION WORK(LWORK)
       real(8), allocatable :: cmo(:)
-#include "dcbrho1.h"
 C
 C for NFMAT:
 #include "dcbdhf.h"
@@ -2478,7 +2476,7 @@ C
 C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
-!      use dcbrho1_mod, only: DSTEP
+      use dcbrho1_mod, only: DSTEP
       use dcbham_mod, only: MC
       use dcbbas_mod, only: NTBAS
       use codata_mod, only: XTANG
@@ -2488,7 +2486,6 @@ C***********************************************************************
 C
       DIMENSION DMAT(*),GAO(*),COORD(3,2),RHO(0:2),BUF(*),WORK(*)
       INTEGER :: I
-#include "dcbrho1.h"
 C
 C     Calculate distance between centers
 C

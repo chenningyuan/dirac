@@ -54,9 +54,7 @@ contains
       real(8)                :: safe_minimum
 !     --------------------------------------------------------------------------
 
-#ifdef PRG_DIRAC
-#include "../cfun/functionals.h"
-#else
+#ifndef PRG_DIRAC
       print *, 'adapt standalone AC to xcfun'
       stop
 #endif

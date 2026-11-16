@@ -282,7 +282,6 @@ SUBROUTINE RECP_INP2_READCSO(lcr,lls,nkcrl,nkcru,nklsl,  &
   IMPLICIT NONE
 #include "inc_mxvalue.h"
 #include "inc_print.h"
-!#include "recpval.h"
   INTEGER lcr(*),lls(*),nkcrl(6,*),nkcru(6,*),nklsl(4,*),nklsu(4,*),ncr(*)
   INTEGER ncrs,ncru,lproju,ns
   REAL*8  zcr(*),ccr(*)

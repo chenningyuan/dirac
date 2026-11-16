@@ -465,7 +465,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
 
-#include "functionals.h"
       
       DIMENSION SMAT(*)
       DIMENSION CORX(NPOINT),CORY(NPOINT),CORZ(NPOINT),
@@ -585,7 +584,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       REAL(dp), PARAMETER :: D0=0.0D0
       COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 
-!#include "dftwrk.h"
 
       DIMENSION WT(NATOMS)
 
@@ -673,7 +671,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       PARAMETER (MAXCEN=100)
 
-!#include "dftwrk.h"
 
       COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 
@@ -902,7 +899,6 @@ C***********************************************************************
       use memory_allocator
 #include "implicit.h"
 C
-!#include "dcbwt1.h"
       real(8), allocatable :: kwt(:)
       real(8), allocatable :: kcoor(:)
 C
@@ -1012,11 +1008,10 @@ C***********************************************************************
       use consts_mod, only: D0
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NATOMS
-!      use dcbwt1_mod, only: DSTEP
+      use dcbwt1_mod, only: DSTEP
 #include "implicit.h"
 C
       DIMENSION COORD(3,2),WT(NATOMS)
-#include "dcbwt1.h"
 C
 C     Calculate distance between centers
 C

@@ -14,6 +14,15 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
+!-----------------------------------------
+! Module with variables previously defined
+! at dcb_rkbimp.h include file (COMMON /DCB_RKBIMP/)
+!-----------------------------------------
+      module dcb_rkbimp_mod
+      implicit none
+      real*8 :: RKBIMP_PRJTHR
+      end module dcb_rkbimp_mod
+
 C
 C FILE    : dirac/dirrdn.F
 C
@@ -404,8 +413,8 @@ C
 C***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
 !      use dcbimp_mod, only: DOIMPMOS, FILIMP, QCPACK
-!      use dcb_rkbimp_mod, only: RKBIMP_PRJTHR
-!      use logging_mod, only: LOGMEMGET
+      use dcb_rkbimp_mod, only: RKBIMP_PRJTHR
+      use logging_mod, only: LOGMEMGET
       use dcbgen_mod
       use infpar_mod, only: NUMNOD
       use dcbham_mod, only: MDIRAC
@@ -424,9 +433,7 @@ C
 ! MDIRAC is needed for check of STOL(2)
 
 !#include "dcbxpr.h"
-#include "dcb_rkbimp.h"
 #include "dcbimp.h"
-#include "logging.h"
 C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
@@ -1048,7 +1055,7 @@ C***********************************************************************
 !      use dcbdhf_mod, only: AOC, ATHUCK, ATOMST, AUTOCC, BMCOND, CACC, CNVINT, CONVRG, DA, DALPHA, DAMPFC, DF, DHFCONV, DHFERG, DHFEXIT, DHF_INTTYP, DHF_SKIPEE, DHF_SKIPEP, DIISAO, DIISMO, DIISON, DIISTH, DLSHIF, DOBOSSEL, DOCCNV, DODAMP, DODIIS, DODSCF, DOLEVEL, DOMOFREEZE, DYNSEL, E1PART, E2PART, ELERGY, ERGBUF, ERGCNV, ERGCNV2, ERGVAL, EVCCNV, EVCCNV2, EVCVAL, FCKCNV, FCKCNV2, FCKVAL, FIXDIF, IMOFREEZE, INIOCC, INTBUF, INTDEF, INTFLG, IPREIG, IPRSCF, ITDIIS, ITRINT, ITRSCF, MAXBCK, MAX_BOS_BL, MAXITR, MAXITR2, MFRAG, MXDIIS, MXMACRO, MXMICRO, MXMOFREEZE, MXOPEN, NACSH, NACSH_BOS, NAELEC_DHF, NASH_DHF, NASHMFT, NELEC_DHF, NELECT_DHF, NEWOCC, NFRAG, NFRO_DHF, NISH_BOS, NISH_DHF, NMOFREEZE, NOPEN, NOQCDHF, NOSWIT, NPRJNUC, OLEV, OPEN_FAC, OVLSEL, PRJFIL, PRJTHR, SCFCNV, SCFCNV2, SCFPOP, SCFTID, SIRIFC, TDDG, TDF2, TRIFCK, TRIVEC, VCFROZ, VCPROJ, WRITE_FMO_MATRIX
 !      use dcborb_mod, only: MAX_SUB_BL
 !      use dcbatom_mod, only: ATOMFIL, NVECATOM, OCCATOM, VECATOM
-!      use dcbhoc_mod, only: HOCFIL, HUCPAR, MAXHOC, VECHOC
+      use dcbhoc_mod, only: HOCFIL, HUCPAR, MAXHOC, VECHOC
       use dcbham_mod
       use dgroup_mod, only: ATOMIC, FREP, LINEAR, NBSYM, NFSYM
        use dirac_cfg
@@ -1099,7 +1106,6 @@ C
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dcbatom.h"
-#include "dcbhoc.h"
 C
       SAVE SET
       DATA TABLE /'.PROJEC','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
@@ -3079,9 +3085,10 @@ C       Written by Trond Saue, Tromsoe April 1996
 C       Last revision: April 27 1996 - tsaue
 C
 C***********************************************************************
-!      use dcbreo_mod, only: IMOORD, IMOORF, IREORD, IREORF, LMOORD, LMOORF, MXREORD
-!      use dcbrot_mod, only: ROTANG, ROTORB, VECROT
 !      use dcbpsi_mod, only: DOADC, DOARDUC, DOCCM, DOCIM, DOCOSCI, DOEXACC, DOGASCIP, DOHSFS, DOKRCC, DOKRCI, DOKRMC, DOLAPLCE, DOLUCIAR, DOLUCT, DOMP2, DOMP2NO, DOMVO, DOPOLPRP, DORES, DOROSE, L1ORBM, L2ORBM, PHCOEF
+      use dcbrot_mod, only: ROTANG, ROTORB, VECROT
+      use dcbreo_mod, only: IMOORD, IMOORF, IREORD, IREORF, LMOORD,
+     &  LMOORF, MXREORD
       use dcbham_mod, only: SPINFR
       use dgroup_mod, only: FREP, NFSYM
       use dcbgen_mod, only: CBKRINI, DIRAC_WF, DOTRA, NOTRA, N_WF,
@@ -3100,8 +3107,6 @@ C
       DIMENSION WORK(LWORK)
 C
 #include "dcbpsi.h"
-#include "dcbreo.h"
-#include "dcbrot.h"
 C
       DATA TABDIR /'*END OF','xxxxxxx','*MP2CAL','*LUCITA',
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
@@ -5082,14 +5087,13 @@ C***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
 !      use dcbana_mod, only: DOVEC
       use dummy_mod, only: IDUMMY
-!      use dcbvec_mod, only: ILABDF, IPRCMP, IPRVEC, VECPRI
+      use dcbvec_mod, only: ILABDF, IPRCMP, IPRVEC, VECPRI
 !      use dcborb_mod, only: NOCC
 #include "implicit.h"
       INTEGER :: I
       PARAMETER (NTABLE = 8)
 C
 #include "dcbana.h"
-#include "dcbvec.h"
 #include "dcborb.h"
 C
       LOGICAL SET, NEWDEF, ORBDEF, RESET
@@ -5379,10 +5383,12 @@ C
 C     Written by T.Saue - May 1996
 C
 C***********************************************************************
-!      use dcb_ashift_mod, only: AREFFIL, ASHIFT_NVAL, ASHIFT_PAR, AVECREF, MAXAVAL
 !      use dcbxpr_mod, only: WT1IN
-!      use dcb_effqed_mod, only: EFFQED_IPAR, EFFQED_NKAP, EFFQED_PAR, MAXKAP, MAXREF, REFFIL, VECREF
 !      use dcbdhf_mod, only: NFRAG, PRJFIL, PRJTHR, VCPROJ
+      use dcb_effqed_mod, only: EFFQED_IPAR, EFFQED_NKAP, EFFQED_PAR,
+     &  MAXKAP, MAXREF, REFFIL, VECREF
+      use dcb_ashift_mod, only: AREFFIL, ASHIFT_NVAL, ASHIFT_PAR,
+     &  AVECREF, MAXAVAL
       use dcbham_mod
       use dgroup_mod, only: FREP, LINEAR, NBSYM, NFSYM, NZC1
       use dirac_cfg
@@ -5419,8 +5425,6 @@ C***********************************************************************
      &                       D2 = 2.00D00
 C
 C
-#include "dcb_effqed.h"
-#include "dcb_ashift.h"            
 #include "dcbdhf.h"
 #include "dcbxpr.h"
 C
@@ -7844,7 +7848,8 @@ C***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
       use dcbgen_mod, only: INTGEN
 !      use dcborb_mod, only: NASHT, NISH, NOCC
-!      use dcbmvo_mod, only: ADDREP, IF2MVO, INTMVO, IONMVO, IPRMVO, MVOWEIGHT, VECMVO
+      use dcbmvo_mod, only: ADDREP, IF2MVO, INTMVO, IONMVO, IPRMVO,
+     &  MVOWEIGHT, VECMVO
       use dcbbas_mod, only: NFBAS
       use dgroup_mod, only: FREP, NFSYM
 #include "implicit.h"
@@ -7853,7 +7858,6 @@ C***********************************************************************
 C
 #include "dcbpsi.h"
 #include "dcborb.h"
-#include "dcbmvo.h"
 C
       LOGICAL SET, NEWDEF, RESET,LBIT
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -8280,13 +8284,12 @@ C
 C***********************************************************************
 !      use dcbana_mod, only: DO1RHO
       use priunit_mod, only: LUCMD, LUPRI
-!      use dcbrho1_mod, only: DSTEP, IOPTDD, IPRHO1
+      use dcbrho1_mod, only: DSTEP, IOPTDD, IPRHO1
 #include "implicit.h"
       INTEGER :: I
       PARAMETER (NTABLE = 8)
 C
 #include "dcbana.h"
-#include "dcbrho1.h"
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -8553,13 +8556,12 @@ C     Modified for WT1IN by O. Fossgaard - May 2003
 C***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
 !      use dcbana_mod, only: DO1WT
-!      use dcbwt1_mod, only: DSTEP, IPWT1
+      use dcbwt1_mod, only: DSTEP, IPWT1
 #include "implicit.h"
       INTEGER :: I
       PARAMETER (NTABLE = 8)
 C
 #include "dcbana.h"
-#include "dcbwt1.h"
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -8674,7 +8676,8 @@ C
 C***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use dcbloc_mod, only: HESLOC, IPRLOC, ITRLOC, LGCHCK, LGDIAG, LGFULL, LGGRAD, PRJLOC, SELMOS, THDIAG, THFULL, THGRAD, THXVEC
+      use dcbloc_mod, only: HESLOC, IPRLOC, ITRLOC, LGCHCK, LGDIAG,
+     &  LGFULL, LGGRAD, PRJLOC, SELMOS, THDIAG, THFULL, THGRAD, THXVEC
       use dummy_mod, only: IDUMMY
 !      use dcbana_mod, only: DOLOC
 !      use dcbprj_mod, only: C1READ, MAXREF, NREFS, OWNBAS, REFFIL, VECPRJ, VECREF
@@ -8687,7 +8690,6 @@ C***********************************************************************
 C
 #include "dcbana.h"
 #include "dcbprj.h"
-#include "dcbloc.h"
 C
       LOGICAL SET, NEWDEF,ORBDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,LINE*72
@@ -9646,16 +9648,15 @@ C     Written by B. Helmich-Paris (Sep 2015)
 C
 C***********************************************************************
 
-!      use lapdim_mod, only: MXLAP
-!      use dcblap_mod, only: FNDLAP, INILAP, IPRLAP, MXITER, NLAP, STEPMX, TOLLAP, TOLPAR, TOLRNG, WGHTS, XPNTS
+      use dcblap_mod, only: FNDLAP, INILAP, IPRLAP, MXITER, NLAP,
+     &  STEPMX, TOLLAP, TOLPAR, TOLRNG, WGHTS, XPNTS
+      use lapdim_mod, only: MXLAP
       use priunit_mod, only: LUCMD, LUPRI
       IMPLICIT NONE
 
 C parameters
-#include "lapdim.h"
 
 C common blocks
-#include "dcblap.h"
 
 C constants:
       INTEGER NTABLE

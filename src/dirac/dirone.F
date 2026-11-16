@@ -14,6 +14,35 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
+!-----------------------------------------
+! Module with variables previously defined
+! at dcbcosc.h include file (COMMON /DCLCOSC/, /DCOCOSC/, /DCICOSC/, /DCRCOSC/, /DCCCOSC/)
+!-----------------------------------------
+! Modified from dcbkrmc.h by sya, 2007.01.25, ulp
+! The prefix "KRMC" was changed to "COSC".
+! Not all the data are refered by COSCI routine.
+! Parametric data NMCFLAG was changed to S_NMCFLAG.
+!*** COSCI calculations ***
+      module dcbcosc_mod
+      implicit none
+! MXGAS for the dimensions; mxgas.h stays a header while dcborb.h includes it
+#include "mxgas.h"
+      private :: MXGAS, MXPAS
+      integer, parameter :: S_NMCFLAG = 20
+      real*8 :: DCOSC_CNVINT(2), DCOSC_THRGRD, DCOSC_THRPCI
+      integer :: NCOSCISH(2), NCOSCASH(2), NCOSCSSH(2),
+     &    NCOSCGSH(2,MXGAS), NCOSCGSP(2,MXGAS), NCOSCESH(2),
+     &    NCOSCPSH(2), NCOSCFRO(2), NCOSCAELEC, NCOSCGAS, NCOSC_MK2REF,
+     &    NCOSC_MK2DEL, NCOSC_MINMK2, NCOSC_MAXMK2, ICOSC_ITRINT(2),
+     &    ICOSC_INTDEF, ICOSC_INTFLG, ICOSC_INTBUF, MCOSC_MXMICRO,
+     &    MCOSC_MXMACRO, MCOSC_MAXBCK, ICOSC_ISTATE, ICOSC_SYMMETRY,
+     &    IPRCOSC
+      logical :: COSC_SKIPEE, COSC_SKIPEP, COSC_NOCI, COSC_UCIBOS,
+     &    COSC_MKCNST
+      character(len=72) :: COSC_FRZSTR(2)
+      character(len=8) :: COSC_CIPROGRAM
+      end module dcbcosc_mod
+
 !#define DEBUG_SOC
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -10610,11 +10639,10 @@ C***********************************************************************
 !      use dcbmp2_mod, only: MP2_INTFLG
 !      use dcbopt_mod, only: IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG
 !      use dcbdhf_mod, only: INTBUF, INTDEF, INTDEF_SAVE, INTFLG
-!      use dcbcosc_mod, only: ICOSC_INTBUF, ICOSC_INTDEF, ICOSC_INTFLG
+      use dcbcosc_mod, only: ICOSC_INTBUF, ICOSC_INTDEF, ICOSC_INTFLG
 #include "implicit.h"
       integer, intent(in) :: new_intflg
 #include "mxgas.h"
-#include "dcbcosc.h"
 #include "dcbdhf.h"
 #include "dcbkrci.h"
 #include "dcbmp2.h"
@@ -10971,7 +10999,8 @@ C
 C     Written by Trond Saue
 C
 C***********************************************************************
-!      use dcb_ashift_mod, only: AREFFIL, ASHIFT_NVAL, ASHIFT_PAR, AVECREF, MAXAREF, MAXAVAL
+      use dcb_ashift_mod, only: AREFFIL, ASHIFT_NVAL, ASHIFT_PAR,
+     &  AVECREF, MAXAREF, MAXAVAL
       use dcbham_mod, only: SSMTRC
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: I2BAST, I2BASX, N2BAST, N2BBASX, NFBAS,
@@ -10982,7 +11011,6 @@ C***********************************************************************
 C     
       INTEGER :: I
 C
-#include "dcb_ashift.h"      
       DIMENSION FOCK(*),WORK(*)
       CHARACTER TEXT*74
       KFRSAV = KFREE

@@ -23,6 +23,7 @@
 *
       SUBROUTINE GASCI(ISM,ISPC,IPRNT,EREF,LUWRTOUT,IPROCLIST,
      &                 IGROUPLIST)
+      use intform_mod, only: IH1FORM, IH2FORM
       use luci_wrkspc
 *
 * CI optimization in GAS space number ISPC for symmetry ISM
@@ -50,7 +51,6 @@
 #include "gasstr.inc"
 #include "cgas.inc"
 #include "lucinp.inc"
-#include "intform.inc"
 #include "comjep.inc"
 #include "cc_exc.inc"
 #if defined (VAR_MPI2)
@@ -1587,6 +1587,7 @@ C
 *
 * Jeppe Olsen,Spring of 1991
 *
+      use machine_mod, only: MACHINE
       IMPLICIT REAL*8(A-H,O-Z)
 *
       PARAMETER(MXPLNC = 72 )
@@ -1635,7 +1636,6 @@ C
 #include "cprnt.inc"
 #include "cgas.inc"
 #include "oper.inc"
-#include "machine.inc"
 #include "parluci.h"
 *./CECORE/
       COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX

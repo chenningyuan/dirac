@@ -99,14 +99,13 @@ C     Memory allocation
 C
       use iratdef_mod, only: IRAT, LRAT
 !      use memcb1_mod, only: IDENT8, LENID, LREAL, LUEMEM, LUWMEM, LZERO, MEMCK, MEMID, NWNMEM, WIDENT_KFREE, WLREAL, WLZERO, WMEMCK, WMEMID
-!      use logging_mod, only: LOGMEMGET
+      use logging_mod, only: LOGMEMGET
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       CHARACTER*(*) DATA_TYPE, IDENT
       DIMENSION     WORK(*)
 C
 #include "memcb1.h"
-#include "logging.h"
 C
 Chj1  CALL QENTER('MEMGET2 ')
       IF (DATA_TYPE(1:4) .EQ. 'REAL' .OR.

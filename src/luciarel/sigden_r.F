@@ -3587,6 +3587,9 @@ C           CPU-block - test if non-zero
       use interface_to_mpi
 !     will later contain useful string information... - placeholder for the time being
       use string_info
+#if !defined (CRAY_COMPILER) && defined (VAR_MPI2)
+      use mxdim_mpi2_mod, only: IDUMMY_BUFF_SZ
+#endif
 #include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -3626,7 +3629,6 @@ C
 #else
 #if defined (VAR_MPI2)
 #include "krmc_shmem.h"
-#include "mxdim_mpi2.h"
       POINTER (MY_T_SCR_PTR, T_SCR_CC(IDUMMY_BUFF_SZ))
 #endif
       DIMENSION CB(*), HCB(*)

@@ -14,6 +14,16 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
+!-----------------------------------------
+! Module with variables previously defined
+! at recpval.h include file
+!-----------------------------------------
+   module recpval_mod
+   implicit none
+   integer, parameter :: RECP_MXANG = 7
+   integer, parameter :: RECP_MXBLK = 10
+   end module recpval_mod
+
 MODULE RECP_NTR
   REAL(8), ALLOCATABLE :: ctranarg(:, :, :, :)
   INTEGER, ALLOCATABLE :: RECP_MCRS(:)
@@ -67,9 +77,8 @@ CONTAINS
 
 
 SUBROUTINE RECP_NTRA_READCP(MXCENT)
-!      use recpval_mod, only: RECP_MXANG
+      use recpval_mod, only: RECP_MXANG
   IMPLICIT NONE
-#include "recpval.h"
   INTEGER :: MXCENT
   IF (.NOT.ALLOCATED(RECP_CENT)) ALLOCATE(RECP_CENT(MXCENT)) 
   IF (.NOT.ALLOCATED(RECP_CORE)) ALLOCATE(RECP_CORE(MXCENT))

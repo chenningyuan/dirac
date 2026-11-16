@@ -24,7 +24,6 @@
       use argoscom_mod, only: ECPNONT, ECPNUC
       USE RECP_NTR
       IMPLICIT NONE
-!#include "recpval.h"
 #include "inc_mxvalue.h"
 !     global variables
       INTEGER LUINFO,NUC1,NONT0,IPREAD

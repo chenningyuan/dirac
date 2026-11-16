@@ -408,7 +408,8 @@ C***********************************************************************
 !      use dcbprp_mod, only: DOPCT, DOVDW, DOXLR
 !      use dcbxlr_mod, only: ALLCMB, BFREQ, CNVXLR, DMPFRLR, INTXLR, IPRXLR, ITRILR, ITRXLR, LLRAPU, LLRBPU, MAXFLR, MAXLLR, MAXRM, MXLOAD, NBFREQ, NLRAP, NLRAPT, NLRBP, NLRBPT, NOSPIA, NOSPIB, RESXLR, THCLR, THRCOM, TRIAB, XLRANA, XLRDIH, XLRNRM, XLR_ANATHR, XLR_E2CHEK, XLR_IMFREQ, XLR_INDSTR, XLR_LSFG, XLR_RSPEXP, XLR_RSPIMP, XLR_SKIPEE, XLR_SKIPEP, XLR_TRIPLET, XLR_UNCOUP, XLR_XVCFIL, XSTERN, XSTERNC
 !      use dcbxpr_mod, only: IPRPTIM
-!      use gauss_legendre_mod, only: FREQ_10PT, FREQ_12PT, FREQ_14PT, FREQ_16PT, FREQ_6PT, FREQ_8PT
+      use gauss_legendre_mod, only: FREQ_10PT, FREQ_12PT, FREQ_14PT,
+     &  FREQ_16PT, FREQ_6PT, FREQ_8PT
       use dcbham_mod, only: BSS, FREEPJ, GAUNT, LEVYLE, QED, SPINFR,
      &  VEXTPJ, X2C, X2CMMF
       use dgroup_mod, only: NFSYM
@@ -456,7 +457,6 @@ C
      &            '.RSPIMP'/
       DATA SET/.FALSE./
 C
-#include "gauss_legendre.h"
 C
       IF (SET) THEN
          IF (RESET) SET = .FALSE.

@@ -14,6 +14,18 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
+!-----------------------------------------
+! Module with variables previously defined
+! at past.h include file (COMMON /PAST/)
+!-----------------------------------------
+!$Id$
+      module past_mod
+      implicit none
+      logical :: PASTWO, PASORT, PASDIP, PASONE, PASRES, PASREL,
+     &    PASDPR, PASCRS, PASCZR, PASCTR, PASCRL, PASMAG, PASAAT,
+     &    PASRTR, PASLRS, PASTRP, PASLNR, PASEXC
+      end module past_mod
+
 C  /* Deck nucinp */
       SUBROUTINE NUCINP(WORD)
       use priunit_mod, only: LUCMD, LUPRI
@@ -118,7 +130,7 @@ C     Revised Jun 25 1988 tuh - symmetry introduced
 C
       use maxaqn_mod, only: MXAQN, MXQN
       use dorps_mod, only: DOREPS
-!      use past_mod, only: PASONE
+      use past_mod, only: PASONE
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, MAXREP, PT
       use maxorb_mod, only: MXCORB
@@ -137,7 +149,6 @@ C
       LOGICAL SECOND
       DIMENSION HESSNN(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
 #include "cbinuc.h"
-#include "past.h"
 C
 C     This subroutine calculates the nuclear repulsion contributions
 C     to the molecular gradient and Hessian.
