@@ -16,6 +16,39 @@ np.set_printoptions(threshold=sys.maxsize)
 class InputError(Exception):
     pass
 
+
+def atom_d2h_occupations(Z, charge, multiplicity, p_order=("x", "y", "z")):
+    """Explicit D2h occupations (DOCC, SOCC) for a free open-shell atom of the first three rows (s and p shells).
+
+    The three p orbitals of an open-shell p atom are degenerate; psi4 then picks which one is doubly occupied
+    (ROHF) in a way that depends on the psi4 version, and the IAO/IBO charges depend on that choice. Fixing the
+    occupations in D2h makes the reference deterministic: p electrons beyond a half-filled shell doubly occupy the
+    axes in the order p_order, the others are singly occupied in that order.
+    Returns None if the atom is not treated (then the C1 calculation is done as before).
+    """
+    nel = Z - charge
+    if not 1 <= Z <= 18 or nel < 1: return None
+    # electrons per shell, aufbau 1s 2s 2p 3s 3p
+    cap = [("s", 2), ("s", 2), ("p", 6), ("s", 2), ("p", 6)]
+    shells = []
+    left = nel
+    for l, c in cap:
+        n = min(left, c); left -= n; shells.append((l, n))
+    if left > 0: return None
+    docc = [0]*8; socc = [0]*8
+    irrep = {"z": 5, "y": 6, "x": 7}                    # D2h: Ag B1g B2g B3g Au B1u B2u B3u
+    for l, n in shells:
+        if l == "s":
+            if n == 2: docc[0] += 1
+            elif n == 1: socc[0] += 1
+        else:
+            na = min(n, 3); nb = n - na
+            axes = list(p_order)
+            for a in axes[:nb]: docc[irrep[a]] += 1
+            for a in axes[nb:na]: socc[irrep[a]] += 1
+    if sum(socc) != multiplicity - 1 or 2*sum(docc) + sum(socc) != nel: return None
+    return docc, socc
+
 def run_psi4_mocoeff(molecule,
                      basis=None,
                      spherical=False,
@@ -63,7 +96,13 @@ def run_psi4_mocoeff(molecule,
      f.write(molecule.filename + ' # anything can be in this line\n')
      f.write(molecule_string)
 
-    add_input = "\nsymmetry c1\nno_reorient\nno_com"
+    d2h = None
+    if restricted and openshell and not relativistic and molecule.n_atoms == 1 and molecule.protons[0] > 0:
+        d2h = atom_d2h_occupations(molecule.protons[0], molecule.charge, molecule.get_multiplicity())
+    add_input = "\nsymmetry d2h\nno_reorient\nno_com" if d2h else "\nsymmetry c1\nno_reorient\nno_com"
+    for _opt in ("DOCC", "SOCC"):                              # do not inherit occupations of an earlier call
+        psi4.core.revoke_global_option_changed(_opt)
+        psi4.core.revoke_local_option_changed("SCF", _opt)
     if uncontract: basis = basis + "-decon"
     if spherical: 
        puream = "true"
@@ -105,6 +144,7 @@ def run_psi4_mocoeff(molecule,
                       'MAXITER': MAXITER,
                       'puream':puream})
     
+    if d2h: psi4.set_options({'docc': d2h[0], 'socc': d2h[1]})
     if (molecule.multiplicity == None) and (molecule.charge == 0):
         mol = psi4.geometry(molecule_string + add_input)
     else:
@@ -148,8 +188,12 @@ def run_psi4_mocoeff(molecule,
     else:
         basis_set = AOBasis(2,basis_funcs)
     if restricted: # can be passed on as is
-       eigenvalues=scf_wfn.epsilon_a().np
-       coeffs=scf_wfn.Ca().np.T
+       if d2h:   # symmetry-blocked orbitals: back to the AO basis, ordered by energy
+          eigenvalues=scf_wfn.epsilon_a_subset("AO","ALL").np
+          coeffs=scf_wfn.Ca_subset("AO","ALL").np.T
+       else:
+          eigenvalues=scf_wfn.epsilon_a().np
+          coeffs=scf_wfn.Ca().np.T
     else: # should be concatenated before calling MOBasis
        eigenvalues=np.concatenate((scf_wfn.epsilon_a().np,scf_wfn.epsilon_b().np))
        coeffs=np.concatenate((scf_wfn.Ca().np.T,scf_wfn.Cb().np.T))
