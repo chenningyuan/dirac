@@ -1343,7 +1343,6 @@ integer :: ierr
    use symmetry_offset
    use modified_sorting
 
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 #include "files.inc"
@@ -1885,7 +1884,6 @@ end if
    subroutine Lambda_IP(l1,l2,B,lambda1,lambda2)
 
   use symmetry_offset
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 #include "files.inc"

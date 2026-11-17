@@ -433,7 +433,7 @@ $ G-TYPE FUNCTIONS
       0.24524831749
       0.95874073730E-01
 $ H-TYPE FUNCTIONS
-    1    0    0
+    2    0    0
       0.50872988782
       0.21239023993
 a 14
@@ -604,7 +604,7 @@ $ F-TYPE FUNCTIONS
       0.36086017232
       0.14009368577
 $ G-TYPE FUNCTIONS
-    3    0    0
+    4    0    0
       3.4634661735
       1.1867413008
       0.57655948880
@@ -1956,11 +1956,11 @@ $ H-TYPE FUNCTIONS
 $ I-TYPE FUNCTIONS
     1    0    0
       2.2114454725
-a 16
+a 36
 $ KRYPTON         (11s,10p,9d,7f,5g,3h,1i)
 $ KRYPTON DIFFUSE ( 1s, 1p,1d,1f,1g,1h)
 $ S-TYPE FUNCTIONS
-    2    0    0
+    12    0    0
     101.33803358
      30.467851525
      20.969634774

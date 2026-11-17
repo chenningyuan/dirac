@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import shutil
+from pathlib import Path
+
+#
+# prepare environment, define functions
+#
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'Final grid function values (id=',
+      num_lines = 28,
+      abs_tolerance = 1.0e-5)
+    
+#
+# run tests
+#
+
+for m in ['c1', 'c2', 'c2v', 'cs', 'd2']:
+    test.run(['rspE.inp'], ['ne_'+m+'.mol'], args='--outcmo --get="RESPONSE.h5"')
+    test.run(['visR1.inp'], ['ne_'+m+'.mol'], f, args='--incmo')
+    test.run(['visE_'+m+'.inp'], ['ne_'+m+'.mol'], f, args='--incmo --put="RESPONSE.h5"')
+    os.unlink("RESPONSE.h5")
+    test.run(['rspB.inp'], ['ne_'+m+'.mol'], args='--outcmo --get="RESPONSE.h5"')
+    test.run(['visB_'+m+'.inp'], ['ne_'+m+'.mol'], f, args='--incmo --put="RESPONSE.h5"')
+#    test.run(['rspB1_lao.inp'], [m], args='--incmo --outcmo --get="RESPONSE.h5 TBMO.h5"')
+#    test.run(['visB1_lao.inp'], [m],  args='--incmo --put="RESPONSE.h5 TBMO.h5"')
+    os.unlink("RESPONSE.h5")
+    
+for m in ['auto', 'c2h', 'ci', 'd2h']:
+    test.run(['rspE.inp'], ['ne_'+m+'.mol'], args='--outcmo --get="RESPONSE.h5"')
+    test.run(['visR2.inp'], ['ne_'+m+'.mol'], f, args='--incmo')
+    test.run(['visE_'+m+'.inp'], ['ne_'+m+'.mol'], f, args='--incmo --put="RESPONSE.h5"')
+    os.unlink("RESPONSE.h5")
+    test.run(['rspB.inp'], ['ne_'+m+'.mol'], args='--outcmo --get="RESPONSE.h5"')
+    test.run(['visB_'+m+'.inp'], ['ne_'+m+'.mol'], f, args='--incmo --put="RESPONSE.h5"')
+#    test.run(['rspB2_lao.inp'], [m], args='--incmo --outcmo --get="RESPONSE.h5 TBMO.h5"')
+#    test.run(['visB2_lao.inp'], [m],  args='--incmo --put="RESPONSE.h5 TBMO.h5"')
+    os.unlink("RESPONSE.h5")
+
+sys.exit(test.return_code)

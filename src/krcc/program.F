@@ -11,7 +11,7 @@ C
 C***********************************************************************
       use memory_allocator
 
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 *. Parameters for dimensioning
 #include "mxpdim.inc"
@@ -135,7 +135,7 @@ C
 * Now master routine for general relativistic mr coupled cluster
 *
 *
-#include "implicit.inc"
+#include "implicit.h"
       REAL*8 INPRDD
 #include "ipoist8.inc"
 #include "mxpdim.inc"

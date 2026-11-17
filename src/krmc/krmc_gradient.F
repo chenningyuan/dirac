@@ -39,7 +39,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       PARAMETER (D0 = 0.0D00)
 C
@@ -109,8 +108,6 @@ C
       PARAMETER ( THRZER = 1.0D-12 )
 C
 #include "dcbopt.h"
-#include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION CREF(*), FCAC(*), H2AC(*), GCI(*), WORK(*)
 C
@@ -271,16 +268,15 @@ C
       IF (IPRINT .GE. 0 .OR. EMC(2) .NE. D0) THEN
          WRITE(LUPRI,9000)
      &        '(RCIGRD1) Active energy from CI gradient module:',
-     &        'Real part: ', EMC(1),
-     &        'Imag part: ', EMC(2)
+     &        'Real part:', EMC(1),'; Imag part:', EMC(2)
          IF ( ABS(EMC(2)) .GT. THRZER) THEN
             WRITE(LUPRI,'(//,2A,//)')
      &           '*** WARNING ***',
-     &           'Active energy is imaginary!'
+     &           'Active energy is complex!'
          END IF
       END IF
 C
- 9000 FORMAT(1P,//,1X,A,2(/,5X,A,D25.15),//)
+ 9000 FORMAT(1P,/,1X,A/,2(5X,A,D25.15))
 #ifdef UNDEF
 C
 C     Allocate memory for matrices:
@@ -336,7 +332,7 @@ C
          WRITE(LUPRI,9000)
      &        '(RCIGRD1) Active energy from CI gradient module:',
      &        'Real part: ', EMC(1),
-     &        'Imag part: ', EMC(2)
+     &        '; Imag part: ', EMC(2)
          IF ( ABS(EMC(2)) .GT. THRZER) THEN
             WRITE(LUPRI,'(//,2A,//)')
      &           '*** WARNING ***',
@@ -419,7 +415,6 @@ C
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION G(NZHOPE,*), GR(*)
 C
@@ -463,7 +458,6 @@ C
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION G(NZHOPE,*), GR(*)
 C

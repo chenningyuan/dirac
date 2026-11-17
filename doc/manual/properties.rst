@@ -223,7 +223,7 @@ expressed in terms of the nuclear magnetic dipole :math:`\mathbf{m}_K` and the o
 
 expressed in terms of the operator :math:`\hat{\mathbf{m}}_e^{[1]}` associated with the magnetic dipole moment of the electrons and the external magnetic field :math:`\mathbf{B}_0`. Note reference to the gauge origin :math:`G`.
 
-Note that :ref:`PROPERTIES_.PRINT` 2 gives the full tensor and longer output. The :ref:`PROPERTIES_.PRINT` 4 gives the raw values in symmetry coordinates as well.
+Note that :ref:`PROPERTIES_.PRINT` 2 and higher gives the full tensor and longer output. The :ref:`PROPERTIES_.PRINT` 4 gives the raw values in symmetry coordinates as well.
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
@@ -307,6 +307,7 @@ where appears the relativistic hyperfine operator
 expressed in terms of the nuclear magnetic dipole :math:`\mathbf{m}_K` and the operator :math:`\hat{\mathbf{B}}^{el}_{K}` giving the magnetic field due to the electrons at the nuclear position.
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
+Using :ref:`PROPERTIES_.PRINT` 2 or higher gives the full tensor for each pair of selected isotopes.
 
 The default is to calculate the diamagnetic term via occupied positive energy to virtual negative energy orbital rotations
 (also called electron-positron rotations), see :cite:`Aucar1999` for the theory.

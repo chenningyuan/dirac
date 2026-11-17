@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[project]
+name = "ase_rose"
+version = "1.2.0.dev1"
+description = "Generate MO coefficient files by running a quantum chemistry code"
+readme = "README.md"
+authors = [
+    { name = "Carlos M. R. Rocha", email = "c.rocha@esciencecenter.nl" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+]
+
+dependencies = [
+    "ase"
+]
+
+[project.optional-dependencies]
+testing = ["pytest"]
+
+
+[tool.setuptools.packages.find]
+where = ["."]

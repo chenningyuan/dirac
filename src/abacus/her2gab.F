@@ -33,10 +33,8 @@ C*****************************************************************************
 #include "aovec.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "dummy.h"
       PARAMETER (D0 = 0.00 D00)
 #ifdef PRG_DIRAC
-#include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
@@ -44,11 +42,9 @@ C*****************************************************************************
 #include "symmet.h"
 #include "nuclei.h"
 #include "blocks.h"
-#include "shells.h"
 #include "twosta.h"
 #include "twocom.h"
 #include "hertop.h"
-#include "infpar.h"
 C
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DIRFCK, RETUR, TTIME,
      &        NOCONT, SPNORB, DISTRI, SQ12EL, LONDON, SUSCEP, DDFOCK,
@@ -394,11 +390,9 @@ C  /* Deck gabdr1 */
      &               COORCD,EXPCD,FACCD,CONTC,CONTD,NPCOC,NPCOD,
      &               NUCSCD,JSTRC,JSTRD,NINDCD,NPNTCD,NREDCD)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "aovec.h"
-#include "iratdef.h"
 #include "maxorb.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK,
      &        DISTRI, NOCONT, LONDON, SPNORB, ONECEN,SOFOCK,
@@ -425,10 +419,6 @@ C               Electron 2
      &          NPNTCD(*),NREDCD(*)
 #include "twocom.h"
 #include "blocks.h"
-#include "symmet.h"
-#include "dorps.h"
-#include "nuclei.h"
-#include "twosta.h"
 C
       CALL QENTER('GABDR1')
 #include "memint.h"
@@ -583,7 +573,6 @@ C
 #include "symmet.h"
 #include "dorps.h"
 #include "nuclei.h"
-#include "twosta.h"
 #ifdef PRG_DIRAC
 #include "dcbham.h"
 #include "dcbgrd.h"
@@ -1034,7 +1023,6 @@ C     Written by T.Saue Oct 7 1996
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "iratdef.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1114,7 +1102,6 @@ C  Written by T.Saue Oct 10 1996
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "aovec.h"
 #include "maxorb.h"
@@ -1129,7 +1116,6 @@ C*****************************************************************************
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          IEFFA(0:7),IEFFB(0:7)
 #include "twocom.h"
-#include "expcom.h"
 #include "symmet.h"
 #include "nuclei.h"
 #include "blocks.h"
@@ -1245,14 +1231,12 @@ C     Last revision: Oct 3 1996 - tsaue
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
 #include "aovec.h"
 #include "maxorb.h"
 #include "mxcent.h"
 C
-#include "shells.h"
 #include "blocks.h"
 #include "nuclei.h"
       DIMENSION DMAT(NBASIS*NBASIS,NDMAT),
@@ -1360,7 +1344,6 @@ C     Written by T.Saue Oct 4 1996
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "aovec.h"
 #include "maxorb.h"
@@ -1400,7 +1383,6 @@ C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "aovec.h"
 #include "maxorb.h"
@@ -1409,7 +1391,6 @@ C
 C
 #include "symmet.h"
 #include "pincom.h"
-#include "blocks.h"
 #include "shells.h"
 #include "nuclei.h"
       DIMENSION INDRSO(NBASIS)
@@ -1446,7 +1427,6 @@ C
 #include "maxorb.h"
 #include "mxcent.h"
 C
-#include "shells.h"
 #include "blocks.h"
 #include "nuclei.h"
       DIMENSION DMAT(NBASIS*NBASIS,NDMAT),
@@ -1742,7 +1722,6 @@ C*****************************************************************************
 #include "mxcent.h"
 #include "aovec.h"
 C
-#include "blocks.h"
 #include "nuclei.h"
 #include "cbihr2.h"
       LOGICAL NOCONT
@@ -1790,6 +1769,7 @@ C/* Deck Gabgen */
       SUBROUTINE GABGEN(IJOB,ITYPE,IGTYP,MAXDIF,JATOM,NOCONT,
      &                  recompute_Gab_,IPRINT,WORK,LWORK)
       use labeled_storage
+      use gab_screening, only: qorb_ok, qorb_igtyp
 C***********************************************************************
 C
 C     This routine will generate the reduced matrix of
@@ -1807,7 +1787,7 @@ C
 #include "nuclei.h"
 #include "blocks.h"
 #include "chrxyz.h"
-      LOGICAL EXTST,NOCONT, recompute_Gab_
+      LOGICAL EXTST,NOCONT, recompute_Gab_, DOQORB
       CHARACTER GABLAB(3)*8,RTNLBL(2)*8
       DIMENSION WORK(*)
       logical gabdone
@@ -1853,7 +1833,10 @@ C
       CALL GETDAT(RTNLBL(1),RTNLBL(2))
 C
 C     Search for GAB-integrals; return if they are there
+C     (unless the orbital-pair factors QORB are wanted but missing)
 C
+      DOQORB = IJOB.EQ.0 .AND. ITYPE.EQ.0 .AND. MAXDIF.EQ.0
+      IF (DOQORB .AND. .NOT.(QORB_OK .AND. QORB_IGTYP.EQ.IGTYP)) GOTO 10
       if(.not.recompute_Gab_)then !> by default we reuse GAB-integrals
           DO I = 1,NGAB
             call lab_query(dirac_datafiles(1),group//gablab(i),
@@ -1876,6 +1859,7 @@ C
       CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
       CALL GABGEN_1(IJOB,WORK(KBUF),ITYPE,IGTYP,
      &            MAXDIF,JATOM,NOCONT,WORK(KFREE),LFREE,IPRINT)
+      IF (DOQORB) CALL QORBGN(WORK(KBUF),IGTYP,IPRINT)
 C
 C
 C     GAB-matrix in AO-basis
@@ -1951,6 +1935,66 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Qorbgn */
+      SUBROUTINE QORBGN(GABM,IGTYP,IPRINT)
+      use gab_screening
+C***********************************************************************
+C     Reduce the full matrix of (ij|ij) integrals in AO basis to
+C     Cauchy-Schwarz factors QORB(IA,IB) for pairs of symmetry
+C     independent contracted orbitals (all components and symmetry
+C     images), see module gab_screening. Used for pruning orbital
+C     pairs in direct Fock matrix construction (ODCSEG).
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "symmet.h"
+      DIMENSION GABM(NBASIS,NBASIS)
+C
+      QORB_OK = .FALSE.
+      IF (ALLOCATED(QORB))   DEALLOCATE(QORB)
+      IF (ALLOCATED(AO2ORB)) DEALLOCATE(AO2ORB)
+      ALLOCATE(QORB(KMAX,KMAX),AO2ORB(NBASIS))
+C
+C     AOs are ordered orbital by orbital (cf. IPRVOR in PAOVE2)
+C
+      IAO = 0
+      DO IA = 1, KMAX
+         N = KHKT(IA)*MULT(ISTBAO(IA))
+         IF (IAO + N .GT. NBASIS) GOTO 900
+         DO I = 1, N
+            AO2ORB(IAO + I) = IA
+         END DO
+         IAO = IAO + N
+      END DO
+      IF (IAO .NE. NBASIS) GOTO 900
+C
+      CALL DZERO(QORB,KMAX*KMAX)
+      CALL GATMAT(0,NBASIS,NBASIS,GABM,QORB,AO2ORB,KMAX)
+      DO IB = 1, KMAX
+         DO IA = 1, KMAX
+            QORB(IA,IB) = SQRT(QORB(IA,IB))
+         END DO
+      END DO
+      QORB_OK    = .TRUE.
+      QORB_IGTYP = IGTYP
+      IF (IPRINT .GE. 4) THEN
+         CALL HEADER('QORBGN: Schwarz factors for orbital pairs',-1)
+         CALL OUTPUT(QORB,1,KMAX,1,KMAX,KMAX,KMAX,-1,LUPRI)
+      END IF
+      RETURN
+C
+  900 CONTINUE
+      WRITE (LUPRI,'(/A)') ' QORBGN: unexpected AO ordering,'//
+     &   ' no pruning of orbital pairs in direct Fock construction'
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Getgab */
       SUBROUTINE GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,IPRINT,
      &     GABM,WORK,LWORK)
@@ -1968,7 +2012,6 @@ C***********************************************************************
 #include "aovec.h"
 #include "maxorb.h"
 #include "mxcent.h"
-#include "nuclei.h"
 #include "blocks.h"
 #include "chrxyz.h"
       LOGICAL EXTST,FNDLAB

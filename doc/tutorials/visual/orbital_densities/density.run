@@ -1,1 +1,1 @@
-pam --inp=density.inp --mol=h2o.mol --put=DFCOEF --get=plot.3d.cube
+pam --inp=density.inp --mol=h2o.mol --put=CHECKPOINT.h5 --get=density.cube

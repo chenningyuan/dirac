@@ -961,7 +961,7 @@ contains
         inquire (file="MDCINT", exist=is_exist_mdcint)
         is_exist = is_exist_mdcint
         inquire (file="MDCINTNEW", exist=is_exist_mdcint)
-        is_exist = or(is_exist, is_exist_mdcint)
+        is_exist = is_exist .or. is_exist_mdcint
         if (.not. is_exist) then
             if (rank == 0) print *, "ERROR: MDCINT or MDCINTNEW file is required, but it is not found."
             call stop_with_errorcode(1)

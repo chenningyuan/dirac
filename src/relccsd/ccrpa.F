@@ -57,7 +57,6 @@ C
 #include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
-#include "waio.h"
 C
 C---------------Local variables--------------------------------------
 C
@@ -596,7 +595,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "complex.inc"
 C
 C---------------Local variables--------------------------------------
@@ -1143,9 +1141,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "symm.inc"
-#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1202,7 +1198,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "param.inc" 
-#include "complex.inc" 
 C
 C---------------Local variables--------------------------------------
 C 

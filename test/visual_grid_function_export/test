@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+
+import os
+import sys
+from pathlib import Path
+import re
+
+try:
+    import h5py
+    h5py_available = True
+except:
+    h5py_available = False
+
+#
+# prepare environment, define functions
+#
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+from runtest_rs import CompareHDF5
+test = TestRun(__file__, sys.argv)
+
+#
+# run tests
+#
+test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
+test.run(['vis.inp'], ['h2o.mol'], args='--incmo --get="ed_*"')
+
+thr=1.0e-6
+for fmt in ['txt', 'csv', 'cube']:
+    with open('ed_3Dcube.'+fmt) as file_filtered:
+        with open('result/ed_3Dcube.'+fmt) as file_reference:
+            lines_filtered=file_filtered.readlines()
+            lines_reference=file_reference.readlines()
+            if len(lines_filtered) == len(lines_reference):
+                for iline, line in enumerate(lines_filtered):
+                    w_f=line.split()
+                    w_r=lines_reference[iline].split()
+                    for j, j_f in enumerate(w_f):
+                        if re.match(r'^[0-9\.eEdD\+\-]*$', j_f) and re.match(r'^[0-9\.eEdD\+\-]*$', w_r[j]):
+                                if float(j_f) - float(w_r[j]) > thr:
+                                    sys.exit(fmt+' file is different than the reference: '+line)
+            else:
+                sys.exit(fmt+' file is different than the reference')
+
+
+if h5py_available:
+    rs = CompareHDF5(test.work_dir)
+
+    testset = ["ed_3Dcube.h5"]
+    for t in testset:
+    
+        rs.verify(ftest=t,\
+                  fref='result/'+t,\
+                  typ='single',\
+                  gf_label='/result/grid_function/ed/visualization/values/',
+                  gf_test_key='t0_icomp_1')
+    
+sys.exit(test.return_code)

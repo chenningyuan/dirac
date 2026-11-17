@@ -2,14 +2,9 @@ module intermediates_cc2
 
 !Module to make intermediates needed in Lambda equations
 
+     use exacorr_scaling_parameters
      implicit none
      private
-
-     complex(8), parameter :: ZERO=(0.D0,0.D0), MINUS_ONE=(-1.D0,0.D0), ONE=(1.D0,0.D0), &
-                              ONE_QUARTER_C=(0.25D0,0.D0), ONE_HALF=(0.5D0,0.D0), &
-                              MINUS_ONE_HALF=(-0.5D0,0.D0), &
-                              MINUS_TWO=(-2.D0,0.D0), TWO=(2.D0,0.D0)
-    real(8), parameter     :: ONE_QUARTER=0.25D0
 
 !! Start CC2
      interface get_tauCC2 !L

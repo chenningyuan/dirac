@@ -1,0 +1,27 @@
+**DIRAC
+**HAMILTONIAN
+.DFT
+ B3LYP
+**GRID
+.DEBUG       !for the test we use a coarse grid
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**WAVE FUNCTION
+.SCF
+*SCF
+.CLOSED_SHELL
+10
+.EVCCNV
+1.0D-8
+**VISUAL
+.GRIDS 
+1
+id=1 input=create typ=1 npoints=[10,10,10] margin=4.0
+.GRIDFUNCTIONS
+4
+name=ed id_grid=1 purpose=visualization export=txt file_out=ed_3Dcube.txt
+name=ed id_grid=1 purpose=visualization export=csv file_out=ed_3Dcube.csv
+name=ed id_grid=1 purpose=visualization export=cube file_out=ed_3Dcube.cube
+name=ed id_grid=1 purpose=visualization export=hdf5 file_out=ed_3Dcube.h5
+*END OF

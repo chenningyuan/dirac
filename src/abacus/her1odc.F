@@ -21,7 +21,6 @@ C  /* Deck getodc */
      &                  ONECEN,EXPA,EXPB,IPRINT,SAAB13,EXPPI,WORK,LWORK,
      &                  CORPX,CORPY,CORPZ,DONUC1,DOMOM1,ORIGIN,INTTYP)
 #include "implicit.h"
-#include "priunit.h"
       LOGICAL DIFODC, KINODC, ONECEN, DONUC1, DOMOM1
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          WORK(LWORK), ORIGIN(3)
@@ -500,9 +499,7 @@ C
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,0:JMAXD,
      &                 0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "pi.h"
       PARAMETER(D1=1.00 D00, D2=2.00 D00)
-#include "onecom.h"
 C
       DO 10 A = 0, JMAXA
          FA = (D2*dble(A) + 1)/(D2*EXPA)
@@ -555,9 +552,7 @@ C
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,0:JMAXD,
      &                 0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "pi.h"
       PARAMETER(D1=1.00 D00, D2=2.00 D00)
-#include "onecom.h"
 C
       DO 10 A = 0, JMAXA
          FA = (D2*dble(A) + 1)/(D2*EXPA)

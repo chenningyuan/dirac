@@ -21,7 +21,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE NQCC_INPUT(WORD,WORK,LWORK)
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 #include "mxcent.h"
 #include "dcbprp.h"
       PARAMETER (NTABLE = 1)

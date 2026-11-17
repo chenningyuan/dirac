@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import TestRun
+
+test = TestRun(__file__, sys.argv)
+
+accepted_errors = ['SCF not converged']
+test.run(['spinorbit.inp'], ['C.xyz'], accepted_errors=accepted_errors)
+test.run(['spinfree.inp'], ['C.xyz'], accepted_errors=accepted_errors)
+test.run(['C_explicit.inp'], ['C.xyz'], accepted_errors=accepted_errors)
+test.run(['spinorbit.inp'], ['Nb.xyz'], accepted_errors=accepted_errors)
+test.run(['spinfree.inp'], ['Nb.xyz'], accepted_errors=accepted_errors)
+
+with open(os.path.join(test.work_dir, 'spinorbit_C.out')) as output:
+    spinorbit_output = output.read()
+with open(os.path.join(test.work_dir, 'spinfree_C.out')) as output:
+    spinfree_output = output.read()
+with open(os.path.join(test.work_dir, 'C_explicit_C.out')) as output:
+    explicit_output = output.read()
+with open(os.path.join(test.work_dir, 'spinorbit_Nb.out')) as output:
+    nb_spinorbit_output = output.read()
+with open(os.path.join(test.work_dir, 'spinfree_Nb.out')) as output:
+    nb_spinfree_output = output.read()
+
+if '* Atomic occupation selected for Z =  6' not in spinorbit_output:
+    test.return_code += 1
+    sys.stderr.write('Automatic atomic occupation was not selected for C.\n')
+if '* Vector selection based on Kappa symmetry' not in spinorbit_output:
+    test.return_code += 1
+    sys.stderr.write('Automatic kappa selection was not enabled for C.\n')
+if '* Atomic occupation selected for Z =  6' not in spinfree_output:
+    test.return_code += 1
+    sys.stderr.write('Automatic atomic occupation was not selected for spin-free C.\n')
+if '* Vector selection based on Kappa symmetry' in spinfree_output:
+    test.return_code += 1
+    sys.stderr.write('Kappa selection was enabled for spin-free C.\n')
+if '* Atomic occupation selected' in explicit_output:
+    test.return_code += 1
+    sys.stderr.write('Explicit occupation was overridden for C.\n')
+if '* Atomic occupation selected for Z = 41' not in nb_spinorbit_output:
+    test.return_code += 1
+    sys.stderr.write('Automatic atomic occupation was not selected for Nb.\n')
+if '* Vector selection based on Kappa symmetry' not in nb_spinorbit_output:
+    test.return_code += 1
+    sys.stderr.write('Automatic kappa selection was not enabled for Nb.\n')
+if 'Open shell no. 1        4.00' not in nb_spinorbit_output:
+    test.return_code += 1
+    sys.stderr.write('The 4d open shell was not generated for Nb.\n')
+if 'Open shell no. 2        1.00' not in nb_spinorbit_output:
+    test.return_code += 1
+    sys.stderr.write('The 5s open shell was not generated for Nb.\n')
+if '* Atomic occupation selected for Z = 41' not in nb_spinfree_output:
+    test.return_code += 1
+    sys.stderr.write('Automatic atomic occupation was not selected for spin-free Nb.\n')
+if '* Vector selection based on Kappa symmetry' in nb_spinfree_output:
+    test.return_code += 1
+    sys.stderr.write('Kappa selection was enabled for spin-free Nb.\n')
+if 'Open shell no. 1        4.00' not in nb_spinfree_output:
+    test.return_code += 1
+    sys.stderr.write('The spin-free 4d open shell was not generated for Nb.\n')
+if 'Open shell no. 2        1.00' not in nb_spinfree_output:
+    test.return_code += 1
+    sys.stderr.write('The spin-free 5s open shell was not generated for Nb.\n')
+
+sys.exit(test.return_code)

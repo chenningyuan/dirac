@@ -434,7 +434,7 @@ C     CALL MEMMAR(IDUMMY,IDUMMY,'FLUSM ',IDUMMY,'CC_OPT')
 
       SUBROUTINE GET_ECC(ECC)
 C FOR DIRTY FIX
-#include "implicit.inc"
+#include "implicit.h"
 #include "dcbdhf.h"
 #include "cecore.inc"
       ECC=DHFERG
@@ -458,7 +458,7 @@ C FOR DIRTY FIX
 *
 * Jeppe Olsen, March 2000
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Local vectors
       DIMENSION VEC1(*),VEC2(*)
 *. Scratch space : Should atleast be length :
@@ -773,7 +773,7 @@ C            WRTVCD(SEGMNT,LU,IREW,LBLK)
 * is constructed on LUVEC and the NVECADD vectors are added
 * Jeppe Olsen, Feb. 2000
 *     
-#include "implicit.inc"
+#include "implicit.h"
       DIMENSION VEC1(*),VEC2(*)
 *. Local scratch : Assuming max dim of subspace is 100
       PARAMETER (MXP_DIM_SUBSPACE = 100)
@@ -862,7 +862,7 @@ C           MVCSMD(LUIN, FAC,LUOUT, LUSCR, VEC1,VEC2,NVEC,IREW,LBL
 *
 * Jeppe Olsen, Feb. 1999
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Scratch for holding two blocks of vectors
       DIMENSION VEC1(*),VEC2(*)
 *. Scratch Atleast length 3*(NVEC+1)**2 + NVEC+1
@@ -1092,7 +1092,7 @@ C?    CALL PRSYM(BMAT,NVECP1)
 *
 * Jeppe Olsen, Feb28, 2000
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input
       DIMENSION EE(*)
 *. Output
@@ -1121,7 +1121,7 @@ C?    CALL PRSYM(BMAT,NVECP1)
 *
 
       SUBROUTINE DUMDUM(N_CC_AMP,CCVEC1,CCVEC2)
-#include "implicit.inc"
+#include "implicit.h"
       DIMENSION CCVEC1(*),CCVEC2(*)
           do i=1,N_CC_AMP
             print*,'CCVEC1',CCVEC1(i),CCVEC2(i),i
@@ -1129,7 +1129,7 @@ C?    CALL PRSYM(BMAT,NVECP1)
       END
 *
       SUBROUTINE FIRST_ELEMENT_LAST(VEC,NDIM)
-#include "implicit.inc"
+#include "implicit.h"
       DIMENSION VEC(NDIM)
 *
       NTEST = 100
@@ -1152,7 +1152,7 @@ C?    CALL PRSYM(BMAT,NVECP1)
       END
 *
       SUBROUTINE LAST_ELEMENT_FIRST(VEC,NDIM)
-#include "implicit.inc"
+#include "implicit.h"
       DIMENSION VEC(NDIM)
 *
       NTEST = 100
@@ -1184,7 +1184,7 @@ C?    CALL PRSYM(BMAT,NVECP1)
 * Jeppe Olsen, Oct 97 to check INVMAT
 *              March 00 : Scale initial matrix to obtain unit diagonal
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input and output matrix
       DIMENSION A(*)       
 *. Scratch matrices and vector

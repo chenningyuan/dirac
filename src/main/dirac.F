@@ -114,10 +114,6 @@ C  /* Deck dirctl */
 #ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
-! WIP: comment out this line to build this file and exacorr, then come back and uncomment it to rebuld dirac
-      use exacorr_tensor_interface,
-     &    only: eti_executor_shutdown, eti_executor_initialize
-
       implicit none
 
 ! dcbgrd.h : DONGRD
@@ -195,7 +191,6 @@ C***********************************************************************
 C**** M A I N    S E C T I O N  ****************************************
 C***********************************************************************
 C
-      call eti_executor_initialize(0,1)
       IF(.NOT.DOHRM) THEN
          IF (OPTIMI) THEN
             CALL PAMGEO()
@@ -214,7 +209,6 @@ C
       call gen1int_host_finalize()
 #endif
 ! WIP: comment out this line to build this file and exacorr, then come back and uncomment it to rebuld dirac 
-      call eti_executor_shutdown()
       write (lupri,'(/A,I2)') " * Closing HDF5 checkpoint file "
       call checkpoint_close
       call xml_end('run')
@@ -276,7 +270,6 @@ C***** V I S U A L I Z A T I O N ***************************************
 C***********************************************************************
 C
       if (dirac_cfg_visual) call run_visual()
-
 
  666  CONTINUE
       CALL QEXIT('PAMDRV')
@@ -375,7 +368,7 @@ C         ... DHF not converged;
         END IF
 C       Post orbital modifications
         IF(L2ORBM) CALL PSTORB()
-        IF(DOACUT) CALL ACMOUT()
+        IF(DOACUT.or.DOROSE) CALL ACMOUT()
         IF(DOPUT) CALL PCMOUT()
 C
 C***********************************************************************
@@ -402,6 +395,12 @@ C***** M O D I F I E D   V I R T U A L   O R B I T A L S ***************
 C***********************************************************************
 C
         IF(DOMVO) CALL MVOGEN()
+C
+C***********************************************************************
+C***** R O S E   O R B I T A L S ***************************************
+C***********************************************************************
+C
+        IF(DOROSE) CALL ROSE()
 C
 C***********************************************************************
 C***** M P 2   N A T U R A L   O R B I T A L S *************************
@@ -1208,12 +1207,14 @@ C***********************************************************************
 #endif
 !     use fde_evaluators_dirac, only : fde_launch_slave_process
       use fde_mod, only : fde_launch_slave_process
+      !use visual_dirac, only : visual_initialize_nodes
+      use visual
+
 #ifdef HAS_PELIB
       use pelib_dirac_interface, only : pelib_ifc_slave
 #endif
       implicit none
 
-#if defined (VAR_SLEEPING_SLAVES)
       interface
          ! fortran sleep() is only in seconds,
          ! so we use the usleep() from C to sleep in microseconds
@@ -1225,7 +1226,6 @@ C***********************************************************************
       !  end function
          end subroutine
       end interface
-#endif
 
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -1316,11 +1316,10 @@ C
       CALL GETBASDIR()
 C
  100  CONTINUE
-#if defined (VAR_SLEEPING_SLAVES)
-! If it is important that the slaves are not idling
-! then one can define VAR_SLEEPING_SLAVES.
-! If set, then the slaves test once per 10 ms if there
-! is a new task.
+! The slaves test once per ms if there is a new task and sleep in
+! between, instead of busy-waiting in MPI_RECV: while the master works
+! alone (e.g. Lowdin and X2C matrices) it can use their cores for
+! threaded BLAS/LAPACK (see GMOTRA).
       call interface_mpi_iprobe(MPARID,27,NEWTASK,global_communicator,
      &                          ISTAT)
       IF (NEWTASK) THEN
@@ -1328,14 +1327,9 @@ C
      &                           global_communicator)
       ELSE
 !        CALL SLEEP(1) ! 1 second is too long, costs a lot of waste when 100, 1000 slaves or more
-         call usleep_ftn(10000_c_int32_t) ! sleep for 10 ms = 10000 microseconds
+         call usleep_ftn(1000_c_int32_t) ! sleep for 1 ms = 1000 microseconds
          GO TO 100
       END IF
-#else
-C
-         CALL interface_MPI_RECV(ITASK,1,MPARID,27,
-     &                           global_communicator)
-#endif
       if (mytid .eq. mytid_print) 
      &   write(0,*) 'info: node',mytid,' has received itask',itask
 C
@@ -1533,6 +1527,13 @@ C        start IVO MPI calculation
 C
          call RELIVO_NODE()
 
+      ELSE IF (ITASK .EQ. 24) THEN
+C
+C        start visual with MPI
+C
+         !call visual_initialize_nodes()
+         call run_visual(launch_only=.true.)
+
       ELSE
 C
 C        Unknown task. Abort execution.
@@ -1563,6 +1564,7 @@ C
 C***********************************************************************
       use interface_to_mpi
       use fde_mod, only : fde_launch_slave_process
+      !use visual_dirac, only : visual_initialize_nodes
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -1696,6 +1698,8 @@ C
       write(0,*) 'dirac_parctl called with itask ',itask
 #endif
 
+C     while the slaves work, the master uses only its own threads/cores
+      IF (ITASK .GT. 0) CALL DIRAC_THREADS_SLAVES(1)
       IF (ITASK .EQ. -1) THEN
 C        go back from submenu to main menu via MPI_BCAST
          CALL interface_MPI_BCAST(ITASK,1,MPARID,
@@ -1707,6 +1711,7 @@ C        slave should be in main menu, ready to receive task
      &                              global_communicator)
          END DO
       END IF
+      IF (ITASK .LE. 0) CALL DIRAC_THREADS_SLAVES(0)
 
 #else /* not VAR_MPI */
 

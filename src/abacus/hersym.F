@@ -104,8 +104,6 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
 #include "priunit.h"
-#include "cbisol.h"
-#include "cbihr1.h"
 #include "molinp.h"
 #include "numder.h"
 ! infpar.h: MPARID, MYTID
@@ -500,7 +498,6 @@ C ::       Add Vec to array       ::
 C ::                              ::
 C ::::::::::::::::::::::::::::::::::
 #include "implicit.h"
-#include "priunit.h"
 #include "mxsymm.h"
       DIMENSION ARR(6,0:MXM), VEC(3)
       IF (ABS(VEC(1)) .LT. TOLLRN) VEC(1) = 0.0D0
@@ -566,7 +563,6 @@ C ::       Deletes all duplicate axes (parallel) in array        ::
 C ::                                                             ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include "implicit.h"
-#include "priunit.h"
 #include "mxsymm.h"
       DIMENSION AXARR(6,0:MXM), V1(3), V2(3)
 
@@ -1656,7 +1652,6 @@ C ::       proper or improper rotations.                   ::
 C ::                                                       ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include "implicit.h"
-#include "priunit.h"
 #include "mxsymm.h"
 #include "mxcent.h"
       DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
@@ -2397,7 +2392,6 @@ C ::       Removes symmetry-dependent atoms      ::
 C ::                                             ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "mxsymm.h"
 #include "molinp.h"
@@ -2569,7 +2563,6 @@ C       *** degenerate with respect to others.                      ***
 C       ***************************************************************
 C
 #include "implicit.h"
-#include "priunit.h"
 C
         PARAMETER (THRS = 1.0D-10)
         LOGICAL   ONAXS, HAVAXS

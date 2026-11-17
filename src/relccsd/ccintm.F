@@ -113,7 +113,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
 #include "symm.inc"
-#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -168,7 +167,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
-#include "complex.inc"
 #include "symm.inc"
 #include "ccpar.inc"
 C
@@ -496,7 +494,6 @@ C
 #include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
-#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -697,7 +694,6 @@ C
 #include "symm.inc"
 #include "eqns.inc"
 #include "complex.inc"
-#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1178,7 +1174,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "complex.inc"
 C
 C---------------Local variables--------------------------------------
@@ -1246,7 +1241,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "complex.inc"
 C
 C---------------Local variables--------------------------------------

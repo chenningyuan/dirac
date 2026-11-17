@@ -55,11 +55,11 @@ their renaming upon moving them to and from the scratch directory.
 This feature is great for running many calculation at the same time without risking
 that files will be overwritten by concurrent runs.
 
-Here we extract the DFCOEF file from the scratch directory and save it as DFCOEF.tl2.v3z in the home directory::
+Here we extract the CHECKPOINT.h5 file from the scratch directory and save it as tl2.v3z.h5 in the home directory::
 
-  pam --get "DFCOEF=DFCOEF.tl2.v3z"
+  pam --get "CHECKPOINT.h5=tl2.v3z.h5"
 
-In next run we copy files to the scratch directory (where calculations occur) with their proper names::
+In the next run we copy files to the scratch directory (where calculations occur) with their proper names::
 
-  pam --put "DFCOEF.tl2.v3z=DFCOEF"
+  pam --put "tl2.v3z.h5=CHECKPOINT.h5"
   pam --copy="/home/milias/my_scratch/Tl2_fscc02/MDCINT.18corr_el.v3z=MDCINT" 

@@ -1,0 +1,36 @@
+#!/usr/bin/env python
+
+import os
+import shutil
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+
+def move_checkpoint(src, dst):
+    if os.path.exists(dst):
+        os.unlink(dst)
+    shutil.move(src, dst)
+
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string='Partial charges of fragments',
+      num_lines=6,
+      rel_tolerance=1.0e-3)
+f.add(from_string='Recanonicalized virtual energies of fragments',
+      to_string='Starting TESTS',
+      abs_tolerance=1.0e-5)
+
+test.run(['frag.inp'], ['frag1.xyz'], args='--outcmo')
+move_checkpoint('frag_frag1.h5', 'frag1.h5')
+
+test.run(['frag.inp'], ['frag2.xyz'], args='--outcmo')
+move_checkpoint('frag_frag2.h5', 'frag2.h5')
+
+test.run(['sm_rose.inp'], ['nh3_h2o.xyz'], f,
+         args='--copy="frag1.h5 frag2.h5"')
+
+sys.exit(test.return_code)

@@ -23,7 +23,7 @@ and the menu file `CO.inp`
 
 we first run a Hartree-Fock calculation of the ground electronic state of carbon monoxide::
 
-   pam --inp=CO --mol=CO --get "DFCOEF=cf.CO"
+   pam --inp=CO --mol=CO --get "CHECKPOINT.h5=cf.CO.h5"
 
 We find that :math:`-\varepsilon (O1s)=20.6838\,E_h=562.8` eV and :math:`-\varepsilon (C1s)=11.3672 \,E_h=309.3` eV. This is significantly off the values of **542.1 eV** and **295.9 eV**, respectively, reported by Kai Siegbahn and co-workers :cite:`Siegbahn1969` .
 
@@ -37,7 +37,7 @@ In order to calculate the O1s ionized system we set up the menu file `CO_O1s.inp
 
 and use the command::
 
-  pam --inp=CO_O1s --mol=CO --put "cf.CO=DFCOEF"
+  pam --inp=CO_O1s --mol=CO --put "cf.CO.h5=CHECKPOINT.h5"
 
 It is seen that we start from the coefficients of the neutral CO molecule. We then converge to the core-ionized system using reordering and overlap selection: In the input we have specified twelve electrons in six inactive (closed) orbitals, followed
 by a single electron in an active (open) orbital. We want the O1s to be the active orbital, but this is not achieved automatically since DIRAC will normally order orbitals according to their energy.
@@ -50,7 +50,7 @@ The analogous menu file for C1s ionization is `CO_C1s.inp`
 
 which puts the C1s on top of the occupied orbitals, and then use the command::
 
-  pam --inp=CO_C1s --mol=CO --put "cf.CO=DFCOEF"
+  pam --inp=CO_C1s --mol=CO --put "cf.CO.h5=CHECKPOINT.h5"
 
 The HF energies of the neutral, the O1s-ionized and the C1s-ionized systems are -112.857912 :math:`E_h`, -92.939954 :math:`E_h` and -101.933919 :math:`E_h`, respectively, from which we calculate IP(O1s) = 19.9180 :math:`E_h` = 542.0 eV
 and IP(O1s) = 10.9240 :math:`E_h` = 297.3 eV, which agrees remarkably well with the experimental values, in particular
@@ -71,7 +71,7 @@ and the menu file `N2.inp`
 
 we run a Hartree-Fock calculation of the ground electronic state of the nitrogen molecule::
 
-   pam --inp=N2 --mol=N2 --get "DFCOEF=cf.N2 DFACMO=ac.N2"
+   pam --inp=N2 --mol=N2 --get "CHECKPOINT.h5=cf.N2.h5 DFACMO=ac.N2"
 
 (note that we are also getting the :math:`C_1` coefficients; we shall come back to that). We find that :math:`-\varepsilon (1s\sigma_g)=15.6942\,E_h=427.1` eV and :math:`-\varepsilon (1s\sigma_u)=15.6907 \,E_h=427.0` eV. This is significantly off the value of **409.9 eV** reported by Kai Siegbahn and co-workers :cite:`Siegbahn1969` ; the :math:`1s\sigma_g` and :math:`1s\sigma_u` are indistinguishable in the X-ray PES study (see also :cite:`Wight_JEPRP1972`).
 
@@ -81,7 +81,7 @@ We therefore proceed to :math:`\Delta SCF` calculations: for the :math:`1s\sigma
 
 and the command::
 
-  pam --inp=N2_Kg --mol=N2 --put "cf.N2=DFCOEF"
+  pam --inp=N2_Kg --mol=N2 --put "cf.N2.h5=CHECKPOINT.h5"
 
 and equivalent menu file `N2_Ku.inp` for the :math:`1s\sigma_u` ionization:
   
@@ -105,7 +105,7 @@ We next set up the menu file `N2loc.inp`
 
 for Pipek-Mezey localization. Note that we select only the a little trick: We select only the :math:`1s\sigma_g` and :math:`1s\sigma_u` orbitals for localization. We now localize using the command::
 
-  pam --inp=N2loc --mol=N2_C1 --put "ac.N2=DFCOEF" --get "DFCOEF=ac.N2loc"
+  pam --inp=N2loc --mol=N2_C1 --put "ac.N2.h5=CHECKPOINT.h5" --get "CHECKPOINT.h5=ac.N2loc.h5"
 
 We calculate the system with a localized core hole using the menu file  `N2_K.inp`
 
@@ -113,7 +113,7 @@ We calculate the system with a localized core hole using the menu file  `N2_K.in
 
 and the command::
 
-  pam --inp=N2_K --mol=N2_C1 --put "ac.N2loc=DFCOEF"
+  pam --inp=N2_K --mol=N2_C1 --put "ac.N2loc.h5=CHECKPOINT.h5"
 
 In fact, we can do slightly better because we can go up to :math:`C_{2v}` symmetry using that DIRAC allows
 the import of coefficients in :math:`C_1` symmetry from the unformatted file DFACMO to current symmetry.

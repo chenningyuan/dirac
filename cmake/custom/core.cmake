@@ -70,6 +70,9 @@ if(ENABLE_UTILITIES)
     	compile_standalone(h5towfx.x             utils/h5towfx.cpp                   "${_list_of_executables}")
     	set_property(TARGET h5towfx.x PROPERTY LINKER_LANGUAGE CXX)
     endif()
+    if (ENABLE_EXATENSOR)
+        compile_standalone(test_sigma_eti.x          utils/test_sigma_eti.F90            "${_list_of_executables}")
+    endif()
 endif()
 
 if(ENABLE_RELCCSD_STANDALONE)
@@ -114,6 +117,18 @@ foreach(
     if(CMAKE_Fortran_COMPILER_ID MATCHES GNU AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
     # add -lC linking flag for each ${_executable} to satisfy missing objects - sqrtf,logf,cosf,powf 
         target_link_libraries(${_executable} -lC)
+    endif()
+
+    if (APPLE)
+        # src/gp/gpc.c finds the thread control functions of the BLAS/OpenMP library through weak symbols.
+        # On ELF an unresolved weak symbol is NULL, but the macOS linker (Mach-O) reports it as undefined,
+        # so allow these symbols to be undefined, as they then stay NULL at run time.
+        foreach(_sym MKL_Get_Max_Threads MKL_Set_Num_Threads
+                     openblas_get_num_threads openblas_get_parallel openblas_set_num_threads
+                     omp_get_max_threads omp_set_num_threads)
+            target_link_libraries(${_executable} -Wl,-U,_${_sym})
+        endforeach()
+        unset(_sym)
     endif()
 
 endforeach()

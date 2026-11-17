@@ -1,0 +1,177 @@
+#!/usr/bin/env python3
+import os
+import sys
+from pathlib import Path
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from runtest_dirac import TestRun
+
+TEST_DIR = Path(__file__).resolve().parent
+RESULT_DIR = TEST_DIR / "result"
+
+SPINORS = [19, 20]
+
+COMPONENTS = [
+    "L_alpha_re",
+    "L_alpha_im",
+    "L_beta_re",
+    "L_beta_im",
+    "S_alpha_re",
+    "S_alpha_im",
+    "S_beta_re",
+    "S_beta_im",
+]
+
+CUBES = [
+    f"spinor_{spinor}_{component}.cube"
+    for spinor in SPINORS
+    for component in COMPONENTS
+]
+
+# The test compares text cube data written with limited precision.
+# Pair density is gauge/sign invariant for the degenerate spinor pair.
+RHO_RTOL = 5.0e-5
+RHO_ATOL = 1.0e-9
+
+
+def read_cube_data(path):
+    with open(path, "r") as f:
+        lines = f.readlines()
+
+    if len(lines) < 6:
+        raise RuntimeError(f"{path}: invalid cube file, fewer than 6 header lines")
+
+    try:
+        natoms = abs(int(lines[2].split()[0]))
+    except (IndexError, ValueError) as exc:
+        raise RuntimeError(f"{path}: could not parse number of atoms from cube header") from exc
+
+    data_start = 6 + natoms
+
+    vals = []
+    for line in lines[data_start:]:
+        for x in line.split():
+            vals.append(float(x.replace("D", "E")))
+
+    return vals
+
+
+def compare_arrays(a, b, label, rtol=RHO_RTOL, atol=RHO_ATOL):
+    if len(a) != len(b):
+        return False, f"{label}: length mismatch: {len(a)} vs {len(b)}"
+
+    maxdiff = 0.0
+    maxrel = 0.0
+    maxidx = -1
+    nbad = 0
+
+    for i, (x, y) in enumerate(zip(a, b)):
+        diff = abs(x - y)
+        scale = max(abs(x), abs(y), 1.0e-300)
+        rel = diff / scale
+        tol = max(atol, rtol * max(abs(x), abs(y)))
+
+        if diff > maxdiff:
+            maxdiff = diff
+            maxrel = rel
+            maxidx = i
+
+        if diff > tol:
+            nbad += 1
+
+    if nbad > 0:
+        return False, (
+            f"{label}: {nbad} numeric mismatches; "
+            f"maxdiff={maxdiff:.3e}, maxrel={maxrel:.3e}, "
+            f"at index {maxidx}"
+        )
+
+    return True, (
+        f"{label}: maxdiff={maxdiff:.3e}, "
+        f"maxrel={maxrel:.3e}, at index {maxidx}"
+    )
+
+
+def spinor_density(directory, spinor):
+    rho = None
+
+    for component in COMPONENTS:
+        cube = f"spinor_{spinor}_{component}.cube"
+        values = read_cube_data(directory / cube)
+
+        if rho is None:
+            rho = [0.0] * len(values)
+
+        if len(values) != len(rho):
+            raise RuntimeError(f"length mismatch in density for {cube}")
+
+        for i, x in enumerate(values):
+            rho[i] += x * x
+
+    return rho
+
+
+def pair_density(directory, spinors):
+    rho_pair = None
+
+    for spinor in spinors:
+        rho = spinor_density(directory, spinor)
+
+        if rho_pair is None:
+            rho_pair = [0.0] * len(rho)
+
+        if len(rho) != len(rho_pair):
+            raise RuntimeError(f"length mismatch in pair density for spinor {spinor}")
+
+        for i, x in enumerate(rho):
+            rho_pair[i] += x
+
+    return rho_pair
+
+
+def main():
+    test = TestRun(__file__, sys.argv)
+
+    test.run(
+        ["h2.inp"],
+        ["h2.xyz"],
+        args='--get="spinor_*.cube"',
+    )
+
+    workdir = Path(test.work_dir)
+
+    for cube in CUBES:
+        calc = workdir / cube
+        ref = RESULT_DIR / cube
+
+        if not calc.exists():
+            print(f"FAILED: missing output file {cube}", file=sys.stderr)
+            test.return_code += 1
+
+        if not ref.exists():
+            print(f"FAILED: missing reference file {cube}", file=sys.stderr)
+            test.return_code += 1
+
+    if test.return_code != 0:
+        sys.exit(test.return_code)
+
+    rho_calc = pair_density(workdir, SPINORS)
+    rho_ref = pair_density(RESULT_DIR, SPINORS)
+
+    ok, msg = compare_arrays(
+        rho_calc,
+        rho_ref,
+        "pair density spinor_19+spinor_20",
+    )
+
+    if ok:
+        print(f"passed: {msg}")
+    else:
+        print(f"FAILED: {msg}", file=sys.stderr)
+        test.return_code += 1
+
+    sys.exit(test.return_code)
+
+
+if __name__ == "__main__":
+    main()

@@ -136,8 +136,7 @@ C
       DIMENSION WORK(*)
       LOGICAL DOEXC
 C
-#include "ibtfun.h"
-      MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
+      MULD2H(I,J) = IEOR(I-1,J-1) + 1
 C
       CALL QENTER('TPAEXC')
 C
@@ -422,15 +421,12 @@ C***********************************************************************
 #include "dcbxlr.h"
 #include "dcbxqr.h"
 #include "dgroup.h"
-#include "dcborb.h"
-#include "dcbbas.h"
 #include "dcbxrs.h"
 C
       DIMENSION WORK(*)
       PARAMETER ( D2 = 2.0D0 )
 C
-#include "ibtfun.h"
-      MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
+      MULD2H(I,J) = IEOR(I-1,J-1) + 1
 C
       CALL QENTER('TPA_SETUP')
 C
@@ -514,8 +510,7 @@ C
       DIMENSION CMO(*),IBEIG(*),WORK(*)
       DIMENSION RESULT(3,NBSYM,MAXLQR,MAXLQR,MAXFQR)
 C
-#include "ibtfun.h"
-      MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
+      MULD2H(I,J) = IEOR(I-1,J-1) + 1
 C
       CALL QENTER('QRTPA')
 C
@@ -639,7 +634,6 @@ C***********************************************************************
 #include "dcbxqr.h"
 #include "dcbxpr.h"
 #include "dcbxrs.h"
-#include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -653,8 +647,7 @@ C
 C
       INTEGER EXCOPFROMSYM
 C
-#include "ibtfun.h"
-      MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
+      MULD2H(I,J) = IEOR(I-1,J-1) + 1
 C
       CALL QENTER('TPA_PRINT')
 C

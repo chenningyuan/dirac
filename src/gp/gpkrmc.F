@@ -39,7 +39,7 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
       REAL*8    AMAT(NDIM1,NDIM1,NDIM2,NZ,3)
       INTEGER   IP(4)
@@ -97,7 +97,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine mk34bindex_offset(indxb34_offset,nstr,trian)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
       logical trian
       integer nstr(2,0:2,2)
@@ -125,20 +124,16 @@ C
          end do
       end do
 !
-!     write(lupri,'(2x,a,2i4)') '(mk34bindex_offset) offsets are',
-!    &                          indxb34_offset(1),indxb34_offset(2)
-!     write(lupri,'(2x,a,2i4)') '(mk34bindex_offset) input nstr(1) is',
-!    &                           (nstr(i,0,1), i = 1, nfsym)
-!     write(lupri,'(2x,a,2i4)') '(mk34bindex_offset) input nstr(2) is',
-!    &                           (nstr(i,0,2), i = 1, nfsym)
-!
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine int_irreps_b2x_2(irepij,indxb34_reod,orb_info_array)
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-
+C
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
+#include "priunit.h" ! LUPRI
+#endif
+C
 #include "maxash.h"
 C
 #include "maxorb.h"
@@ -200,7 +195,7 @@ C
       use memory_allocator
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
@@ -296,7 +291,7 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "dgroup.h"
       DIMENSION vnz3(nkl,nz,3)
       DIMENSION IREPIJB(2),IREPKLB(2,NKL)
@@ -422,7 +417,7 @@ C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "dummy.h"
 C
       DIMENSION VECTOR(ISIZE)
@@ -473,7 +468,7 @@ C     Written by S. Knecht - Aug 2008
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8
@@ -514,7 +509,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck GET_KRCICVECS_E */
-      SUBROUTINE GET_KRCICVECS_E(EVEC,NKRCI_CIROOTS,XSYMFLAB,
+      SUBROUTINE GET_KRCICVECS_E(EVEC,NKRCI_CIROOTS,
      &                           NKRCI_MAX_SYM,PRINT_EV)
 C***********************************************************************
 C
@@ -522,7 +517,6 @@ C     read eigenstate energies from file KRCI_CVECS.INFO
 C
 C     Input:
 C        NKRCI_MAX_SYM  - highest active symmetry irrep
-C        XSYMFLAB       - array containing file labels for each symmetry
 C        NKRCI_CIROOTS  - # eigenstates per symmetry irrep
 C
 C     Output:
@@ -535,12 +529,14 @@ C     Last revision: S. Knecht - Jan 2010
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
       DIMENSION EVEC(*), NKRCI_CIROOTS(*)
-      CHARACTER*3 XSYMFLAB(*) 
       CHARACTER*8 FILELAB
       LOGICAL EX, PRINT_EV, FNDLAB
+
+      CHARACTER*3, EXTERNAL ::  XSYMFLAB
+      CHARACTER*3           ::   SYMFLAB
 C
 C     read final energies from file KRCI_CVECS.INFO
       INQUIRE(FILE = 'KRCI_CVECS.INFO',EXIST=EX)
@@ -555,7 +551,8 @@ C     read final energies from file KRCI_CVECS.INFO
       NXSCR = 1
       DO I = 1, NKRCI_MAX_SYM
         IF(NKRCI_CIROOTS(I) .gt. 0 )THEN
-          WRITE(FILELAB,'(A5,A3)') "eroot",XSYMFLAB(I)
+          SYMFLAB = XSYMFLAB(I)
+          WRITE(FILELAB,'(A5,A3)') "eroot",SYMFLAB
           REWIND LU_INFO
           PRINT_EV = FNDLAB(FILELAB,LU_INFO)
           IF(PRINT_EV) THEN 
@@ -596,7 +593,7 @@ C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "iratdef.h"
 C
@@ -638,7 +635,7 @@ C     Written by J. Thyssen - Dec 28 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 C
       CHARACTER LABEL*8
@@ -689,7 +686,7 @@ C     Written by J. Thyssen - Jul 4 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8
@@ -729,7 +726,7 @@ C     Written by J. Thyssen - Jul 4 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
       DIMENSION IVECTOR(ISIZE)
       CHARACTER LABEL*8, FILENAME*24
@@ -774,7 +771,7 @@ C     Written by J. Thyssen - Jul 4 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 C
       DIMENSION VECTOR(ISIZE)
@@ -840,7 +837,6 @@ C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION WOPEE(NZXOPE,NZ),WOPEP(NZXOPP,NZ),
      &          UNWOP(NORBT,NORBT,NZ),JXOPE(2,*),JXOPP(2,*)
@@ -895,7 +891,7 @@ C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "thrzer.h"
 C
@@ -1210,7 +1206,7 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "maxash.h"
 C
 #include "maxorb.h"
@@ -1492,7 +1488,6 @@ C     Last revision: HJAaJ - Aug 2008
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "thrzer.h"
 #include "consts.h"
@@ -1517,7 +1512,6 @@ C
          DO IZ = 1, NZ
             TNORM = TNORM + DDOT(NBASI,VC(1,I,IZ),1,SCR1(1,IZ),1)
          END DO
-C        write(lupri,*) 'tnorm = ',tnorm
          IF (TNORM .LT. THRZER) THEN
             IRETUR = -I
             RETURN
@@ -1575,7 +1569,6 @@ C
          END DO
 C
          IF (ITURN .EQ. 1 .AND. IROUND .GT. 0) THEN
-C           write(LUPRI,*) 'INFO: second round in QNORM'
             GOTO 1
          END IF
          IF (IROUND .GT. 0) CALL QUIT('QNORM internal error')
@@ -1597,7 +1590,6 @@ C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION AMAT(NRA,NCA,NZ), BMAT(NRB,NCB,NZ), IDX(*)
 C
@@ -1627,7 +1619,6 @@ C     Written by S. Knecht - August 2010
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION AMAT(NRA,NCA,NZ), BMAT(NRB,NCB,NZ), IDX(*), IBEIG(*)
       real(8), parameter :: threshold = 1.0d-12
@@ -1708,7 +1699,6 @@ C     Written by S. Knecht - Nov 2008
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION AMAT(NDIMA,NDIMA,NZ), BMAT(NDIMB,NDIMB,NZ)
 C
@@ -1734,7 +1724,6 @@ C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION AMAT(NRA,NCA,NZ), BMAT(NRB,NCB,NZ), IDX(*)
 C
@@ -1763,7 +1752,6 @@ C     Written by S. Knecht - August 2010
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION AMAT(NRA,NCA,NZ), BMAT(NRB,NCB,NZ), IDX(*), ibeig(*)
 C
@@ -1803,7 +1791,6 @@ C     Written by S. Knecht - August 2010
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION iarr(*)
 C
@@ -1814,30 +1801,29 @@ C
       iimax = ismax
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck DETXFLAB */
-      SUBROUTINE DETXFLAB(XSYMFLAB,IXSYM)
+C  /* Deck XSYMFLAB */
+      CHARACTER*3 FUNCTION  XSYMFLAB(I)
 C***********************************************************************
 C
-C     determine KRCI_CVECS.x xSYMFLAB
+C     determine KRCI_CVECS.x XSYMFLAB
 C
 C     Written by S. Knecht - Nov 2008
 C
-C     Last revision :
+C     Last revision : HJAaJ, Nov 2025
 C
 C***********************************************************************
-#include "implicit.h"
-C
-      CHARACTER*3 XSYMFLAB(IXSYM) 
-       
-      do i = 1, IXSYM
-        if(i.lt.10)then
-          write(XSYMFLAB(I),'(i1,a2)') i,'  '
+        integer I
+
+        if(i.le.0 .or. i.ge.1000)then
+          CALL QUIT('*** "I" out of bounds in xsymflab ***')
+        else if(i.lt.10)then
+          write(XSYMFLAB,'(i1,a2)') i,'  '
         else if(i.lt.100)then
-          write(XSYMFLAB(I),'(i2,a1)') i,' '
+          write(XSYMFLAB,'(i2,a1)') i,' '
         else
-          write(XSYMFLAB(I),'(i3)')i
+          write(XSYMFLAB,'(i3)')i
         end if
-      end do
+
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck FIND_XPRPINDEX */

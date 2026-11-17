@@ -1,21 +1,30 @@
 .define-cores:
   script:
+    # N_PROC is the number of physical cores (hardware threads are not counted).
+    # Note: lscpu reports the whole machine, not the CPU limit of a container, so on
+    # shared self-hosted runners with CPU limits N_PROC can be too large.
     - cores=$(LC_ALL=C lscpu | awk '/^Core\(s\) per socket:/ {print $4}')
     - sockets=$(LC_ALL=C lscpu | awk '/^Socket\(s\):/ {print $2}')
     - N_PROC=$((cores * sockets))
     - |
-      if [ "$N_PROC" -lt 4 ]; then
-        M=$((N_PROC / 2))
-        export NEW_DIRAC_MPI_COMMAND="mpiexec -n 4"
+      # M = number of tests run concurrently by ctest, each with NEW_DIRAC_MPI_COMMAND
+      if [ "$N_PROC" -lt 2 ]; then
+        # e.g. 2 vCPUs = 1 core with 2 hardware threads: Open MPI refuses more ranks than cores
+        M=1
+        export NEW_DIRAC_MPI_COMMAND="mpiexec -n 1"
+      elif [ "$N_PROC" -lt 4 ]; then
+        M=1
+        export NEW_DIRAC_MPI_COMMAND="mpiexec -n 2"
       else
         M=$((N_PROC / 4))
         export NEW_DIRAC_MPI_COMMAND="mpiexec -n 4"
       fi
+      : > var_cores.env  # start a fresh file on every call
       if [[ -v DIRAC_MPI_COMMAND ]]; then
         echo "DIRAC_MPI_COMMAND defined by the build."
       else
         echo "DIRAC_MPI_COMMAND defined by define-cores function."
-        echo "DIRAC_MPI_COMMAND=\"$NEW_DIRAC_MPI_COMMAND\"" > var_cores.env
+        echo "DIRAC_MPI_COMMAND=\"$NEW_DIRAC_MPI_COMMAND\"" >> var_cores.env
       fi
       echo "N_PROC=$N_PROC" >> var_cores.env
       echo "M=$M" >> var_cores.env
@@ -50,19 +59,17 @@
     - apt-get -qq -y install git
     - apt-get -qq -y install python3 pip python-is-python3
     - apt-get -qq -y install libhdf5-dev
-    - apt -qq -y install python3-h5py
     - apt-get install -y wget build-essential pkg-config ca-certificates gnupg
-    # Download Intel GPG key
-    - wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-    # Import Intel GPG key
-    - apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-    # Add Intel oneAPI repository
-    - echo "deb https://apt.repos.intel.com/oneapi all main" > /etc/apt/sources.list.d/oneAPI.list
+    # Download and import the repository INTEL GPG key, and add the repository
+    - mkdir -p /etc/apt/keyrings
+    - wget -qO- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB | gpg --dearmor -o /etc/apt/keyrings/intel-oneapi.gpg
+    - echo "deb [signed-by=/etc/apt/keyrings/intel-oneapi.gpg] https://apt.repos.intel.com/oneapi all main" > /etc/apt/sources.list.d/oneAPI.list
     # Install Intel oneAPI packages
     - apt-get -qq update
-    - apt-get -qq -y install intel-oneapi-compiler-dpcpp-cpp intel-oneapi-compiler-fortran intel-oneapi-mkl
-    - apt-get -qq -y install intel-oneapi-mpi intel-oneapi-mpi-devel
+    # Pin to the last known-good CI toolchain
+    - apt-get -qq -y install intel-oneapi-compiler-dpcpp-cpp=2025.3.3-30 intel-oneapi-compiler-fortran=2025.3.3-30 intel-oneapi-mkl=2025.3.1-8
+    - apt-get -qq -y install intel-oneapi-mpi=2021.17.2-91 intel-oneapi-mpi-devel=2021.17.2-91
     # Set up environment for Intel oneAPI
     - . /opt/intel/oneapi/setvars.sh
     # Pip packages
-    - pip install scipy h5py cmake
+    - pip install --break-system-packages scipy h5py cmake

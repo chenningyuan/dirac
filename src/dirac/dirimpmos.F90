@@ -37,7 +37,6 @@ subroutine impmos()
 ! common blocks
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbham.h"
 #include "dgroup.h"
 #include "shells.h"
 #include "nuclei.h"
@@ -476,8 +475,6 @@ subroutine rdrespect(cmo,eig, &! out
 
  implicit none
 
-#include "priunit.h"
-
 ! parameter
  character(len=*), parameter :: chrdbg = "rdinporb>"
  logical, parameter :: locdbg = .false.
@@ -715,7 +712,7 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
  implicit none
 
 #include "priunit.h"
-#include "heapsort.h"
+#include "heapsort.h" ! For heapsorti
 
 ! local parameter:
  character(len=*), parameter :: chrdbg = "reorder_respect>"
@@ -828,10 +825,6 @@ subroutine reorder_turbomole(cmosph,& ! i/o
 !------------------------------------------------------------------------------!
 
  implicit none
-
-#include "priunit.h"
-#include "consts.h"
-#include "heapsort.h"
 
 ! local parameter:
  character(len=*), parameter :: chrdbg = "reorder_respect>"

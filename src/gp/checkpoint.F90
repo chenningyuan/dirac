@@ -96,6 +96,7 @@ module checkpoint
             return
          else 
             print*, "   - Checkpoint file is not valid, will be overwritten"
+            call lab_close(checkpoint_file)
             call unlink(checkpoint_file%name)
             checkpoint_file%status = -1
          endif
@@ -142,7 +143,7 @@ module checkpoint
             print*, "   - Checkpoint file does not contains all required data, can not be used for restarts"
       end if
 
-      checkpoint_file%status = 0
+      call lab_close(checkpoint_file)
       print*, "   - Checkpoint file closed"
 
   end subroutine checkpoint_close
@@ -195,6 +196,7 @@ module checkpoint
       if (.not.exist) then
          print*," WARNING: ",trim(label)," could not be read"
          print*," REASON: ",trim(verbose_message)
+         return
       end if
 
       if (present(rdata)) then

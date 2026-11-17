@@ -230,7 +230,6 @@ C     are defined. At equilibrium the frequencies are the same with or
 C     without internal coordinates defined.
 C
 #include "implicit.h"
-#include "hotfccom.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -246,9 +245,7 @@ C Used from common blocks:
 C   TAYMOL : HESMOL
 C
 #include "abainf.h"
-#include "taymol.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dorps.h"
 #include "cbivib.h"
 C
@@ -471,10 +468,8 @@ C
 C
 #include "gnrinf.h"
 #include "cbivib.h"
-#include "moldip.h"
 #include "symmet.h"
 #include "dorps.h"
-#include "trkoor.h"
 #include "cbilnr.h"
 #include "cbisol.h"
 #include "codata.h"
@@ -862,7 +857,6 @@ C
 C
 #include "molde.h"
 #include "abainf.h"
-#include "cbilnr.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "pgroup.h"
@@ -1477,8 +1471,6 @@ C
      &          NATTYP(*), WRK(*)
       LOGICAL   LINDEP(6)
 C
-#include "nuclei.h"
-#include "taymol.h"
 #include "cbisol.h"
 #include "hotfccom.h"
       AMASS(I) = DISOTP(NATTYP(I),ISOTOP(I),'MASS')
@@ -1946,8 +1938,6 @@ C  /* Deck prhint */
 C
       INTEGER BEGIN
       REAL*8 MATRIX(NINTER,NINTER)
-#include "cbivib.h"
-#include "nuclei.h"
 C
       NROW = NINTER
       LAST = MIN(NROW,KCOL)
@@ -2260,7 +2250,6 @@ C  /* Deck vibv3 */
 C
 #include "symmet.h"
 #include "nuclei.h"
-#include "abainf.h"
 #include "nuctap.h"
 #include "cbivib.h"
 #include "cbiwlk.h"
@@ -2587,9 +2576,7 @@ C  /* Deck vibroa */
       SUBROUTINE VIBROA(EVEC,FREQ,ROAAFQ,ROAGNQ,ROAGLQ,ROAAQ,WORK,LWORK,
      &                  NCORD,NUMMOD)
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
       DIMENSION EVEC(NCORD,NCORD), FREQ(NCORD),
      &          ROAAFQ(3,3,NFRVAL,NCORD), ROAGNQ(3,3,NFRVAL,NCORD),
      &          ROAGLQ(3,3,NFRVAL,NCORD), ROAAQ(3,3,3,NFRVAL,NCORD)
@@ -2965,7 +2952,6 @@ C     Determines the irep of a given normal coordinate, by comparing
 C     the results of symmetry operations with the character table.
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -3157,7 +3143,7 @@ C     This subroutine calculates vibrationally averaged molecular
 C     properties assuming that the calculation is performed at the effective
 C     geometry. K.Ruud, San Diego, March 1999
 C
-#include "implicit.h"
+include "implicit.h"
 #include "thrzer.h"
 #include "priunit.h"
 #include "mxcent.h"

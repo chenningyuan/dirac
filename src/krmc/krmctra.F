@@ -44,7 +44,6 @@ C***********************************************************************
 C
 #include "dcbopt.h"
 #include "dgroup.h"
-#include "dcborb.h"
 C
       CHARACTER SZTRA(2,4)*(*)
       DIMENSION CMO(*),WORK(*)
@@ -107,7 +106,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dcborb.h"
 #include "dcbopt.h"
 #include "dgroup.h"
 C
@@ -209,7 +207,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 #include "maxorb.h"
 #include "dummy.h"
@@ -441,7 +438,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 C
@@ -487,7 +483,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "maxorb.h"
@@ -652,7 +647,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       PARAMETER ( DM1 = -1.0D00 )
 C
@@ -736,7 +730,6 @@ C***********************************************************************
 #include "priunit.h"
 #include "dummy.h"
 C
-#include "maxorb.h"
 #include "../moltra/dcbtra.h"
 #include "../moltra/dcbtr3.h"
 #include "dcbbas.h"
@@ -902,7 +895,7 @@ C
      &                   NSTR(IFRP,0,I),WORK(KVEC(IFRP,I)),
      &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
      &                   NFBAS(IFRP,0),NORB(IFRP))
-             CALL SELIBEIG(work(kibeig),IORB(IFRP),IFRP,
+             CALL SELIBEIG(work(kibeig),IORB(IFRP),NPSH(IFRP),
      &                     WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
      &                     NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           ENDIF
@@ -973,9 +966,6 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dcbopt.h"
-#include "dcborb.h"
-#include "dcbgen.h"
-#include "dgroup.h"
 C
       DIMENSION FQ(*)
       DIMENSION H2AC(*)
@@ -1044,13 +1034,9 @@ C
 !
 !***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-#include "maxash.h"
 C
-#include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
 !-----------------------------------------------------------------------
       integer luint, LU_NOT_USED
       integer nfh12ij_offset(2), nfh12kl_offset(2), indxb34_offset(2)
@@ -1124,11 +1110,9 @@ C***********************************************************************
 #include "infpar.h"  
 #include "maxash.h"
 C
-#include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "maxorb.h"
-#include "dcbidx.h"
 #include "dcbham.h"
 C
       real*8    FQ(NORBT,NASHT,NZ)
@@ -1260,8 +1244,8 @@ C     LUINT = 56 + IREPIJ, IREPIJ = 1,NFSYM are actually used
          IIKLB = IIKLB + NFPCK34(IREPIJ)
       END DO
 C
-C     Read integrals (x>y)
-C     --------------------
+C     Read integrals (x.ge.y)
+C     -----------------------
 C
 C     initialize output arrays
       IF(DOFQ)   CALL DZERO(FQ,NASHT*NORBT*NZ)
@@ -1488,7 +1472,6 @@ C
 C dcbham.h : spinfr, levyle
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbopt.h"
 #include "dcbham.h"
 C
       DIMENSION H2XY(NORBT,NASHT,NZ,3)
@@ -2256,12 +2239,7 @@ C     Last revision : S. Knecht - modifications for spinfree MCSCF
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
-#include "dcbxrs.h"
-#include "dcborb.h"
-#include "dcbgen.h"
-#include "dgroup.h"
 C
       DIMENSION FQX(*),FQT(*), H2ACX(*)
       DIMENSION PV(*),PVT(*)
@@ -2333,7 +2311,6 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "maxorb.h"
-#include "dcbidx.h"
 #include "dcbham.h"
 C
       DIMENSION FQX(NORBT,NASHT,NZ,*)
@@ -2479,9 +2456,9 @@ C     Allocate memory for integrals (H2XY) and initialize
       end if
 #endif
 C
-C     ****************************
-C     *** Read integrals (x>y) ***
-C     ****************************
+C     *******************************
+C     *** Read integrals (x.ge.y) ***
+C     *******************************
 C
 C     zero arrays
 C     -----------
@@ -2904,13 +2881,10 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "maxorb.h"
 #include "dcbidx.h"
-#include "dcbopt.h"
-#include "dcborb.h"
 C
       DIMENSION IDXKR12(2,*)
 C
@@ -2945,7 +2919,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -2978,9 +2951,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "consts.h"
 C
 C dcbham.h : spinfr, levyle
 #include "dcborb.h"
@@ -3529,7 +3499,6 @@ C
 C
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbopt.h"
 #include "maxorb.h"
 #include "dcbidx.h"
 C
@@ -3733,9 +3702,6 @@ C
       SUBROUTINE RADDFQX1(szPV,szQV,FAC,IZPV,I3PV,IZQV,I3QV,
      &     H2VPX,PV,NVQ,IQU,IVU,FQX)
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -3805,9 +3771,6 @@ C
 C
       SUBROUTINE RADDFQX4(szPVXY,szQVXY,FAC,H2VPX,PV,FQX)
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "consts.h"
 C
 #include "dcborb.h"
 C
@@ -3840,7 +3803,6 @@ C
 C
       SUBROUTINE RADDFQX3(sz,FAC,IZ,I3,szXY)
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "consts.h"
 C
@@ -3899,7 +3861,6 @@ C
 C
       SUBROUTINE RADDFQX2(sz,FAC,IZ,I3,szXY)
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "consts.h"
 C

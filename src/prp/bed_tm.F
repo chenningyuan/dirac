@@ -20,17 +20,14 @@ C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0,D4=4.0D0)
 #include "codata.h"      
 #include "dcbgen.h"
-#include "dcbbas.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"
-#include "orgcom.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"            
 #include "dcbibn.h"
 #include "dcbwav.h"
-C#include "cbiher.h"
       LOGICAL DOINT(2,2)
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
       DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),OSCBED(MAXEXC),
@@ -48,9 +45,6 @@ C#include "cbiher.h"
       logical, allocatable              :: first(:)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
 
-
-C
-#include "ibtfun.h"
 
 c     The parameter NOP represents the real and imaginairy component
 c     of the exponential operator, e1cos(kr) and e1sin(kr). For calculation 
@@ -141,7 +135,7 @@ C
         DO IMAT = 1,NMAT
           IAIND = JM4(IMAT,IOPTYP)
           IAREP = JM4REP(IAIND)
-          IBSYM = IBTXOR(IAREP,IREP)+1
+          IBSYM = IEOR(IAREP,IREP)+1
           IF(IPSYM2INT(IBSYM,IOP).EQ.-1) THEN
             PBUF(IMAT,IOP) = D0
           ELSE
@@ -463,20 +457,15 @@ C
 #include "priunit.h"
 C
       PARAMETER(D0=0.0D0,D2=2.0D0,D1=1.0D0)
-#include "dcbgen.h"
-#include "dcbbas.h"
 #include "mxcent.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "nuclei.h"      
 #include "dcbxrs.h"
 #include "dcbxpp.h"
-#include "orgcom.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"            
 #include "dcbibn.h"
-#include "dcbwav.h"
-C#include "cbiher.h"
       LOGICAL DOINT(2,2)
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
       DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),WORK(*)
@@ -491,8 +480,6 @@ C#include "cbiher.h"
       logical, allocatable              :: first(:),doatom(:)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
 C
-#include "ibtfun.h"
-C     
 C     Allocate placeholders for integral labels and irreps 
 C
       allocate(LABINT(3))
@@ -713,7 +700,6 @@ C
 C
       PARAMETER(D0=0.0D0,D2=2.0D0,D1=1.0D0)
 #include "dcbgen.h"
-#include "dcbbas.h"
 #include "mxcent.h"
 #include "chrxyz.h"
 #include "pgroup.h"
@@ -721,12 +707,9 @@ C
 #include "nuclei.h"      
 #include "dcbxrs.h"
 #include "dcbxpp.h"
-#include "orgcom.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"            
 #include "dcbibn.h"
-#include "dcbwav.h"
-C#include "cbiher.h"
       LOGICAL DOINT(2,2)
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
       DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),WORK(*)
@@ -741,7 +724,6 @@ C#include "cbiher.h"
       logical, allocatable              :: first(:),doatom(:)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
 C
-#include "ibtfun.h"
       NOP = 3
       NEXCNV = KEXCNV(JSYMOP)
       IF (NEXCNV .EQ. 0) RETURN
@@ -987,17 +969,14 @@ C
 C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0,D4=4.0D0)
 #include "maxash.h"
-#include "dcborb.h"
 C
 #include "codata.h" 
 #include "dcbgen.h"
 #include "chrxyz.h"
-#include "dcbbas.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"
-#include "orgcom.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"            
 #include "dcbibn.h"
@@ -1027,8 +1006,6 @@ C     ************************************************************
       integer             :: IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*)
       integer   KFRSAV
 C
-#include "ibtfun.h"
-
       CALL QENTER('BEDLEB')
 C
 #if defined (VAR_MPI)
@@ -1120,7 +1097,7 @@ C
           IOPTYP = 1 + IOP
           IAIND  = JM4(1,IOPTYP)
           IAREP  = JM4REP(IAIND)
-          IBSYM  = IBTXOR(IAREP,IREP)+1
+          IBSYM  = IEOR(IAREP,IREP)+1
           WRITE(PRPNAM(NPRPS+II),'(A3,A1,I1,A7)')
      &        'BED',CHRXYZ(IC),IC,REP(IREP)
           IPRPSYM(NPRPS+II) = JSYMOP ! Total symmetry of operator
@@ -1496,19 +1473,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                          
 C                                                          
 c TODO added due to NESH
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "priunit.h"                                       
+#include "dcbbas.h"                                    
 #include "mxcent.h"                                        
 #include "maxorb.h"                                        
 
 #include "aovec.h"                                         
-C TODO commented out due to dcborb.h                                                          
-c#include "inforb.h"                                        
+C TODO commented out due to dcborb.hç
 #include "infpar.h"                                        
 #include "dcbxpp.h"
-#include "molinp.h"                                        
-#include "blocks.h"                                        
 #if defined (PRG_DIRAC)                                    
 #include "dcbgen.h"                                        
 #include "dcbgrd.h"                                        
@@ -1586,33 +1558,21 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use shared_bedled_var_module
 C     
 #include "implicit.h"
-#include "priunit.h"
 C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0)
       real(8)             :: TMPCPU, buff(2)
 #include "maxash.h"
-#include "dcborb.h"
-C
-#include "dcbgen.h"
-#include "chrxyz.h"
-#include "dcbbas.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"
-#include "orgcom.h"
 #include "dcbxpr.h"
-#include "dcbprl.h"            
-#include "dcbibn.h"
-#include "dcbwav.h"
 #include "maxorb.h"
 #include "dcbidx.h"
 #include "mpif.h"
 #include "infpar.h"
       integer MASTER, NMPROC, MYPROC
 C
-#include "ibtfun.h"
-
       call MPI_COMM_SIZE(global_communicator, NMPROC, ierr)
       call MPI_COMM_RANK(global_communicator, MYPROC, ierr)
 
@@ -1754,7 +1714,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use shared_bedled_var_module
 C     
 #include "implicit.h"
-#include "priunit.h"
 C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0)
 #include "maxash.h"
@@ -1762,25 +1721,19 @@ C
 C
 #include "codata.h" 
 #include "dcbgen.h"
-#include "chrxyz.h"
 #include "dcbbas.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"
-#include "orgcom.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"            
-#include "dcbibn.h"
-#include "dcbwav.h"
 #include "maxorb.h"
 #include "dcbidx.h"
 #include "mpif.h"
 #include "infpar.h"
       integer MASTER, NMPROC, MYPROC
 C
-#include "ibtfun.h"
-
       call MPI_COMM_SIZE(global_communicator, NMPROC, ierr)
       call MPI_COMM_RANK(global_communicator, MYPROC, ierr)
 

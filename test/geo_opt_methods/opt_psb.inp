@@ -1,0 +1,16 @@
+**DIRAC                                                                                             
+.TITLE                                                                                              
+ Geometry optimization
+.WAVE FUNCTION
+.OPTIMIZE
+*OPTIMIZE
+.PSB
+**GENERAL
+.CODATA
+ CODATA18
+**WAVE FUNCTIONS                                                                                    
+.SCF                                                                                                
+*SCF
+.ERGCNV
+5.0E-9
+*END OF

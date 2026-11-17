@@ -324,38 +324,32 @@ module codata
    end if
 
 ! -------------------- common derived constants --------------------------
-! hbar     = 1.0545...d-34
-  hbar     = planck/(2.0d0*pi)
-! xtangm10 = 0.5291...d-10
-  xtangm10 = xtang*1.0d-10
 ! alphac   = 0.7297...d-2
   alphac   = 1.0d0/cvel
 ! alpha2   = 0.5325...d-4
   alpha2   = alphac*alphac
+! hbar     = 1.0545...d-34
+  hbar     = planck/(2.0d0*pi)
+! xtangm10 = 0.5291...d-10
+  xtangm10 = xtang*1.0d-10
 ! xtj      = 0.4848...d-17
   xtj      = hbar**2/(xtangm10*xtangm10*emass)
-! xtkays   = 0.2194...d6
-  xtkays   = 1.0d-2*hbar/(ccm*2.0d0*pi*xtangm10**2*emass)
-! xthz     = 0.6579...d16
-  xthz     = hbar/(2.0d0*pi*xtangm10*xtangm10*emass)
-! xtev     = 0.3025...d2
-  xtev     = xtj/echarge
-! xkjmol   = 2.9195...d3
-  xkjmol   = xtj*xfmol*1.0d-3
-! xkcmol   = 697.7772...d0
-  xkcmol   = xkjmol/4.184d0
-! xajoul   = 4.848...d0
-  xajoul   = 1.0d18*xtj
 ! autime   = 2.1752...d-17
   autime   = hbar/xtj
-! xfsec    = 2.1752...d-17
-  xfsec    = autime
-! tesla    = 0.4254...d-5
-  tesla    = (xtang*xtang*echarge/hbar)*1.0d-20
+! xtkays   = 0.2194...d6
+  xtkays   = 1.0d-2*hbar/(ccm*2.0d0*pi*xtangm10**2*emass)
+! cminv    = 4.55...d-6
+  cminv    = 1.0d0/xtkays    ! centimeter-to-minus-one in au
 ! debye    = 2.5417...d0
   debye    = echarge*xtang*ccm*1.0d11
-! xtkmml   = 974.8801...d0
-  xtkmml   = (xfmol**2*pi*echarge**2/3.0d0)*1.0d-7
+! efaumksa = 5.1422...d0
+  efaumksa = hbar**2/(emass*echarge*xtangm10**3)*1.0d-11
+! gfermi   = 2.222...d-14
+  gfermi   = (1.0d-18*hbar*ccm**3*fermicc*emass)/(echarge**2*xtangm10)
+! g1fac    = -0.9976...
+  g1fac    = gfac/2.0d0-1.0d0
+! nm       = 18.897...d0
+  nm       = 1.0d1/xtang     ! nanometer in au
 ! xfamu    = 1822.8884...d0
   xfamu    = umass/emass
 ! xfmp     = 1836.1526...d0
@@ -364,18 +358,22 @@ module codata
   nmagn    = echarge*hbar/(2.0d0*xfmp*emass) ! nuclear magneton
 ! nmagnau  = 2.7230...d-4
   nmagnau  = 1.0d0/(2*xfmp)  ! nuclear magneton in au
-! efaumksa = 5.1422...d0
-  efaumksa = hbar**2/(emass*echarge*xtangm10**3)*1.0d-11
+! tesla    = 0.4254...d-5
+  tesla    = (xtang*xtang*echarge/hbar)*1.0d-20
+! xajoul   = 4.848...d0
+  xajoul   = 1.0d18*xtj
+! xkjmol   = 2.9195...d3
+  xkjmol   = xtj*xfmol*1.0d-3
+! xkcmol   = 697.7772...d0
+  xkcmol   = xkjmol/4.184d0
+! xtev     = 0.3025...d2
+  xtev     = xtj/echarge
+! xthz     = 0.6579...d16
+  xthz     = hbar/(2.0d0*pi*xtangm10*xtangm10*emass)
+! xtkmml   = 974.8801...d0
+  xtkmml   = (xfmol**2*pi*echarge**2/3.0d0)*1.0d-7
 ! xtnm     = 45.5788...d0
   xtnm     = 1.0d7/xtkays
-! cminv    = 4.55...d-6
-  cminv    = 1.0d0/xtkays    ! centimeter-to-minus-one in au
-! nm       = 18.897...d0
-  nm       = 1.0d1/xtang     ! nanometer in au
-! gfermi   = 2.222...d-14
-  gfermi   = (1.0d-18*hbar*ccm**3*fermicc*emass)/(echarge**2*xtangm10)
-! g1fac    = -0.9976...
-  g1fac    = gfac/2.0d0-1.0d0
 
   end subroutine set_codata_values
 

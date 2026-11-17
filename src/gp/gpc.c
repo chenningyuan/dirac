@@ -17,10 +17,19 @@
  */
 /* dirac_copyright_end */
 
+#if defined (__linux__) && !defined (_GNU_SOURCE)
+#define _GNU_SOURCE
+#endif
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
+#if !defined (SYS_WINDOWS)
+#include <unistd.h>
+#endif
+#if defined (__linux__)
+#include <sched.h>
+#endif
 #if !defined (SYS_WINDOWS)
 #include <sys/utsname.h>
 #include <sys/time.h>
@@ -217,4 +226,149 @@ void push_water_mark_(double *here)
 int high_water_mark_(void)
 {
   return mem_high - mem_start;
+}
+
+/* Threads for serial parts of an MPI run that the master does alone while
+ * the slaves sleep (they do not busy-wait for a task, see DIRNOD): threaded
+ * BLAS/LAPACK (MKL, OpenBLAS) and OpenMP regions use the slaves' cores.
+ * The libraries are found through weak symbols, so this links with any BLAS.
+ *
+ * dirac_threads_push(n): this process may use the cores of n processes,
+ *     i.e. n times the threads it had at the outermost push (1 unless the
+ *     user set more, e.g. MKL_NUM_THREADS for hybrid MPI/threads runs);
+ *     may be nested, each push is undone by dirac_threads_pop().
+ * dirac_threads_slaves(busy): called by DIRAC_PARCTL; while the slaves work
+ *     the master goes back to its own threads and CPU affinity. */
+extern int  MKL_Get_Max_Threads(void) __attribute__((weak));
+extern void MKL_Set_Num_Threads(int) __attribute__((weak));
+extern int  openblas_get_num_threads(void) __attribute__((weak));
+extern int  openblas_get_parallel(void) __attribute__((weak));
+extern void openblas_set_num_threads(int) __attribute__((weak));
+extern int  omp_get_max_threads(void) __attribute__((weak));
+extern void omp_set_num_threads(int) __attribute__((weak));
+
+#define THREADS_MAXDEPTH 4
+static struct {
+    int mkl, openblas, omp, nproc, has_mask;
+#if defined (__linux__)
+    cpu_set_t mask;
+#endif
+} threads_saved[THREADS_MAXDEPTH];
+static int threads_depth = 0, threads_base = 1, threads_slaves_busy = 0;
+
+static void set_threads(int mkl, int openblas, int omp)
+{
+    if (MKL_Set_Num_Threads && mkl > 0) MKL_Set_Num_Threads(mkl);
+    if (openblas_set_num_threads && openblas > 0) openblas_set_num_threads(openblas);
+    if (omp_set_num_threads && omp > 0) omp_set_num_threads(omp);
+}
+
+/* set threads (and CPU affinity) for the innermost push */
+static void threads_apply(void)
+{
+    int i = (threads_depth < THREADS_MAXDEPTH ? threads_depth : THREADS_MAXDEPTH) - 1;
+    int nt = threads_base;
+#if defined (__linux__)
+    if (threads_saved[0].has_mask)   /* the affinity before the outermost push */
+        sched_setaffinity(0, sizeof(cpu_set_t), &threads_saved[0].mask);
+#endif
+    /* builds with ExaCorr (TENSOR_EXECUTOR_ defined): the threadprivate arrays of
+       InteRest/ExaCorr (~100 MB) are placed in the stack of every thread, so extra
+       threads need a stack size larger than that (pam sets OMP_STACKSIZE) */
+#ifdef TENSOR_EXECUTOR_
+    int stack_ok = getenv("OMP_STACKSIZE") || getenv("GOMP_STACKSIZE") || getenv("KMP_STACKSIZE");
+#else
+    int stack_ok = 1;
+#endif
+    if (!threads_slaves_busy && threads_saved[i].nproc > 1 && stack_ok) {
+        nt = threads_saved[i].nproc * threads_base;
+#if defined (__linux__)
+        /* MPI libraries pin each process to its own cores: allow all CPUs,
+           the kernel restricts this to the CPUs of the job (cpuset) */
+        cpu_set_t all;
+        long c, ncpu = sysconf(_SC_NPROCESSORS_ONLN);
+        CPU_ZERO(&all);
+        for (c = 0; c < ncpu && c < CPU_SETSIZE; c++) CPU_SET(c, &all);
+        if (sched_setaffinity(0, sizeof(cpu_set_t), &all) == 0 &&
+            sched_getaffinity(0, sizeof(cpu_set_t), &all) == 0 && CPU_COUNT(&all) < nt)
+            nt = CPU_COUNT(&all);
+#endif
+    }
+#ifdef TENSOR_EXECUTOR_
+    /* OpenBLAS built with its own pthreads (openblas_get_parallel() == 1): those
+       threads get the default stack size, not OMP_STACKSIZE, and the ExaCorr
+       thread-local data leaves them almost no stack (crash in Lowdin with OpenBLAS).
+       Leave their number alone; with OpenMP OpenBLAS (== 2) they are OpenMP threads. */
+    int openblas_nt = (openblas_get_parallel && openblas_get_parallel() == 2) ? nt : 0;
+#else
+    int openblas_nt = nt;
+#endif
+    set_threads(nt, openblas_nt, nt);
+}
+
+void dirac_threads_push_(const fortran_int_t *nproc)
+{
+    if (threads_depth < THREADS_MAXDEPTH) {
+        int d = threads_depth;
+        threads_saved[d].mkl      = MKL_Get_Max_Threads ? MKL_Get_Max_Threads() : 0;
+        threads_saved[d].openblas = openblas_get_num_threads ? openblas_get_num_threads() : 0;
+        threads_saved[d].omp      = omp_get_max_threads ? omp_get_max_threads() : 0;
+        threads_saved[d].nproc    = (int)*nproc;
+        threads_saved[d].has_mask = 0;
+#if defined (__linux__)
+        threads_saved[d].has_mask =
+            sched_getaffinity(0, sizeof(cpu_set_t), &threads_saved[d].mask) == 0;
+#endif
+        if (d == 0) {
+            threads_base = 1;
+            if (threads_saved[0].mkl      > threads_base) threads_base = threads_saved[0].mkl;
+            if (threads_saved[0].openblas > threads_base) threads_base = threads_saved[0].openblas;
+            if (threads_saved[0].omp      > threads_base) threads_base = threads_saved[0].omp;
+        }
+    }
+    threads_depth++;
+    threads_apply();
+}
+
+/* Use exactly *n threads (CPU affinity unchanged) until dirac_threads_pop,
+ * e.g. 1 for code with many small BLAS calls, where threads only add overhead. */
+void dirac_threads_push_exact_(const fortran_int_t *n)
+{
+    if (threads_depth < THREADS_MAXDEPTH) {
+        int d = threads_depth;
+        threads_saved[d].mkl      = MKL_Get_Max_Threads ? MKL_Get_Max_Threads() : 0;
+        threads_saved[d].openblas = openblas_get_num_threads ? openblas_get_num_threads() : 0;
+        threads_saved[d].omp      = omp_get_max_threads ? omp_get_max_threads() : 0;
+        threads_saved[d].nproc    = 1;
+        threads_saved[d].has_mask = 0;
+        if (d == 0) {
+            threads_base = 1;
+            if (threads_saved[0].mkl      > threads_base) threads_base = threads_saved[0].mkl;
+            if (threads_saved[0].openblas > threads_base) threads_base = threads_saved[0].openblas;
+            if (threads_saved[0].omp      > threads_base) threads_base = threads_saved[0].omp;
+        }
+    }
+    threads_depth++;
+    set_threads((int)*n, (int)*n, (int)*n);
+}
+
+void dirac_threads_pop_(void)
+{
+    if (threads_depth == 0) return;
+    threads_depth--;
+    if (threads_depth < THREADS_MAXDEPTH) {
+        set_threads(threads_saved[threads_depth].mkl,
+                    threads_saved[threads_depth].openblas,
+                    threads_saved[threads_depth].omp);
+#if defined (__linux__)
+        if (threads_saved[threads_depth].has_mask)
+            sched_setaffinity(0, sizeof(cpu_set_t), &threads_saved[threads_depth].mask);
+#endif
+    }
+}
+
+void dirac_threads_slaves_(const fortran_int_t *busy)
+{
+    threads_slaves_busy = (*busy != 0);
+    if (threads_depth > 0) threads_apply();
 }

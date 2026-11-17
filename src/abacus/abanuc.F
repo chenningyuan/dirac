@@ -18,7 +18,6 @@ C  /* Deck nucinp */
       SUBROUTINE NUCINP(WORD)
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 3)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -92,7 +91,6 @@ C
 C     Initialize /CBINUC/
 C
 #include "implicit.h"
-#include "mxcent.h"
 #include "abainf.h"
 #include "cbinuc.h"
 C

@@ -148,12 +148,32 @@ C&&&& OCCUP - String of active occupied pairs in MP2 module
                   DO I=1,NFSYM
                      READ(LUCMD,'(A)') MP2_INDSTR(1,I)
                   ENDDO
+C                 Allow one-line input for groups with inversion symmetry
+                  IF (NFSYM.EQ.2) THEN
+                     PROMPT = MP2_INDSTR(1,2)
+                     IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#'
+     &                   .OR. PROMPT .EQ. '.'
+     &                   .OR. PROMPT .EQ. '*') THEN
+                        MP2_INDSTR(1,2) = MP2_INDSTR(1,1)
+                        BACKSPACE(LUCMD)
+                     END IF
+                  END IF
                GO TO 100
     3          CONTINUE
 C&&&& VIRTUA -String of active virtual pairs in MP2 module
                   DO I=1,NFSYM
                      READ(LUCMD,'(A)') MP2_INDSTR(2,I)
                   ENDDO
+C                 Allow one-line input for groups with inversion symmetry
+                  IF (NFSYM.EQ.2) THEN
+                     PROMPT = MP2_INDSTR(2,2)
+                     IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#'
+     &                   .OR. PROMPT .EQ. '.'
+     &                   .OR. PROMPT .EQ. '*') THEN
+                        MP2_INDSTR(2,2) = MP2_INDSTR(2,1)
+                        BACKSPACE(LUCMD)
+                     END IF
+                  END IF
                GO TO 100
     4          CONTINUE
 C&&&& INTFLG -Integral classes not included in 4-index transformation
@@ -426,7 +446,6 @@ C
 C
 #include "dcbgen.h"
 #include "dcbpsi.h"
-#include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
@@ -1159,17 +1178,12 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include "dummy.h"
-
-#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 8)
 C
 #include "dcbprp.h"
 #include "dcbtrp.h"
-#include "dcborb.h"
 #include "dgroup.h"
-#include "dcbxpr.h"
 #include "dcbtra.h"
 ! Added temporarily to test for bss (where transform is not working)
 #include "dcbham.h"
@@ -1355,8 +1369,6 @@ C*****************************************************************************
       use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
-#include "maxorb.h"
       PARAMETER(D0 = 0.0D0)
       PARAMETER (NTABLE = 10)
 C
@@ -1366,9 +1378,6 @@ C
 C
 #include "dcbgen.h"
 #include "dcbpsi.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dgroup.h"
 #include "dcbres.h"
 #include "dcbham.h"
       DIMENSION WORK(LWORK),IR(2,2)

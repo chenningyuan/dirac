@@ -17,8 +17,12 @@
  COMFACTOR
  1.0
 **VISUAL
-.ESPE
- DFCOEF
+.GRIDS 
+1
+id=1 input=list
+.GRIDFUNCTIONS
+1
+name=espe id_grid=1 purpose=visualization outpri=yes
 .LIST
  2
  0.0000       0.0000       0.0000

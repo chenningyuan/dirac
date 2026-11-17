@@ -27,7 +27,6 @@ C
 C     gnrinf.h needed for PANAS correction factor
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       LOGICAL NOINT, ONECEN
       DIMENSION HERINT(NUABCD,NTUV), INDHER(*), IODDHR(*),
@@ -66,7 +65,6 @@ C  /* Deck hr2dr1 */
      &                  NUC1,NUC2,NUC12,NUC3,NUC4,NUC34,THRESH,IPRINT,
      &                  SIGNT,IODDHR,PANAS)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       LOGICAL NOINT, ONECEN
 #include "twosta.h"
@@ -120,7 +118,6 @@ C
 C     TUH 84
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "twosta.h"
       LOGICAL ONECEN, NOINT
@@ -157,7 +154,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "aovec.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0)
       LOGICAL ONECEN, NOINT
       DIMENSION RJ000(NUABCD,0:JMAX), WORK(LWORK),
@@ -422,7 +418,6 @@ C  /* Deck getgam */
       SUBROUTINE GETGAM(NODS,INDADR,WVALU,RJ000,JMAX,NUABCD,FJWS,INDADS,
      &                  WVALS,REXPW,IPRINT)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "pi.h"
       PARAMETER (HALF = 0.5D0)

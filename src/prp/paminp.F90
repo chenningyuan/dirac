@@ -713,14 +713,12 @@
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 8, DM1 = -1.0D00, D0 = 0.0D00)
 !
 #include "dcbprp.h"
 #include "dcbexp.h"
-#include "dcborb.h"
 #include "dgroup.h"
 #include "dcbxpr.h"
 !
@@ -1430,8 +1428,10 @@
 !***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+      INTEGER   IPTYP, NPCOMP, INDXPR, ISYXPR, ITRXPR, IPRINT
       CHARACTER PNAME*16, PLABEL(NPCOMP)*8
-      DIMENSION PFAC(NPCOMP)
+      REAL*8    PFAC(NPCOMP)
+      INTEGER :: I, J, K
 !
 ! Used from common blocks:
 !  XCBPRP: everything
@@ -1654,14 +1654,16 @@
 !MI  ... for the Levy-Leblond mode cancel the SS block!
 !MI ... check first if PLABEL(1) is not operator from
 !MI ... pilot Dirac bare nucleus (from subroutine OP1INI)
-        IF (LEVYLE.AND.PLABEL(1).NE.'OVERLAP '                          &
-     &       .AND.PLABEL(1).NE.'MOLFIELD'.AND.                          &
-     &       PLABEL(1).NE.'BETAMAT '                                    &
+        IF (LEVYLE                                                      &
+     &       .AND.PLABEL(1).NE.'OVERLAP '                               &
+     &       .AND.PLABEL(1).NE.'MOLFIELD'                               &
+     &       .AND.PLABEL(1).NE.'BETAMAT '                               &
      &       .and.PLABEL(1).NE.'FDEVEMB ' ) PCOMB(4:4) = '0'
 !LV ... same thing for ZORA!
-        IF ((ZORA.AND..NOT.ZORA4).AND.PLABEL(1).NE.'OVERLAP '           &
-     &       .AND.PLABEL(1).NE.'MOLFIELD'.AND.                          &
-     &       PLABEL(1).NE.'BETAMAT '                                    &
+        IF ((ZORA.AND..NOT.ZORA4)                                       &
+     &       .AND.PLABEL(1).NE.'OVERLAP '                               &
+     &       .AND.PLABEL(1).NE.'MOLFIELD'                               &
+     &       .AND.PLABEL(1).NE.'BETAMAT '                               &
      &       .and.PLABEL(1).NE.'FDEVEMB ' ) PCOMB(4:4) = '0'
       END IF
 
@@ -1688,8 +1690,8 @@
       IF (PNAME(1:5).EQ.'e_EDM') THEN
          !todo: hard assign 000+ structure
          IF (PCOMB.NE.'+00+') THEN
-           PCOMB = '+00+' ! assig as for SIGMA type of operator
-           WRITE(LUPRI,*) 'reassigned PCOMB=',PCOMB
+           WRITE(LUPRI,*) 'reassigned PCOMB=',PCOMB,' to +00+'
+           PCOMB = '+00+' ! assign as for SIGMA type of operator
          ENDIF
          PCOMB_SAVE = PCOMB
          PCOMB(1:1)='0'
@@ -1950,6 +1952,18 @@
 !
       ELSE IF(LABINT(1:2).EQ.'FC') THEN
         CLASLB = 'FERMI C'
+
+! gradient of Fermi contact (or dirac delta) integrals
+      ELSE IF(LABINT(2:3).EQ.'GF') THEN
+        CLASLB = 'GRAD FC'
+!
+!KG SCHIFF
+! gradient of Nuclear density distribution
+!
+      ELSE IF(LABINT(1:4).EQ.'DRHO') THEN
+        CLASLB = 'GRADRHO'
+!KG SCHIFF
+!
 !
 !     Paramagnetic spin-orbit integrals
 !
@@ -2476,13 +2490,11 @@
 !
 #include "dcbprl.h"
 #include "dcbxpr.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "pgroup.h"
 !
       LOGICAL DIFSYM,DIFTIM, SKIP_JM4
       DIMENSION ICREP(3),ICTIM(3)
-#include "ibtfun.h"
 
       CALL QENTER('PRPSYM')
 !
@@ -2503,7 +2515,7 @@
 !     Scalar operator, IPRLREP (IPRPLBL(1,INDXPR))
       IBREP    = IPRLREP(IBIND)
 !     Total point group symmetry of the operator, first component..
-      ICREP(1) = IBTXOR(IAREP,IBREP)
+      ICREP(1) = IEOR(IAREP,IBREP)
 !
 !     Time-reversal symmetry
 !     ======================
@@ -2538,7 +2550,7 @@
         IBIND       = IPRPLBL(ILBL,INDXPR)
         IAREP       = JM4REP(IAIND)
         IBREP       = IPRLREP(IBIND)
-        ICREP(ILBL) = IBTXOR(IAREP,IBREP)
+        ICREP(ILBL) = IEOR(IAREP,IBREP)
         DIFSYM      = DIFSYM.AND.(ICREP(ILBL).NE.ICREP(1))
         IATIM       = JM4TIM(IAIND)
         IBTIM       = IPRLTYP(IBIND)
@@ -2779,6 +2791,7 @@
 !     ==================
 !
       NLBL   = MCMP(ITYP)
+!      print *,'ITYP=',ITYP,'...NLBL=MCMP(ITYP)=',NLBL
       DO I = 1,NLBL
         FMT = MXFORM(ABS(FACPRP(I,INDXPR)),16)
         KLBL = IPRPLBL(I,INDXPR)
@@ -2869,7 +2882,6 @@
 !
 !***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 !
       CHARACTER OP1KEY*(*) ! MI fix for gfortran4.9, instead of  OP1KEY*6
       DIMENSION IPOP1U(*),IPOP1S(*),NOP1(8,2),JOP1(8,2),WORK(LWORK)
@@ -2950,8 +2962,6 @@
 #include "dcbgen.h"
 #include "dcbham.h"
 !
-#include "ibtfun.h"
-!
 !     Initialize /CBIGRD/
 !     ===================
 !
@@ -2962,7 +2972,7 @@
       RELGRD = .FALSE.
       DONGRD = .FALSE.
       IGRD_INTFLG = INTGEN
-      IF (LEVYLE) IGRD_INTFLG = IBTAND ( 1, IGRD_INTFLG )
+      IF (LEVYLE) IGRD_INTFLG = IAND ( 1, IGRD_INTFLG )
       DOTRCK    = .FALSE.
       SCRGRD    = -1.0D0
 !
@@ -2982,7 +2992,6 @@
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0=0.0D0)
-#include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 5)
@@ -3195,18 +3204,20 @@
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INTEGER FUNCTION ISCALAROP_TSYM(PRPLBL)
+!
+! return ITIM parameter for given square operator PRPLBL
+!
       CHARACTER*8 PRPLBL
       INTEGER ITIM
       IF(PRPLBL(4:7).EQ.'RNST'.OR.                                      &
      &   PRPLBL(3:7).EQ.'RM2H3'.OR.                                     &
+     &   PRPLBL(2:3).EQ.'GF'.OR.                                        &
      &   PRPLBL(3:7).EQ.'RDSUL'.OR.                                     &
      &   PRPLBL(3:7).EQ.'RDSUS'.OR.                                     &
      &   PRPLBL(1:7).EQ.'d|S>_dB') THEN
          ITIM = -1
-      ELSEIF(PRPLBL(2:6).EQ.'RM1H3'.OR.                                 &
-     &   PRPLBL(4:7).EQ.'NSNL'.OR.                                      &
-     &   PRPLBL(2:6).EQ.'1SOPP'.OR.                                     &
-     &   PRPLBL(3:8).EQ.'DSUSNL'.OR.                                    &
+      ELSEIF(PRPLBL(2:6).EQ.'RM1H3'.OR.PRPLBL(4:7).EQ.'NSNL'.OR.        &
+     &   PRPLBL(2:6).EQ.'1SOPP'.OR.PRPLBL(3:8).EQ.'DSUSNL'.OR.          &
      &   PRPLBL(2:6).EQ.'RM1RN') THEN
          ITIM = +1
       ELSE

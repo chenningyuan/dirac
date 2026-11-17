@@ -32,7 +32,6 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dcbgen.h"
-#include "dcborb.h"
 #include "dcbdhf.h"
 #include "dcbopt.h"
 #include "dgroup.h"
@@ -97,7 +96,7 @@ C          Note: only GASCIP program implemented for ESR_RESOLVE !
 C
       IOPT_SYMMETRY = -1
 C     ... code for including all symmetries
-      CALL RSETCI('GASCIP',WORK,KFREE,LFREE)
+      CALL RSETCI('ESR-CI','GASCIP',WORK,KFREE,LFREE)
 C
 C     This is CI, so no orbital rotations:
 C
@@ -147,7 +146,6 @@ C dcbgascip.h : IMK2(), NMK2(), MINMK2, MAXMK2
 #include "dcbesr.h"
 #include "dcbgascip.h"
 #include "dgroup.h"
-!#include <krmcluci_inf.h>
 C
       DIMENSION CMO(*), WORK(*)
       CHARACTER SZTRA(2,4)*200
@@ -375,7 +373,6 @@ C                   This enables DFT calculations for doublet.
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 
       REAL*8  WORK(*)
 

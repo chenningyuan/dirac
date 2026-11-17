@@ -10,7 +10,7 @@
 *
 * New algorithm from Lasse 2012
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "crun.inc"
@@ -247,7 +247,7 @@ C?            CALL WRTMAT(CCVEC1,1,LEN_T_VEC,1,LEN_T_VEC)
 * Also checks for formatted or unformatted file
 *
 * Lasse, 2012
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "crun.inc"
 *(    ^contains number of single and double excitations and N_CC_AMP)
@@ -348,7 +348,7 @@ C?            CALL WRTMAT(CCVEC1,1,LEN_T_VEC,1,LEN_T_VEC)
 * Author : Prefers to be anonymous, May 2000
 *
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input
       DIMENSION VEC(NDIM)
 *. Output 
@@ -1144,7 +1144,7 @@ C
 *
 * S is input overlap matrix, X is output set of orthonormalized vectors
 *
-#include "implicit.inc"
+#include "implicit.h"
       REAL*8 INPROD
 *. input 
       DIMENSION S(NDIM,NDIM)
@@ -1198,7 +1198,7 @@ C            MATVCB(MATRIX,VECIN,VECOUT,MATDIM,NDIM,ITRNSP)
 *
 * Version assuming the ability to hold two vectors in core
 *
-#include "implicit.inc"
+#include "implicit.h"
       REAL*8 INPROD
 *. Input : Previous subspace matrix
       DIMENSION SUBMATP(*)
@@ -1465,7 +1465,7 @@ C
 *
 * Jeppe Olsen, May 2000
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input
       DIMENSION VECIN(NDIM)
       INTEGER IREO(NDIM)
@@ -1494,7 +1494,7 @@ C
 *
 * Jeppe Olsen, May of 2000
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input
       DIMENSION AIN(NR,NC) 
       INTEGER IREO(*)
@@ -1847,7 +1847,7 @@ C             DIAVC3(VECOUT,VECIN,DIAG,SHIFT,NDIM,VDSV)
 * Outer routine for Preconditioner times vector
 *
 *. LUCIA version
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "glbbas.inc"
 #include "crun.inc"

@@ -124,7 +124,7 @@ C
          rcw = 2
       ENDIF
 
-      if (.true.) then !Always use talsh for now
+      if (.true.) then !Always use single node version for now
         call eti_compute_mo_integrals(nmo,mo_list,
      &      exa_input%talsh_buff,exa_input%executor,
      &      exa_input%print_level,rcw,TH_CHOLESKY)
@@ -193,6 +193,12 @@ C***********************************************************************
       call interface_mpi_bcast_l0(exa_input%talsh,1,0,
      &                               global_communicator)
       if (mytid /= 0 .and. exa_input%talsh) return
+      if (exa_input%talsh) then
+!        TALSH runs on the master only and the slaves went back to sleep
+!        in the menu: use their cores for TALSH, InteRest and BLAS threads
+         call dirac_threads_slaves(0)
+         call dirac_threads_push(numproc)
+      end if
 #else
       ! serial version of DIRAC
       if (.not. exa_input%talsh) then
@@ -225,6 +231,9 @@ C
        else if (exa_input%do_no) then
          call get_no_driver (exa_input)
        else if (exa_input%mp2no > 0 ) then
+         if (exa_input%mp2no==2) then 
+              exa_input%do_neo = .true.
+         end if 
          call eti_mp2no_driver (exa_input,n_mp2no)
        elseif (exa_input%mp2no < 0) then
          call eti_mp2lap_driver (exa_input)
@@ -248,6 +257,9 @@ C
       end if
 
       call exacc_deallocate_cw()
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
+      if (exa_input%talsh) call dirac_threads_pop()
+#endif
 
       end
 
@@ -258,6 +270,7 @@ C
        use exacorr_ao
        use exacorr_global,only: nfunctions
        use exacorr_utils
+       use dircmo, only: select_mobasis
 
        implicit none
 
@@ -292,8 +305,9 @@ C
        logical                :: labeled
        integer                :: n_mo(2),n_po(2),n_basis(2)
        integer,allocatable    :: n_prim(:),n_cont(:)
-       character*(:),allocatable :: group
-       logical                :: C1_info,sym_info
+       character*(:),allocatable :: group, mobasis
+       logical                :: C1_info,sym_info, data_present
+       logical                :: x2c_mobasis
 
        ! check whether the MO coefficients were generated with symmetry, we then need to read the C1 form therof
        ! for backwards compatibility we first check whether the symmetry section itself is available
@@ -308,15 +322,23 @@ C
      &         idata=inversion)
        end if
 
-       group = '/result/wavefunctions/'//trim(section)//'/'
+       call select_mobasis(mobasis=mobasis,group=group,
+     &                     use_x2c_mobasis=x2c_mobasis,
+     &                     section=section)
        ierr = NOERROR
        text = trim(section)//' data read from the checkpoint file '
-       call checkpoint_read (group//'mobasis/nz',idata=nzbuf)
-       call checkpoint_read (group//'mobasis/n_basis',idata=n_basis)
-       call checkpoint_read (group//'mobasis/n_mo',idata=n_mo)
-       call checkpoint_read (group//'mobasis/n_po',idata=n_po)
+       call checkpoint_read (mobasis//'nz',idata=nzbuf)
+       call checkpoint_read (mobasis//'n_basis',idata=n_basis)
+       call checkpoint_read (mobasis//'n_mo',idata=n_mo)
+       call checkpoint_query (mobasis//'n_po',data_present)
+       if (data_present) then
+          call checkpoint_read (mobasis//'n_po',idata=n_po)
+       else
+          n_po = 0
+       end if
        call checkpoint_read (group//'energy',rdata=total_energy)
-       if (section .ne. 'scf') then
+       call checkpoint_query (group//'e_corr',data_present)
+       if (data_present) then
           call checkpoint_read (group//'e_corr',rdata=e_corr)
           total_energy = total_energy - e_corr
        end if
@@ -340,22 +362,25 @@ C
        allocate(eig(nto))
        allocate(ibeig(nto))
        allocate(index(nmo))
+       coeff = 0.0D0
+       eig = 0.0D0
+       ibeig = 0
         
        ! read the mo coefficients and orbital eigenvalues
        if (maxopr == 0) then
-        call checkpoint_read (group//'mobasis/orbitals',rdata=coeff)
-        call checkpoint_read (group//'mobasis/eigenvalues',rdata=eig)
+        call checkpoint_read (mobasis//'orbitals',rdata=coeff)
+        call checkpoint_read (mobasis//'eigenvalues',rdata=eig)
        else
         ! check whether the C1 formatted coefficients were written
-        call checkpoint_query (group//'mobasis/orbitals_C1',C1_info)
+        call checkpoint_query (mobasis//'orbitals_C1',C1_info)
         if (.not. C1_info) then
          print*," Activate the ACMOUT option in the SCF stage"
          call quit ("no C1 formatted MO coefficients available ")
         end if
-        call checkpoint_read (group//'mobasis/orbitals_C1',rdata=coeff)
-        call checkpoint_read (group//'mobasis/eigenvalues_C1',rdata=eig)
+        call checkpoint_read (mobasis//'orbitals_C1',rdata=coeff)
+        call checkpoint_read (mobasis//'eigenvalues_C1',rdata=eig)
        endif
-       call checkpoint_read (group//'mobasis/symmetry',idata=ibeig)
+       call checkpoint_read (mobasis//'symmetry',idata=ibeig)
        ! fill in index values
        do i = 1, nmo
           index(i) = i ! we set the index compatible with the fact that we store all mo's

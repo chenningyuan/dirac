@@ -78,7 +78,7 @@ module exacorr_mp2no
             else
                 call exacorr_generate_MP2_VNO_MObasis(exa_input)   
                 if (my_MPI_rank == 0) &
-                call get_transform_Fock(exa_input,'DM_complex')
+                call get_transform_Fock(exa_input)
             end if
 
             if (my_MPI_rank == 0) then
@@ -284,7 +284,7 @@ module exacorr_mp2no
             h_dims=nvir
             ierr=talsh_tensor_construct(talsh_tensor,EXA_DATA_KIND_C8,h_dims,init_val=ZERO)
             ierr=exatns_tensor_get_slice(MP2_density_tensor%prime_vv,talsh_tensor)
-            ierr=talsh_to_tensor_t(talsh_tensor, tensor_slice)
+            ierr=talsh_to_tensor_t(talsh_tensor, tensor_slice, out_executor=1)
 
             call  write_2dtensor_as_matrix(nvir,tensor_slice,'DM_complex')
             call print_date('Save DM in MO (spinor) basis to file : DM_complex')

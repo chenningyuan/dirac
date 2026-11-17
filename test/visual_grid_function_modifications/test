@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+
+import os
+import sys
+from pathlib import Path
+
+#
+# prepare environment, define functions
+#
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'Final grid function values (id=',
+      num_lines = 28,
+      rel_tolerance = 1.0e-6)
+
+#
+# run tests
+#
+test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
+test.run(['vis_3d_scale_pointwise.inp'], ['h2o.mol'], f, args='--incmo')
+
+sys.exit(test.return_code)

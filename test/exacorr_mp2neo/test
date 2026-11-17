@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+from exacorr_environment import set_exacorr_environment
+
+set_exacorr_environment()
+
+test = TestRun(__file__, sys.argv)
+
+f1 = Filter()
+f1.add(from_string = 'Recanonized MP2 frozen virtual natural spinors',
+      num_lines   = 17,
+      rel_tolerance   = 1.0e-7)
+
+f2 = Filter()
+f2.add(from_string = 'state | rel. eigenvalue (a.u.) | rel. eigenvalue (eV) | rel. eigenvalue (cm-1)',
+      num_lines   = 14,
+      rel_tolerance   = 1.0e-5)
+
+
+test.run(['neo_generation_nr.inp'], ['h2o.xyz'], f1, args='--outcmo')
+test.run(['cis-d_nr_using_neos.inp'], ['h2o.xyz'], f2, args='--incmo')
+
+test.run(['neo_generation_x2c.inp'], ['h2o.xyz'], f1, args='--outcmo')
+test.run(['cis-d_x2c_using_neos.inp'], ['h2o.xyz'], f2, args='--incmo')
+
+sys.exit(test.return_code)

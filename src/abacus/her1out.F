@@ -344,7 +344,6 @@ C
 #include "maxorb.h"
 #include "mxcent.h"
 #include "iratdef.h"
-#include "nuclei.h"
       PARAMETER (IBIT16 = 65535, NBUF = 1202)
       CHARACTER ONEMAT*(*)
       DIMENSION BUF(NBUF), IBUF(IRAT*NBUF), WORK(NDIM)

@@ -1,0 +1,2 @@
+!testing real-time cis and cis(d) implementation in the talsh implementation
+!tests include non-relativistic and x2c hamiltonian. The NR results have been validated by gaussian and Gamess

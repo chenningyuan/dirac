@@ -1,0 +1,8 @@
+INTGRL
+F2, forced C2(y) symmetry (complex algebra, NZ=2, no inversion) - bug case
+dyall.v2z basis, SpinFree X2C lambda test
+C   1    1XZ       A
+    9.    1
+F      0.0000000000         0.0000000000        0.7060000000
+LARGE BASIS dyall.v2z
+FINISH

@@ -58,6 +58,5 @@
 !     Units for scratch files (LUTRA1 is an offset (-1) for 2 files !)
       INTEGER LUTRA1,LUTRA2
       PARAMETER (LUTRA1=78,LUTRA2=81)
-#include <comdis.h>
 
 ! -- end of dcbtra.h --

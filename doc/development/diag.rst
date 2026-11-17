@@ -41,8 +41,8 @@ The real test system, where numerical discrepancies with active DSYEVR are obser
   
  pam --noarch --inp=hf.inp --mol=O2.mol
 
-(Input files for download are from the DIRAC test directory, namely :download:`hf.inp <../../../test/fscc_highspin/hf.inp>` and
-:download:`O2.mol <../../../test/fscc_highspin/O2.mol>` )
+(Input files for download are from the DIRAC test directory, namely :download:`hf.inp <../../test/fscc_highspin/hf.inp>` and
+:download:`O2.mol <../../test/fscc_highspin/O2.mol>` )
 
 The proper Total SCF energy of this system is, ::
 
@@ -65,9 +65,9 @@ in the smallest 1s1p1d basis: ::
  pam --noarch --inp=dc.1el.2fs.inp  --mol=X2.1s1p1d.asd.mol --get "Jz_SS_matrix.fermirp2-2"
  pam --noarch --inp=dc.1el.2fs.inp  --mol=X2.1s1p1d.D2h.mol
 
-(Input files for download are :download:`dc.1el.2fs.inp <../../../test/fscc_highspin/dc.1el.2fs.inp>`,
-:download:`X2.1s1p1d.asd.mol <../../../test/fscc_highspin/X2.1s1p1d.asd.mol>` and
-:download:`X2.1s1p1d.D2h.mol <../../../test/fscc_highspin/X2.1s1p1d.D2h.mol>`.)
+(Input files for download are :download:`dc.1el.2fs.inp <../../test/fscc_highspin/dc.1el.2fs.inp>`,
+:download:`X2.1s1p1d.asd.mol <../../test/fscc_highspin/X2.1s1p1d.asd.mol>` and
+:download:`X2.1s1p1d.D2h.mol <../../test/fscc_highspin/X2.1s1p1d.D2h.mol>`.)
 
 The affected value is the "Inactive energy (Output from ONEERG)" in the output: ::
 

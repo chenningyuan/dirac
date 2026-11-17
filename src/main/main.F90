@@ -27,6 +27,7 @@ program dirac_program
   use machine_parameters
   use dirac_cfg
   use integer_kind_mpilib
+  use exacorr_tensor_interface, only: eti_executor_initialize, eti_executor_shutdown
 
 use iso_c_binding
 
@@ -186,6 +187,7 @@ end interface
 #ifndef NO_SELFTEST
      call selftest_lapack()
      call selftest_fortran_c_cxx_interoperability()
+     call eti_executor_initialize(0,1)
 #ifdef VAR_MPI
 !    checks MPI library compatibility 
      endif
@@ -241,5 +243,6 @@ end interface
 
    call interface_ao_clear()
    call interface_mo_clear()
+   call eti_executor_shutdown()
 
 end program

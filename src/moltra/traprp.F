@@ -29,16 +29,11 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "maxorb.h"
-#include "dcbham.h"
 #include "dcbtra.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
 #include "dcbxpr.h"
-#include "dcbprl.h"
-#include "mxcent.h"
 #include "dcbtrp.h"
       LOGICAL TOBE,TOBEK,TRASAM
       DIMENSION WORK(*),NSTR(2,0:2,2),NSTRT(2),KVEC(2,2),KQ(2,2),
@@ -136,7 +131,7 @@ C
       DO I = 1,2
        DO IFRP = 1, NFSYM
         CALL MEMGET('INTE',KIBE(IFRP,I),NSTR(IFRP,0,I),WORK,KFREE,LFREE)
-        CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),IFRP,
+        CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),NPSH(IFRP),
      &                WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
      &                NSTR(IFRP,2,I),NSTR(IFRP,1,I))
        ENDDO
@@ -226,10 +221,8 @@ C     Last revision Jul 23 1997
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcborb.h"
       DIMENSION PRPMO(NORBT,NORBT,NZ),
      &          PBUF(NDIM1,NDIM2,NZ),
@@ -295,8 +288,6 @@ C
 #include "priunit.h"
 C
 #include "dgroup.h"
-#include "dcbbas.h"
-#include "dcborb.h"
 #include "dcbham.h"
       PARAMETER (DM1=-1.D0,ZEROTHRS=1.0D-7)
       CHARACTER*32 ACHAR

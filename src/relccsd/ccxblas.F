@@ -269,7 +269,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "complex.inc"
-#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
