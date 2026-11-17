@@ -44,6 +44,8 @@ contains
        character*(:), allocatable :: ao_label, mo_label
        integer                :: natoms
        real(8), allocatable   :: geometry(:),nuc_charge(:),bas_charge(:)
+       character(len=4), allocatable :: symbols(:)
+       integer                :: iatom, idot
        logical                :: label_present
 
        ! Initialize the file_info object and sections to read the AO and MO data from.
@@ -87,6 +89,19 @@ contains
 	         call lab_read(datafile, '/input/molecule/bas_charge',rdata=bas_charge)
 	      else
 	         bas_charge = nuc_charge
+	         ! DIRAC does not store the basis charge. A ghost center has nuclear charge zero and a label such as
+	         ! O.GH : take the element from the part of the label in front of the dot.
+	         call lab_query(datafile, '/input/molecule/symbols', label_present)
+	         if (label_present) then
+	            allocate(symbols(natoms))
+	            call lab_read(datafile, '/input/molecule/symbols', sarray=symbols, slen=4)
+	            do iatom = 1, natoms
+	               idot = index(symbols(iatom),'.')
+	               if (abs(nuc_charge(iatom)) < ghost_threshold .and. idot > 1) &
+	                  bas_charge(iatom) = real(find_charge(symbols(iatom)(1:idot-1)),8)
+	            end do
+	            deallocate(symbols)
+	         end if
 	      end if
 	      call lab_read(datafile, '/input/molecule/geometry',rdata=geometry)
 	      geometry = geometry/xtang  ! xyz files have coordinates in Angstroms, convert to au
