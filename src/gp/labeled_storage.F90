@@ -364,6 +364,9 @@ module labeled_storage
       case (1)
          error stop "reading strings is not supported in DIRAC format"
       case (2,3)
+         ! sdata is a deferred-length variable: its length must be set before the dataset can be read into it
+         sdim = size(sarray)
+         allocate(character(len=sdim*slen) :: sdata)
          if (file_info%type==2) then
              call read_hdf5(file_info,label,sdata=sdata)
          elseif (file_info%type==3) then 
