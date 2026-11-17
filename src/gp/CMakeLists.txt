@@ -165,18 +165,18 @@ add_dependencies(gp interface_mpi)
 add_dependencies(gp pdpack)
 
 # generates git information
-add_custom_command(
-  OUTPUT
-    ${CMAKE_CURRENT_BINARY_DIR}/git_info.h
-    ALL
-  COMMAND
-  ${CMAKE_COMMAND} -D INPUT_DIR=${PROJECT_SOURCE_DIR}/cmake/downloaded -D OUTPUT_DIR=${PROJECT_BINARY_DIR} -P ${PROJECT_SOURCE_DIR}/cmake/downloaded/git-hash.cmake
-  WORKING_DIRECTORY
-    ${CMAKE_CURRENT_SOURCE_DIR}
-  )
+# a custom target has no output file and is therefore run on every build, so git_info.h
+# is refreshed after e.g. a git pull; configure_file in git-hash.cmake only rewrites the
+# header when its contents change, so print_info.c is recompiled only when needed
 add_custom_target(
   git_info
-  ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/git_info.h
+  ALL
+  COMMAND
+  ${CMAKE_COMMAND} -D INPUT_DIR=${PROJECT_SOURCE_DIR}/cmake/downloaded -D OUTPUT_DIR=${PROJECT_BINARY_DIR} -P ${PROJECT_SOURCE_DIR}/cmake/downloaded/git-hash.cmake
+  BYPRODUCTS
+    ${PROJECT_BINARY_DIR}/git_info.h
+  WORKING_DIRECTORY
+    ${CMAKE_CURRENT_SOURCE_DIR}
   )
 
 add_dependencies(gp git_info)

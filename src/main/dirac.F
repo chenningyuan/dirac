@@ -1215,7 +1215,6 @@ C***********************************************************************
 #endif
       implicit none
 
-#if defined (VAR_SLEEPING_SLAVES)
       interface
          ! fortran sleep() is only in seconds,
          ! so we use the usleep() from C to sleep in microseconds
@@ -1227,7 +1226,6 @@ C***********************************************************************
       !  end function
          end subroutine
       end interface
-#endif
 
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -1318,11 +1316,10 @@ C
       CALL GETBASDIR()
 C
  100  CONTINUE
-#if defined (VAR_SLEEPING_SLAVES)
-! If it is important that the slaves are not idling
-! then one can define VAR_SLEEPING_SLAVES.
-! If set, then the slaves test once per 10 ms if there
-! is a new task.
+! The slaves test once per ms if there is a new task and sleep in
+! between, instead of busy-waiting in MPI_RECV: while the master works
+! alone (e.g. Lowdin and X2C matrices) it can use their cores for
+! threaded BLAS/LAPACK (see GMOTRA).
       call interface_mpi_iprobe(MPARID,27,NEWTASK,global_communicator,
      &                          ISTAT)
       IF (NEWTASK) THEN
@@ -1330,14 +1327,9 @@ C
      &                           global_communicator)
       ELSE
 !        CALL SLEEP(1) ! 1 second is too long, costs a lot of waste when 100, 1000 slaves or more
-         call usleep_ftn(10000_c_int32_t) ! sleep for 10 ms = 10000 microseconds
+         call usleep_ftn(1000_c_int32_t) ! sleep for 1 ms = 1000 microseconds
          GO TO 100
       END IF
-#else
-C
-         CALL interface_MPI_RECV(ITASK,1,MPARID,27,
-     &                           global_communicator)
-#endif
       if (mytid .eq. mytid_print) 
      &   write(0,*) 'info: node',mytid,' has received itask',itask
 C
@@ -1706,6 +1698,8 @@ C
       write(0,*) 'dirac_parctl called with itask ',itask
 #endif
 
+C     while the slaves work, the master uses only its own threads/cores
+      IF (ITASK .GT. 0) CALL DIRAC_THREADS_SLAVES(1)
       IF (ITASK .EQ. -1) THEN
 C        go back from submenu to main menu via MPI_BCAST
          CALL interface_MPI_BCAST(ITASK,1,MPARID,
@@ -1717,6 +1711,7 @@ C        slave should be in main menu, ready to receive task
      &                              global_communicator)
          END DO
       END IF
+      IF (ITASK .LE. 0) CALL DIRAC_THREADS_SLAVES(0)
 
 #else /* not VAR_MPI */
 

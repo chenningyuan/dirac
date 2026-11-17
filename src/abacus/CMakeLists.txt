@@ -63,6 +63,8 @@ set(FREE_ABACUS_FORTRAN_SOURCES
    ${PROJECT_SOURCE_DIR}/src/rose/subtree/src/read_xyzfile.F90
    hermodules.F90
    gab_settings.F90
+   gab_screening.F90
+   aoint_zero.F90
    aobasis_collector.F90
    task_distribution_state.F90
 )

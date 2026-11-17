@@ -268,19 +268,24 @@ if(ENABLE_EXATENSOR)
    # Collect everything in one string (also including the hardwires ones that need not be changed) and store this in a file (direct passing appears to be impossible within cmake)
    set(EXATENSOR_ENV "${EXATENSOR_WRAP} ${EXATENSOR_BUILD} ${EXATENSOR_TALSH} ${TALSH_COMPILERS} ${EXATENSOR_TOOLKIT} ${EXATENSOR_OS} ${EXATENSOR_GPUENV} ${EXATENSOR_MPIENV} ${EXATENSOR_BLAS} ${EXATENSOR_CUDA} ${EXATENSOR_ROCM} ${EXATENSOR_CUDA_ARCH} ${EXATENSOR_AMD_ARCH} ${EXATENSOR_HIP}")
    message(STATUS "The environment variables used to build ExaTensor are collected in the file ExaTensor_ENV (can be inspected/changed if necessary)")
-   file(WRITE ${PROJECT_BINARY_DIR}/ExaTensor_ENV ${EXATENSOR_ENV})
-   file(WRITE ${PROJECT_BINARY_DIR}/ExaTensor_ENV_UP "${EXATENSOR_ENV}  EXA_NO_BUILD=YES")
+   # Only touch ExaTensor_ENV when its contents change: the ExaTensor build step depends on it,
+   # and rerunning that step reinstalls all ExaTensor modules, which forces a recompilation of exacorr
+   file(WRITE ${PROJECT_BINARY_DIR}/ExaTensor_ENV.tmp ${EXATENSOR_ENV})
+   file(COPY_FILE ${PROJECT_BINARY_DIR}/ExaTensor_ENV.tmp ${PROJECT_BINARY_DIR}/ExaTensor_ENV ONLY_IF_DIFFERENT)
+   file(REMOVE ${PROJECT_BINARY_DIR}/ExaTensor_ENV.tmp ${PROJECT_BINARY_DIR}/ExaTensor_ENV_UP)
 
    ExternalProject_Add(exatensor
         PREFIX "${PROJECT_BINARY_DIR}/exatensor"
         GIT_REPOSITORY ${EXATENSOR_GIT_REPO_LOCATION}
         GIT_TAG ${EXATENSOR_GIT_HASH}
         GIT_CONFIG advice.detachedHead=false
+        UPDATE_DISCONNECTED ON  # GIT_TAG is a fixed hash: do not rerun the update (and all later steps) at every build
         CONFIGURE_COMMAND true  # currently no configure command, but this is needed for cmake to function
-        BUILD_COMMAND cd ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/ && set -a && . ${PROJECT_BINARY_DIR}/ExaTensor_ENV && set +a && make && cp ${PROJECT_BINARY_DIR}/ExaTensor_ENV_UP ${PROJECT_BINARY_DIR}/ExaTensor_ENV
+        BUILD_COMMAND cd ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/ && set -a && . ${PROJECT_BINARY_DIR}/ExaTensor_ENV && set +a && make
         INSTALL_DIR ${EXATENSOR_INSTALL_DIR}
         INSTALL_COMMAND true
         )
+   ExternalProject_Add_StepDependencies(exatensor build ${PROJECT_BINARY_DIR}/ExaTensor_ENV)
 
    set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${EXATENSOR_INSTALL_DIR}/libtalsh.a)
    if (ENABLE_MPI AND NOT EXATENSOR_TALSH)
@@ -295,16 +300,16 @@ if(ENABLE_EXATENSOR)
 
    #Add also the tests (weird to do this here, but this whole test set up needs an overhaul).
    #disabled some tests waiting for code verification/efficiency improvement
-    dirac_test(exacorr_ccsdt_mbauto "cc;exacorr;mbauto;long" "")
+    dirac_test(exacorr_ccsdt_mbauto "cc;exacorr;mbauto;verylong" "")
     if (NOT CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC") # nvfortran does not accept arrays with 8 or more indices
-       dirac_test(exacorr_ccsdtq_tenpi "cc;exacorr;tenpi;ccsdtq;long" "")
-       dirac_test(exacorr_ccsdtq_mbauto "cc;exacorr;mbauto;long" "")
+       dirac_test(exacorr_ccsdtq_tenpi "cc;exacorr;tenpi;ccsdtq;verylong" "")
+       dirac_test(exacorr_ccsdtq_mbauto "cc;exacorr;mbauto;verylong" "")
     if (EXA_GPU_ENABLED)
 # this test is currently very long so disable it unless running on GPU nodes
        dirac_test(exacorr_ccsdtqp_mbauto "cc;exacorr;mbauto;long" "")
     endif()
     endif()
-    dirac_test(exacorr_ccrsp_eomtpa "ccrsp;exacorr;long" "")
+    dirac_test(exacorr_ccrsp_eomtpa "ccrsp;exacorr;verylong" "")
     dirac_test(exacorr_lambda "cc;exacorr;long" "")
     dirac_test(exacorr_ccrsp_cpp "ccrsp;exacorr;long" "")
     dirac_test(exacorr_ccrsp_qr_static "ccrsp;exacorr;long" "")
@@ -315,7 +320,7 @@ if(ENABLE_EXATENSOR)
 #    dirac_test(exacorr_mp2neo "mp2neo;exacorr;long" "")
     dirac_test(exacorr_mp2fno++ "mp2fno++;exacorr;long" "")
     #dirac_test(exacorr_lambda_cc2 "cc;exacorr" "")
-    dirac_test(exacorr_mp2lap "mp2lap;exacorr;long" "")
+    dirac_test(exacorr_mp2lap "mp2lap;exacorr;verylong" "")
     dirac_test(exacorr_tripl_lap "cc;exacorr;long" "")
 # reactivate this when lambda is handled by mbauto; autokern for lambda is tested with lambda_tenpi
 #   dirac_test(exacorr_lambda_mbauto "cc;exacorr;medium" "")
@@ -325,7 +330,7 @@ if(ENABLE_EXATENSOR)
     dirac_test(exacorr_respect "cc;exacorr;respect;medium" "")
     dirac_test(exacorr_ccrsp_spsp "ccrsp;exacorr;medium" "")
     dirac_test(exacorr_open_lambda "cc;exacorr;medium" "")
-    dirac_test(exacorr_open_ccrsp_lr_cc-cc "cc;exacorr;medium" "")
+    dirac_test(exacorr_open_ccrsp_lr_cc-cc "cc;exacorr;verylong" "")
     dirac_test(exacorr_ccrsp_lr_cc-cc "ccrsp;exacorr;medium" "")
     dirac_test(exacorr_ccrsp_qr_spsp_pol "ccrsp;exacorr;medium" "")
     dirac_test(exacorr_symmstart "cc;exacorr;short" "")
@@ -339,9 +344,9 @@ if(ENABLE_EXATENSOR)
     dirac_test(exacorr_eomip_full "cc;exacorr;medium" "")
     dirac_test(exacorr_eomee "cc;exacorr;short" "")
     dirac_test(exacorr_eomee_full "cc;exacorr;short" "")
-    dirac_test(exacorr_eomea "cc;exacorr;short" "")
+    dirac_test(exacorr_eomea "cc;exacorr;short;coverage-mpi" "")
     dirac_test(exacorr_eomea_full "cc;exacorr;short" "")
-    dirac_test(exacorr_cis "cis;exacorr;short" "")
+    dirac_test(exacorr_cis "cis;exacorr;short;coverage-mpi" "")
     dirac_test(exacorr_cis_d "cis_d;exacorr;short" "")
 # disabling for now, until further testing
 #   dirac_test(exacorr_rt_cis "rt_cis;exacorr;short" "")
@@ -352,7 +357,7 @@ if(ENABLE_EXATENSOR)
     dirac_test(exacorr_finite_field "cc;exacorr;medium" "")
     dirac_test(exacorr_ccsdt_tenpi "cc;exacorr;tenpi;ccsdt;short" "")
     dirac_test(exacorr_ccsdt_tenpi_tapp "cc;exacorr;tenpi:tapp;ccsdt;short" "")
-    dirac_test(exacorr_ccsdt_lambda_tenpi_tapp "cc;exacorr;tenpi:tapp;ccsdt;lambda;short" "")
+    dirac_test(exacorr_ccsdt_lambda_tenpi_tapp "cc;exacorr;tenpi:tapp;ccsdt;lambda;verylong" "")
    if (ENABLE_MPI AND NOT EXATENSOR_TALSH)
         if (NOT CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC")
         if (EXA_GPU_ENABLED)
@@ -369,7 +374,7 @@ if(ENABLE_EXATENSOR)
         dirac_test(exacorr_exatensor_lambda "cc;exatensor" "")
         dirac_test(exacorr_exatensor_cc2 "cc;exatensor" "")
         dirac_test(exacorr_exatensor_spinfree "cc;exatensor" "")
-        dirac_test(exacorr_exatensor_ao2mo "cc;exatensor;long" "")
+        dirac_test(exacorr_exatensor_ao2mo "cc;exatensor;verylong;coverage-mpi" "")
         dirac_test(exacorr_exatensor_finite_field "cc;exatensor" "")
         #works 05.2021, but maximum search is very slow
         #dirac_test(exacorr_exatensor_cholesky "cc;exatensor;long" "")

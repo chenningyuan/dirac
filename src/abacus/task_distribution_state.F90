@@ -9,6 +9,13 @@ module task_distribution_state
   integer, save :: task_order_size = 0
   logical, save :: task_order_valid(4) = .false.
 
+  ! Master taking part in a parallel Fock build (see HER_PARDRV):
+  ! workers get tasks from the head of master_queue (most expensive first),
+  ! the master computes tasks from the tail (cheapest first).
+  logical, save, public :: master_computes = .false.
+  integer, save, public :: master_head = 0, master_tail = 0, master_ndone = 0
+  integer, allocatable, save, public :: master_queue(:), master_nstat(:)
+
 contains
 
   integer function required_task_order_size(is_parallel) result(required_size)

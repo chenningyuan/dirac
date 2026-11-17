@@ -19,7 +19,7 @@ C
 #if (defined (VAR_MPI2) && defined(CRAY_COMPILER)) 
       SUBROUTINE BLOCK_DISTR_DRV_REL(NPARBLOCK,IBLOCKL_S,IBLOCKL_C,
      &                               RCCTOS,IT_TTPL,IGROUPLIST)
-        call quit('unsupported code')
+        call quit('LUCIAREL unsupported with MPI2 and Cray')
       end subroutine
 #elif (defined (VAR_MPI2) && !defined(CRAY_COMPILER)) 
 ***********************************************************************
@@ -437,6 +437,7 @@ C     MXNUMB: number of the current largest block
       INTEGER*8 ILEN, ITOTBLCKL, IPRODLEN
       INTEGER*8 IIWEIGHTBLK, IILENGTH, IILENGTH_MAX
 C
+!     NPTEST = MAX(NPTEST_VAR,1) !     always print some information
       NPTEST = MAX(NPTEST_VAR,0)
       IMINUS2 = 0
       IIWEIGHTBLK = 0
@@ -459,8 +460,6 @@ C
       I_AM_ACTIVE = 0
       IPRODLEN = 0
       IILENGTH_MAX = 0
-*     print some information
-      NPTEST = 1
 C     end of initialization
       DO ICBL = 1, NDIM
 C
@@ -498,7 +497,7 @@ C
 CSK      WRITE(LUWRT,*)'MXSIZE of MYPROC',MXSIZE,MYPROC
       ITEMPW1 = MXSIZE
 *
-      IF(NPTEST.GE.0) THEN
+      IF(NPTEST.GE.1) THEN
         WRITE(LUWRT,'(/7X,A)')
      &  '==================================================='
         WRITE(LUWRT,'(7X, A,I3)')
@@ -644,16 +643,17 @@ C
 C
       I_AM_ACTIVE = 0
 C
-      IF(NPTEST.GE.0) THEN
-        DO II = 1, NDIM
-         IF( NPARBLOCK(II) .eq. -1 ) THEN
-           WRITE(LUWRT,*) 'AAAHHHH, block',II,' is not distributed'
-           WRITE(LUWRT,*) 'Since I do not know how to proceed, 
-     &                     I will stop!'
-             call quit('*** error in block_distr_1: active block
-     & not distributed among the processes.***')
-          END IF
-        END DO
+      DO II = 1, NDIM
+       IF( NPARBLOCK(II) .eq. -1 ) THEN
+         WRITE(LUWRT,*) 'AAAHHHH, block',II,' is not distributed'
+         WRITE(LUWRT,*) 'Since I do not know how to proceed, 
+     &                   I will stop!'
+           call quit('*** error in block_distr_1: active block '//
+     &     'not distributed among the processes.***')
+        END IF
+      END DO
+
+      IF(NPTEST.GE.1) THEN
         WRITE(LUWRT,'(/20X,A)')'================================'
         WRITE(LUWRT,'(20X, A)')' Summation of even distribution '
         WRITE(LUWRT,'(20X,A/)')'================================'
@@ -744,6 +744,7 @@ C     -------
       INTEGER*8 ILEN, ITOTBLCKL, IPRODLEN, IMIN_CNT, IMIN_CNT_TMP
       INTEGER*8 IIWEIGHTBLK, IILENGTH, IILENGTH_MAX
 C
+!     NPTEST = MAX(NPTEST_VAR,1) !     always print some information
       NPTEST       = MAX(NPTEST_VAR,0)
       IMINUS2      = 0
       IIWEIGHTBLK  = 0
@@ -758,8 +759,6 @@ C
       I_AM_ACTIVE  = 0
       IPRODLEN     = 0
       IILENGTH_MAX = 0
-*     print some information
-      NPTEST = 1
 C     end of initialization
       DO ICBL = 1, NDIM
 C
@@ -828,7 +827,7 @@ C
 C
       IPRODLEN = ITOTBLCKL/NTEMPP
 C
-      IF(NPTEST.GE.0) THEN
+      IF(NPTEST.GT.0) THEN
         WRITE(LUWRT,'(/7X,A)')
      &  '==================================================='
         WRITE(LUWRT,'(7X, A,I3)')
@@ -919,7 +918,6 @@ C
          END IF
  300     CONTINUE
 C
-      IF(NPTEST.GE.0) THEN
         DO II = 1, NDIM
          IF( NPARBLOCK(II) .eq. -1 ) THEN
            WRITE(LUWRT,*) 'AAAHHHH, block',II,' is not distributed'
@@ -929,6 +927,8 @@ C
      & not distributed among the processes.***')
           END IF
         END DO
+
+      IF(NPTEST.GT.0) THEN
         WRITE(LUWRT,'(/20X,A)')'================================'
         WRITE(LUWRT,'(20X, A)')' Summation of even distribution '
         WRITE(LUWRT,'(20X,A/)')'================================'
@@ -1167,8 +1167,6 @@ C
       ICOUNTABLK   =  IT_ACTIVE_R + IT_ACTIVE_I
 C
       CALL ISETVC(IT_TTPL,IMIN2,NDIM*IRC_SAVE)
-*     print some information
-      NPTEST = 0
 C    
 C     end of initialization
 C
@@ -1378,7 +1376,6 @@ C
 C     ^ real/imag part
       I_AM_ACTIVE = 0
 C
-      IF(NPTEST.GE.0) THEN
         DO IMULT = 1, IRC_SAVE
           DO II = 1, NDIM
            IF( IT_TTPL( II + (NDIM * (IMULT - 1 ) ) ) .eq. -1 ) THEN
@@ -1391,8 +1388,9 @@ C
             END IF
           END DO
         END DO
-        WRITE(LUWRT,*)' '
-        WRITE(LUWRT,'(20X,A)')
+
+      IF(NPTEST.GE.1) THEN
+        WRITE(LUWRT,'(/20X,A)')
      &  '++++++++++++++++++++++++++++++++'
         WRITE(LUWRT,'(20X,A)')
      &  '+    T element distribution    +'
@@ -1423,6 +1421,7 @@ C
      &' T blocks with a total length of', ITLTND
         END DO
       END IF
+
 8888  CONTINUE
       IF( NTEMPP .lt. NEWCOMM_PROC_SM )THEN
         IF( IAM_NOT_INV_T .eq. 0 .or. MYNEW_ID_SM .eq. N_MASTER_SM )THEN
@@ -1822,6 +1821,7 @@ C
 *
       ISHCOLOR = 0
       ISHKEY   = 0
+      NPTESTVAR= 0
 *
       NINT_TOT = N1ELINT + N2ELINT
 *     check for quaternion algebra
@@ -1840,13 +1840,9 @@ C
           IRIOFF = IRIOFF + NINT_TOT
         end do
         IF( NPTESTVAR .GE. 10 )THEN
-        write(LUWRT,*) '  '
-        write(LUWRT,*) '  '
-        write(LUWRT,'(2X,A)') 
+        write(LUWRT,'(/2X,A)') 
      &            'updating one- and two-particle densities '
-        write(LUWRT,*) '  '
         write(LUWRT,'(2X,A,1X,I3)')' parallel update level ', ISHARE
-        write(LUWRT,*) '  '
         if (IRI.eq.1) write(LUWRT,*) ' Real density elements     : '
         if (IRI.eq.2) write(LUWRT,*) ' Imaginary density elements: '
         write(LUWRT,*) ' -------------------------------'
@@ -1955,6 +1951,7 @@ C
       ISHKEY       = 0
       ITB_BUFF_ADD = 0
       ID_GET       = - 1
+      NPTESTVAR    = 0
 *
       NINT_TOT = N1ELINT + N2ELINT
 csk   WRITE(LUWRT,*) ' NINT_TOT, N1ELINT, N2ELINT',
@@ -1976,11 +1973,8 @@ csk  &                 NINT_TOT, N1ELINT, N2ELINT
         end do
 csk     write(LUWRT,*) '  ITB_BUFF, LEN_T_BUFF',ITB_BUFF, LEN_T_BUFF
         IF( NPTESTVAR .GE. 10 )THEN
-        write(LUWRT,*) '  '
-        write(LUWRT,*) '  '
-        write(LUWRT,'(2X,A)') 
+        write(LUWRT,'(/2X,A)') 
      &            'updating one- and two-particle densities '
-        write(LUWRT,*) '  '
         if (IRI.eq.1) write(LUWRT,*) ' Real density elements     : '
         if (IRI.eq.2) write(LUWRT,*) ' Imaginary density elements: '
         write(LUWRT,*) ' -------------------------------'
@@ -2082,6 +2076,7 @@ C
       ISHKEY   =   0
       ITB_I8   =   0
       ID_GET   = - 1
+      NPTESTVAR= 0
 *
       NINT_TOT = N1ELINT + N2ELINT
 *     check for quaternion algebra
@@ -2096,13 +2091,9 @@ C
       do IRI = 1,IRILP,1
 C
         IF( NPTESTVAR .GE. 10 )THEN
-          write(LUWRT,*) '  '
-          write(LUWRT,*) '  '
-          write(LUWRT,'(2X,A)') 
+          write(LUWRT,'(/2X,A)') 
      &            'updating one- and two-particle densities '
-          write(LUWRT,*) '  '
           write(LUWRT,'(2X,A,1X,I3)')' parallel update level ', ISHARE
-          write(LUWRT,*) '  '
           if (IRI.eq.1) write(LUWRT,*) ' Real density elements     : '
           if (IRI.eq.2) write(LUWRT,*) ' Imaginary density elements: '
           write(LUWRT,*) ' -------------------------------'

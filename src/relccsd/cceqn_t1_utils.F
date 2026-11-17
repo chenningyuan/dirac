@@ -95,75 +95,118 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
+#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
       LOGICAL DONE
-      REAL*8 SDOT,DDOT
-      integer a,ai,ak,cdik,i,ik,imin,irep,irp,istart,k,krep,nint
-      integer t1ai,t1ak
+      integer i,ik,ikb,irep,irp,istart,k,k0,kb,kbmax,kk,krep,nint
+      integer cdik,vak,vai,t1ai,t1ak,ncd,noi,nok,nvi,nvk,lvo,lvvt
+C     The TAU gather buffer is limited to the size NBUF3 of the
+C     integral buffer budgeted by the caller, with MXGATH (REAL*8
+C     words) as an absolute upper limit
+      integer, parameter :: MXGATH = 4194304
+      real*8, allocatable :: tbuf(:)
 C
 C---------------Executable code--------------------------------------
 C
 C--------------------------------------------
 C S(A,I) = S(A,I) + V(A,K,C,D) * TAU(C,D,I,K)
 C--------------------------------------------
+C
+C     V(AK,CD) is held in BUF3 with leading dimension NVO(IRP), for a
+C     batch of NINT CD pairs starting at ISTART+1. TAU(CD,IK) has
+C     leading dimension NVVT(IRP) with IK running over I>K pairs.
+C     Both terms are evaluated as matrix-matrix products:
+C       S(A,I) += V(A,K;CD) * TAU(CD;I,K)   (one GEMM per K)
+C       S(A,K) -= V(A,I;CD) * TAU(CD;I,K)   (one GEMM per I)
+C     For the second term TAU columns for fixed I are equidistant when
+C     irep(K) < irep(I); in the diagonal block (K<I within one irrep)
+C     they are gathered into a contiguous buffer first (at most
+C     MIN(NBUF3,MXGATH) words, see above).
+C
       DO 30 IRP = 1, NREP
          IF (NVO(IRP).EQ.0) GOTO 30
          DONE = .FALSE.
          ISTART = 0
          NINT = NBUF3/NVO(IRP)  ! maximum # of NVO batches
+         LVO  = NVO(IRP)
+         LVVT = NVVT(IRP)
 
 C ** NINT is updated on exit of GETVOVV !
 
   10     CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,NINT)
          CALL DELINT ('VOVV','KDDD',BUF3,IRP,ISTART,NINT)
-         IK = 0
+         IF (NINT.LE.0) GOTO 25
+         NCD = NINT*RCW
+         IKB = 0
          DO 20 KREP = 1, NREP
            IREP = MULTB(KREP,IRP+NREP,2)
            IF (KREP.GT.IREP) GOTO 20
-           DO K = 1, NO(KREP)
-              IMIN = 1
-              IF (KREP.EQ.IREP) IMIN = K + 1
-              DO I = IMIN, NO(IREP)
-                 IK = IK + 1
-                 CDIK = (IVVOOTT(IRP)+(IK-1)*NVVT(IRP)+ISTART)*RCW+1
-                 DO A = 1, NV(IREP)
-                    AK = (IIVO(IREP,KREP)+(K-1)*NV(IREP)+A-1) * RCW + 1
-                    T1AI = (IVO(IREP)+(I-1)*NV(IREP)+A-1) * RCW + 1
-                    IF (CARITH) THEN
-                       S1(T1AI) = S1(T1AI)
-     &            + DDOT(NINT,TAU(CDIK),RCW,BUF3(AK),RCW*NVO(IRP))
-     &            - DDOT(NINT,TAU(CDIK+1),RCW,BUF3(AK+1),RCW*NVO(IRP))
-                       S1(T1AI+1) = S1(T1AI+1)
-     &            + DDOT(NINT,TAU(CDIK+1),RCW,BUF3(AK),RCW*NVO(IRP))
-     &            + DDOT(NINT,TAU(CDIK),RCW,BUF3(AK+1),RCW*NVO(IRP))
-                    ELSE
-                       S1(T1AI) = S1(T1AI)
-     &            + DDOT(NINT,TAU(CDIK),1,BUF3(AK),NVO(IRP))
-                    ENDIF
-                 ENDDO
-                 DO A = 1, NV(KREP)
-                    AI = (IIVO(KREP,IREP)+(I-1)*NV(KREP)+A-1) * RCW + 1
-                    T1AK = (IVO(KREP)+(K-1)*NV(KREP)+A-1) * RCW + 1
-                    IF (CARITH) THEN
-                       S1(T1AK) = S1(T1AK)
-     &            - DDOT(NINT,TAU(CDIK),RCW,BUF3(AI),RCW*NVO(IRP))
-     &            + DDOT(NINT,TAU(CDIK+1),RCW,BUF3(AI+1),RCW*NVO(IRP))
-                       S1(T1AK+1) = S1(T1AK+1)
-     &            - DDOT(NINT,TAU(CDIK+1),RCW,BUF3(AI),RCW*NVO(IRP))
-     &            - DDOT(NINT,TAU(CDIK),RCW,BUF3(AI+1),RCW*NVO(IRP))
-                    ELSE
-                       S1(T1AK) = S1(T1AK)
-     &            - DDOT(NINT,TAU(CDIK),1,BUF3(AI),NVO(IRP))
-                    ENDIF
-                 ENDDO
+           NOI = NO(IREP)
+           NOK = NO(KREP)
+           NVI = NV(IREP)
+           NVK = NV(KREP)
+           IF (KREP.LT.IREP) THEN
+C
+C             Off-diagonal block: IK = IKB + (K-1)*NOI + I
+C
+              DO K = 1, NOK
+                 IK   = IKB + (K-1)*NOI + 1
+                 CDIK = (IVVOOTT(IRP)+(IK-1)*LVVT+ISTART)*RCW+1
+                 VAK  = (IIVO(IREP,KREP)+(K-1)*NVI)*RCW+1
+                 T1AI = IVO(IREP)*RCW+1
+                 CALL XGEMM ('N','N',NVI,NOI,NINT,A1,BUF3(VAK),LVO,
+     &                       TAU(CDIK),LVVT,A1,S1(T1AI),NVI)
               ENDDO
-           ENDDO
+              DO I = 1, NOI
+                 IK   = IKB + I
+                 CDIK = (IVVOOTT(IRP)+(IK-1)*LVVT+ISTART)*RCW+1
+                 VAI  = (IIVO(KREP,IREP)+(I-1)*NVK)*RCW+1
+                 T1AK = IVO(KREP)*RCW+1
+                 CALL XGEMM ('N','N',NVK,NOK,NINT,-A1,BUF3(VAI),LVO,
+     &                       TAU(CDIK),LVVT*NOI,A1,S1(T1AK),NVK)
+              ENDDO
+              IKB = IKB + NOK*NOI
+           ELSE
+C
+C             Diagonal block: IK = IKB + (K-1)*NOI - K*(K-1)/2 + I - K
+C
+              DO K = 1, NOK-1
+                 IK   = IKB + (K-1)*NOI - K*(K-1)/2 + 1
+                 CDIK = (IVVOOTT(IRP)+(IK-1)*LVVT+ISTART)*RCW+1
+                 VAK  = (IIVO(IREP,KREP)+(K-1)*NVI)*RCW+1
+                 T1AI = (IVO(IREP)+K*NVI)*RCW+1
+                 CALL XGEMM ('N','N',NVI,NOI-K,NINT,A1,BUF3(VAK),LVO,
+     &                       TAU(CDIK),LVVT,A1,S1(T1AI),NVI)
+              ENDDO
+              IF (NOI.GT.1.AND.NVK.GT.0) THEN
+                 KBMAX = MAX(1,MIN(NOI-1,MIN(NBUF3,MXGATH)/NCD))
+                 ALLOCATE (TBUF(NCD*KBMAX))
+                 DO I = 2, NOI
+                    VAI = (IIVO(KREP,IREP)+(I-1)*NVK)*RCW+1
+                    DO K0 = 1, I-1, KBMAX
+                       KB = MIN(KBMAX,I-K0)
+                       DO KK = 1, KB
+                          K    = K0 + KK - 1
+                          IK   = IKB + (K-1)*NOI - K*(K-1)/2 + I - K
+                          CDIK = (IVVOOTT(IRP)+(IK-1)*LVVT+ISTART)*RCW
+                          TBUF((KK-1)*NCD+1:KK*NCD) =
+     &                         TAU(CDIK+1:CDIK+NCD)
+                       ENDDO
+                       T1AK = (IVO(KREP)+(K0-1)*NVK)*RCW+1
+                       CALL XGEMM ('N','N',NVK,KB,NINT,-A1,BUF3(VAI),
+     &                             LVO,TBUF,NINT,A1,S1(T1AK),NVK)
+                    ENDDO
+                 ENDDO
+                 DEALLOCATE (TBUF)
+              ENDIF
+              IKB = IKB + NOI*(NOI-1)/2
+           ENDIF
  20      CONTINUE
-         IF (.NOT.DONE) THEN
+ 25      IF (.NOT.DONE) THEN
             ISTART = ISTART + NINT
             GOTO 10
          ENDIF

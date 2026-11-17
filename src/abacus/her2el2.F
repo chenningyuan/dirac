@@ -106,6 +106,7 @@ C  /* Deck c2hint */
 C
 C     TUH
 C
+      USE AOINT_ZERO
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1 = 1.0D0)
@@ -202,6 +203,14 @@ C
   100    CONTINUE
       END IF
       NCOOR = ICOOR
+C
+C     AOINT not zeroed by INTDR1 (AOASGN): only valid if C2HIN1
+C     writes every block of AOINT exactly once
+C
+      IF (AOASGN .AND. NCOOR .NE. 1) THEN
+         CALL DZERO(AOINT,NC1234)
+         AOASGN = .FALSE.
+      END IF
 C
       NHCMAX = 0
       DO 200 ITYPE = 1, 2
@@ -334,6 +343,12 @@ C
      &               WORK(KSSINT),WORK(KCSINT),NHCMAX)
          LWTOT  = LWTOT - KFREE + 1
          CALL MEMREL('C2HINT',WORK,KWORK,KWORK,KFREE,LFREE)
+      ELSE IF (AOASGN) THEN
+         IF (AOZ_USE) THEN
+            AO_ZERO(1:KHKTAB*KHKTCD) = .TRUE.
+         ELSE
+            CALL DZERO(AOINT,NC1234)
+         END IF
       END IF
       CALL QEXIT('C2HINT')
       RETURN
@@ -343,6 +358,7 @@ C  /* Deck c2hin1 */
      &                  CONT3,CONT4,ETUV,CCONT,SCR1,SCR2,NCOOR,LMNV34,
      &                  NPCO3,NPCO4,NUCS34,IPRINT,INDHER,NPNT34,NRED34,
      &                  SSINT,CSINT,NHCMAX)
+      USE AOINT_ZERO
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -367,131 +383,36 @@ C
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C2HIN1','*',103)
 C
-      INCRMT = I340X + 1
-      INCRMU = I340Y + 1
-      INCRMV = I340Z + 1
+      IF (NOCNT .AND. NCCPP .NE. NO1234)
+     &   CALL QUIT('C2HIN1: NOCNT but NCCPP .ne. NO1234')
       ICMP34 = 0
       DO 100 ICOMP3 = 1,KCKT3
-         L3 = LMNV34(ICOMP3,1,1)
-         M3 = LMNV34(ICOMP3,2,1)
-         N3 = LMNV34(ICOMP3,3,1)
          MAX4 = KCKT4
          IF (DIAC34) MAX4 = ICOMP3
          DO 150 ICOMP4 = 1, MAX4
             ICMP34 = ICMP34 + 1
             NHCCMP = NHCC(ICMP34,1)
             IF (NHCCMP .GT. 0) THEN
-C
-C              *******************************
-C              ***** Primitive Integrals *****
-C              *******************************
-C
                JODD34 = IODD34(ICMP34,1)
-               CALL DZERO(CCPRIM,NHCCMP*NCCPP)
-               IF (KHKT34 .EQ. 1) THEN
-                  ICCTYP = 1
-                  DO 200 ICOOR = 1, NCOOR
-                     IODDIF= JODDIF(ICOOR)
-                     INTHC = INDHER(ITADD(ICOOR),IUADD(ICOOR),
-     &                                           IVADD(ICOOR))
-                     DO 210 ICMP12 = 1, KHKT12
-                     IF (IODD12(ICMP12,2) .EQ. IODDIF) THEN
-                        DO 220 J = 1, NCCPP
-                          CCPRIM(J,ICCTYP) =
-     &                        HCINT(J,INTHC,ICMP12,IOFFHC(ICOOR))
-  220                   CONTINUE
-                        ICCTYP = ICCTYP + 1
-                     END IF
-  210                CONTINUE
-  200             CONTINUE
-               ELSE
-                  L4 = LMNV34(ICOMP4,1,2)
-                  M4 = LMNV34(ICOMP4,2,2)
-                  N4 = LMNV34(ICOMP4,3,2)
-                  MAXT = L3 + L4
-                  MAXU = M3 + M4
-                  MAXV = N3 + N4
-                  MINT = IAND(MAXT,INCRMT - 1)
-                  MINU = IAND(MAXU,INCRMU - 1)
-                  MINV = IAND(MAXV,INCRMV - 1)
-                  IF (IDERIV .EQ. 0) THEN
-                     ITYPE  = IOFFHC(1)
-                     DO 300 V = MINV, MAXV, INCRMV
-                     DO 300 U = MINU, MAXU, INCRMU
-                     DO 300 T = MINT, MAXT, INCRMT
 C
-C                       Expansion coefficients
-C                       ======================
+C              No contraction: CCPRIM has the same layout as the
+C              final CCONT/SSINT block, so build it there directly
+C              and skip C2CONT
 C
-                        DO 310 I = 1, NUC34
-                           ECOEFI = COEF34(I,T,L3,L4,1,1)
-     &                            * COEF34(I,U,M3,M4,2,1)
-     &                            * COEF34(I,V,N3,N4,3,1)
-                           IJ = I
-                           DO 320 J = 1, NORB12
-                              ETUV(IJ) = ECOEFI
-                              IJ = IJ + NUC34
-  320                      CONTINUE
-  310                   CONTINUE
-C
-C                       Cartesian integrals
-C                       ===================
-C
-                        ITUV = INDHER(T,U,V)
-                        ICCTYP = 1
-                        DO 330 I = 1, KHKT12
-                        IF (IODD12(I,2) .EQ. JODD34) THEN
-                           DO 340 J = 1, NCCPP
-                              CCPRIM(J,ICCTYP) = CCPRIM(J,ICCTYP)
-     &                           + ETUV(J)*HCINT(J,ITUV,I,ITYPE)
-  340                      CONTINUE
-                           ICCTYP = ICCTYP + 1
-                        END IF
-  330                   CONTINUE
-  300                CONTINUE
+               IF (NOCNT) THEN
+                  IF (SPHR34) THEN
+                     CALL C2HPRM(CCONT(1,ICMP34),NHCCMP,HCINT,COEF34,
+     &                           ETUV,IODD12,JODD34,INDHER,LMNV34,
+     &                           ICOMP3,ICOMP4,NCOOR)
                   ELSE
-                     DO 400 V = MINV, MAXV, INCRMV
-                     DO 400 U = MINU, MAXU, INCRMU
-                     DO 400 T = MINT, MAXT, INCRMT
-C
-C                       Expansion coefficients
-C                       ======================
-C
-                        DO 410 I = 1, NUC34
-                           ECOEFI = COEF34(I,T,L3,L4,1,1)
-     &                            * COEF34(I,U,M3,M4,2,1)
-     &                            * COEF34(I,V,N3,N4,3,1)
-                           IJ = I
-                           DO 420 J = 1, NORB12
-                              ETUV(IJ) = ECOEFI
-                              IJ = IJ + NUC34
-  420                      CONTINUE
-  410                   CONTINUE
-C
-C                       Cartesian integrals
-C                       ===================
-C
-                        ICCTYP = 1
-                        DO 430 ICOOR = 1, NCOOR
-                           JT = T + ITADD(ICOOR)
-                           JU = U + IUADD(ICOOR)
-                           JV = V + IVADD(ICOOR)
-                           INTHC  = INDHER(JT,JU,JV)
-                           ITYPE  = IOFFHC(ICOOR)
-                           IODDIF = IEOR(JODDIF(ICOOR),JODD34)
-                           DO 440 I = 1, KHKT12
-                           IF (IODD12(I,2) .EQ. IODDIF) THEN
-                              DO 450 J = 1, NCCPP
-                                 CCPRIM(J,ICCTYP) = CCPRIM(J,ICCTYP)
-     &                              + ETUV(J)*HCINT(J,INTHC,I,ITYPE)
-  450                         CONTINUE
-                              ICCTYP = ICCTYP + 1
-                           END IF
-  440                      CONTINUE
-  430                   CONTINUE
-  400                CONTINUE
+                     CALL C2HPRM(SSINT(1,ICMP34),NHCCMP,HCINT,COEF34,
+     &                           ETUV,IODD12,JODD34,INDHER,LMNV34,
+     &                           ICOMP3,ICOMP4,NCOOR)
                   END IF
+                  GO TO 150
                END IF
+               CALL C2HPRM(CCPRIM,NHCCMP,HCINT,COEF34,ETUV,IODD12,
+     &                     JODD34,INDHER,LMNV34,ICOMP3,ICOMP4,NCOOR)
 C
 C              ********************************
 C              ***** Contracted Integrals *****
@@ -522,6 +443,9 @@ C     ***********************************************
 C     ***** Multiply by factors and distribute ******
 C     ***********************************************
 C
+C     AOASGN: AOINT has not been zeroed (see INTDR1); every block is
+C     either assigned or, if zero by symmetry, explicitly zeroed here
+C
       DO 700 ICMP34 = 1, KHKT34
          JODD34 = IODD34(ICMP34,2)
          IWORK = 0
@@ -533,11 +457,24 @@ C
                ICMP   = ICMP34
                DO 810 ICMP12 = 1, KHKT12
                   IF (IODD12(ICMP12,2) .EQ. IODDIF) THEN
-                     DO 820 I = 1, NO1234
-                        AOINT(I,ICMP,ITYPE) = AOINT(I,ICMP,ITYPE)
+                     IF (AOASGN) THEN
+                        DO 815 I = 1, NO1234
+                           AOINT(I,ICMP,ITYPE) =
+     &                              FAC*SSINT(IWORK + I,ICMP34)
+  815                   CONTINUE
+                     ELSE
+                        DO 820 I = 1, NO1234
+                           AOINT(I,ICMP,ITYPE) = AOINT(I,ICMP,ITYPE)
      &                              + FAC*SSINT(IWORK + I,ICMP34)
-  820                CONTINUE
+  820                   CONTINUE
+                     END IF
                      IWORK = IWORK + NO1234
+                  ELSE IF (AOASGN) THEN
+                     IF (AOZ_USE) THEN
+                        AO_ZERO(ICMP) = .TRUE.
+                     ELSE
+                        CALL DZERO(AOINT(1,ICMP,ITYPE),NO1234)
+                     END IF
                   END IF
                   ICMP = ICMP + KHKT34
   810          CONTINUE
@@ -549,17 +486,31 @@ C
                FAC    = FACTOR(ICOOR)
                IODDIF = IEOR(JODDIF(ICOOR),JODD34)
                DO 840 ICMP12 = 1, KHKT12
+               ICMP = ICMP0 + ICMP12
                IF (IODD12(ICMP12,2) .EQ. IODDIF) THEN
-                  ICMP = ICMP0 + ICMP12
                   DO 850 I = 1, NORB12
                      IJ = I
-                     DO 860 J = 1, NORB34
-                        AOINT(IJ,ICMP,ITYPE) = AOINT(IJ,ICMP,ITYPE)
-     &                                  + FAC*SSINT(IWORK+J,ICMP34)
-                        IJ = IJ + NORB12
-  860                CONTINUE
+                     IF (AOASGN) THEN
+                        DO 855 J = 1, NORB34
+                           AOINT(IJ,ICMP,ITYPE) =
+     &                                    FAC*SSINT(IWORK+J,ICMP34)
+                           IJ = IJ + NORB12
+  855                   CONTINUE
+                     ELSE
+                        DO 860 J = 1, NORB34
+                           AOINT(IJ,ICMP,ITYPE) = AOINT(IJ,ICMP,ITYPE)
+     &                                    + FAC*SSINT(IWORK+J,ICMP34)
+                           IJ = IJ + NORB12
+  860                   CONTINUE
+                     END IF
                      IWORK = IWORK  + NORB34
   850             CONTINUE
+               ELSE IF (AOASGN) THEN
+                  IF (AOZ_USE) THEN
+                     AO_ZERO(ICMP) = .TRUE.
+                  ELSE
+                     CALL DZERO(AOINT(1,ICMP,ITYPE),NO1234)
+                  END IF
                END IF
   840          CONTINUE
   830       CONTINUE
@@ -584,6 +535,150 @@ C
   920          CONTINUE
   910       CONTINUE
   900    CONTINUE
+      END IF
+      RETURN
+      END
+C  /* Deck c2hprm */
+      SUBROUTINE C2HPRM(CCOUT,NHCCMP,HCINT,COEF34,ETUV,IODD12,JODD34,
+     &                  INDHER,LMNV34,ICOMP3,ICOMP4,NCOOR)
+C
+C     Primitive (in electron 2) Cartesian integrals for one Cartesian
+C     component pair (ICOMP3,ICOMP4), from Hermite-Cartesian integrals
+C     HCINT (C2HIN1).  All NHCCMP columns of CCOUT are set: by
+C     assignment for KHKT34 = 1 and for the first (t,u,v) term of
+C     undifferentiated integrals, so CCOUT is only zeroed for
+C     derivatives.
+C
+#include "implicit.h"
+#include "maxaqn.h"
+      INTEGER T, U, V
+      LOGICAL FIRST
+      COMMON /COMC2H/ JODDIF(27), ITADD(27), IUADD(27), IVADD(27),
+     &                FACTOR(27), IOFFHC(27), IOFFCC(27)
+#include "hertop.h"
+#include "twoao.h"
+      DIMENSION CCOUT(NCCPP,NHCCMP), HCINT(NCCPP,NTUV34,KHKT12,*),
+     &          COEF34(MXUC34,0:JMAX3+JMAX4,0:JMAX3,0:JMAX4,3,*),
+     &          ETUV(NCCPP), IODD12(KCKT12,2), LMNV34(KCKMX,5,2),
+     &          INDHER(0:JTOP,0:JTOP,0:JTOP)
+C
+      IF (KHKT34 .EQ. 1) THEN
+         ICCTYP = 1
+         DO 200 ICOOR = 1, NCOOR
+            IODDIF= JODDIF(ICOOR)
+            INTHC = INDHER(ITADD(ICOOR),IUADD(ICOOR),IVADD(ICOOR))
+            DO 210 ICMP12 = 1, KHKT12
+            IF (IODD12(ICMP12,2) .EQ. IODDIF) THEN
+               DO 220 J = 1, NCCPP
+                  CCOUT(J,ICCTYP) = HCINT(J,INTHC,ICMP12,IOFFHC(ICOOR))
+  220          CONTINUE
+               ICCTYP = ICCTYP + 1
+            END IF
+  210       CONTINUE
+  200    CONTINUE
+         RETURN
+      END IF
+C
+      INCRMT = I340X + 1
+      INCRMU = I340Y + 1
+      INCRMV = I340Z + 1
+      L3 = LMNV34(ICOMP3,1,1)
+      M3 = LMNV34(ICOMP3,2,1)
+      N3 = LMNV34(ICOMP3,3,1)
+      L4 = LMNV34(ICOMP4,1,2)
+      M4 = LMNV34(ICOMP4,2,2)
+      N4 = LMNV34(ICOMP4,3,2)
+      MAXT = L3 + L4
+      MAXU = M3 + M4
+      MAXV = N3 + N4
+      MINT = IAND(MAXT,INCRMT - 1)
+      MINU = IAND(MAXU,INCRMU - 1)
+      MINV = IAND(MAXV,INCRMV - 1)
+      IF (IDERIV .EQ. 0) THEN
+         ITYPE = IOFFHC(1)
+         FIRST = .TRUE.
+         DO 300 V = MINV, MAXV, INCRMV
+         DO 300 U = MINU, MAXU, INCRMU
+         DO 300 T = MINT, MAXT, INCRMT
+C
+C           Expansion coefficients
+C           ======================
+C
+            DO 310 I = 1, NUC34
+               ECOEFI = COEF34(I,T,L3,L4,1,1)
+     &                * COEF34(I,U,M3,M4,2,1)
+     &                * COEF34(I,V,N3,N4,3,1)
+               IJ = I
+               DO 320 J = 1, NORB12
+                  ETUV(IJ) = ECOEFI
+                  IJ = IJ + NUC34
+  320          CONTINUE
+  310       CONTINUE
+C
+C           Cartesian integrals
+C           ===================
+C
+            ITUV = INDHER(T,U,V)
+            ICCTYP = 1
+            DO 330 I = 1, KHKT12
+            IF (IODD12(I,2) .EQ. JODD34) THEN
+               IF (FIRST) THEN
+                  DO 335 J = 1, NCCPP
+                     CCOUT(J,ICCTYP) = ETUV(J)*HCINT(J,ITUV,I,ITYPE)
+  335             CONTINUE
+               ELSE
+                  DO 340 J = 1, NCCPP
+                     CCOUT(J,ICCTYP) = CCOUT(J,ICCTYP)
+     &                               + ETUV(J)*HCINT(J,ITUV,I,ITYPE)
+  340             CONTINUE
+               END IF
+               ICCTYP = ICCTYP + 1
+            END IF
+  330       CONTINUE
+            FIRST = .FALSE.
+  300    CONTINUE
+      ELSE
+         CALL DZERO(CCOUT,NHCCMP*NCCPP)
+         DO 400 V = MINV, MAXV, INCRMV
+         DO 400 U = MINU, MAXU, INCRMU
+         DO 400 T = MINT, MAXT, INCRMT
+C
+C           Expansion coefficients
+C           ======================
+C
+            DO 410 I = 1, NUC34
+               ECOEFI = COEF34(I,T,L3,L4,1,1)
+     &                * COEF34(I,U,M3,M4,2,1)
+     &                * COEF34(I,V,N3,N4,3,1)
+               IJ = I
+               DO 420 J = 1, NORB12
+                  ETUV(IJ) = ECOEFI
+                  IJ = IJ + NUC34
+  420          CONTINUE
+  410       CONTINUE
+C
+C           Cartesian integrals
+C           ===================
+C
+            ICCTYP = 1
+            DO 430 ICOOR = 1, NCOOR
+               JT = T + ITADD(ICOOR)
+               JU = U + IUADD(ICOOR)
+               JV = V + IVADD(ICOOR)
+               INTHC  = INDHER(JT,JU,JV)
+               ITYPE  = IOFFHC(ICOOR)
+               IODDIF = IEOR(JODDIF(ICOOR),JODD34)
+               DO 440 I = 1, KHKT12
+               IF (IODD12(I,2) .EQ. IODDIF) THEN
+                  DO 450 J = 1, NCCPP
+                     CCOUT(J,ICCTYP) = CCOUT(J,ICCTYP)
+     &                               + ETUV(J)*HCINT(J,INTHC,I,ITYPE)
+  450             CONTINUE
+                  ICCTYP = ICCTYP + 1
+               END IF
+  440          CONTINUE
+  430       CONTINUE
+  400    CONTINUE
       END IF
       RETURN
       END

@@ -78,7 +78,7 @@ C     set "I/O node master" + "shared memory node master"
       ! leading to segmentation fault, because orbsymVEC is not allocated
       ! After testing found out that after this (which does nothing as dougrp .gt.0)
       if (dougrp .lt. 10) goto 100
-      write(0,*) '- ifx compiler still buggy, but workaround works...' ! this line is needed to trick ifx to do the right thing ...
+      write(0,*) '- ifx 2025.* compiler buggy, but workaround works...' ! this line is needed to trick ifx to do the right thing ...
       ! then the "if (dougrp .ge. 10) then" works correctly .....
 !ifx  write(0,*) 'hjaaj10 dougrp',dougrp, nirr_dg
 #endif
@@ -762,14 +762,8 @@ C
 *
       NTEST = 1
 *
-      if (NTEST.gt.1) then
-        write(LUPRI,*)
-        write(LUPRI,*) ' ////////////////////////////////// '
-        write(LUPRI,*) ' //'
-      end if
       if (NTEST.gt.0) then
-        write(LUPRI,*) ' //  LUCIAREL called'
-        write(LUPRI,*) ' //  CIRUN = ',CIRUN
+        write(LUPRI,*) ' //  LUCIAREL called;  CIRUN = ',CIRUN
       end if
 *
       if (NTEST.gt.0) then
@@ -803,13 +797,8 @@ C
       end if
       end if
 
-      if (NTEST.gt.1) then
-        write(LUPRI,*) ' //'
-        write(LUPRI,*) ' ////////////////////////////////// '
-      end if
-
       if (CIRUN.eq.'DIAG  ') then
-        call quit('NOT IMPLEMENTED YET!')
+        call quit('CIRUN = DIAG NOT IMPLEMENTED YET!')
       end if
 *
       return

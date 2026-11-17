@@ -2175,6 +2175,8 @@ C
 #include "eqns.inc"
 #include "waio.h"
 #include "complex.inc"
+#include "results.inc"
+#include "ccpar.inc"
 C
 C---------------Calling variables--------------------------------------
 C
@@ -2183,8 +2185,8 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      LOGICAL ALLOC_ME,SRTALL
-      INTEGER*8 NVT
+      LOGICAL ALLOC_ME,SRTALL,ONEPAS
+      INTEGER*8 NVT,NV4MIN
       integer minbuf,nbuf,nvf,nvtmin
 Caspg, replacing memget
       integer,       allocatable, target :: a_kr(:),
@@ -2197,8 +2199,12 @@ Caspg, replacing memget
      &                              a_v2(:),     a_v2a(:),
      &                              a_v3a(:),    a_vt(:),
      &                              a_fvo(:),    a_v1a(:),
-     &                              a_v3(:),     a_vta(:)
-      real (kind=kreal), pointer ::     a_v4(:),     a_v4a(:)
+     &                              a_v3(:),     a_vta(:),
+     &                              a_v5(:),     a_v5a(:),
+     &                              a_v6(:),     a_v6a(:)
+      real (kind=kreal), pointer ::     a_v4(:),     a_v4a(:),
+     &                                  a_vovv(:),   a_vovva(:),
+     &                                  a_vvvv(:),   a_vvvva(:)
 c
       integer(kind=8)        :: mxcorr
       integer(kind=8)        :: current_mem_use = 0
@@ -2252,6 +2258,39 @@ C     The remaining space is
       call allocator_get_maxbuff(freemem,kind(a_VT))
       NVF = freemem / (2 * RCW)
 C
+C     Sort all classes while reading the integral file only once when
+C     the VOVO array and the local VOVV and VVVV integrals fit in memory
+C     at the same time (RDINTS), leaving 5% of the free memory unused.
+C     Not used when estimating memory, on restart of a partially sorted
+C     integral set, or with Breit (Gaunt) integrals.
+C
+      SRTALL = .TRUE.
+      IF (EQNS.NE.'FOCKSP') SRTALL = DOCCSD.OR.DOMP2GOLD
+      IF (EQNS.EQ.'RELADC') SRTALL = .TRUE.
+      NV4MIN = MAX(INT(NV4,8),INT(JOOOO(2),8),INT(JVOOO(2),8))
+      ONEPAS = ICALC.GE.2 .AND. SRTALL .AND. .NOT.BREIT .AND.
+     &         IMSTAT(1).NE.3 .AND. IMSTAT(2).NE.3 .AND.
+     &         IMSTAT(3).NE.3 .AND.
+     &         NV4MIN+MAX(NV5PAR,1_8)+MAX(NV6PAR,1_8).LE.NVF-NVF/20
+C
+      IF (ONEPAS) THEN
+         call alloc(a_VT ,NV4MIN*RCW, id="vt" )
+         call alloc(a_VTA,NV4MIN*RCW, id="vta" )
+         call alloc(a_V5 ,MAX(NV5PAR,1_8)*RCW, id="v5" )
+         call alloc(a_V5A,MAX(NV5PAR,1_8)*RCW, id="v5a" )
+         call alloc(a_V6 ,MAX(NV6PAR,1_8)*RCW, id="v6" )
+         call alloc(a_V6A,MAX(NV6PAR,1_8)*RCW, id="v6a" )
+         a_V4    => a_VT
+         a_V4A   => a_VTA
+         a_VOVV  => a_V5
+         a_VOVVA => a_V5A
+         a_VVVV  => a_V6
+         a_VVVVA => a_V6A
+C        NVT is not used for buffering, but checked in RDINTS
+         NVT = NWORDS_ON_RECORD / (RCW * IRW)
+         GOTO 440
+      ENDIF
+C
 C  Determine number of available buffers with respect to free memory
 C  Records are defined for integers, calculate how many real or
 C  complex words we can store on these in MINBUF
@@ -2274,10 +2313,14 @@ C
 C
       call alloc(a_VT ,NVTMIN*RCW, id="vt" )
       call alloc(a_VTA,NVTMIN*RCW, id="vta" )
-      a_V4  => a_VT
-      a_V4A => a_VTA
+      a_V4    => a_VT
+      a_V4A   => a_VTA
+      a_VOVV  => a_VT
+      a_VOVVA => a_VTA
+      a_VVVV  => a_VT
+      a_VVVVA => a_VTA
 
-      call allocator_get_words_inuse(current_mem_use)
+  440 call allocator_get_words_inuse(current_mem_use)
       mxcorr= current_mem_use - start_mem_use
 C
       IF (ICALC.EQ.1) THEN
@@ -2287,21 +2330,16 @@ C
 C
 C  Read integrals & make fock matrices
 C
-      SRTALL = .TRUE.
-C
-C  MP2 calculations need less integrals
+C  MP2 calculations need less integrals (SRTALL, set above)
 C  MP: DHF-ADC also needs all integral classes !
 C  MP: The eqns variable hereby turns on full sorting in this case.
-C
-      IF (EQNS.NE.'FOCKSP') SRTALL = DOCCSD.OR.DOMP2GOLD
-      IF (EQNS.EQ.'RELADC') SRTALL = .TRUE.
 C
       CALL RDINTS(IPRNT,NSP,a_KR,a_INDK,a_INDL,
      &            a_CBUF,a_IBUF,NVT,a_BUF1,a_BUF2,
      &            a_V1,a_V1A,
      &            a_V2,a_V2A,a_V3,a_V3A,a_V4,a_V4A,
-     &            a_VT,a_VTA,a_VT,a_VTA,EPS,a_FOO,a_FVO,
-     &            a_FVV,BREIT,SRTALL,INTERFACE)
+     &            a_VOVV,a_VOVVA,a_VVVV,a_VVVVA,EPS,a_FOO,a_FVO,
+     &            a_FVV,BREIT,SRTALL,INTERFACE,ONEPAS)
 
  450  CONTINUE
       call dealloc(a_kr, id="kr" )
@@ -2321,10 +2359,20 @@ C
       call dealloc(a_V3  , id="v3" )
       call dealloc(a_V3A , id="v3a" )
 
-      a_V4  => NULL()
-      a_V4A => NULL()
+      a_V4    => NULL()
+      a_V4A   => NULL()
+      a_VOVV  => NULL()
+      a_VOVVA => NULL()
+      a_VVVV  => NULL()
+      a_VVVVA => NULL()
       call dealloc(a_VT  , id="vt" )
       call dealloc(a_VTA , id="vta" )
+      IF (ONEPAS) THEN
+         call dealloc(a_V5  , id="v5" )
+         call dealloc(a_V5A , id="v5a" )
+         call dealloc(a_V6  , id="v6" )
+         call dealloc(a_V6A , id="v6a" )
+      ENDIF
 C
       RETURN
 1001  FORMAT (" Memory for ",A," :",T50,I15," 8-byte words")

@@ -470,6 +470,7 @@ C
       CALL MEMMAN(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       CALL MEMMAN(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
 C
+      IF (NTEST .GT. 0) THEN
       WRITE(LUWRTOUT,'(/3X,A)')
      & '=============================================================='
       WRITE(LUWRTOUT,'(3X,A)')
@@ -482,7 +483,8 @@ C
      & 'allocate resolution vector of length:         ',LSCR2
       WRITE(LUWRTOUT,'(3X,A/)')
      & '=============================================================='
-      CALL FLSHFO(LUWRTOUT)
+      FLUSH(LUWRTOUT)
+      ENDIF
 C
       IF(IDIAG.EQ.2) THEN
         LUDIA = LUSC1
