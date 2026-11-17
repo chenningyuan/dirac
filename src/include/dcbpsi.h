@@ -9,6 +9,7 @@
 !  DORES    - resolution of open-shell manifold with GOSCIP
 !  DOMVO    - make modified virtual orbitals
 !  DOMP2NO  - make MP2 natural orbitals
+!  DOROSE   - make ROSE projected or localized orbitals
 !  DOEXACC  - perform coupled-cluster calculation with EXA_CC
 !  DOCCM    - perform coupled-cluster calculation with RELCCSD
 !  DOHSCC   - perform HSMRCC calculation with external code
@@ -32,13 +33,13 @@
      &        DOHSCC, DOHSFS, DOLUCT, DOKRMC, DOLUCIAR, DOMP2NO,        &
      &        L1ORBM, L2ORBM, PHCOEF, DOCOSCI, DOADC, DOKRCI, DOKRCC,   &
      &        DOGASCIP, DOARDUC, DOPOLPRP, DOLAPLCE, DOEXACC, DOIVO,    &
-     &        DOCASCI, DOCASPT2
-
+     &        DOCASCI, DOCASPT2, DOROSE
+ 
       COMMON /DCLPSI/                                                   &
      &                             DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
      &        DOHSCC, DOHSFS, DOLUCT, DOKRMC, DOLUCIAR, DOMP2NO,        &
      &        L1ORBM, L2ORBM, PHCOEF, DOCOSCI, DOADC, DOKRCI, DOKRCC,   &
      &        DOGASCIP, DOARDUC, DOPOLPRP, DOLAPLCE, DOEXACC, DOIVO,    &
-     &        DOCASCI, DOCASPT2
+     &        DOCASCI, DOCASPT2, DOROSE
 
 ! --- end of dcbpsi.h ---

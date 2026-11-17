@@ -9,7 +9,7 @@ There is also a google group: https://groups.google.com/g/dirac-users
 ## Getting the Code
 
 - **We recommend users who do not plan to make any code changes
-to download from** https://zenodo.org/doi/10.5281/zenodo.18662050 (DIRAC26)
+to download from** https://zenodo.org/doi/10.5281/zenodo.18662049 (DIRAC26)
 
   In this case the release tarballs are self-contained, and in addition we get useful download metrics which we can use
 in future funding applications.

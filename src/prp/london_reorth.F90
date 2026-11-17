@@ -56,7 +56,6 @@ module london_reorth_hb
 #include "dcbprp.h"
 #include "aovec.h"
 #include "blocks.h"
-#include "dcbfir.h"
 #include "dcbham.h"
 #include "iratdef.h"
 #include "cbihr2.h"
@@ -379,8 +378,6 @@ contains
 
     real(8), pointer       :: work(:)
     integer                :: lwork
-
-    integer, allocatable   :: npos_array(:)
     integer                :: npos
     
     real(8), allocatable   :: dmat(:)
@@ -402,16 +399,6 @@ contains
       ifckop(icomp) = jbtof(irep(icomp), 1)
     end do
 
-!gosia fixme parallel run
-    call my_get_npos(npos)
-!
-! miro: getting ill value of npos ! Debugger shows npos = 140735783936152
-!
-    allocate(npos_array(max(1,npos)))
-    if (npos > 0) then
-      npos_array(1:npos) = 0
-    end if
-
     lwork = len_f77_work
     call di_select_wrk(work, lwork)
 
@@ -421,7 +408,6 @@ contains
                 fao,         &
                 tb_dmat,     &
                 nr_xyz_comp, &
-                npos_array,  &
                 intnmr,      &
                 iprprp,      &
                 work,        &
@@ -439,8 +425,6 @@ contains
                         nz, ipqtoq(1, irep(icomp)), lupri)
       end do
     end if
-
-    deallocate(npos_array)
 
 !       construct kohn-sham contribution
 !       ================================
@@ -485,6 +469,21 @@ contains
                             xc_dmat_ih_sym      = ihrmop,      &
                             xc_do_london_rhs_ro = .true.,      &       
                             xc_london_reorth_export = .true.)       
+      else if (reorth_is_antihermitian() .and. .not. (dft_cfg_saop_is_active .or. dft_cfg_grac_is_active)) then
+!        for an antihermitian tb_dmat the reorthonormalization term is the
+!        ordinary linear-response xc kernel contribution: use the blocked
+!        (BLAS3) integrator instead of the pointwise london code
+         call integrate_xc(xc_mat_dim           = ntbas(0),     &
+                            xc_nz                = nz,          &
+                            xc_dmat_0            = dmat,        &
+                            xc_nr_dmat           = nr_xyz_comp, &
+                            xc_nr_fmat           = nr_xyz_comp, &
+                            xc_dmat              = tb_dmat,     &
+                            xc_fmat              = fao,         &
+                            xc_fmat_pg_sym       = isymop,      &
+                            xc_dmat_pg_sym       = isymop,      &
+                            xc_dmat_ih_sym       = ihrmop,      &
+                            xc_response_order_mo = 1)
       else
          call integrate_xc(xc_mat_dim          = ntbas(0),     &
                             xc_nz               = nz,          &
@@ -612,16 +611,14 @@ contains
   end subroutine get_gtb
              
              
-      SUBROUTINE my_GET_NPOS(NPOS)
-#include "implicit.h"
-#include "dcbgen.h"
-      integer npos
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-
-      end subroutine
-
-
+  logical function reorth_is_antihermitian()
+!   getmdm projects tb_dmat onto its antihermitian part, except with .LAOMOD
+#ifdef MOD_LAO_REARRANGED
+    reorth_is_antihermitian = .not. lao_lr_rearrange
+#else
+    reorth_is_antihermitian = .true.
+#endif
+  end function
 
   subroutine do_ao_to_mo(fmo, fao, cmo, ibeig)
 !-----------------------------------------------------------------------
@@ -940,15 +937,6 @@ contains
     call dealloc(tb)
 
   end subroutine
-
-      SUBROUTINE GET_NPOS(NPOS)
-#include "implicit.h"
-#include "dcbgen.h"
-      integer npos
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-      end subroutine
-
 
 ! ------------------------------------------------------------------------------
   subroutine export_conmat_info_to_helper()

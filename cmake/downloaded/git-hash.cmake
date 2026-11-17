@@ -7,7 +7,9 @@ set(_git_branch "unknown")
 
 if(GIT_FOUND)
   execute_process(
-    COMMAND ${GIT_EXECUTABLE} --no-pager show -s --pretty=format:%h -n 1
+    # abbreviated hash, with "-dirty" appended if tracked files have local modifications
+    # (the non-matching --match pattern makes describe ignore tags and fall back to the hash)
+    COMMAND ${GIT_EXECUTABLE} describe --always --dirty --match=NeVeRmAtCh
     OUTPUT_VARIABLE _git_last_commit_hash
     OUTPUT_STRIP_TRAILING_WHITESPACE
     ERROR_QUIET

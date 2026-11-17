@@ -1626,8 +1626,9 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-      LOGICAL TOBE, TOBEK, FNDLAB, MCORB, MJAVA
+      LOGICAL TOBE, TOBEK, FNDLAB, MCORB, MJAVA, X2CMOB
       CHARACTER TEXT*74
+      character*(:), allocatable :: mobasis
       DIMENSION IDIM(3),IDIMS(12)
       real(8), allocatable :: CSO(:)
       real(8), allocatable :: EIG(:)
@@ -1709,11 +1710,18 @@ C.......if more than one fermion ircop merge orbital classes
 C
 C     Write coefficients and reordered other data to checkpoint
 C
+      mobasis = '/result/wavefunctions/scf/mobasis'
+      call checkpoint_query
+     & ('/result/wavefunctions/scf/x2c_mobasis/mobasis/nz',
+     &  exist=X2CMOB)
+      if (X2CMOB) then
+         mobasis = '/result/wavefunctions/scf/x2c_mobasis/mobasis'
+      endif
       call checkpoint_write 
-     & ('/result/wavefunctions/scf/mobasis/eigenvalues_C1',
+     & (mobasis//'/eigenvalues_C1',
      &  rdata=eig(1:norbt))
       call checkpoint_write 
-     & ('/result/wavefunctions/scf/mobasis/orbitals_C1',
+     & (mobasis//'/orbitals_C1',
      &  rdata=cao(1:ndim))
       call write_basis_fromcommon(.true.) ! write also the C1 format of the ao_basis
 C
@@ -4361,26 +4369,41 @@ C***********************************************************************
       RETURN
       END
 
-      subroutine write_occupations_fromcommon(group)
+      subroutine write_occupations_fromcommon(group,write_psh)
+
+!     write orbital occupations and shell information stored in the common block dcborb to checkpoint
+!     shell information codes: -2 (neg. energy), -1 (closed shell), 0 (virtual), >0 (open shell)
+!     - group: indicates the section to which this information is to be written
+!     - write_psh == true: write occupations also for negative energy orbitals (4C runs)
+!                 == false: write occupations only for the positive energy orbitals (2C runs)
+
       use checkpoint
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dgroup.h"
       character(len=*),intent(in) :: group
+      logical,intent(in) :: write_psh
       real(8), allocatable :: occupations(:)
       integer, allocatable :: shell_id(:)
 
-      allocate(occupations(norbt))
-      allocate(shell_id(norbt))
+      if (write_psh) then
+         allocate(occupations(norbt))
+         allocate(shell_id(norbt))
+      else
+         allocate(occupations(nesht))
+         allocate(shell_id(nesht))
+      endif
       ish = 0
       do ifsym = 1, nfsym
           ! positronic (negative energy) shells
-          do i = 1, npsh(ifsym)
-             ish = ish + 1
-             shell_id(ish) = -2
-             occupations(ish) = 0.D0
-          enddo
+          if (write_psh) then
+             do i = 1, npsh(ifsym)
+                ish = ish + 1
+                shell_id(ish) = -2
+                occupations(ish) = 0.D0
+             enddo
+          endif
           ! inactive (closed) shells
           do i = 1, nish(ifsym)
              ish = ish + 1
@@ -4662,4 +4685,3 @@ C***********************************************************************
                 nfunctions_in_shell = 2 * (l_value - 1) + 1
              end if
         end function nfunctions_in_shell
-

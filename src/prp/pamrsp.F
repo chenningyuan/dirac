@@ -166,16 +166,7 @@ C     now has complex coefficients
       CALL MEMGET2('REAL','REDS' ,KREDS ,N2REDM,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','REDGP',KREDGP,NREDGP,WORK,KFREE,LFREE)
 C
-C     New NPOS(*) array for HER_PARDRV, reset dcbfir.h to true
-C
-
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-      if (NPOS.GT.0) THEN
-         CALL MEMGET2('INTE','POS',KPOS,NPOS,WORK,KFREE,LFREE)
-      else
-         KPOS = KFREE
-      endif
+      call HERPAR_RESET_TASK_ORDER()
 C
 C
 C     Fix the number of variational parameters
@@ -233,7 +224,7 @@ C
      &            IBTYP,IBCVC,IBEVC,IBPVC,EVALR,EVECR,
      &            WORK(KREDE),WORK(KREDS),WORK(KREDGP),
      &            WORK(KRNORM),WORK(KIVECS),WORK(KISIM),
-     &            WORK(KPOS),WORK,KFREE,LFREE)
+     &            WORK,KFREE,LFREE)
 C
       CALL MEMREL('XRSCTL.XRSCT1',WORK,1,KFRSAV,KFREE,LFREE)
 C
@@ -246,7 +237,7 @@ C/* Deck XRSCT1 */
       SUBROUTINE XRSCT1(GPCI,GPOE,GPOP,RCNV,
      &                  IBTYP,IBCVC,IBEVC,IBPVC,EVALR,EVECR,
      &                  REDE,REDS,REDGP,RNORM,IVECS,ISIM,
-     &                  NPOS,WORK,KFREE,LFREE)
+     &                  WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Module for solving the linear response equations.
@@ -377,7 +368,7 @@ C
      &          IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),RCNV(*),
      &          EVALR(*),EVECR(NEVEC,NFREQ),
      &          RNORM(NVPAR,NFREQ*NDAMP),IVECS(NFREQ,NVPAR),
-     &          ISIM(NVPAR),NPOS(*),WORK(*)
+     &          ISIM(NVPAR),WORK(*)
 C
       LOGICAL BVLOAD
       CHARACTER LAB123(3)*8,RESTAR*8
@@ -612,7 +603,7 @@ C
      &       WORK,KFREE,LFREE)
           CALL XRSSVC(WORK(KBCI),WORK(KBOE),WORK(KBOP),
      &         WORK(KSCI),WORK(KSOE),WORK(KSOP),
-     &         IBTYP,IBCVC,IBEVC,IBPVC,NPOS,
+     &         IBTYP,IBCVC,IBEVC,IBPVC,
      &         GPCI,GPOE,GPOP, WORK,KFREE,LFREE)
 C
 C         On file we save the Hessian PHP = PLP (i.e. beta=0), so
@@ -3614,7 +3605,7 @@ C     Written by T.Saue Dec 1 1996
 C
 C     TYP='E' : NDIM = NZXOPE, NZL = NZ
 C     TYP='P' : NDIM = NZXOPP, NZL = NZ
-C     TYP='C' : NDIM = NCONF,  NZL = NZ_in_CI
+C     TYP='C' : NDIM = NZCONF, NZL = NZ_in_CI
 C
 C***********************************************************************
 #include "implicit.h"

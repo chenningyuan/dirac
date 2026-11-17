@@ -357,6 +357,7 @@ module eti_integrals
 
          else
             call print_date('unknown index transformation algorithm specified')
+            write(*,'(5X,A,I0)') '- scheme specified was ',moint_scheme
             stop 'error in get_cc_integrals'
          end if ! branching between different schemes
 

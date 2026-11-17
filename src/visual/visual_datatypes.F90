@@ -114,6 +114,8 @@ module visual_datatypes
     logical, public:: outpri = .false.                      ! if true, print to DIRAC output
     integer, public:: input = 0                             ! 0 = calculate, 1 = import
     integer, public:: nuc = 0                               ! id of a nucleus (for grid functions specific to atomic centers)
+    integer, public:: spinor_index = 0                      ! native VISUAL/MO spinor index
+    character(len=:), public, allocatable:: spinor_phase    ! global phase mode for spinor components
     integer, public:: wf_order = 0                          ! 0 = depends on unperturbed wave function only, >0 requires perturbed wave functions (1 = linear response, 2 = quadratic response, etc.)
     integer, public:: rspvec_id = 0                         ! now: record ID on PAMXVC file
     integer, public:: lao = 0                               ! 0 = no LAOs, 1 = LAOs (all LAO-contributions)

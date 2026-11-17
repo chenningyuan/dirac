@@ -3,7 +3,7 @@
 !
 **DIRAC
 .TITLE
-NR Hamiltonian. CCSDT energies, small test.
+NR Hamiltonian. CCSDT energies and dipole, small test.
 .WAVE F
 .PROPERTIES
 **INTEGRALS
@@ -26,16 +26,18 @@ NR Hamiltonian. CCSDT energies, small test.
 energy 0.1 200.0 0.001
 # 6..7
 # .CCDOUBLES
-.NOTRIPLES
+#.NOTRIPLES
 .CCiT
 .AUTOKERNELS
+.EXECUTOR
+ 2
 .AUTOSCHEME
-3
+ 2
 # .EXATENSOR
 .PRINT
 2
 .TALSH_BUFF
-40
+5
 .LAMBDA
 **MOLECULE
 *COORDINATES

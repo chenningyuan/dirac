@@ -21,7 +21,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrssvc */
       SUBROUTINE XRSSVC(BCVEC,BEVEC,BPVEC,
      &                  SCVEC,SEVEC,SPVEC,IBTYP,
-     &                  IBCVC,IBEVC,IBPVC,NPOS,
+     &                  IBCVC,IBEVC,IBPVC,
      &                  GPCI,GPOE,GPOP,
      &                  WORK,KFREE,LFREE)
 C***********************************************************************
@@ -47,7 +47,7 @@ C
       DIMENSION BCVEC(*),BEVEC(*),BPVEC(*)
       DIMENSION SCVEC(*),SEVEC(*),SPVEC(*)
       DIMENSION IBCVC(*),IBEVC(*),IBPVC(*)
-      DIMENSION IBTYP(2,*),NPOS(*),WORK(*)
+      DIMENSION IBTYP(2,*),WORK(*)
       DIMENSION GPCI(*), GPOE(*), GPOP(*)
 C
 C Used from common blocks:
@@ -73,7 +73,7 @@ C
          CALL XRSSEP(BCVEC,BEVEC,BPVEC,
      &        SCVEC,SEVEC,SPVEC,
      &        IBCVC,IBEVC,IBPVC,
-     &        IBTYP,GPOE,GPOP,NPOS,WORK,KFREE,LFREE)
+     &        IBTYP,GPOE,GPOP,WORK,KFREE,LFREE)
       END IF
 C
 C     Construct configurational part of sigma vectors
@@ -351,7 +351,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrssep */
       SUBROUTINE XRSSEP(BCVEC,BEVEC,BPVEC,SCVEC,SEVEC,SPVEC,
      &     IBCVC,IBEVC,IBPVC,
-     &     IBTYP,GPOE,GPOP,NPOS,WORK,KFREE,LFREE)
+     &     IBTYP,GPOE,GPOP,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Construct orbital part of sigma vectors
@@ -456,7 +456,7 @@ C***********************************************************************
       PARAMETER(DM1 = -1.0D0)
       DIMENSION BCVEC(*),BEVEC(*),BPVEC(*),
      &          SCVEC(*),SEVEC(*),SPVEC(*),
-     &          IBCVC(*),IBEVC(*),IBPVC(*),IBTYP(2,*),NPOS(*),
+     &          IBCVC(*),IBEVC(*),IBPVC(*),IBTYP(2,*),
      &          WORK(*)
       DIMENSION GPOE(*),GPOP(*)
 C
@@ -532,7 +532,7 @@ C
 C
       IF (LSVCFG(1)) THEN
         CALL GMOLITX(WORK(KF),WORK(KDVT),WORK(KDV),
-     &     BEVEC,BPVEC,IBCVC,IBEVC,IBPVC,IBTYP,NPOS,WORK,KFREE,LFREE)
+     &     BEVEC,BPVEC,IBCVC,IBEVC,IBPVC,IBTYP,WORK,KFREE,LFREE)
       ELSE
         CALL DZERO(WORK(KF),N2BBASXQ*NDIM)
       ENDIF
@@ -3822,7 +3822,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gmolitx */
       SUBROUTINE GMOLITX(FMO,DVT,DV,
      &                   BEVEC,BPVEC,IBCVC,IBEVC,IBPVC,IBTYP,
-     &                   NPOS,WORK,KFREE,LFREE)
+     &                   WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Driver routine.
@@ -3835,7 +3835,6 @@ C        DV     : wf. density matrix
 C        BEVEC  : electronic trial vectors
 C        BPVEC  : positronic trial vectors
 C        IBCVC, IBEVC, IBPVC: index stuff
-C        NPOS   : something needed for the call to TWOFCK
 C
 C     Output:
 C        FMO    : Fock matrices in MO basis: FMO(N2ORBXQ,NDSIM)
@@ -3860,7 +3859,7 @@ C
 C
       DIMENSION FMO(*), DV(*), DVT(*)
       DIMENSION BEVEC(*), BPVEC(*)
-      DIMENSION IBCVC(*), IBEVC(*), IBPVC(*), IBTYP(*), NPOS(*)
+      DIMENSION IBCVC(*), IBEVC(*), IBPVC(*), IBTYP(*)
       DIMENSION WORK(*)
 C
       LOGICAL TOBE
@@ -3930,7 +3929,7 @@ C     ---------------------------------
 C
       CALL GMOLITX1(FMO,DVT,DV,
      &     WORK(KCMO),WORK(KBEIG),BEVEC,BPVEC,IBCVC,IBEVC,IBPVC,IBTYP,
-     &     NPOS,WORK(KFAO),WORK(KSYM),WORK(KHRM),WORK(KFCK),
+     &     WORK(KFAO),WORK(KSYM),WORK(KHRM),WORK(KFCK),
      &     WORK,KFREE,LFREE)
 C
       CALL MEMREL('GMOLITX',WORK,1,KFRSAV,KFREE,LFREE)
@@ -3942,7 +3941,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gmolitx1 */
       SUBROUTINE GMOLITX1(FMO,DVT,DV,
      &     CMO,IBEIG,BEVEC,BPVEC,IBCVC,IBEVC,IBPVC,IBTYP,
-     &     NPOS,FAO,ISYMOP,IHRMOP,IFCKOP,WORK,KFREE,LFREE)
+     &     FAO,ISYMOP,IHRMOP,IFCKOP,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Calculate myriads of Fock matrices, called by GMOLITX.
@@ -3953,7 +3952,6 @@ C        DV     : wf. density matrix
 C        BEVEC  : electronic trial vectors
 C        BPVEC  : positronic trial vectors
 C        IBCVC, IBEVC, IBPVC: index stuff
-C        NPOS   : something needed for the call to TWOFCK
 C
 C        FAO    : scratch used for AO Fock matrices.
 C
@@ -4001,7 +3999,7 @@ C
 !gosia testing #include "dcbxlr.h"
       DIMENSION FMO(N2ORBXQ,*), DV(*), DVT(*), CMO(*),IBEIG(*)
       DIMENSION BEVEC(*), BPVEC(*), FAO(N2BBASXQ,*)
-      DIMENSION IBCVC(*), IBEVC(*), IBPVC(*), IBTYP(*), NPOS(*)
+      DIMENSION IBCVC(*), IBEVC(*), IBPVC(*), IBTYP(*)
       DIMENSION ISYMOP(*), IHRMOP(*), IFCKOP(*)
       DIMENSION WORK(*)
       type(fde_import) :: itmp
@@ -4049,7 +4047,7 @@ C
 C
 C     Calculate AO Fock matrices
 C     --------------------------
-      CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FAO,FMO,NDMAT,NPOS,INTFLG,
+      CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FAO,FMO,NDMAT,INTFLG,
      &     IPRTWO,WORK(KFREE),LFREE)
 
 !       construct kohn-sham contribution
@@ -5919,4 +5917,3 @@ C  Take care of Real or Imaginary case
 C
       RETURN
       END
-

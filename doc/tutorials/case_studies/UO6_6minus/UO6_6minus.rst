@@ -16,15 +16,15 @@ The ground state of :math:`UO_6^{(6-)}` converges fine, but not
 with the default DIIS and starting from screened bare nucleus. Rather one has to use the robust damping scheme.
 Try first the DAMPFC factor of 0.9: ::
 
- pam  --noarch --get "DFCOEF=DFCOEF.UO6_6m_ground_1pass" --replace dampfactor=0.90 --inp=UO6_6minus.x2c.scf_damp.inp --mol=UO6.mol
+ pam  --noarch --get "CHECKPOINT.h5=UO6_6m_ground_1pass.h5" --replace dampfactor=0.90 --inp=UO6_6minus.x2c.scf_damp.inp --mol=UO6.mol
 
 (Files to download are :download:`UO6_6minus.x2c.scf_damp.inp` and :download:`UO6.mol`.)
 
-Then, after we get the *DFCOEF.UO6_6m_ground_1pass* file, we decrease the damping level to 0.65. One could try also some lower value: ::
+Then, after we get the *UO6_6m_ground_1pass.h5* file, we decrease the damping level to 0.65. One could try also some lower value: ::
 
- pam  --noarch --put "DFCOEF.UO6_6m_ground_1pass=DFCOEF" --get "DFCOEF=DFCOEF.UO6_6m_ground_2pass" --replace dampfactor=0.50 --inp=UO6_6minus.x2c.scf_damp.inp  --mol=UO6.mol
+ pam  --noarch --put "UO6_6m_ground_1pass.h5=CHECKPOINT.h5" --get "CHECKPOINT.h5=UO6_6m_ground_2pass.h5" --replace dampfactor=0.50 --inp=UO6_6minus.x2c.scf_damp.inp  --mol=UO6.mol
 
-In this way we get converge molecular spinors saved in the *DFCOEF.UO6_6m_ground_2pass* file.
+In this way we get converge molecular spinors saved in the *UO6_6m_ground_2pass.h5* file.
 
 The :math:`UO_6^{(5-)}` anion
 =============================
@@ -37,10 +37,10 @@ The pass two continues from pass one. Then pass three from previous pass up to p
 Damping factors of these passes were decreasing from 0.65 to 0.25.
 Finally, in pass 5 the convergence was reached with the default DIIS method: ::
 
- pam  --noarch --put "DFCOEF.UO6_6m_ground_2pass=DFCOEF" --get "DFCOEF=DFCOEF.UO6_5m_2p3_1pass" --replace dampfactor=0.65 --inp=UO6_5m.x2c.scf_2p3_damp.inp --mol=UO6.mol
- pam  --noarch --put "DFCOEF=DFCOEF.UO6_5m_2p3_1pass=DFCOEF" --get "DFCOEF=DFCOEF.UO6_5m_2p3_2pass" --replace dampfactor=0.55 --inp=UO6_5m.x2c.scf_2p3_damp.inp --mol=UO6.mol
- pam  --noarch --put "DFCOEF=DFCOEF.UO6_5m_2p3_2pass=DFCOEF" --get "DFCOEF=DFCOEF.UO6_5m_2p3_3pass" --replace dampfactor=0.45 --inp=UO6_5m.x2c.scf_2p3_damp.inp --mol=UO6.mol
- pam  --noarch --put "DFCOEF=DFCOEF.UO6_5m_2p3_3pass=DFCOEF" --get "DFCOEF=DFCOEF.UO6_5m_2p3_4pass" --replace dampfactor=0.25 --inp=UO6_5m.x2c.scf_2p3_damp.inp --mol=UO6.mol
- pam  --noarch --put "DFCOEF=DFCOEF.UO6_5m_2p3_4pass=DFCOEF" --get "DFCOEF=DFCOEF.UO6_5m_2p3_diis_5pass" --inp=UO6_5m.x2c.scf_2p3.inp --mol=UO6.mol
+ pam  --noarch --put "UO6_6m_ground_2pass.h5=CHECKPOINT.h5" --get "CHECKPOINT.h5=UO6_5m_2p3_1pass.h5" --replace dampfactor=0.65 --inp=UO6_5m.x2c.scf_2p3_damp.inp --mol=UO6.mol
+ pam  --noarch --put "UO6_5m_2p3_1pass.h5=CHECKPOINT.h5" --get "CHECKPOINT.h5=UO6_5m_2p3_2pass.h5" --replace dampfactor=0.55 --inp=UO6_5m.x2c.scf_2p3_damp.inp --mol=UO6.mol
+ pam  --noarch --put "UO6_5m_2p3_2pass.h5=CHECKPOINT.h5" --get "CHECKPOINT.h5=UO6_5m_2p3_3pass.h5" --replace dampfactor=0.45 --inp=UO6_5m.x2c.scf_2p3_damp.inp --mol=UO6.mol
+ pam  --noarch --put "UO6_5m_2p3_3pass.h5=CHECKPOINT.h5" --get "CHECKPOINT.h5=UO6_5m_2p3_4pass.h5" --replace dampfactor=0.25 --inp=UO6_5m.x2c.scf_2p3_damp.inp --mol=UO6.mol
+ pam  --noarch --put "UO6_5m_2p3_4pass.h5=CHECKPOINT.h5" --get "CHECKPOINT.h5=UO6_5m_2p3_diis_5pass.h5" --inp=UO6_5m.x2c.scf_2p3.inp --mol=UO6.mol
 
 (For downloading is the file :download:`UO6_5m.x2c.scf_2p3_damp.inp`). Note that user may encounter difficulties when reproducing SCF convergence of this tutorial case.

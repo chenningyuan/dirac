@@ -157,7 +157,7 @@ if(ENABLE_XAMFI)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:x-amfi> ${EXTERNAL_OBJECTS})
     dirac_test(atomic_x2c_2esoc_models_energy "medium;xamfi" "")
     dirac_test(atomic_x2c_spinfree_energy "medium;xamfi" "")
-    dirac_test(x_amfi "medium;xamfi" "")
+    dirac_test(x_amfi "medium;xamfi;coverage-mpi" "")
     message(STATUS "NOTE: tests for the (e)amfX2C 2e-scalar and spin-orbit picture-change correction module require h5py in your python env!")
 endif()
 message(STATUS "(e)amfX2C 2e-scalar and spin-orbit picture-change correction module: ${ENABLE_XAMFI}")
@@ -237,7 +237,7 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:krmc> ${EXTERNAL_OBJECTS})
 if(ENABLE_ESR)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/prp/esr)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:esr> ${EXTERNAL_OBJECTS})
-    dirac_test(esr "medium;gascip;ci" "")
+    dirac_test(esr "medium;gascip;ci;coverage-mpi" "")
 endif()
 message(STATUS "ESR property module: ${ENABLE_ESR}")
 
@@ -288,6 +288,13 @@ endif()
 # prp as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/prp)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:prp> ${EXTERNAL_OBJECTS})
+
+# rose as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/rose/subtree/src)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:rose> ${EXTERNAL_OBJECTS})
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:rose_auxiliaries> ${EXTERNAL_OBJECTS})
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:rose_ams_placeholders> ${EXTERNAL_OBJECTS})
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:rose_interest> ${EXTERNAL_OBJECTS})
 
 #  stieltjes as separate external library
 if(ENABLE_STIELTJES)

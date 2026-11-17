@@ -294,7 +294,7 @@ C        Write natural orbitals back to KRMCSCF
 C
 C        FIXME: -"-
       ELSE
-         ! NCONF .le. 1
+         ! NZCONF .le. 1
          MOISNO = .TRUE.
       END IF
 C

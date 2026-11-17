@@ -135,16 +135,7 @@ C
 C
       KFRSAV = KFREE
 C            
-C     New NPOS(*) array for HER_PARDRV, reset dcbfir.h to true
-C            
-
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /)) 
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-      if (NPOS.GT.0) THEN
-         CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
-      else
-         KPOS = KFREE
-      endif
+      call HERPAR_RESET_TASK_ORDER()
 C
 C     Memory allocation
 C     ====================================================
@@ -154,7 +145,7 @@ C     ====================================================
       CALL MEMGET('REAL',KXLAGRAN,NORBT*NORBT*NZ,WORK,KFREE,LFREE)
 C
       CALL LVCDEN1(DMO,XMO,WORK(KXLAGRAN),WORK(KCMO),WORK(KDMAT),
-     &             WORK(KXLAGAO),WORK(KPOS),WORK,KFREE,LFREE,KFLG)
+     &             WORK(KXLAGAO),WORK,KFREE,LFREE,KFLG)
 C
 C     Release memory
 C     ==============
@@ -165,7 +156,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lvcden1 */
-      SUBROUTINE LVCDEN1(DMO,XMO,XLAGRAN,CMO,DMAT,XLAGAO,NPOS,
+      SUBROUTINE LVCDEN1(DMO,XMO,XLAGRAN,CMO,DMAT,XLAGAO,
      &                   WORK,KFREE,LFREE,KFLG)
 C***********************************************************************
 C
@@ -185,7 +176,6 @@ C              CMO  - spinor (mo) coefficients
 C              DMAT - AO density matrix (or better to say density 
 C                     matrix transformed to 'orthonormal SO' basis 
 C              XLAGAO - Lagrangian transformed to AO basis
-C              NPOS - something needed in parallel twofck
 C
 C     REMARKS:
 C
@@ -201,7 +191,6 @@ C
 #include "dcbdhf.h"
 C
       LOGICAL TOBE
-      DIMENSION NPOS(*)
       DIMENSION DMO(*)
       DIMENSION XMO(*), XLAGRAN(*)
       DIMENSION CMO(*), DMAT(*), XLAGAO(N2BBASXQ)
@@ -231,7 +220,7 @@ C
       CALL DZERO(XLAGAO,N2BBASXQ)
 C
       CALL TWOFCK(ISYMLAG,IHRMOPT,IFCKOPT,
-     &            XLAGAO,DMAT,NRFMAT,NPOS,INTFLG,
+     &            XLAGAO,DMAT,NRFMAT,INTFLG,
      &            IPRTWO,WORK(KFREE),LFREE)
 C
       IF(KFLG.EQ.1) THEN

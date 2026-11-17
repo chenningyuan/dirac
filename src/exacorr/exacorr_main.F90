@@ -61,6 +61,7 @@
         call read_menu_input('exacorr.inp',file_unit,'**EXACC',input_found) 
         if (.not.input_found) call quit('Input was not found!')
         call checkpoint_open
+        call validate_exacc_input()
       end if
 
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))

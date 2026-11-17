@@ -1957,7 +1957,7 @@ C
       immax = 0
       inmax = 0
 
-#ifdef MCSCF_DEBUG	
+#ifdef MCSCF_DEBUG
       print *, ' block_one_dens: input matrix'
       call prqmat(amat,nasht,nasht,
      &            nasht,nasht,nz,ipqtoq(1,0),lupri)
@@ -2010,7 +2010,7 @@ C
                 dmj_offmax = 1.0D-15
                 if( call_quit )then
                   write(lupri,'(/A)') ' *** full mj-vector *** '
-		      call iwrtmamn(mjvector,1,norbt,1,norbt,lupri)
+                  call iwrtmamn(mjvector,1,norbt,1,norbt,lupri)
                    do ix = 1, nfsym
                      write(lupri,'(/1X,A,I3)')
      &               '*** full density matrix for fermion irrep ***',ix
@@ -2042,7 +2042,7 @@ C
      &          dmj_offmax,
      &        ' with indices: (',immax,',',inmax,')'
       end if
-#ifdef MCSCF_DEBUG	
+#ifdef MCSCF_DEBUG
       print *, ' block_one_dens: output matrix'
       call prqmat(amat,nasht,nasht,
      &            nasht,nasht,nz,ipqtoq(1,0),lupri)
@@ -2321,8 +2321,6 @@ C     max reference symmetry
 #endif
       NMAX_SYM_CI = NMAX_SYM
 C
-C     KRCI_CVECS.x vector file extensions
-      CALL DETXFLAB(XSYMFLAB,NMAX_SYM_CI)
 C     Roots to be obtained
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 ) 

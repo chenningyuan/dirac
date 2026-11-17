@@ -54,7 +54,7 @@ The SCF :math:`^{2}P_{1/2}`, :math:`^{2}P_{3/2}` excited states
 By placing the unpaired electron into 2nd irrep one gets the :math:`^{2}P_{1/2}` first excited state:
 ::
 
- pam  --noarch --mw=120  --mol=Ir.dyall_v2z.lsym.mol --inp=Z61.x2c.2P12.scf_cc33e.2fs.inp --get "DFCOEF=DFCOEF.v2z.2P12"
+ pam  --noarch --mw=120  --mol=Ir.dyall_v2z.lsym.mol --inp=Z61.x2c.2P12.scf_cc33e.2fs.inp --get "CHECKPOINT.h5=v2z.2P12.h5"
  pam  --noarch --mw=120  --mol=Ir.dyall_v2z.lsym.mol --inp=Z61.x2c.2P12.scf_cc33e_oe.2fs.inp 
 
 Input files to download
@@ -65,12 +65,12 @@ Corresponding output files are
 :download:`Z61.x2c.2P12.scf_cc33e_oe.2fs_Ir.dyall_v2z.lsym.out <Z61.x2c.2P12.scf_cc33e_oe.2fs_Ir.dyall_v2z.lsym.out>`.
 
 How to obtain the :math:`^{2}P_{3/2}` second excited state at the SCF level, and, consequently, at the CC level ? 
-For that, we utilize the :ref:`WAVE_FUNCTION_.REORDER MO` keyword with reading of the  *DFCOEF.v2z.2P12* file from the previous run.
+For that, we utilize the :ref:`WAVE_FUNCTION_.REORDER MO` keyword with reading of the  *v2z.2P12.h5* file from the previous run.
 Likewise one uses overlap selection in the SCF step:
 ::
 
-  pam --noarch --mw=120  --mol=Ir.dyall_v2z.lsym.mol --inp=Z61.x2c.2P32.scf_cc33e.2fs.inp --put "DFCOEF.v2z.2P12=DFCOEF"
-  pam --noarch --mw=120  --mol=Ir.dyall_v2z.lsym.mol --inp=Z61.x2c.2P32.scf_cc33e_oe.2fs.inp --put "DFCOEF.v2z.2P12=DFCOEF"
+  pam --noarch --mw=120  --mol=Ir.dyall_v2z.lsym.mol --inp=Z61.x2c.2P32.scf_cc33e.2fs.inp --put "v2z.2P12.h5=CHECKPOINT.h5"
+  pam --noarch --mw=120  --mol=Ir.dyall_v2z.lsym.mol --inp=Z61.x2c.2P32.scf_cc33e_oe.2fs.inp --put "v2z.2P12.h5=CHECKPOINT.h5"
 
 Corresponding input files to download are
 :download:`Z61.x2c.2P32.scf_cc33e.2fs.inp <Z61.x2c.2P32.scf_cc33e.2fs.inp>`,

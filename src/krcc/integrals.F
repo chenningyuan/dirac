@@ -1861,8 +1861,8 @@ c
 #endif
 c
 C
-C     Read integrals (x>y)
-C     --------------------
+C     Read integrals (x.ge.y)
+C     -----------------------
 C
 C     zero arrays
 C

@@ -112,7 +112,7 @@ contains
 !       create indices for optional reordering according to occupation
         call make_index_to_occupied_first
      else
-        call make_index
+        call make_index_to_occupied_first
      endif
 
      write (*,*) " Initialized reading from MRCONEE (version DIRAC20 and later)"
@@ -389,17 +389,6 @@ contains
         end do
      end do
 
-  end subroutine
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  subroutine make_index
-
-     integer :: index, i, j, k
-
-     do i = 1, number_of_spinors
-           spinor(i)%index = i
-     end do
 
   end subroutine
 

@@ -10,13 +10,13 @@ from runtest_config import configure
 assert version_info.major == 2
 
 f1 = [
-    get_filter(from_string='Properties for DHF  wave function',
+    get_filter(from_re='Properties for DHF\s+wave function',
                to_string='t0 = T : Expectation value zero by time reversal symmetry.',
                abs_tolerance=1.0e-6)
 ]
 
 f2 = [
-    get_filter(from_string='Properties for DHF  wave function',
+    get_filter(from_re='Properties for DHF\s+wave function',
                to_string='t0 = T : Expectation value zero by time reversal symmetry.',
                rel_tolerance=1.0e-1)
 ]

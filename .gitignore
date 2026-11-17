@@ -10,4 +10,4 @@ test/*/X2CMAT*
 test/*/*DFCOEF*
 test/*/aoo*
 test/aonev*
-src/*/*.swp
+src/*/*.swp*.xyz

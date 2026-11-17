@@ -298,33 +298,30 @@ C  /* Deck izero */
 C...................................................................
 C Written 5-May-1984 by Hans Jorgen Aa. Jensen
 C
-C   Subroutine IZERO sets an integer array of length *LENGTH*
-C   to zero.
+C   Subroutine IZERO sets an integer array of length *LENGTH* to zero.
 C...................................................................
       INTEGER INTI(*),LENGTH
-C
+
       IF (LENGTH.LE.0) RETURN
-C
-      DO 100 I=1,LENGTH
-  100    INTI(I) = 0
-C
+
+      INTI(1:LENGTH) = 0
+
       RETURN
       END
 C  /* Deck izero8 */
-      SUBROUTINE IZERO8(INTI8,LENGTH8)
+      SUBROUTINE IZERO8(INT_I8,LENGTH)
 C...................................................................
 C   modified routine IZERO - S. Knecht - 19-Feb-2008
 C
-C   Subroutine IZERO sets an integer*8 array of length *LENGTH8*
-C   to zero.
+C   Subroutine IZERO sets an integer*8 array of length *LENGTH* to zero.
 C...................................................................
-      INTEGER*8 INTI8(*),LENGTH8
-C
-      IF (LENGTH8.LE.0) RETURN
-C
-      DO 100 I=1,LENGTH8
-  100    INTI8(I) = 0
-C
+      INTEGER*8 INT_I8(*)
+      INTEGER   LENGTH
+
+      IF (LENGTH.LE.0) RETURN
+
+      INT_I8(1:LENGTH) = 0
+
       RETURN
       END
 C  /* Deck imino8 */
@@ -332,8 +329,7 @@ C  /* Deck imino8 */
 C...................................................................
 C   modified routine IZERO - S. Knecht - 19-Feb-2008
 C
-C   Subroutine IMIN08 sets an integer*8 array of length *LENGTH8*
-C   to minus one.
+C   Subroutine IMIN08 sets an integer*8 array of length *LENGTH8* to minus one.
 C...................................................................
       INTEGER*8 INTI8(*),LENGTH8, IMIN1
 C

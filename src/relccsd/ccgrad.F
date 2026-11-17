@@ -419,8 +419,7 @@ C
 C---------------Routines called----------------------------------------
 C
 C     DCOPY
-C     DOOTODIR
-C     DVVTODIR
+C     RCCTODIR
 C---------------Last modified------------------------------------------
 C
 C     Author : Joost van Stralen - March 2002 : Extended by Avijit Shee
@@ -527,7 +526,7 @@ C
          CALL DCOPY(NFVO,BUF2,1,BUF1(NFVO+1),1)
       ENDIF
 
-      CALL RELTODIR(DMO,BUF1,NFVO,RCW,NREP,NV,NO)
+      CALL RCCTODIR(DMO,BUF1,NFVO,RCW,NREP,NV,NO,'particle','hole')
 
 C##############
 C     DOO
@@ -591,7 +590,7 @@ C
          CALL DCOPY(NFOO,BUF2,1,BUF1(NFOO+1),1)
       ENDIF
 
-      CALL DOOTODIR(dmo,BUF1,NO,nfoo,NREP,RCW)
+      CALL RCCTODIR(DMO,BUF1,NFOO,RCW,NREP,NO,NO,'hole','hole')
 
 C##############
 C     DVV
@@ -645,7 +644,8 @@ C
       ELSE
       ENDIF
 
-      CALL DVVTODIR(dmo,BUF1,NV,nfvv,NREP,RCW)
+      CALL RCCTODIR(DMO,BUF1,NFVV,RCW,NREP,NV,NV,
+     &              'particle','particle')
 
 C##############
 C     DVO
@@ -685,7 +685,7 @@ C##############
          CALL DCOPY(NFVO,BUF2,1,BUF1(NFVO+1),1)
       ENDIF
 
-      CALL DOVTODIR(DMO,BUF1,NFVO,RCW,NREP,NO,NV)
+      CALL RCCTODIR(DMO,BUF1,NFVO,RCW,NREP,NO,NV,'hole','particle')
 
       RETURN
       END
@@ -999,7 +999,7 @@ C        P  O  V
 C######################################################################
 C
       CALL DZERO(XMO,NORBT*NORBT*NZ)
-      CALL RELTODIR(XMO,BUF1,NFVO,RCW,NREP,NV,NO)
+      CALL RCCTODIR(XMO,BUF1,NFVO,RCW,NREP,NV,NO,'particle','hole')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

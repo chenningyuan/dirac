@@ -23,7 +23,7 @@ module visual
   use visual_txt_storage
   use visual_mpi
   use dirac_dmat_factory
-
+  use visual_spinor_components, only: visual_spinor_components_evaluate_grid_function
 ! DIRAC modules
   use checkpoint
   use basis_set_datatypes
@@ -263,6 +263,21 @@ contains
           ao = 0.0d0
           allocate(buffer(1,nr_ao_slices*nr_ao_cartesian))
           buffer = 0.0d0
+          ! spinor_components is handled by visual_spinor_components at this
+          ! stage.  Do not send it through the density-matrix grid-function
+          ! evaluator before the actual component writer is implemented.
+          if (allocated(rs_input%grid_functions(igf)%name)) then
+            if (rs_input%grid_functions(igf)%name == 'spinor_components') then
+              if (mpi_is_master()) then
+                call visual_spinor_components_evaluate_grid_function(cmo, &
+                     rs_input%grid_functions(igf), rs_input%grids(ig), mol, &
+                     rs_input%print_unit)
+              end if
+              deallocate(ao)
+              deallocate(buffer)
+              cycle
+            end if
+          end if
 
 !
 !         prepare density matrices

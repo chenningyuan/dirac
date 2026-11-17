@@ -17,19 +17,19 @@ f = Filter()
 f.add(from_string = 'Final grid function values (id=',
       num_lines = 2,
       rel_tolerance = 1.0e-6)
+
+#
+# prepare files
+#
+
+scf_h5=Path(test.work_dir, 'dc_c6h6.h5')
+scf_h5.unlink(missing_ok=True)
+scf_h5=scf_h5.symlink_to(Path(Path(__file__).parents[1].resolve(), 'testdata', 'dc_c6h6.h5'))
+
 #
 # run tests
 #
 
-test.run(['dc.inp'], ['c6h6.xyz'], args='--outcmo')
-
-# unperturbed densities
-test.run(['vis.inp'], ['c6h6.xyz'], f, args='--incmo --get="*.cube"')
-
-# perturbed densities: commented out due to time; these functions are tested in other tests
-#test.run(['rspB.inp'], ['c6h6.xyz'], args='--incmo --outcmo --get="*.h5"')
-#test.run(['vis_rspB.inp'], ['c6h6.xyz'], f, args='--incmo --put="TBMO.h5 RESPONSE.h5" --get="*.csv"')
-
-#Path('CHECKPOINT.h5').unlink()
+test.run(['vis.inp'], ['c6h6.xyz'], f, args='--put="dc_c6h6.h5=CHECKPOINT.h5" --get="*.cube"')
 
 sys.exit(test.return_code)

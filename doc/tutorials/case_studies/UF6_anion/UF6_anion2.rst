@@ -14,16 +14,16 @@ In the first step we follow the previous approach of starting from the closed-sh
 get smooth convergence with the default DIIS method. Files to download are :download:`UF6neutral.inp`, :download:`UF6.mol`,
 :download:`cc-pVDZ-PP` and :download:`ECP60MDF`: ::
 
- pam --noarch --inp=UF6neutral.inp  --mol=UF6.mol --get "DFCOEF=DFCOEF.UF6neutral"
+ pam --noarch --inp=UF6neutral.inp  --mol=UF6.mol --get "CHECKPOINT.h5=UF6neutral.h5"
 
 The :math:`UF_6` anion from neutral
 -----------------------------------
-In the next step we compare two calculations starting from neutral molecular spinors of UF6 (the file DFCOEF.UF6neutral). 
+In the next step we compare two calculations starting from neutral molecular spinors of UF6 (the file UF6neutral.h5). 
 One calculation uses the DIIS method (not shown here) and the other uses the damping with two damping factors of 0.90 and 0.50. 
 (File to download is :download:`UF6_anion_scfdamp.inp`): ::
 
- pam --noarch --inp=UF6_anion_scfdamp.inp --mol=UF6.mol --put "DFCOEF.UF6neutral=DFCOEF" --get "DFCOEF=DFCOEF.UF6anion_damp_pass1" --replace dampfactor=0.9
- pam --noarch --inp=UF6_anion_scfdamp.inp --mol=UF6.mol --put "DFCOEF.UF6anion_damp_pass1=DFCOEF" --get "DFCOEF=DFCOEF.UF6anion_damp_pass2" --replace dampfactor=0.5
+ pam --noarch --inp=UF6_anion_scfdamp.inp --mol=UF6.mol --put "UF6neutral.h5=CHECKPOINT.h5" --get "CHECKPOINT.h5=UF6anion_damp_pass1.h5" --replace dampfactor=0.9
+ pam --noarch --inp=UF6_anion_scfdamp.inp --mol=UF6.mol --put "UF6anion_damp_pass1.h5=CHECKPOINT.h5" --get "CHECKPOINT.h5=UF6anion_damp_pass2.h5" --replace dampfactor=0.5
 
 Concerning the DIIS speedup method, the SCF iterations initially converge to ca :math:`10^{-5}` but then began to diverge
 and after about 150 iterations the error gradient of the Fock matrix is still around :math:`10^{-5}`.
@@ -37,7 +37,7 @@ If we begin calculations from the converged solutions from the damping, the DIIS
 rapidly after few iterations. But this is only with the deactivated active-active shells interaction
 (new file to download is :download:`UF6anion2.inp`): ::
 
- pam --noarch --inp=UF6anion2.inp --mol=UF6.mol --put "DFCOEF.UF6anion_damp_pass2=DFCOEF" --get "DFCOEF=DFCOEF.UF6anion_diis"
+ pam --noarch --inp=UF6anion2.inp --mol=UF6.mol --put "UF6anion_damp_pass2.h5=CHECKPOINT.h5" --get "CHECKPOINT.h5=UF6anion_diis.h5"
 
 The :math:`UF_6` anion with OPENFAC=1
 -------------------------------------
@@ -45,8 +45,8 @@ The :math:`UF_6` anion with OPENFAC=1
 Unfortunately, with the factor OPENFAC=1 (what is the keyword :ref:`SCF_.OPENFACTOR`) we were not able to get the convergence,
 neither with the default DIIS, nor with damping factor (to download, :download:`UF6anion.inp` and :download:`UF6anion3.inp`): ::
 
-  pam --noarch --inp=UF6anion.inp --mol=UF6.mol --put "DFCOEF.UF6anion_diis=DFCOEF"  
-  pam --noarch --inp=UF6anion3.inp --mol=UF6.mol --put "DFCOEF.UF6anion_diis=DFCOEF"  --replace dampfactor=0.8
+  pam --noarch --inp=UF6anion.inp --mol=UF6.mol --put "UF6anion_diis.h5=CHECKPOINT.h5"  
+  pam --noarch --inp=UF6anion3.inp --mol=UF6.mol --put "UF6anion_diis.h5=CHECKPOINT.h5"  --replace dampfactor=0.8
 
 More effort is required to obtain converged molecular spinors of the :math:`UF_6` anion 
 with the active-active open-shell interaction (that is OPENFAC=1). We leave this task to the reader.

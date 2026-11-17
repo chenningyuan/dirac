@@ -455,8 +455,6 @@ C     Calculate 2e part
       IFCKOP(1) = 1
       IHRMOP(1) = 1
       IPRINT = 0
-      CALL STEX_GET_NPOS(NPOS)
-      CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
       SCRFCK_SAVE = SCRFCK
       print *,'SCRFCK:',SCRFCK
       IF (STEX_SCRFCK.GE.0.0D0) THEN
@@ -464,7 +462,7 @@ C     Calculate 2e part
          print *,'SCRFCK:',SCRFCK
       ENDIF
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,WORK(KF2),WORK(KDEN),1,
-     &     WORK(KPOS),INTFLG,IPRINT,WORK(KFREE),LFREE)
+     &     INTFLG,IPRINT,WORK(KFREE),LFREE)
       SCRFCK = SCRFCK_SAVE 
       print *,'SCRFCK:',SCRFCK
 C     Calculate energy
@@ -647,16 +645,6 @@ c     Multiply with -j from the right
       END
 
 
-      SUBROUTINE STEX_GET_NPOS(NPOS)
-      implicit none
-#include "aovec.h"
-#include "maxorb.h"
-#include "dcbgen.h"
-      integer npos
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-      END
-
       SUBROUTINE STEX_CALC_INTEGRALS(CMO,WORK,KFREE,LFREE)
 C
 C     Calculate the needed 2e integrals and transform them to
@@ -676,9 +664,6 @@ C
      &     IFCKO(STEX_BATCHSIZE)
       CALL QENTER('STEX_CALC_INTEGRALS')
       CALL MEMCHK('INT0',WORK,1)
-C     NPOS is for parallel stuff
-      CALL STEX_GET_NPOS(NPOS)
-      CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
       IPRINT=1
       ITWOFCKPRINT = 0
       CALL MEMGET('REAL',KDEN,STEX_BATCHSIZE*N2BBASXQ,WORK,KFREE,LFREE)
@@ -741,7 +726,7 @@ c                  IF (STEX_SCRFCK.GE.0.0D0) THEN
 c                     SCRFCK = STEX_SCRFCK
 c                  ENDIF
                   CALL TWOFCK(ISYMO,IHRMO,IFCKO,WORK(KDEN),WORK(KFMAT)
-     $                 ,IDMAT,WORK(KPOS),INTFLG,ITWOFCKPRINT,
+     $                 ,IDMAT,INTFLG,ITWOFCKPRINT,
      &                 WORK(KFREE),LFREE)
 c                  SCRFCK = SCRFCK_SAVE 
 c     go to mo basis (put mo integrals on disk)

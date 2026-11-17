@@ -143,7 +143,7 @@ C
       CALL SETDC2(IPRGEN)
 ! at this point we do know the occupations which will be used in SCF, dump them to file
       call write_occupations_fromcommon(
-     & '/result/wavefunctions/scf/mobasis')
+     & '/result/wavefunctions/scf/mobasis',.true.)
 C
 C     Prepare for two-electron integrals
 C     ==================================
@@ -223,7 +223,6 @@ C
 #include "symmet.h"
 #include "pgroup.h"
 #include "dgroup.h"
-#include "dcbfir.h"
 #include "inftap.h"
       CHARACTER COMP(2)*1
 C
@@ -379,15 +378,7 @@ C
       LUINTR = 0
       LUKRMC = 50 
 C
-C     *****************************************
-C     ***** COMMON/FIRSTN/ -              *****
-C     *****************************************
-C
-C     
-      FIRST1 = .TRUE.
-      FIRST2 = .TRUE.
-      FIRST3 = .TRUE.
-      FIRST4 = .TRUE.
+      call HERPAR_RESET_TASK_ORDER()
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

@@ -200,11 +200,9 @@ c           ISCR1(1) = 16
 * Inverse iteration modified Davidson with 2 vectors in core
 
       CALL QENTER('CIEIG5')
-      WRITE(LUWRT,'(/A,I5)')
-     &'  Number of roots to be converged ........',NROOTS
-      WRITE(LUWRT,'(/A,I5)')
-     &'  Maximum subspace dimension .............',MAXVEC
-      WRITE(LUWRT,'(/A,I5/)')
+      WRITE(LUWRT,'(3(/A,I5))')
+     &'  Number of roots to be converged ........',NROOTS,
+     &'  Maximum subspace dimension .............',MAXVEC,
      &'  Maximum number of CI microiterations ...',MXCIIT
 *
       MRNRM = 1

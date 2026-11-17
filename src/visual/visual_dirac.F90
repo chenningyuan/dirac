@@ -527,7 +527,7 @@ contains
     if (tobe_dirac) then
       allocate(shell_id(nmo))
       shell_id = 0
-      call checkpoint_read(group//'/mobasis/symmetry',idata=shell_id)
+      call checkpoint_read(group//'/mobasis/shell_id',idata=shell_id)
       cmo%shell_id(1:nmo) = shell_id
       deallocate(shell_id)
     end if

@@ -33,7 +33,7 @@ pbe
 .SCF
 *SCF
 .PRINT
- 1
+ 0
 **PROPERTIES
 .DIPOLE
 *END OF

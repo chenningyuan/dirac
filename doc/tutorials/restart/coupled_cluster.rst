@@ -25,8 +25,8 @@ amount of memory per compute node.
 Step 1: SCF
 -----------
 
-From the SCF part, one has to save the ``DFCOEF`` file after a successful
-calculation. If using the 2-component formalism, one can also save the files
+From the SCF part, one has to save the ``CHECKPOINT.h5`` file after a successful
+calculation (using ``pam --outcmo``). If using the 2-component formalism, one can also save the files
 ``X2CMAT`` and ``AOMOMAT`` (and possibly ``AOPROPER``), in order to skip the
 generation of the 4-component to 2-component transformation matrices. If your
 system supports it, you could keep the scratch directory and then avoid the
@@ -40,7 +40,7 @@ to retrieve the files individually if this archive is kept.
 Step 2: MOLTRA
 --------------
 
-MOLTRA will need the ``DFCOEF`` file, and also the one-electron Fock matrix (if
+MOLTRA will need the ``CHECKPOINT.h5`` file (supplied with ``pam --incmo``), and also the one-electron Fock matrix (if
 the 2-component methods are used and also in the case of an frozen density
 embedding calculation, this will have to be re-generated, so that's why it is a
 good idea to keep the ``X2CMAT`` and ``AOMOMAT`` files around.

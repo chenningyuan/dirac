@@ -70,6 +70,11 @@ C980827-hjaaj : "old" NOCONT does not work in this version
 C
       TKTIME = TTIME
 C
+C     The integral code makes many small BLAS calls: threads in BLAS
+C     only add overhead (several times slower with threaded MKL)
+C
+      CALL DIRAC_THREADS_PUSH_EXACT(1)
+C
 C     CPU time statistics
 C
       T2INT = SECOND()
@@ -219,6 +224,7 @@ C
             CALL DELSTA(1,IDUM)
           ENDIF
       ENDIF
+      CALL DIRAC_THREADS_POP()
       RETURN
       END
 C  /* Deck twocal */
@@ -1436,6 +1442,7 @@ C  /* Deck twood1 */
      &                  NREDAB,NREDCD,IFCTYP,ADISTR,WRKBUF,
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,IREPDM,INDX,INDXAB,
      &                  GENCNT)
+      use gab_screening, only: qorb_use, prune_thr
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -1490,6 +1497,14 @@ C
          READ (LUPAO) (PSO(I),I=1,NPMAT)
          IF (SUSCEP) READ (LUPAS) (PSA(I),I=1,NPMAT)
       END IF
+C
+C     Pruning of orbital pairs in direct Fock matrix construction
+C     (Cauchy-Schwarz with orbital-pair factors, see gab_screening)
+C
+      PRUNE_THR(1) = 0.0D0
+      PRUNE_THR(2) = 0.0D0
+      IF ((DIRFCK .OR. SOFOCK) .AND. DOSCRN .AND. QORB_USE)
+     &   CALL PRNSET(GABRAO,DMRAO,NDMAT,IPRINT)
 C
 C     Overlap distributions for first electron
 C     ========================================
@@ -1606,7 +1621,117 @@ C
       END IF
       CALL MEMREL('TWOOD1',WORK,KWORK,KWORK,KFREE,LFREE)
  999  CONTINUE
+      PRUNE_THR(1) = 0.0D0
+      PRUNE_THR(2) = 0.0D0
       CALL QEXIT('TWOOD1')
+      RETURN
+      END
+C  /* Deck prnset */
+      SUBROUTINE PRNSET(GABRAO,DMRAO,NDMAT,IPRINT)
+C
+C     Thresholds for pruning orbital pairs of the current shell
+C     quadruplet in direct Fock matrix construction (used in ODCSEG):
+C
+C       |(ab|cd) D| <= QORB(a,b) * max Q(CD) * max D  < SCRTHR
+C
+C     where max Q(CD) is the largest Schwarz factor of the CD block
+C     and max D the largest density element of the blocks AB, CD, AC,
+C     AD, BC and BD (all symmetry images, all density matrices).
+C     Pruning is only done for segmented shells where the sets of
+C     ODCSEG are the contracted orbitals of the shell.
+C
+      use gab_screening
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "mxcent.h"
+      PARAMETER (D0 = 0.0D0)
+      LOGICAL PRNCHK
+#include "twocom.h"
+#include "blocks.h"
+#include "nuclei.h"
+      DIMENSION GABRAO(NSYMBL,NSYMBL), DMRAO(NSYMBL,NSYMBL,NDMAT),
+     &          ISHL(4), NBL(4), IBL(8,4)
+C
+      ISHL(1) = ISHELA
+      ISHL(2) = ISHELB
+      ISHL(3) = ISHELC
+      ISHL(4) = ISHELD
+      DO K = 1, 4
+         NBL(K) = NUCDEG(NCNTSH(ISHL(K)))
+         DO IDEG = 1, NBL(K)
+            IBL(IDEG,K) = ISYMBL(ISHL(K),IDEG)
+         END DO
+      END DO
+C
+C     Largest Schwarz factors of AB and CD blocks
+C
+      GMXAB = D0
+      DO I = 1, NBL(1)
+         DO J = 1, NBL(2)
+            GMXAB = MAX(GMXAB,GABRAO(IBL(I,1),IBL(J,2)))
+         END DO
+      END DO
+      GMXCD = D0
+      DO I = 1, NBL(3)
+         DO J = 1, NBL(4)
+            GMXCD = MAX(GMXCD,GABRAO(IBL(I,3),IBL(J,4)))
+         END DO
+      END DO
+C
+C     Largest density element coupling any two of A, B, C and D
+C
+      DMX = D0
+      DO ID = 1, NDMAT
+         DO K = 1, 4
+            DO L = K + 1, 4
+               DO I = 1, NBL(K)
+                  DO J = 1, NBL(L)
+                     DMX = MAX(DMX,ABS(DMRAO(IBL(I,K),IBL(J,L),ID)),
+     &                             ABS(DMRAO(IBL(J,L),IBL(I,K),ID)))
+                  END DO
+               END DO
+            END DO
+         END DO
+      END DO
+C
+C     Whole quadruplet negligible: left to the screening in SYMLOP
+C
+      IF (GMXCD*DMX .EQ. D0 .OR. GMXAB*DMX .EQ. D0) RETURN
+C
+      IF (PRNCHK(ISHELA,IGENAB) .AND. PRNCHK(ISHELB,IGENAB))
+     &   PRUNE_THR(1) = SCRTHR/(GMXCD*DMX)
+      IF (PRNCHK(ISHELC,IGENCD) .AND. PRNCHK(ISHELD,IGENCD))
+     &   PRUNE_THR(2) = SCRTHR/(GMXAB*DMX)
+      IF (IPRINT .GE. 10) WRITE (LUPRI,'(A,1P,5D12.4)')
+     &   ' PRNSET: GMXAB, GMXCD, DMX, PRUNE_THR',
+     &   GMXAB, GMXCD, DMX, PRUNE_THR(1), PRUNE_THR(2)
+      RETURN
+      END
+C  /* Deck prnchk */
+      LOGICAL FUNCTION PRNCHK(ISH,IGEN)
+C
+C     .TRUE. if the sets of shell ISH used in ODCSEG are its contracted
+C     orbitals in the order of IORBSH (checked via the index of the
+C     contracted function in its AO block), required for pruning
+C
+      use gab_screening, only: ao2orb
+#include "implicit.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "blocks.h"
+#include "shells.h"
+C
+      PRNCHK = .FALSE.
+      IF (IGEN .NE. 2 .OR. .NOT.SEGMSH(ISH)) RETURN
+      IF (NSETSH(ISH,2) .NE. NORBSH(ISH)) RETURN
+      DO ISET = 1, NSETSH(ISH,2)
+         IA = AO2ORB(IORBSH(ISH,ISET) + 1)
+         IF (NUMCF(IA) .NE. -NCONTS(ISH,ISET,2)) RETURN
+         IF (IPTSHL(IA) .NE. ISH) RETURN
+      END DO
+      PRNCHK = .TRUE.
       RETURN
       END
 C  /* Deck symlop */
@@ -1625,6 +1750,7 @@ C  /* Deck symlop */
      &                  IFCTYP,ADISTR,WRKBUF,
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,DNSBUF,IREPDM,INDX,
      &                  INDXAB,GENCNT)
+      USE AOINT_ZERO
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1760,6 +1886,11 @@ C     **********************************
 C
 C     Generates distinct overlap distributions A*R(B)
 C
+      SOZ_OK   = .FALSE.
+      SOAO_OK  = .FALSE.
+      SOAO_REQ = SOFOCK .AND. IOR(MULA,MULB) .EQ. MAXOPR .AND.
+     &           IOR(MULC,MULD) .EQ. MAXOPR .AND.
+     &           IOR(MULAB,MULCD) .EQ. MAXOPR
       IF (UNDIFF .OR. DIRFCK .OR. DISTRI .OR. SOFOCK) THEN
          SOP000 = .TRUE.
          IF (LAST) CALL DZERO(SOINT,NSOINT)
@@ -2230,7 +2361,9 @@ C
      &                     NREDAB,NREDCD,IFCTYP,DNSBUF,DINTSKP,DOGAB,
      &                     HFXFAC,GENCNT)
                LWTOT  = LWTOT - KFREE + 1
-               CALL MEMREL('SYMLOP',WORK,KWORK,KWORK,KFREE,LFREE)
+C              AOINT is read by FCKOUT if SYM2 did not copy it (SOAO_OK)
+               IF (.NOT.SOAO_OK)
+     &            CALL MEMREL('SYMLOP',WORK,KWORK,KWORK,KFREE,LFREE)
             END IF
   300       CONTINUE
          END IF
@@ -2290,9 +2423,15 @@ C        ==================================================
 C
          ELSE IF (SOFOCK) THEN
             IF (TKTIME) TIMSTR = SECOND()
-            CALL FCKOUT(FMAT,DMAT,NDMAT,SOINT,IPNTNO,IPNTRP,IPNTLG,
-     &                  NINDAB,NINDCD,IFCTYP,DINTSKP,IREPDM,
-     &                  DMRSO,DNSBUF,HFXFAC,WORK,LWORK,IPRINT)
+            IF (SOAO_OK) THEN
+               CALL FCKOUT(FMAT,DMAT,NDMAT,WORK(KAOINT),IPNTNO,IPNTRP,
+     &                     IPNTLG,NINDAB,NINDCD,IFCTYP,DINTSKP,IREPDM,
+     &                     DMRSO,DNSBUF,HFXFAC,WORK(KFREE),LFREE,IPRINT)
+            ELSE
+               CALL FCKOUT(FMAT,DMAT,NDMAT,SOINT,IPNTNO,IPNTRP,IPNTLG,
+     &                     NINDAB,NINDCD,IFCTYP,DINTSKP,IREPDM,
+     &                     DMRSO,DNSBUF,HFXFAC,WORK,LWORK,IPRINT)
+            END IF
             IF (TKTIME) TFCKOU = TFCKOU + SECOND() - TIMSTR
             FIRST = .FALSE.
 C
@@ -2308,6 +2447,10 @@ C
          END IF
       ELSE IF (EXPECT) THEN
          IF (IPRINT .GE. 6) CALL PRIGRD(GRADEE)
+      END IF
+      IF (SOAO_OK) THEN
+         CALL MEMREL('SYMLOP',WORK,KWORK,KWORK,KFREE,LFREE)
+         SOAO_OK = .FALSE.
       END IF
 
       CALL QEXIT('SYMLOP')
@@ -2328,6 +2471,7 @@ C  /* Deck caoint */
      &                  NUCSCD,SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                  NINDCD,NPNTAB,NPNTCD,NREDAB,NREDCD,IFCTYP,
      &                  DNSBUF,DINTSKP,DOGAB,HFXFAC,GENCNT)
+      USE AOINT_ZERO
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2378,6 +2522,13 @@ C     **********************************
 C     ***** Calculate AO integrals *****
 C     **********************************
 C
+C     Direct SO Fock matrices only: AO blocks that are zero by symmetry
+C     are flagged instead of stored (C2HIN1 -> SYM2 -> FCKOU1)
+C
+      AOZ_USE = SOFOCK .AND. MAXDER .EQ. 0 .AND. NINTYP .EQ. 1 .AND.
+     &          .NOT.(UNDIFF .OR. PERTUR .OR. LONDON .OR. SPNORB .OR.
+     &                EXPECT .OR. DDFOCK .OR. DIRFCK .OR. DISTRI .OR.
+     &                DOGAB) .AND. IPRINT .LT. 15
       CALL INTDER(AOINT,NCCINT,NINTYP,WORK,LWORK,COEFAB,COEFCD,COORAB,
      &            COORCD,EXPAB,EXPCD,FACAB,FACCD,CONTA,CONTB,CONTC,
      &            CONTD,IPRINT,NOINT,NOCONT,SPNORB,MAXDER,THRESH,
@@ -3141,6 +3292,7 @@ C  /* Deck intdr1 */
 C
 C     tuh
 C
+      USE AOINT_ZERO
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3207,7 +3359,16 @@ C
             NRBC  = NORBC
             NRBD  = NORBD
          END IF
-         CALL DZERO(AOINT,NCCINT*NINTYP)
+C
+C        Undifferentiated integrals from a single path (C2HINT only):
+C        each block of AOINT is written once, so C2HIN1 assigns (or
+C        zeroes) the blocks and AOINT need not be zeroed here
+C
+         AOASGN = MAXDER .EQ. 0 .AND. NINTYP .EQ. 1 .AND.
+     &      ((DPATH1 .AND. .NOT.DPATH2 .AND. DC2H1 .AND. .NOT.DC2E1)
+     &  .OR. (DPATH2 .AND. .NOT.DPATH1 .AND. DC2H2 .AND. .NOT.DC2E2))
+         IF (.NOT.AOASGN) CALL DZERO(AOINT,NCCINT*NINTYP)
+         IF (AOZ_USE) CALL AOZ_RESET(KHKTAB*KHKTCD)
          IF (DPATH1) THEN
             IF (TKTIME) TIMSTR = SECOND()
             IPATH  = 1
@@ -3631,8 +3792,32 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       LOGICAL SQ12EL, DCMPAB, DCMPCD, DCABAB, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*),
      &          IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*)
+      DIMENSION NRPA(0:7), NRPB(0:7), NRPC(0:7),
+     &          LRPA(8,0:7), LRPB(8,0:7), LRPC(8,0:7)
 #include "twocom.h"
 #include "symmet.h"
+C
+C     Irreps allowed for each symmetry type of A, B and C
+C
+      DO ITY = 0, MAXREP
+         NRPA(ITY) = 0
+         NRPB(ITY) = 0
+         NRPC(ITY) = 0
+         DO IREP = 0, MAXREP
+            IF (IAND(MULA,IEOR(IREP,ITY)) .EQ. 0) THEN
+               NRPA(ITY) = NRPA(ITY) + 1
+               LRPA(NRPA(ITY),ITY) = IREP
+            END IF
+            IF (IAND(MULB,IEOR(IREP,ITY)) .EQ. 0) THEN
+               NRPB(ITY) = NRPB(ITY) + 1
+               LRPB(NRPB(ITY),ITY) = IREP
+            END IF
+            IF (IAND(MULC,IEOR(IREP,ITY)) .EQ. 0) THEN
+               NRPC(ITY) = NRPC(ITY) + 1
+               LRPC(NRPC(ITY),ITY) = IREP
+            END IF
+         END DO
+      END DO
 C
       IF (IPRINT .GT. 5) THEN
         CALL TITLER('Output from CPRLOP','*',103)
@@ -3664,15 +3849,15 @@ C
          DO 200 ICOMPD = 1,KHKTD
            ITYND  = ISYMAO(NHKTD,ICOMPD)
            NSTRND = NSTRD + ICOMPD
-           DO 300 IREPA = 0, MAXREP
-           IF (IAND(MULA,IEOR(IREPA,ITYNA)) .EQ. 0) THEN
+           DO 300 JREPA = 1, NRPA(ITYNA)
+           IREPA = LRPA(JREPA,ITYNA)
              IRPAE = IEOR(IREPA,IREPE)
-             DO 310 IREPB = 0, MAXREP
-             IF (IAND(MULB,IEOR(IREPB,ITYNB)) .EQ. 0) THEN
+             DO 310 JREPB = 1, NRPB(ITYNB)
+             IREPB = LRPB(JREPB,ITYNB)
                IRPABE = IEOR(IREPB,IRPAE)
                IRPTYB = IEOR(IREPB,ITYNB)
-               DO 320 IREPC = 0, MAXREP
-               IF (IAND(MULC,IEOR(IREPC,ITYNC)) .EQ. 0) THEN
+               DO 320 JREPC = 1, NRPC(ITYNC)
+               IREPC = LRPC(JREPC,ITYNC)
                  IREPD = IEOR(IREPC,IRPABE)
                  IF (IAND(MULD,IEOR(IREPD,ITYND)) .EQ. 0) THEN
                    IPNTAO(ISOFF,IREPX)   = IAOFF
@@ -3688,11 +3873,8 @@ C
                    IPNTRP(3,ISOFF,IREPX) = IREPC
                    ISOFF = ISOFF + 1
                  END IF
-               END IF
   320          CONTINUE
-             END IF
   310        CONTINUE
-           END IF
   300      CONTINUE
            IAOFF = IAOFF + 1
   200    CONTINUE
@@ -3721,15 +3903,15 @@ C
              DCMPCD = SHCEQD.AND.ICOMPC.EQ.ICOMPD
              DCABAB = .NOT.SQ12EL .AND. SHABAB .AND.
      &                ICOMPA.EQ.ICOMPC .AND. ICOMPB.EQ.ICOMPD
-             DO 500 IREPA = 0, MAXREP
-             IF (IAND(MULA,IEOR(IREPA,ITYNA)) .EQ. 0) THEN
+             DO 500 JREPA = 1, NRPA(ITYNA)
+             IREPA = LRPA(JREPA,ITYNA)
                IRPAE = IEOR(IREPA,IREPE)
-               DO 510 IREPB = 0, MAXREP
-               IF (IAND(MULB,IEOR(IREPB,ITYNB)) .EQ. 0) THEN
+               DO 510 JREPB = 1, NRPB(ITYNB)
+               IREPB = LRPB(JREPB,ITYNB)
                  IRPABE = IEOR(IREPB,IRPAE)
                  IRPTYB = IEOR(IREPB,ITYNB)
-                 DO 520 IREPC = 0, MAXREP
-                 IF (IAND(MULC,IEOR(IREPC,ITYNC)) .EQ. 0) THEN
+                 DO 520 JREPC = 1, NRPC(ITYNC)
+                 IREPC = LRPC(JREPC,ITYNC)
                    IREPD = IEOR(IREPC,IRPABE)
                    IF (IAND(MULD,IEOR(IREPD,ITYND)) .EQ. 0) THEN
                    IF (.NOT.(DCABAB .AND. (IREPA .LT. IREPC .OR.
@@ -3751,11 +3933,8 @@ C
                      ISOFF = ISOFF + 1
                    END IF
                    END IF
-                 END IF
   520            CONTINUE
-               END IF
   510          CONTINUE
-             END IF
   500        CONTINUE
            END IF
            IAOFF = IAOFF + 1

@@ -198,12 +198,8 @@ C
         IF( ALLOC_INT )THEN
           INQUIRE(FILE='IJKL_REOD',EXIST=EX)
 C
-          IF( EX ) THEN
-            WRITE(LUWRT,*)' '
-            WRITE(LUWRT,*)' using provided integral file '
-            WRITE(LUWRT,*)' IJKL_REOD! '
-            WRITE(LUWRT,*)' '
-          END IF
+          IF( EX ) WRITE(LUWRT,'(/A/)')
+     &       ' using provided integral file  "IJKL_REOD"'
           IXXX_CLR = 1
         ELSE  
           IXXX_CLR = 2
@@ -283,7 +279,8 @@ C
         call memmar(KMDIASV,4*NDIAMINT,'ADDS  ',1,'MDIASV')
         CALL IZERO(IPOSDIA,NDIAMINT)
         CALL IZERO(WORK(KMDIASV),4*NDIAMINT)
-        IF(CIRUN .ne. 'PROP1 ' ) WRITE(LUWRT,'(A,I16,A/)') 
+        IF(CIRUN .ne. 'PROP1 ' .AND. NTEST .gt. 0)
+     &     WRITE(LUWRT,'(A,I16,A/)') 
      &       '  Allocating for ',NDIAMINT,' diagonal integrals.'
       ELSE
         call memmar(KMDIASV, 0,'ADDS  ',1,'MDIASV')
@@ -292,7 +289,8 @@ C
 !
 !     allocate full integral array
       IF( ALLOC_INT ) THEN
-        IF(CIRUN .ne. 'PROP1 ' ) WRITE(LUWRT,'(/A,I16,A)') 
+        IF(CIRUN .ne. 'PROP1 ' .AND. NTEST .gt. 0)
+     &     WRITE(LUWRT,'(A,I16,A/)') 
      &       '  Allocating for ',NALLINT,' integrals.'
         CALL MEMMAR_I8(KT_CC,NALLINT,'ADDS  ',2,'KT_CC ')
         CALL DZERO8(WORK(KT_CC),NALLINT)
@@ -537,7 +535,7 @@ C
       END IF ! CIRUN eq CIINII .or. CIRUN .eq. 'KR-CI '?
       call dealloc(ibeig)
 C
-      if(CIRUN .ne. 'PROP1 ' ) then
+      if(CIRUN .ne. 'PROP1 ' .AND. NTEST .gt. 0) then
         write(LUWRT,'(/A,I16)') ' Number of integrals/CC amplitudes: ',
      &                            NALLINT
         write(LUWRT,'(A/)') ' (including imaginary parts) '

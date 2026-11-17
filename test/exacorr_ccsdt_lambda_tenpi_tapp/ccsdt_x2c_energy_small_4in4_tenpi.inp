@@ -3,7 +3,7 @@
 !
 **DIRAC
 .TITLE
-X2C Hamiltonian. CCSDTQ energies, small test.
+X2C Hamiltonian. CCSDT energies and dipole, small test.
 .WAVE F
 .PROPERTIES
 **INTEGRALS
@@ -27,13 +27,15 @@ X2C Hamiltonian. CCSDTQ energies, small test.
 .VIRTUAL
 6..7
 .CCiT
-.AUTOKERNEL
+.AUTOKERNELS
+.EXECUTOR
+2
 .AUTOSCHEME
-3
+2
 .PRINT
 2
 .TALSH_BUFF
-10
+5
 .LAMBDA
 **MOLECULE
 *COORDINATES

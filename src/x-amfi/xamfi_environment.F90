@@ -319,7 +319,6 @@ contains
 
             read(99)    nz, nzt,ntbas(0),nrows,ncols,ntbas(1),ntbas(2),&
                         n2bastq, n2bbasxq, ncmot, n2tmt
-                  ncmot = 0
                   do i= 1, nr_fsym
                         read(99) &
                               npsh(i),&
@@ -345,16 +344,13 @@ contains
                                    ntmo_sub(k,i,1), &
                                    ntmo_sub(k,i,2)
                         end do
-                        ICMO(i)  = NCMOT
-                        ICMOQ(i) = NCMOT*NZ
-                        NCMO(i)  = NFBAS(i,0)*NORB(i)
-                        NCMOQ(i) = NCMO(i)*NZ
-                        NCMOT    = NCMOT + NCMO(i)
                   end do
-                  ncmotq = ncmot * nz
                   !print *, ' restored values are ',nz, nzt,ntbas(0),nrows,ncols,ntbas(1),ntbas(2),&
                   !n2bastq, n2bbasxq, ncmot, n2tmt
             close(99,status="keep")
+            !> recompute orbital totals and offsets (NORBT, NESHT, NPSHT, ICMO, NCMOT, ...)
+            !> from the restored per-irrep dimensions, otherwise they keep the values of the other mode
+            call setdc2(0)
             if(mdirac) nzt = nz ! default: 1
 
       end select

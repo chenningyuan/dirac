@@ -28,6 +28,9 @@ C     Loop over wave functions and call PAMPRP_1 for each of them.
 C
 C
 C***********************************************************************
+#ifdef MOD_EXACORR
+      use exacorr_cfg, only: exa_input
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -38,7 +41,7 @@ C
 #include "dcbpsi.h"
 #include "dcbprp.h"
 C
-      CHARACTER WF*4
+      CHARACTER WF*4, WFlabel*6
       INTEGER state
       INTEGER J
 C
@@ -94,8 +97,26 @@ C
      &           'Unknown wave function: ' // WF)
            END IF
          endif !(if .not.doexacc)
-         CALL TITLER('Properties for ' // WF // ' wave function',
-     &        '*',110)
+
+         WFlabel = WF
+#ifdef MOD_EXACORR
+         if ((WF.EQ.'CCSD').AND.(exa_input%lambda)) then
+           select case (exa_input%iterative_level)
+             case (2)
+             ! Distinguish between CCSD and CCD.
+             ! CC2 not implemented for first order properties.
+             if (exa_input%iterative_scheme == 20) WFlabel = 'CCD'
+             case (3)
+             WFlabel = 'CCSDT'
+             case (4)
+             WFlabel = 'CCSDTQ'
+             case default
+             WFlabel = WF
+           end select
+         end  if
+#endif
+         CALL TITLER('Properties for ' // trim(WFlabel) //
+     &               ' wave function','*',110)
 
          IF (WF .EQ. 'EOM ') THEN
            CALL number_of_states(state)
@@ -3214,6 +3235,70 @@ Cjth - changed because of the new version of TRACOR ( => new version of TRAHES)
      &                NSCOOR,NSCOOR,1,IPQTOQ(1,0),LUPRI)
         ENDIF
 Cold code        CALL TRAHES(SPNMAT,NSCOOR,CHESS,NSCOOR,NSCOOR,2)
+C
+
+C       Print indirect spin-spin coupling tensors (Hz)
+C       for each pair of nuclei and isotope combination.
+        IF (IPRPRP .GE. 2) THEN
+          CALL HEADER
+     &    ('Indirect Spin-spin tensors (Hz):',1)
+C         Loop over all unique pairs of nuclei
+          DO I = 1,NSPEC
+            IISO   = IATINF(3,I)
+            IATOM1 = IATINF(1,I)
+            DO J = 1,(I-1)
+              JISO   = IATINF(3,J)
+              IATOM2 = IATINF(1,J)
+C
+C             Packed index for storing pairs
+              IATIJ = IATOM1*(IATOM1 -1)/2 + IATOM2
+C
+C             Locate the 3x3 spin-spin tensor block corresponding
+C             to the atom pair (IATOM1,IATOM2) for the global (NCHES x NCHES) matrix CHESS.
+              IA = 3*(IATOM1-1)
+              JA = 3*(IATOM2-1)
+C
+C             Loop over all isotope combinations for the curent atom pair.
+              DO I3 = 1,IISO
+                IF(IATOM1.EQ.IATOM2) THEN
+                  J3END = I3 - 1
+                ELSE
+                  J3END = JISO
+                ENDIF
+C
+                DO J3 = 1,J3END
+C                 Atomic units to Hz using the gyromagnetic ratios
+C                 of the selected isotopes.
+                  FACTOR = AUTOHZ * RATINF(3,I3,I) * RATINF(3,J3,J)
+C
+C                 Print atom/isotope information.
+                  WRITE(LUPRI,'(/,3X,A5,3X,A3,2X,A5,3X,A3)')
+     &            'Atom1','iso','Atom2','iso'
+C
+                  WRITE(LUPRI,'(3X,A6,2X,A3,2X,A6,2X,A3)')
+     &            '------','---','------','---'
+C
+                  WRITE(LUPRI,'(3X,A6,2X,I3,2X,A6,2X,I3)')
+     &            NAMDEP(IATOM1),I3,NAMDEP(IATOM2),J3
+C
+C                 Print the 3x3 indirect spin-spin coupling tensor
+C                 in Cartesian coordinates (Hz).
+                  WRITE (LUPRI,'(/,18X,3(A,11X))') 'x', 'y', 'z'
+                  WRITE(LUPRI,'(3(3X,A,6X,3F12.4,/))')
+     &            'x',(FACTOR*CHESS(IA+1,JA+JC),JC=1,3),
+     &            'y',(FACTOR*CHESS(IA+2,JA+JC),JC=1,3),
+     &            'z',(FACTOR*CHESS(IA+3,JA+JC),JC=1,3)
+C
+                END DO
+              END DO
+C
+C             Separator between different atom pairs.
+              IF (I .GT. 1) CALL PRSYMB(LUPRI,'=',46,0)
+C
+            END DO
+          END DO
+        END IF
+C
 C
 C       Analyze results
 C

@@ -305,7 +305,7 @@ contains
 
      call get_m_ai(T, ee, ep)
 
-     debug_me = .true.
+     debug_me = .false.
      if (debug_me) then
         write(*, *) 'combine_kappa_t: T_ai,ee, ep = ', ee, ep
         call prqmat(T, norbt, norbt, norbt, norbt, nz,  &
@@ -442,7 +442,7 @@ contains
         call dealloc(temp_virt)
      end do
 
-     debug_me = .true.
+     debug_me = .false.
      if (debug_me) then
         do i = 1, length
            write(*, *) 'i, orbital_rotation_indices(1, i), orbital_rotation_indices(2, i) = ', &
@@ -519,6 +519,7 @@ contains
 
         nvirt = norb(isym) - nocc(isym)
 
+        nvec = 1
         call numlst(indices_string, indices_vect,     &
                     nvirt, -npsh(isym), nesh(isym), isym, nvec)
 
