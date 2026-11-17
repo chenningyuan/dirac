@@ -140,6 +140,7 @@ C--------------------------------------------------------------------
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCINPT (IN,IW)
+      use ihm_mod, only: AIH, DOIH, ER_IH, IHSCHEME, NIH, SHIFT_IH
       use dcbham_mod, only: X2CMMF
       use mxcent_mod, only: MXCENT, MXCOOR
       use relcc_cfg
@@ -170,7 +171,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "inpt.inc"
-#include "ihm.inc"
 #include "symm.inc"
 #include "dcbprp.h"
 C
@@ -1066,6 +1066,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   NSP,EPS1,EPS,IREPSP,IREPSPI,
      &                   FOCKSP,REPORT,NELEC_F1,NELEC_F2)
 C
+      use ihm_mod, only: DOIH, ER_IH, IPIORB, MAXSPIM
       use freeze_mod, only: IFROZ, IFROZ_SET_IN_INPUT, MAXFROZ, NFROZEN
       use spinor_indexing
       IMPLICIT NONE
@@ -1085,7 +1086,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
 #include "symm.inc"
-#include "ihm.inc"
 #include "ccpar.inc"
 C---------------Calling variables--------------------------------------
 C
@@ -3645,6 +3645,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCFSPC (ICALC,MXCORR,EPS1,EPS,NSP,IREPSP,IREPSPI)
 C
+      use ihm_mod, only: DOIH, ER_IH
       use diis_mod, only: MAXDIM, MAXIT
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
@@ -3676,7 +3677,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "ihm.inc"
 #include "eqns.inc"
 #include "results.inc"
 #include "inpt.inc"

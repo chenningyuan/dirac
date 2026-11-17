@@ -4540,7 +4540,7 @@ C***********************************************************************
 !      use dcbana_mod, only: DOPOP
 !      use dcborb_mod, only: NOCC
       use maxorb_mod, only: MXCORB
-!      use dcbmp2no_mod, only: MP2NATPOP
+      use dcbmp2no_mod, only: MP2NATPOP
       use priunit_mod, only: LUCMD, LUPRI
       use dgroup_mod, only: FREP, NFSYM
 !      use dcbpop_mod, only: ADD_ALL, ADDSML, DONETP, ILABDF, IPOPLAB, IPRPOP, LABDEF, MAXLAB, NPOPLAB, POP_DTOL, POPLAB, VECPOP
@@ -4552,7 +4552,6 @@ C
 #include "dcbana.h"
 #include "dcbpop.h"
 #include "dcborb.h"
-#include "dcbmp2no.h"
 C
       LOGICAL   SET, NEWDEF,ORBDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, LINE*72

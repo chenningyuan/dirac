@@ -80,7 +80,6 @@
 #include "clunit.inc"
 #include "mxpdim.inc"
 #include "luci.inc"
-#include "units.inc"
 #include "parluci.h"
 *
       parameter (NCMD = 21)
@@ -2679,7 +2678,6 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
       character*72 CARD
       dimension ITEM(MXITEM)
 *
-#include "units.inc"
 *
       if (WAFFCT.eq.'HF_SCF') then
 *  1) HF_SCF, input orbitals from MOLCAS-SCF calculation
@@ -4293,9 +4291,9 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
      &                   IPRXT,IPRRSP,IPRDEN,IPROCC,IPRNCIV,
      &                   energy_convergence)
 *
+      use units_mod, only: LUINP
       implicit real*8 (A-H,O-Z)
 *
-#include "units.inc"
 #include "parluci.h"
 *
       logical MSCOMB
@@ -6552,11 +6550,11 @@ C    &           ' MO orbitals obtained from LUCIA ')
 *
       subroutine rdmoluc
 *
+      use units_mod, only: LUINP
       implicit real*8 (A-H,O-Z)
 *
 #include "mxpdim.inc"
 #include "luci.inc"
-#include "units.inc"
 *
       parameter (NCMD = 21)
       dimension IMOKW(NCMD)

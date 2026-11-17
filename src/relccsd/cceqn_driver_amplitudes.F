@@ -7,8 +7,8 @@
 !      use symm_mod, only: NDIMT1, NDIMT2, NFOO, NFVV
 !      use eqns_mod, only: ICURFSS
 !      use inpt_mod, only: IPRNT, NOCCD, NOCCS, TIMING
-!      use ihm_mod, only: DOIH, IHSCHEME
 !      use results_mod, only: ECCSD, ECCSDIM, ESCF, ETOT
+      use ihm_mod, only: DOIH, IHSCHEME
       use interface_to_mpi
       use xmlout
       implicit none
@@ -41,7 +41,6 @@ C---------------Common Blocks--------------------------------------
 #include "symm.inc"
 #include "eqns.inc"
 #include "inpt.inc"
-#include "ihm.inc"
 #include "results.inc"
 #if defined (VAR_MPI)
       integer ISTAT(df_MPI_STATUS_SIZE)

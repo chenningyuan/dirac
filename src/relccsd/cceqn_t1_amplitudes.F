@@ -43,7 +43,6 @@ C
 #include "param.inc"
 #include "symm.inc"
 !#include "eqns.inc"
-!#include "ihm.inc"
 #include "complex.inc"
 #include "ccpar.inc"
 C

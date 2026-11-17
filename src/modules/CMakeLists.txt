@@ -35,6 +35,7 @@ set(MODULE_SOURCES
     dcbkrmc.F90
     dcblap.F90
     dcbloc.F90
+    dcbmp2no.F90
     dcbnrt.F90
     dcbsusc.F90
     dcbwav.F90

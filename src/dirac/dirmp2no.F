@@ -28,7 +28,8 @@ C     Written by S.Knecht and H.J.Aa. Jensen - March 2008
 C
 C***********************************************************************
 !      use dcbpsi_mod, only: DOMP2NO
-!      use dcbmp2no_mod, only: IAOMOSCHEME, IF2MP2NO, INTMP2NO, IPRMP2NO, MP2NATPOP, MP2NATPOP2, SELPOPNAT, VECMP2NO, VECNOSEL
+      use dcbmp2no_mod, only: IAOMOSCHEME, IF2MP2NO, INTMP2NO, IPRMP2NO,
+     &  MP2NATPOP, MP2NATPOP2, SELPOPNAT, VECMP2NO, VECNOSEL
       use dgroup_mod, only: FREP, NFSYM
       use dcbgen_mod, only: INTGEN, IPRGEN
       use priunit_mod, only: LUCMD, LUPRI
@@ -36,7 +37,6 @@ C***********************************************************************
       INTEGER :: I,J
 C
 #include "dcbpsi.h"
-#include "dcbmp2no.h"
 C
       PARAMETER (NTABLE = 8)
       LOGICAL SET, NEWDEF, RESET,LBIT
@@ -269,14 +269,13 @@ C
 C     Written by S.Knecht and H.J.Aa. Jensen - March 2008
 C
 C***********************************************************************
-!      use dcbmp2no_mod, only: RUN_CCMOD, SKIP_ITRAFO, SKIP_MP2DEN
+      use dcbmp2no_mod, only: RUN_CCMOD, SKIP_ITRAFO, SKIP_MP2DEN
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: LUKRMC
 #include "implicit.h"
 C
 C
 C
-#include "dcbmp2no.h"
 C
       LOGICAL SAVEFLAGS(4), TOBE, FNDLAB
 C
@@ -335,7 +334,8 @@ C***********************************************************************
       use dcbgen_mod, only: LUKRMC
       use infpar_mod, only: ICOUNT, MPARID, MYTID
 !      use dcborb_mod, only: NASHT, NCMOTQ, NESH, NESHT, NORBT
-!      use dcbmp2no_mod, only: IF2MP2NO, IMO_NAT, IOCC_NAT, LUNATORB, MP2NATPOP, MP2NATPOP2, NACTMP2NO, SKIP_MP2DEN, VECNOSEL
+      use dcbmp2no_mod, only: IF2MP2NO, IMO_NAT, IOCC_NAT, LUNATORB,
+     &  MP2NATPOP, MP2NATPOP2, NACTMP2NO, SKIP_MP2DEN, VECNOSEL
       use dgroup_mod, only: LINEAR, NFSYM, NZ
       use memory_allocator
       use dircmo
@@ -344,7 +344,6 @@ C***********************************************************************
       INTEGER :: I,J
 C
 #include "dcborb.h"
-#include "dcbmp2no.h"
 #if defined (VAR_MPI)
 !#include "mpif.h"
 #endif
@@ -569,7 +568,8 @@ C***********************************************************************
       use dcbgen_mod, only: INTGEN
       use dummy_mod, only: DUMMY
       use priunit_mod, only: LUPRI
-!      use dcbmp2no_mod, only: IAOMOSCHEME, IPRMP2NO, SKIP_ITRAFO
+      use dcbmp2no_mod, only: IAOMOSCHEME, IPRMP2NO, SKIP_ITRAFO,
+     &  VECMP2NO
 !      use dcborb_mod, only: I2ASHT, N2ASHT, NAOCCT, NASH, NASHT, NAVIRT, NCMOTQ, NESH, NESHT, NIOCCT, NISH, NIVIRT, NORB, NORBT, NPSH
       use moltra_labeling
       use relcc_cfg
@@ -581,7 +581,6 @@ C
 
 #include "dcbdhf.h"
 #include "dcborb.h"
-#include "dcbmp2no.h"
 #include "../moltra/dcbtra.h"
 #include "../moltra/dcbtr3.h"
 C
@@ -1200,7 +1199,7 @@ C     written by S.Knecht - July 2008
 C
 C***********************************************************************
 !      use dcborb_mod, only: IASH, ICMOQ, NASH, NASHT, NCMOTQ, NIOCC, NORB, NPSH
-!      use dcbmp2no_mod, only: IPRMP2NO
+      use dcbmp2no_mod, only: IPRMP2NO
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: NFBAS
       use priunit_mod, only: LUPRI
@@ -1208,7 +1207,6 @@ C***********************************************************************
       INTEGER :: I
 C
 #include "dcborb.h"
-#include "dcbmp2no.h"
       DIMENSION CMO(*), CMO_NAT(nasht,nasht,NZ)
       DIMENSION WORK(*)
       KWORK = 1

@@ -14,6 +14,19 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
+!-----------------------------------------
+! Module with variables previously defined
+! at mempoint.inc include file (COMMON /IPOINT/)
+!-----------------------------------------
+! SOURCE  : $Source$
+      module mempoint_mod
+      implicit none
+      integer :: ITR, ITI, IIK, IIL, ITIR, ITII, M1, M2, IPDG, IPDR,
+     &    IPDI, IPVR, IPVI, IPSR, IPSI, IPIL, IPIR, ITNR, ITNI, IIJE,
+     &    IGMR, IGMI, IVWS, IVW1, IVW2, IVWW, IVWI, IIJR, IIJT, IPJL,
+     &    IPJR, IPJV
+      end module mempoint_mod
+
 C
       SUBROUTINE PAMCIM ()
 C
@@ -166,7 +179,8 @@ C
 !      use param_mod, only: MAXCORE, N3, N8
 !      use symm_mod, only: IGENEX, IREP, MAXE3, MAXH1, NELEC, NORB, NORBR, REPNA
 !      use general_mod, only: COMIN, CONVERE, CONVERR, CPUMAX, CPUSET, GETDET, ISTART, MAKENAT, MAXITER, NDET, NREFDET, NROOTS, NSEL, RESTART, SELECT
-!      use mempoint_mod, only: IGMI, IGMR, IIJE, IIK, IIL, ITI, ITII, ITIR, ITNI, ITNR, ITR, IVW1
+      use mempoint_mod, only: IGMI, IGMR, IIJE, IIK, IIL, ITI, ITII,
+     &  ITIR, ITNI, ITNR, ITR, IVW1
 #include "implicit.h"
 C
 C     ============================================================
@@ -178,7 +192,6 @@ C
 #include "param.inc"
 #include "symm.inc"
 #include "general.inc"
-#include "mempoint.inc"
 C
       DIMENSION MINE(16),MAXE(16),IGAS(16),NGASO(256)
       NAMELIST/GOSCIP/NELACT,NGAS,MINE,MAXE,NGASO,REFDET,IREFE,IPRNT,FCI
@@ -337,8 +350,8 @@ C
 !      use param_mod, only: N2, N3, N8
 !      use general_mod, only: CPITER, ITER, MAXITER, MVEC, NAMEA, NVEC, PROPER, RESTART
 !      use symm_mod, only: NCOREX
-!      use mempoint_mod, only: IGMI, IGMR, IIJE, IIJR, IPDG, IPDI, IPDR, IPIL, IPIR, IPJL, IPJR, IPJV, IPSI, IPSR, IPVI, IPVR, ITNI, ITNR, IVW1, IVWW
 !      use iterat_mod, only: CMTI, CMTR
+      use mempoint_mod
 #include "implicit.h"
 C
 C     ======================================
@@ -349,7 +362,6 @@ C
 #include "param.inc"
 #include "general.inc"
 #include "symm.inc"
-#include "mempoint.inc"
 CMKN
 #include "iterat.inc"
 CMKN
@@ -806,7 +818,7 @@ C
 !      use param_mod, only: MAXCORE, N3, N8
 !      use symm_mod, only: LNORBC, MXREP, NELEC, NORB, NORBC, NORBD, NREP
 !      use general_mod, only: BREIT, MDET, NDET, NROOTS, REALAR
-!      use mempoint_mod, only: IGMI, IGMR, IIJE, IIJR, IIK, IIL, IPDG, IPDI, IPDR, IPIL, IPIR, IPJL, IPJR, IPJV, IPSI, IPSR, IPVI, IPVR, ITI, ITII, ITIR, ITNI, ITNR, ITR, IVW1, IVWI, IVWS, IVWW, M1, M2
+      use mempoint_mod
 #include "implicit.h"
 C
 C     ========================
@@ -816,7 +828,6 @@ C
 #include "param.inc"
 #include "symm.inc"
 #include "general.inc"
-#include "mempoint.inc"
 C
       MAXB = NROOTS + 1
       MAXC = NROOTS
@@ -1095,7 +1106,7 @@ C
 !      use param_mod, only: N3, N8
 !      use general_mod, only: MDET, MVEC, NDET, NVEC, REALAR
 !      use symm_mod, only: IGENEX, IREP, IRPAMO, NORB
-!      use mempoint_mod, only: IVWI
+      use mempoint_mod, only: IVWI
 #include "implicit.h"
 C
 C     =====================================
@@ -1107,7 +1118,6 @@ C
 #include "general.inc"
 #include "symm.inc"
 !#include "files.inc"
-#include "mempoint.inc"
 C
       DIMENSION DENSR(NORB,NORB),DENSI(NORB,NORB),DD(NORB)
       DIMENSION ILIND(*),IRIND(*),JLIND(*),JRIND(*),IVWA(*)
@@ -1287,7 +1297,7 @@ C
 !      use general_mod, only: INDMIN, MDET, NAMEA, NDET, NROOTS, PROPER, REALAR
 !      use files_mod, only: MRCTWOE
 !      use symm_mod, only: IREP, NCOREX, NORB, NTVERT
-!      use mempoint_mod, only: IVWI
+      use mempoint_mod, only: IVWI
 #include "implicit.h"
 C
 C     =========================================
@@ -1299,7 +1309,6 @@ C
 #include "general.inc"
 #include "files.inc"
 #include "symm.inc"
-#include "mempoint.inc"
       DIMENSION DGEL(*),DR(*),TINTR(*),TINTI(*),GMATR(*),GMATI(*)
       DIMENSION IVWA(*),IJREC(NORB,NORB)
       DIMENSION IJEX(*),ILIND(*),IRIND(*),JLIND(*),JRIND(*),JVECL(2,*)
@@ -1526,7 +1535,6 @@ C
 #include "general.inc"
 #include "symm.inc"
 #include "files.inc"
-!#include "mempoint.inc"
 C
       DIMENSION ILIND(*),IRIND(*),JLIND(*),JRIND(*)
       DIMENSION JVECL(2,*),IVWA(*),IJREC(NORB,NORB),IJEX(*)
@@ -1819,7 +1827,7 @@ C
 !      use param_mod, only: N3
 !      use files_mod, only: MRCEXCS
 !      use symm_mod, only: IGENEX, MAXE3, MXREP, NELEC, NORB, NORBR
-!      use mempoint_mod, only: IVWI
+      use mempoint_mod, only: IVWI
 #include "implicit.h"
 C
 C     GET 1-ELECTRON COEFFICIENTS :
@@ -1830,7 +1838,6 @@ C
 #include "param.inc"
 #include "files.inc"
 #include "symm.inc"
-#include "mempoint.inc"
 C
       DIMENSION ILIND(*),IRIND(*),JLIND(*),JRIND(*)
       DIMENSION JVECL(2,*)
@@ -2219,7 +2226,7 @@ C
 !      use param_mod, only: N3
 !      use files_mod, only: FNAM, MRCEXCS
 !      use symm_mod, only: IGENEX, IREP, LNORBC, NCOREX, NORB, NTVERT
-!      use mempoint_mod, only: IVWI
+      use mempoint_mod, only: IVWI
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: DM=100.0D0
@@ -2230,7 +2237,6 @@ C
 #include "param.inc"
 #include "files.inc"
 #include "symm.inc"
-#include "mempoint.inc"
 C
       DIMENSION JVECL(2,*),JLIND(*),JRIND(*),ILIND(*),IRIND(*)
       DIMENSION IJREC(NORB,NORB),IVWA(*)
@@ -3100,7 +3106,7 @@ C
 !      use files_mod, only: FNAM, MDBINT, MDCINT, MRCTWOE
 !      use general_mod, only: BREIT, INDMO, REALAR
 !      use symm_mod, only: NORB
-!      use mempoint_mod, only: ITR, M1, M2
+      use mempoint_mod, only: ITR, M1, M2
 #include "implicit.h"
 C
       INTEGER :: I, J, K
@@ -3108,7 +3114,6 @@ C
 #include "files.inc"
 #include "general.inc"
 #include "symm.inc"
-#include "mempoint.inc"
 C
 C     ---------------------------------------------------------
 C     CANONICAL INTEGRALS ARE GENERATED FROM THE ORIGINAL LIST.
@@ -3852,7 +3857,7 @@ C
 !      use general_mod, only: GETDET, MAKENAT, NROOTS, NSEL, NVEC, REALAR
 !      use symm_mod, only: IRPAMO, NORB, REPNA
 !      use iterat_mod, only: EVECI, EVECR
-!      use mempoint_mod, only: IGMI, IGMR, IIJE, IIJR, IPDI, IPDR, IPIL, IPIR, IPJL, IPJR, IPJV, IPVI, IPVR, ITNI, ITNR, IVW1
+      use mempoint_mod
 #include "implicit.h"
 C
       INTEGER :: I
@@ -3861,7 +3866,6 @@ C
 #include "symm.inc"
 !#include "files.inc"
 #include "iterat.inc"
-#include "mempoint.inc"
 C
       REAL*8 CI(*)
 

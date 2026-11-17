@@ -248,7 +248,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: NESH, NESHT, NOCC, NORBT, NPSH
-!      use dcbmp2no_mod, only: IPRMP2NO, MP2NATPOP, NACTMP2NO, SELPOPNAT
+      use dcbmp2no_mod, only: IPRMP2NO, MP2NATPOP, NACTMP2NO, SELPOPNAT
       use dircmo
       use checkpoint
 #include "implicit.h"
@@ -259,7 +259,6 @@ C  DCBBAS: N2BBASX
 C  LABELS: NLAB
 #include "dcborb.h"
 #include "dcbpop.h"
-#include "dcbmp2no.h"
 C
       LOGICAL TOBE,TOBEK,DONETP_M,ADDSML_M,LABDEF_M
       LOGICAL FNDLAB,CINATORB

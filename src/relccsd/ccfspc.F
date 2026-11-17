@@ -600,7 +600,7 @@ C
 !      use complex_mod, only: CARITH, RCW
 !      use symm_mod, only: IFS_HE2, NFS_HE, NREP
 !      use files_mod, only: IN, IUHEFF, IW
-!      use ihm_mod, only: AIH, DOIH, IHSCHEME, NIH, SHIFT_IH
+      use ihm_mod, only: AIH, DOIH, IHSCHEME, NIH, SHIFT_IH
       implicit none
 C---------------Description--------------------------------------------
 C
@@ -611,7 +611,6 @@ C
 #include "complex.inc"
 #include "symm.inc"
 #include "files.inc"
-#include "ihm.inc"
 
       integer, intent(in) :: icurfss
       real(8), intent(in) :: heff(*)
@@ -790,7 +789,7 @@ C
 !      use files_mod, only: IW
 !      use complex_mod, only: CARITH
 !      use param_mod, only: A0, D0
-!      use ihm_mod, only: AIH, DOIH, IHSCHEME, IPIORB, NIH, SHIFT_IH
+      use ihm_mod, only: AIH, DOIH, IHSCHEME, IPIORB, NIH, SHIFT_IH
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -830,7 +829,6 @@ C
 #include "files.inc"
 #include "complex.inc"
 #include "param.inc"
-#include "ihm.inc"
 C
 C---------------Local variables--------------------------------------
 C

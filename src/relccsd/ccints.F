@@ -1530,7 +1530,7 @@ C
 !      use inpt_mod, only: IPRNT, USEOE
 !      use complex_mod, only: RCW
 !      use files_mod, only: IW
-!      use ihm_mod, only: DOIH, ER_IH, IPIORB
+      use ihm_mod, only: DOIH, ER_IH, IPIORB
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1555,7 +1555,6 @@ C
 #include "inpt.inc"
 #include "complex.inc"
 #include "files.inc"
-#include "ihm.inc"
 C---------------Local variables--------------------------------------
 C
       REAL*8 EPSDIF

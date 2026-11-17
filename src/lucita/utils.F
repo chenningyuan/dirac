@@ -75,6 +75,7 @@
 ***********************************************************************
       SUBROUTINE CHAR_TO_INTEGER_MOLUC(CHAR_X,INT_X)
 *
+      use units_mod, only: LUSC_INT
       IMPLICIT REAL*8(A-H,O-Z)
       CHARACTER*72 CHAR_X
       INTEGER FLLNGTH
@@ -82,7 +83,6 @@
       CHARACTER*6 SCRFL
 
 *
-#include "units.inc"
 #if defined (VAR_MPI2)
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)

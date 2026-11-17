@@ -1,4 +1,5 @@
   module eom_driver
+      use ihm_mod, only: AIH, DOIH, IHSCHEME, IPIORB, NIH, SHIFT_IH
   use projectors
   use sigma_eom
   use trial_vectors_eom
@@ -2579,7 +2580,6 @@ C
 #include "files.inc"
 #include "complex.inc"
 #include "param.inc"
-#include "ihm.inc"
 #include "eqns.inc"
 C
 C---------------Local variables--------------------------------------

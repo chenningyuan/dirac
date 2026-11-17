@@ -346,8 +346,8 @@
 *
       subroutine setunits
 *
+      use units_mod, only: LUCOM, LUINP, LUIPH, LUSC_INT
 #include "clunit.inc"
-#include "units.inc"
 *
 * Scratch file
       LUSC_INT = LU91

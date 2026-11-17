@@ -37,6 +37,7 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
 )
 
 set(FREE_RELCCSD_FORTRAN_SOURCES
+    ihm.F90
     diis.F90
    #relcc_cfg.F90   # already defined in dirac library because needed there
    spinor_indexing.F90
