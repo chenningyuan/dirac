@@ -433,7 +433,9 @@ C
 !      use cgas_mod, only: NGAS
 !      use oper_mod, only: IHAM12
 !      use parluci_mod, only: IIJKL_ROD
-!      use typesz_mpi2_mod, only: ISIZE_DP
+#if defined (VAR_MPI2)
+      use typesz_mpi2_mod, only: ISIZE_DP
+#endif
       use luci_wrkspc
 C**********************************************************************
 C
@@ -477,7 +479,6 @@ C***********************************************************************
       INTEGER(KIND=df_MPI_OFFSET_KIND) IS_LENGTH8
 #endif
 #include "parluci.h"
-#include "typesz_mpi2.h"
       CHARACTER*6 ENVIRO, SIGDEN_ROUTE
       DIMENSION T_BUFF(*)
 C
@@ -611,7 +612,9 @@ C
 C***********************************************************************
 !      use parluci_mod, only: FILE_INFO_OBJ, IIOMOD_REL, IJKL_PRE, IXCOMM, LEN_ALL_INT, LOWSRT_IJKL, LUWRT, MASTER, MYPROC
 !      use ctcc_mod, only: N1DIAINT, NALLINT
-!      use typesz_mpi2_mod, only: ISIZE_DP
+#if defined (VAR_MPI2)
+      use typesz_mpi2_mod, only: ISIZE_DP
+#endif
       use symmetry_setup_krci
       use interface_to_mpi
 #include "implicit.h"
@@ -635,7 +638,6 @@ C***********************************************************************
       DIMENSION   T_BUFF(*), T(*), F1(*), ibeig(*)
 #if defined (VAR_MPI2)
 !#include "krmc_shmem.h"
-#include "typesz_mpi2.h"
       real*8,  allocatable :: t_buffx(:)
 #endif
       logical              :: int_file_is_master_file
@@ -856,8 +858,10 @@ C
 C
 C***********************************************************************
 !      use parluci_mod, only: FILE_INFO_OBJ, IIJKL_ROD, IIJKL_ROD_LL, NIIJKL_ROD
-!      use typesz_mpi2_mod, only: ISIZE_DP, ISIZE_INT8
 !      use ctcc_mod, only: N1DIAINT, N1ELINT, N2DIAINT, N2ELINT, NALLINT, NDIAINT
+#if defined (VAR_MPI2)
+      use typesz_mpi2_mod, only: ISIZE_DP, ISIZE_INT8
+#endif
       use interface_to_mpi
 #include "implicit.h"
 #if defined (VAR_MPI2)
@@ -878,7 +882,6 @@ C***********************************************************************
 #endif
 !#include "mxpdim.inc"
 #include "parluci.h"
-#include "typesz_mpi2.h"
 #include "ipoist8.inc"
 #include "ctcc.inc"
       DIMENSION T_BUFF(*), T(*), MDIASV(*)
@@ -1051,7 +1054,9 @@ C
 C***********************************************************************
 !      use parluci_mod, only: FILE_INFO_OBJ, IIJKL_ROD, IIJKL_ROD_LL, IT_SHL, MY_T_LEN_D, NIIJKL_ROD, SPLIT_IJKL
 !      use ctcc_mod, only: N1DIAINT, N2DIAINT, N2ELINT, NALLINT, NDIAINT
-!      use typesz_mpi2_mod, only: ISIZE_DP, ISIZE_INT8
+#if defined (VAR_MPI2)
+      use typesz_mpi2_mod, only: ISIZE_DP, ISIZE_INT8
+#endif
       use mospinor_info
       use interface_to_mpi
 #include "implicit.h"
@@ -1073,7 +1078,6 @@ C***********************************************************************
 !#include "mxpdim.inc"
 #include "ipoist8.inc"
 #include "ctcc.inc"
-#include "typesz_mpi2.h"
       DIMENSION T_BUFF(*),T(NALLINT),MDIASV(*),IT_TTPL(*)
       DIMENSION T_BUFF_D(*)
       INTEGER*8 NINT_TP_I8, I_START, I_END, I_IN

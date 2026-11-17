@@ -859,7 +859,7 @@ C  /* Deck vibana */
       use taymol_mod, only: ERGMOL
       use symmet_mod, only: MAXREP
       use abainf_mod, only: LINCPL, RAMAN, VROA
-!      use molde_mod, only: MOLDEN
+      use molde_mod, only: MOLDEN
       use dummy_mod, only: IDUMMY
       use nuclei_mod, only: NAMDPX, NATOMS
       use maxorb_mod, only: MXCORB
@@ -884,7 +884,6 @@ C
      &          DGRAD(3,NCORD), CAAT(3,NCORD), WORK(LWORK),
      &          ROAAFQ(*), ROAGNQ(*), ROAGLQ(*), ROAAQ(*)
 C
-#include "molde.h"
 #include "cbiwlk.h"
 C
       LOGICAL  INTENS, NEWSPC, ACTIVE, CNTAIN, LINEAR

@@ -282,7 +282,6 @@ C  /* Deck lnraba */
 C
 #include "cbiexc.h"
 #include "inflin.h"
-#include "infvar.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
 #include "infsop.h"
@@ -700,12 +699,12 @@ C
 C  /* Deck lnrvar */
       SUBROUTINE LNRVAR(ISYM,IPRINT,WORK,LWORK)
 C
+      use infvar_mod, only: NWOPT
       use inforb_mod, only: NASHT
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
       DIMENSION WORK(LWORK)
 #include "inflin.h"
-#include "infvar.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
 C

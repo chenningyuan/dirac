@@ -79,6 +79,7 @@ set(MODULE_SOURCES
     maxmom.F90
     maxorb.F90
     molinp.F90
+    mp1stpr.F90
     mxcent.F90
     mxsymm.F90
     noccn_inf.F90
@@ -111,6 +112,7 @@ set(MODULE_SOURCES
     twoao.F90
     twocom.F90
     twosta.F90
+    typesz_mpi2.F90
     xyzpow.F90
     # drafts, not migrated yet
     #dcbesr.F90

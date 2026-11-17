@@ -1344,6 +1344,9 @@ C
 
 C  /* Deck runopt */
       SUBROUTINE RUNOPT(MXRCRD)
+#if !defined (PRG_DIRAC)
+      use molde_mod, only: MOLDEN
+#endif
 #ifndef PRG_DIRAC
       use gnrinf_mod, only: IPRUSR, RDINPC, RDMLIN, USRIPR
 #endif
@@ -1360,9 +1363,6 @@ C  /* Deck runopt */
       use memory_allocator
 #include "implicit.h"
 #include "cbiwlk.h"
-#if !defined (PRG_DIRAC)
-#include "molde.h"      
-#endif
       LOGICAL EXHER, EXSIR, EXABA, MINEND, INDXOK, STATPO, ACTIVE
       LOGICAL REJGEO, TRU, FAL, TMPLOG, NEWSTP, COND1
       CHARACTER TMPLIN*80, WRDRSP*7

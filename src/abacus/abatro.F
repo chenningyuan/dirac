@@ -185,7 +185,7 @@ C     Dipole derivatives added June 1985 tuh
 C     Fully analytic expression for Hessian December 1986 tuh
 C     Rewritten for symmetry Nov/Dec 1988 tuh
 C
-!      use infvar_mod, only: NVAR
+      use infvar_mod, only: NVAR
       use exeinf_mod, only: FTRONV, GTRONV, HTRONV, RTRONV
       use abainf_mod, only: GDALL
       use trkoor_mod, only: NCOOR
@@ -201,7 +201,6 @@ C
       DIMENSION WORK(LWORK)
 C
 #include "cbitro.h"
-#include "infvar.h"
 C
 C     The variable FIRST has been replaced with FTRONV in /EXEINF/,
 C     which can be controlled from outside. This is necessary because
@@ -1705,6 +1704,7 @@ C
 C     This subroutine determines the dependent differentiated gradients
 C     or CP SCF solutions using translational symmetry.
 C
+      use infvar_mod, only: NVAR
       use nuclei_mod, only: NUCIND
       use maxorb_mod, only: MXCORB
 !      use cbitro_mod, only: COMPAR, GDTRO, IPRINT, RDTRO
@@ -1728,7 +1728,6 @@ C Used from common blocks:
 C  NUCLEI: DCORGD, DCORD
 C
 #include "cbitro.h"
-#include "infvar.h"
 C
 C
 C     Run over vector types (gradient or solution vector)

@@ -1000,7 +1000,6 @@ module pelib_dirac_interface
 !!
 !      implicit none
 !
-!#include "infvar.h"
 !
 !      integer :: nwrk
 !      real*8 :: energy
@@ -1089,7 +1088,6 @@ module pelib_dirac_interface
 !
 !      implicit none
 !
-!#include "infvar.h"
 !
 !      integer :: nwrk
 !      real*8, dimension(1) :: energy
@@ -1140,7 +1138,6 @@ module pelib_dirac_interface
 !      implicit none
 !
 !#include "inflin.h"
-!#include "infvar.h"
 !
 !      logical :: orblin
 !      integer :: ncsim, nosim, nwrk
@@ -1194,7 +1191,6 @@ module pelib_dirac_interface
 !
 !      implicit none
 !
-!#include "infvar.h"
 !#include "inflin.h"
 !
 !      integer :: ncsim, nwrk
@@ -1299,7 +1295,6 @@ module pelib_dirac_interface
 !
 !      implicit none
 !
-!#include "infvar.h"
 !#include "inflin.h"
 !
 !      integer :: nosim, nso, nwrk
@@ -1473,7 +1468,6 @@ module pelib_dirac_interface
 !#include "infrsp.h"
 !#include "wrkrsp.h"
 !#include "qrinf.h"
-!#include "infvar.h"
 !!
 !! Used from common: n2ashx, kzyvar, kzconf, ncref, maxwop
 !      integer :: i, j
@@ -1873,7 +1867,6 @@ module pelib_dirac_interface
 !
 !         implicit none
 !
-!#include "infvar.h"
 !#include "qrinf.h"
 !#include "infrsp.h"
 !#include "wrkrsp.h"
@@ -2558,7 +2551,6 @@ module pelib_dirac_interface
 !
 !         implicit none
 !
-!#include "infvar.h"
 !#include "infrsp.h"
 !#include "qrinf.h"
 !
@@ -2672,7 +2664,6 @@ module pelib_dirac_interface
 !
 !         implicit none
 !
-!#include "infvar.h"
 !#include "infrsp.h"
 !#include "qrinf.h"
 !

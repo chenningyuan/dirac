@@ -196,10 +196,10 @@ C     Last revision :
 C
 C
 C***********************************************************************
-!      use typesz_mpi2_mod, only: ISIZE_DP, ISIZE_INT8, ISIZE_LOG, ISIZE_MY_INT
+      use typesz_mpi2_mod, only: ISIZE_DP, ISIZE_INT8, ISIZE_LOG,
+     &  ISIZE_MY_INT
 #include "implicit.h"
 #include "mpif.h"
-#include "typesz_mpi2.h"
       INTEGER(kind=MPI_ADDRESS_KIND) MY_MM_NEEDS, MY_MM_NEEDSSCR
       INTEGER(kind=MPI_ADDRESS_KIND) MY_POINT
       INTEGER(kind=MPI_OFFSET_KIND) NELEMENT
@@ -282,10 +282,10 @@ C     Last revision :
 C
 C
 C***********************************************************************
-!      use typesz_mpi2_mod, only: ISIZE_DP, ISIZE_INT8, ISIZE_INTDEF, ISIZE_LOG, ISIZE_MY_INT
+      use typesz_mpi2_mod, only: ISIZE_DP, ISIZE_INT8, ISIZE_INTDEF,
+     &  ISIZE_LOG, ISIZE_MY_INT
       use interface_to_mpi
 #include "implicit.h"
-#include "typesz_mpi2.h"
 C
       call interface_MPI_TYPE_EXTENT(df_MPI_REAL8,ISIZE_DP)
       call interface_MPI_TYPE_EXTENT(df_my_MPI_INTEGER,ISIZE_my_int)
@@ -323,10 +323,9 @@ C     Last revision :
 C
 C
 C***********************************************************************
-!      use typesz_mpi2_mod, only: ISIZE_DP
+      use typesz_mpi2_mod, only: ISIZE_DP
 #include "implicit.h"
 #include "mpif.h"
-#include "typesz_mpi2.h"
       INTEGER(kind=MPI_ADDRESS_KIND) IBUF_LEN, IBUF_LENSCR
       INTEGER(kind=MPI_ADDRESS_KIND) NELEMENT
 C

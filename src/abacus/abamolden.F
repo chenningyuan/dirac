@@ -25,10 +25,11 @@ C        http://www.caos.kun.nl/~schaft/molden/molden.html
 C
 C
        SUBROUTINE MOHEAD
+      use molde_mod, only: DONEIT, DONEIU, DONEIV, DONEIW, DONEIX,
+     &  IXYZPRINTS
       use dummy_mod, only: IDUMMY
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
-#include "molde.h"
 C
       DONEIT=.FALSE.
       DONEIU=.FALSE.
@@ -45,6 +46,7 @@ C
       END
       SUBROUTINE MOGTO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &                 KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
+      use molde_mod, only: DONEIT
       use ccom_mod, only: NHKOFF
       use nuclei_mod, only: NONT, NONTYP, NUCDEG
       use primit_mod, only: PRIEXP
@@ -53,7 +55,6 @@ C
       use maxorb_mod, only: MXCORB, MXPRIM
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
-#include "molde.h"
       PARAMETER (D0 = 0.0D0)
 C
 
@@ -136,14 +137,13 @@ C
       use symmet_mod, only: ISYMAX, MAXOPR, MULT, PT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-!      use molde_mod, only: DONEIU
+      use molde_mod, only: DONEIU
       use chrnos_mod, only: CHRNOS
 #include "implicit.h"
 
       CHARACTER*6 NAME
       CHARACTER*4 WORD
 
-#include "molde.h"
 
       CHARACTER*2 ASYMB(103)
 
@@ -234,6 +234,7 @@ C ORVAL  =  contains MO coefficients
 C itask  =  1 print everything to file
 C           2 save orbital energies in ORVAL
 
+      use molde_mod, only: DONEIV, OREN
       use inforb_mod, only: IORB, NBAST, NOCC, NORB, NORBT, NSYM
       use pgroup_mod, only: REP
       use aosotr_mod, only: CTRAN, IPCEN, ITRAN
@@ -244,7 +245,6 @@ C           2 save orbital energies in ORVAL
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-#include "molde.h"
     
       LOGICAL WRTELEM,WRTZERO
       DIMENSION ORVAL(*), OCCUP(*)
@@ -337,7 +337,6 @@ C              note OCCUP(NOCCT) only over occupied orbitals
       SUBROUTINE MOFREQ(EVEC,NUMMOD,NCORD,FREQAU)
       use codata_mod, only: XFAMU, XTKAYS
 #include "implicit.h"
-!#include "molde.h"
 
       DIMENSION EVEC(NCORD,NCORD), FREQAU(NCORD)
 C
@@ -361,9 +360,9 @@ C
 #ifndef PRG_DIRAC
 
       SUBROUTINE MOSCFCON(ITER,EMCSCF,WRITENOW)
+      use molde_mod, only: DONEIW, OROC
       use maxorb_mod, only: MXCORB
 #include "implicit.h" 
-#include "molde.h"
         LOGICAL WRITENOW
         IF(WRITENOW)THEN
            IF (.NOT. DONEIW) THEN 
@@ -384,9 +383,9 @@ C
       END
 
       SUBROUTINE MOGECON(WRITENOW,EMCSCF)
+      use molde_mod, only: DONEIX, EMCEN, IXYZPRINTS
       use maxorb_mod, only: MXCORB
 #include "implicit.h" 
-#include "molde.h"
       LOGICAL WRITENOW
       IF(WRITENOW)THEN
          

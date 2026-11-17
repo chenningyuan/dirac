@@ -10328,13 +10328,12 @@ C     Last revision:
 C
 C**********************************************************************
 !      use parluci_mod, only: IIJKL_ROD, IRC_SAVE, MYNEW_ID_SM, SPLIT_IJKL
-!      use typesz_mpi2_mod, only: ISIZE_DP
 !      use ctcc_mod, only: N2ELINT
+      use typesz_mpi2_mod, only: ISIZE_DP
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
-#include "typesz_mpi2.h"
 #include "ctcc.inc"
       DIMENSION T_BUFF(*), IT_TTPL(*)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_T, IOFF_SCR

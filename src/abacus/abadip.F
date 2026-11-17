@@ -206,7 +206,6 @@ C
 #include "moldip.h"
 C
 #include "linaba.h"
-#include "infvar.h"
 #include "inflin.h"
       LOGICAL OLDDX
 C

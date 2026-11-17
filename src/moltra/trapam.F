@@ -1009,14 +1009,13 @@ C***********************************************************************
 !      use dcborb_mod, only: ICMOQ, IORB, NAVIR, NCMOTQ, NESH, NIOCC, NOCC, NORB, NORBT, NPSH, NSSH
       use dgroup_mod, only: ATOMIC, NBSYM, NFSYM, NZ
       use dcbgen_mod, only: LUCOEF
-!      use mp1stpr_mod, only: MPR_INDSTR
+      use mp1stpr_mod, only: MPR_INDSTR
 #include "implicit.h"
       INTEGER :: I
 C
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcborb.h"
-#include "mp1stpr.h"
       CHARACTER*24 DAYTID
       LOGICAL TOBE,TRASAM,ACTIVE
       DIMENSION TMATRX1(*),TMATRX2(*)

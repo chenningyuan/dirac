@@ -2737,6 +2737,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     CCFOPR - CC First Order PRoperties, aka gradients
 C
+      use mp1stpr_mod, only: NTMATR1, NTMATR2
       use diis_mod, only: MAXDIM, MAXIT
       use dgroup_mod, only: NZ
       use memory_allocator
@@ -2779,7 +2780,6 @@ C
 #include "symm.inc"
 #include "complex.inc"
 #include "ccpar.inc"
-#include "mp1stpr.h"
 C
 C---------------Local variables--------------------------------------
 C

@@ -59,6 +59,8 @@ set(FIXED_ABACUS_FORTRAN_SOURCES
 )
 
 set(FREE_ABACUS_FORTRAN_SOURCES
+    infvar.F90
+    molde.F90
     prkoor.F90
    carsph.F90
    ${PROJECT_SOURCE_DIR}/src/rose/subtree/src/read_xyzfile.F90

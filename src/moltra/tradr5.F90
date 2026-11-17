@@ -627,14 +627,13 @@
       use dcbbas_mod, only: IBAS, IBBAS
       use symmet_mod, only: ICOS, ISYMAX
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
-!      use mp1stpr_mod, only: IOFFTM1, IOFFTM2
+      use mp1stpr_mod, only: IOFFTM1, IOFFTM2
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, K
 #include "dcbtra.h"
 #include "dcborb.h"
 #include "dcbtr3.h"
-#include "mp1stpr.h"
 !
       REAL(dp), PARAMETER :: D0 = 0.0D00, D1=1.0D00
       DIMENSION NSTR3(2)
@@ -1418,11 +1417,10 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcborb_mod, only: NAOCC, NAVIR
-!      use mp1stpr_mod, only: IOFFTM1, NTMATR1
+      use mp1stpr_mod, only: IOFFTM1, NTMATR1
       use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
 #include "implicit.h"
 #include "dcborb.h"
-#include "mp1stpr.h"
 !
       DIMENSION TMATRX1(*)
       LOGICAL DO_ZERO
@@ -1470,11 +1468,10 @@
 !     
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcborb_mod, only: NAOCC, NAVIR
-!      use mp1stpr_mod, only: IOFFTM2, NTMATR2
+      use mp1stpr_mod, only: IOFFTM2, NTMATR2
       use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
 #include "implicit.h"
 #include "dcborb.h"
-#include "mp1stpr.h"
 !
       DIMENSION TMATRX2(*)
       LOGICAL DO_ZERO
@@ -1517,10 +1514,9 @@
 !     PURPOSE : Write the T matrix to file
 !     
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use mp1stpr_mod, only: LUMPPR, NTMATR1
+      use mp1stpr_mod, only: LUMPPR, NTMATR1
 #include "implicit.h"
       INTEGER :: I
-#include "mp1stpr.h"
 !     
       DIMENSION TMATRIX(*)
 !
@@ -1544,10 +1540,9 @@
 !     PURPOSE : Read the T matrix from file
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use mp1stpr_mod, only: LUMPPR, NTMATR1
+      use mp1stpr_mod, only: LUMPPR, NTMATR1
 #include "implicit.h"
       INTEGER :: I
-#include "mp1stpr.h"
 !
       DIMENSION TMATRIX(*)
 !
@@ -1580,11 +1575,10 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcborb_mod, only: NAOCC, NAVIR
-!      use mp1stpr_mod, only: IOFFTM1, IOFFTM2
+      use mp1stpr_mod, only: IOFFTM1, IOFFTM2
       use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
 #include "implicit.h"
 #include "dcborb.h"
-#include "mp1stpr.h"
 !
       DIMENSION TMATRX1(*), TMATRX2(*)
 

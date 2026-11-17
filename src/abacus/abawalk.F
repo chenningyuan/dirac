@@ -5867,6 +5867,7 @@ C  /* Deck wlksav */
 C
 C     Save second-order MC prediction for found step
 C
+      use infvar_mod, only: NCONF, NWOPT
       use infopt_mod, only: DEPRED, EACTIV, EMCOLD, EMCSCF, EMY, EPOT,
      &  NREDL, REJWMA, REJWMI
       use inforb_mod, only: NCMOT
@@ -5892,7 +5893,6 @@ C   INFORB : N2BAST,NCMOT
 C   INFOPT : EMCSCF,EMCOLD,DEPRED,REJWMI,REJWMA, NREDL
 C
 #include "cbiwlk.h"
-#include "infvar.h"
 C
 C     kludge to avoid tranformation to natural orbitals
 C     I must talk to HJJ / tuh Jun 92
@@ -6087,6 +6087,7 @@ C
 #ifndef PRG_DIRAC
 C  /* Deck wlkmc */
       SUBROUTINE WLKMC(REDFAC,STPCAR,WRK,LWRK,NCORD,MCOK,TEST,IPRINT)
+      use infvar_mod, only: NCONF, NVAR, NWOPT
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
@@ -6095,7 +6096,6 @@ C
       LOGICAL MCOK, TEST
       DIMENSION STPCAR(NCORD), WRK(LWRK)
 C
-#include "infvar.h"
 C
       KSTPMC = 1
       KWRK1  = KSTPMC + NVAR
@@ -6149,6 +6149,7 @@ C  a) calculate second order prediction for energy change.
 C  b) if WFPRED, calculate first order prediction for change
 C     in MC wave function.
 C
+      use infvar_mod, only: NCONF, NVAR, NWOPT
       use infdim_mod, only: NVARMA
       use abainf_mod, only: GDALL
       use dorps_mod, only: DCORD, DCORGD
@@ -6176,7 +6177,6 @@ C
 #include "inflin.h"
 #include "cbiwlk.h"
 #include "anrinf.h"
-#include "infvar.h"
 C
       CHARACTER*1 CXYZ(3)
       DATA CXYZ/'X','Y','Z'/
