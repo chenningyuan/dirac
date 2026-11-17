@@ -23,6 +23,7 @@ module linear_algebra
   public :: sort_eigenvalues
   public :: construct_fw_x_matrix
   public :: construct_fw_r_matrix
+  public :: hermitian_matrix_power
 
   interface matrix_mul
       module procedure matrix_mul2

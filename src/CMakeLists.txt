@@ -129,4 +129,8 @@ if(CMAKE_PROJECT_NAME STREQUAL "rose")
   endif()
 
   install(TARGETS rose.x DESTINATION ${PROJECT_SOURCE_DIR}/bin)
+
+  # unit test of the Foldy-Wouthuysen coefficient construction (self-checking, no DIRAC/HDF5 needed)
+  add_executable(test_fw ${PROJECT_SOURCE_DIR}/test/fw_unit/test_fw.F90)
+  target_link_libraries(test_fw rose_auxiliaries)
 endif()
