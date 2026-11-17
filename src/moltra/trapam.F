@@ -611,7 +611,8 @@ C     basis function ordering.
 C
 C***********************************************************************
       use checkpoint
-      use dircmo, only: use_rose_orbitals, select_mobasis
+      use dircmo, only: use_rose_orbitals, select_mobasis,
+     &                  rose_dimensions
 #include "implicit.h"
 #include "priunit.h"
 #include "dcborb.h"
@@ -682,10 +683,51 @@ C
          NORBSV(IFRP) = NORB(IFRP)
          NPSHSV(IFRP) = NPSH(IFRP)
          NESHSV(IFRP) = NESH(IFRP)
+         ROSE_DIMENSIONS(1,IFRP,1) = NORB(IFRP)
+         ROSE_DIMENSIONS(2,IFRP,1) = NPSH(IFRP)
+         ROSE_DIMENSIONS(3,IFRP,1) = NESH(IFRP)
       ENDDO
       NORB(1) = NMOR
       NPSH(1) = NPOR
       NESH(1) = NMOR - NPOR
+      DO IFRP = 1,NFSYM
+         ROSE_DIMENSIONS(1,IFRP,2) = NORB(IFRP)
+         ROSE_DIMENSIONS(2,IFRP,2) = NPSH(IFRP)
+         ROSE_DIMENSIONS(3,IFRP,2) = NESH(IFRP)
+      ENDDO
+      CALL SETDC2(0)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck trarose */
+      SUBROUTINE TRAROSE(IDO)
+C***********************************************************************
+C
+C     Temporarily switch the orbital dimensions in DCBORB (NORB,NPSH,
+C     NESH) between the SCF set and the ROSE set while ROSE orbitals are
+C     in use (see TRAROS).
+C
+C     IDO = 1 : SCF dimensions.  Needed by routines that work with the
+C               AO to MO matrix of the SCF run (AOMOMAT), such as SPFAO,
+C               which otherwise scrambles the Fock matrix of every
+C               spin-free (also nonrelativistic) calculation.
+C     IDO = 2 : back to the ROSE dimensions.
+C
+C     Does nothing if ROSE orbitals are not in use.
+C
+C***********************************************************************
+      use dircmo, only: use_rose_orbitals, rose_dimensions
+#include "implicit.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      INTEGER IDO,IFRP
+C
+      IF (.NOT.USE_ROSE_ORBITALS) RETURN
+      DO IFRP = 1,NFSYM
+         NORB(IFRP) = ROSE_DIMENSIONS(1,IFRP,IDO)
+         NPSH(IFRP) = ROSE_DIMENSIONS(2,IFRP,IDO)
+         NESH(IFRP) = ROSE_DIMENSIONS(3,IFRP,IDO)
+      ENDDO
       CALL SETDC2(0)
       RETURN
       END
@@ -3815,7 +3857,11 @@ C
 C
 C     Make the matrix spinfree if desired.
 C
-      IF (SPINFR) CALL SPFAO (CMO,FAO,WORK(KFREE),LFREE)
+      IF (SPINFR) THEN
+         CALL TRAROSE(1)
+         CALL SPFAO (CMO,FAO,WORK(KFREE),LFREE)
+         CALL TRAROSE(2)
+      ENDIF
 C
       IF(IPRINT.GE.5) THEN
         CALL HEADER('GTVFCK:Total Fock matrix in AO-basis',-1)

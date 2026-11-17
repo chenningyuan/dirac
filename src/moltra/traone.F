@@ -411,7 +411,9 @@ CMI   ... in the BSS mode the spin-free AO matrix is ready on ONEFCK
       if(X2CMMF) remove_spinfree_terms = .false.
  
       if(remove_spinfree_terms)then
+        CALL TRAROSE(1)
         CALL SPFAO (FMO,FAO,WORK(KFREE),LFREE)
+        CALL TRAROSE(2)
       end if
 C
       IF(IPRINT.GE.5.AND.SPINFR) THEN

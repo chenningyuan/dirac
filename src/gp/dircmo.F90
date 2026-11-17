@@ -13,10 +13,15 @@ module dircmo
   public reacmo_new
   public select_mobasis
   public use_rose_orbitals
+  public rose_dimensions
 
   ! When set (by moltra) and ROSE orbitals are present on the checkpoint file,
   ! reacmo returns these instead of the SCF orbitals.
   logical :: use_rose_orbitals = .false.
+
+  ! (NORB,NPSH,NESH) per fermion irrep for the SCF orbitals (last index 1) and for the
+  ! ROSE orbitals (last index 2), filled by moltra when it switches to ROSE orbitals.
+  integer :: rose_dimensions(3,2,2) = 0
 
   interface wricmo
       module procedure wricmo
