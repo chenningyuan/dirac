@@ -14,6 +14,7 @@ set(MODULE_SOURCES
     cbione.F90
     cbirea.F90
     cbisol.F90
+    cbivib.F90
     ccom.F90
     chrnos.F90
     chrsgn.F90

@@ -2,9 +2,9 @@
 *
 * Ratio between real and integer
 *
+      use irat_krcc_mod, only: IRAT
       IMPLICIT REAL*8(A-H,O-Z)
 *. Output
-#include "irat.inc"
 *
       IRAT = 1
 *

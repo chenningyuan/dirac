@@ -583,7 +583,6 @@ C     END IF
 #include "lucinp.inc"
 #include "stinf.inc"
 #include "strinp.inc"
-#include "irat.inc"
 *
 *
       dimension WORK(*)

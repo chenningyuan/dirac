@@ -3998,11 +3998,11 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
 *
 * Ratio between real and integer
 *
+      use irat_lucita_mod, only: IRAT
       use SysDef_mod, only: RTOI
       IMPLICIT REAL*8(A-H,O-Z)
 *. Input
 *. Output
-#include "irat.inc"
 *. For CRAY or explicit 64 bit architecture : IRAT = 1
 *     IF(MACHINE(1:4).EQ.'CRAY'.OR.MACHINE(1:2).EQ.'64') THEN
 *       IRAT = 1

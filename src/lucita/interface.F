@@ -3857,8 +3857,8 @@ C               Full CI program and to the subsequent polarization
 C               propagator calculation.
 C     Argument list :
 C
+      use irat_lucita_mod, only: IRAT
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-#include "irat.inc"
       PARAMETER (LUINP = 17)
       PARAMETER ( ITAP30 = 16, LUPRI = 6, LUCMDS=17)
       PARAMETER ( LURSP   = 18 , LUONE = 19, LUW6 = 6)
@@ -4679,7 +4679,6 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
 #include "mxpdim.inc"
 #include "luci.inc"
 #include "orbinf_lucita.inc"
-#include "irat.inc"
 *
       logical MSCOMB
 *
@@ -7709,6 +7708,7 @@ C
 C
 C     Written by Henrik Koch 27-Mar-1990
 C
+      use irat_lucita_mod, only: IRAT
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       PARAMETER (LUINT = 27)
       PARAMETER (LUPRI = 6)
@@ -7719,7 +7719,6 @@ C     IRAT  = (real word length) / (integer word length)
 C     IRAT2 = (real word length) / (half-integer word length)
 C             if available and used, otherwise IRAT2 = IRAT
 C     PARAMETER (IRAT = 2, IRAT2 = 2)
-#include "irat.inc"
       DIMENSION WRK(LWRK)
       PARAMETER ( MAXRHF = 30, MAXVIR = 225)
       INTEGER P,Q,R,S,A,B,C,D,E,F,G
@@ -7776,7 +7775,6 @@ C     IRAT  = (real word length) / (integer word length)
 C     IRAT2 = (real word length) / (half-integer word length)
 C             if available and used, otherwise IRAT2 = IRAT
 C     PARAMETER (IRAT = 2, IRAT2 = 2)
-#include "irat.inc"
       DIMENSION TWOMO(*),
      *          BUF(LBUF),IBUF(LBUF)
       PARAMETER ( MAXRHF = 30, MAXVIR = 225)

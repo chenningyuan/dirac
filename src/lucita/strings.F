@@ -4071,7 +4071,6 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 #include "lucinp.inc"
 #include "stinf.inc"
 #include "strinp.inc"
-#include "irat.inc"
 *
 C     COMMON/BIGGY/WORK(MXPWRD)
 *

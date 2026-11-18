@@ -35,12 +35,12 @@ cAdded VRML visualization of normal modes.
 #endif
 C  /* Deck vibinp */
       SUBROUTINE VIBINP(WORD)
+      use cbivib_mod
       use abainf_mod, only: IPRDEF
       use mxcent_mod, only: MXCENT, MXCOOR
       use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
       PARAMETER (NTABLE = 7)
-#include "cbivib.h"
 C
       LOGICAL NEWDEF, DOINT
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, CARD*80, TYPE*4,
@@ -188,9 +188,9 @@ C
       use mxcent_mod, only: MXCENT, MXCOOR
       use abainf_mod, only: DIPDER, IPRDEF, LINCPL, MOLGRD, MOLHES, VCD,
      &  VIB
-!      use cbivib_mod, only: DIPOL, DOVCD, HESFIL, HESPUN, IPRINT, MAXDIF, MAXSUB, NCARD, NINTCM, NISOTP, SKIP
+      use cbivib_mod, only: DIPOL, DOVCD, HESFIL, HESPUN, IPRINT, ISOTP,
+     &  MAXDIF, MAXSUB, NCARD, NINTCM, NISOTP, SKIP
 #include "implicit.h"
-#include "cbivib.h"
 C
       NCARD  = 0
       NINTCM = 0
@@ -243,7 +243,8 @@ C     are defined. At equilibrium the frequencies are the same with or
 C     without internal coordinates defined.
 C
       use priunit_mod, only: LUPRI
-!      use cbivib_mod, only: DOVCD, HESFIL, HESPUN, IPRINT, MAXDIF, NINTCM
+      use cbivib_mod, only: DOVCD, HESFIL, HESPUN, IPRINT, MAXDIF,
+     &  NINTCM
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use iratdef_mod, only: IRAT
       use dorps_mod, only: DOREPS
@@ -260,7 +261,6 @@ C
 C Used from common blocks:
 C   TAYMOL : HESMOL
 C
-#include "cbivib.h"
 C
       CALL QENTER('VIBCTL')
       LUHES = 0
@@ -475,7 +475,7 @@ C
       use gnrinf_mod, only: OPTWLK
       use symmet_mod, only: MAXREP, NCRREP
       use priunit_mod, only: LUPRI
-!      use cbivib_mod, only: DOVCD, HESFIL, IPRINT, NINTCM, NISOTP
+      use cbivib_mod, only: DOVCD, HESFIL, IPRINT, ISOTP, NINTCM, NISOTP
 #include "implicit.h"
 C
       LOGICAL DIPDER, POLAR, LINEAR, NOTALL, NONE, RAMPRP
@@ -486,7 +486,6 @@ C
      &          EVAL(NCORD), EVEC(NCORD,NCORD), DGRAD(3,NCORD),
      &          VINRTI(3,3), CAAT(3,NCORD), WRK(LWRK)
 C
-#include "cbivib.h"
 #include "cbilnr.h"
 C
       DIMENSION NMASS(36)
@@ -1662,7 +1661,7 @@ C  /* Deck intern */
       SUBROUTINE INTERN(NCORD,NINTER,GRAD,HESS,HESCOR,DGRAD,CAAT,BMAT,
      &                  BADJIN,QMAT,QINV,BHES,FINT,DINT,AATINT,HINT,W2,
      &                  IWORK,CMAT,QQ,CTYPE,WRK,LWORK)
-!      use cbivib_mod, only: DIPOL, DOVCD, IPRINT, MAXDIF
+      use cbivib_mod, only: DIPOL, DOVCD, IPRINT, ITYPCM, MAXDIF
       use facang_mod, only: FACANG
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
@@ -1671,7 +1670,6 @@ C  /* Deck intern */
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.D0, D1 = 1.0D0, DM1 = - 1.0D0
 C
-#include "cbivib.h"
 C
       CHARACTER UNITC*3, UNITF*9, UNITD*5
       DIMENSION HESS(NCORD,NCORD), DGRAD(3,NCORD), CAAT(3,NCORD),
@@ -2265,7 +2263,7 @@ C  /* Deck vibv3 */
       use nuclei_mod, only: CORD, ISTBNU, NAMDEP, NUCDEP, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use codata_mod, only: AUTK, XFAMU
-!      use cbivib_mod, only: IPRINT
+      use cbivib_mod, only: IPRINT
       use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use thrzer_mod, only: THRZER
       use maxaqn_mod, only: MXAQN, MXQN
@@ -2285,7 +2283,6 @@ C  /* Deck vibv3 */
      &          FMATT(NCORD,NCORD,NCORD),
      &          POS(3,NCORD/3), AMASS(*), WORK(LWORK)
 C
-#include "cbivib.h"
 #include "cbiwlk.h"
 C
       luwlk = 0
@@ -2677,7 +2674,7 @@ C  /* Deck vibro1 */
       use mxcent_mod, only: MXCENT, MXCOOR
       use codata_mod, only: ALPHAC, XFAMU, XTANG, XTKAYS, XTNM
       use nuctap_mod, only: LUWLK
-!      use cbivib_mod, only: IPRINT
+      use cbivib_mod, only: IPRINT
       use priunit_mod, only: LUPRI
 !      use cbilnr_mod, only: FRVAL, MXFR, NFRVAL
       use dummy_mod, only: IDUMMY
@@ -2711,7 +2708,6 @@ C
      &          ROAAFU(3,3,MXFR), ROAGNU(3,3,MXFR),
      &          ROAGLU(3,3,MXFR), ROAAU(3,3,3,MXFR)
 C
-#include "cbivib.h"
 C
 C Conversion factors from au to derivated cgs
       XFOAIN = ALPHAC*XTANG**4*XFAMU*DE6
@@ -4025,6 +4021,7 @@ C     LIN2 linear bending. A-C-B distorted perpendicular to the plane.
 C     ABD - positive if A moves toward the vector cross product CD*CA.
 C     The linear bendings are A-C-B, i.e., the apex atom is third.
 C
+      use cbivib_mod, only: COEF, IATOMS, ITYPCD, KWORD, SCALE
       use codata_mod, only: XTANG
       use nuclei_mod, only: NAMDEP
       use pi_mod, only: PI
@@ -4036,7 +4033,6 @@ C
 C
       CHARACTER TIPUS(7)*4, TYP*4, WE*1, TLAST*4
       CHARACTER*6 NAME1, NAME2, NAME3, NAME4
-#include "cbivib.h"
       DIMENSION QQ(*),
      &          IA(4), U(3), V(3), W(3), Z(3), X(3), UU(3), VV(3),
      &          WW(3), ZZ(3), UV(12),

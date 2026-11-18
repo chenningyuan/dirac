@@ -273,9 +273,9 @@
 * starting from WORK(IROFF). Obtain element
 * IELMNT of this array
 *
+      use irat_lucita_mod, only: IRAT
       INTEGER WORK(*)
 *
-#include "irat.inc"
 *. offset when work is integer array
       IIOFF = 1 + IRAT * (IROFF-1)
       IFRMR = WORK(IIOFF-1+IELMNT)
