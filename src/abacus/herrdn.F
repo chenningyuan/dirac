@@ -2788,10 +2788,8 @@ C
 C
 C           Reorder primitive orbitals
 C
-            if (.not. ECPCALC) then
             CALL PRIORD(ALPHA(1,NBLOCK),CPRIMU(1,1,NBLOCK),NUCIJ,NRCIJ,
      &                  SEG(NBLOCK),KPRIM,DSM)
-            endif
 C
 C           Normalize orbitals
 C
@@ -2874,10 +2872,8 @@ C
 C
 C        Reorder primitive orbitals
 C
-         if (.not. ECPCALC) then
          CALL PRIORD(ALPHA(1,NBLOCK),CPRIMU(1,1,NBLOCK),NUCI,NRCI,
      &               SEG(NBLOCK),KPRIM,DSM)
-         endif
 C
 C        Normalize orbitals
 C
@@ -2968,10 +2964,8 @@ C
 C
 C           Reorder primitive orbitals
 C
-            if (.not. ECPCALC) then
             CALL PRIORD(ALPHA(1,NBLOCK),CPRIMU(1,1,NBLOCK),NUCIJ,NRCIJ,
      &           SEG(NBLOCK),KPRIM,DSM)
-            endif
 C
 C           Normalize orbitals
 C
@@ -3192,10 +3186,8 @@ C
 C
 C           Reorder primitive orbitals
 C
-            if (.not. ECPCALC) then
             CALL PRIORD(ALPHA(1,NBLOCK),CPRIMU(1,1,NBLOCK),NUCIJ,NRCIJ,
      &                  SEG(NBLOCK),KPRIM,DSM)
-            endif
 C
 C           Normalize orbitals
 C
