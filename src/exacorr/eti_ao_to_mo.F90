@@ -254,6 +254,11 @@ module eti_ao_to_mo
          ierr = get_nmodes(mocoefa_tensor, tens_rank)
          ierr = get_extents_static(mocoefa_tensor, mocoef_dims)
 
+         ierr=direct_data_pointer(mocoefa_tensor,body_p)
+         call c_f_pointer(body_p,camo_tens,mocoef_dims(1:2)) ! to use camo_tens as a regular Fortran 2d array
+         ierr=direct_data_pointer(mocoefb_tensor,body_p)
+         call c_f_pointer(body_p,cbmo_tens,mocoef_dims(1:2)) ! to use cbmo_tens as a regular Fortran 2d array
+
          call get_mo_coefficients (cspinor,mo_list,nmo)
 
 !        Copy the coefficients into the alpha and beta tensors, using the quaternion relations as defined in
