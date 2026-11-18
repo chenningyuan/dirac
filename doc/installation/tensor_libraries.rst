@@ -12,7 +12,7 @@ Originally based on the tensor libraries `TAL-SH <https://github.com/DmitryLyakh
 
 **Important** Only the `fork maintained by the DIRAC team <https://github.com/RelMBdev/ExaTENSOR>`__ (which contains both ExaTENSOR and the TAL-SH codes) should be used with DIRAC, since it incorporates enhancements to the build system not found in the original, no longer maintaned repositories by Dmitry Lyakh.
 
-We are currently working towards supporting other distributed memory tensor libraries such as the `Cyclops Tensor Framework <https://github.com/cyclops-community/ctf>`__, to provide users with additional choice.
+Experimental support for the distributed memory `Cyclops Tensor Framework <https://github.com/cyclops-community/ctf>`__ (CTF), also used through the TAPP API, is described in the section `Building the Cyclops Tensor Framework (CTF) for ExaCorr`_ below.
 
 The choice of tensor library used as computational backend is made at compile time, via the ``TENSOR_EXECUTOR`` environment variable.
 
@@ -78,12 +78,107 @@ For AMD GPUs::
 For AMD GPUs, ``ExaTensor_ENV`` will contain ``GPU_CUDA=CUDA`` and ``USE_HIP=YES``. The ``GPU_SM_ARCH`` will be disregarded if present, and the build system should detect the target architecture from environment variables; if not, the GPU type can be passed on via the environment variable ``HIP_TARGET``. 
 
 
+Building the Cyclops Tensor Framework (CTF) for ExaCorr
+-------------------------------------------------------
+
+**Experimental.** CTF support is under development and its build and run setup may still change.
+
+How CTF is used
+~~~~~~~~~~~~~~~
+
+ExaCorr reaches CTF through TAPP. A CTF run uses two programs:
+
+* ``dirac.x`` runs on MPI rank 0 only and sends each tensor operation to the other ranks;
+* ``worker_ctf``, built together with TAPP, runs on all other MPI ranks. The workers hold the tensors, distributed over their memory, and carry out the contractions with CTF.
+
+CTF is **not** downloaded by the DIRAC build. It has to be built separately first, and DIRAC is then pointed to it.
+
+Requirements
+~~~~~~~~~~~~
+
+* an MPI library with C++ and Fortran compiler wrappers (``mpicxx``, ``mpif90``);
+* BLAS and LAPACK (for example OpenBLAS or MKL);
+* optional: ScaLAPACK and HPTT. CTF builds and works for ExaCorr without them.
+
+Building CTF
+~~~~~~~~~~~~
+
+CTF has its own ``configure`` script and Makefile (see the `CTF build instructions <https://github.com/cyclops-community/ctf/wiki/Building-and-testing>`__). Build it inside its source directory::
+
+    git clone https://github.com/cyclops-community/ctf.git
+    cd ctf
+    ./configure CXX=mpicxx LIBS="-lopenblas" LD_LIBS="-lopenblas"
+    make -j 8
+    make test      # serial test suite
+    make test4     # the same tests on 4 MPI ranks
+
+Replace ``-lopenblas`` by the link line of your BLAS/LAPACK library; without ``LIBS``/``LD_LIBS`` the script tries ``-lblas`` and ``-llapack``. ``./configure --help`` lists all options. The summary printed by ``configure`` should report that MPI, OpenMP, BLAS and LAPACK were found; messages about missing ScaLAPACK, HPTT, MKL or CUDA can be ignored.
+
+**Do not run** ``make install``. TAPP looks for ``include/ctf.hpp`` and ``lib_shared/libctf.so`` inside the CTF directory, which is the layout of the source directory after ``make``. ``make install`` copies the library to ``lib/`` and the header to a different place, where TAPP will not find them.
+
+Configuring DIRAC with CTF
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Set the locations through environment variables and switch CTF on through CMake::
+
+    export CTF_ROOT=/path/to/ctf                # the CTF source directory built above
+    export OPENBLAS_ROOT=/path/to/openblas      # only if OpenBLAS is not in a standard system location
+    export TAPP_MPI_ROOT=/path/to/mpi           # optional: MPI to use; must contain bin/mpicc and bin/mpicxx
+
+    ./setup --tblis=OFF --cmake-options="-DENABLE_CTF_WITHIN_TAPP=ON" build
+    cd build
+    make -j 8
+
+Notes:
+
+* TAPP's CTF bindings link to **OpenBLAS**, independently of the BLAS library DIRAC itself uses, and configuration stops if ``libopenblas`` is not found. An OpenBLAS installed in a standard system location (e.g. from the Linux distribution's packages) is found automatically. Otherwise set ``OPENBLAS_ROOT`` so that ``libopenblas`` is in ``$OPENBLAS_ROOT/lib``, or pass ``-DOPENBLAS_LIBRARY=/full/path/to/libopenblas.so`` in ``--cmake-options``.
+* Configure DIRAC **without** ``--mpi``. In a CTF run ``dirac.x`` is a single process on rank 0; it gets MPI through the TAPP library.
+* After configuring, ``CTF_INCLUDE_DIR``, ``CTF_LIBRARY`` and ``OPENBLAS_LIBRARY`` in ``CMakeCache.txt`` show which files were found.
+* With CTF enabled, TAPP sends all tensor operations to CTF. Keep ``--tensor_executor`` at its default value 1 (TAPP).
+* At the TAPP version currently used, the TAPP library does not compile unless CTF is enabled.
+
+The build produces ``dirac.x`` in the build directory and ``worker_ctf`` in ``build/_deps/tapp-build/``. Both are linked to ``libctf.so`` through its full path, so the CTF directory must stay in place.
+
+Running with CTF
+~~~~~~~~~~~~~~~~
+
+Start a CTF run with the ``pam`` option ``--ctf=<N>``, where ``<N>`` is the number of worker processes::
+
+    pam --ctf=3 --inp=ccd_x2c.inp --mol=H2O_nosym.mol
+
+``pam`` then launches ``dirac.x`` and the workers with the multiple-program syntax of the MPI launcher, here::
+
+    mpirun -np 1 <scratch>/dirac.x : -np 3 <build>/_deps/tapp-build/worker_ctf
+
+Related options:
+
+* ``--ctf-worker=<path>``: location of ``worker_ctf``; the default is the one in the build directory that ``pam`` belongs to;
+* ``--mpirun=<launcher>``: the launcher to use; by default ``pam`` takes ``mpirun``, or ``srun`` if no ``mpirun`` is found. With ``srun`` the command uses ``-n`` instead of ``-np``;
+* ``--mpiarg="..."``: launcher options for the whole run, placed before the ``dirac.x`` part;
+* ``--ctf-worker-args="..."``: launcher options for the worker part only.
+
+For example, on a Slurm cluster, with ``dirac.x`` on one node and 95 workers on four other nodes::
+
+    pam --ctf=95 --mpirun=srun --mpiarg="-N 1 -c 8" --ctf-worker-args="-N 4 -c 8" --inp=... --mol=...
+
+With ``srun``, the ``:`` syntax starts a heterogeneous job step; depending on the Slurm version and site settings this may require a heterogeneous job allocation (``#SBATCH hetjob``).
+
+``--ctf`` cannot be combined with ``--mpi``, and stops with an error if DIRAC was not built with CTF or was built with ``--mpi``. The environment variable ``DIRAC_MPI_COMMAND`` is not used for ``--ctf`` runs.
+
+Each worker uses OpenMP threads in CTF and, with a threaded BLAS, BLAS threads as well. Set ``OMP_NUM_THREADS`` and the BLAS thread count (e.g. ``OPENBLAS_NUM_THREADS=1``) so that the number of ranks times threads per rank does not exceed the number of cores.
+
+Tested configuration
+~~~~~~~~~~~~~~~~~~~~
+
+The steps above were tested with CTF commit ``7866d44f`` on Ubuntu 24.04 with GCC 13.3, Open MPI 4.1.6 and OpenBLAS 0.3.26: all 53 CTF tests passed serially and on 4 MPI ranks, and DIRAC built ``dirac.x`` and ``worker_ctf`` against this CTF.
+
+
 Running ExaCorr in parallel and on GPU nodes
 --------------------------------------------
 
 DIRAC can be compiled and run both in sequential and in parallel with all of the above tensor libraries, provided that the code is compiled with 32-bit integers.  
 
-**However, unless the ExaTENSOR library is used to distribute tensors over multiple nodes, the tensor libraries will only use a single node**. Furthermore, ExaTENSOR-based parallel calculations with less than four (4) MPI ranks will actually run as a single node calculation.
+**However, unless the ExaTENSOR library or CTF (see above) is used to distribute tensors over multiple nodes, the tensor libraries will only use a single node**. Furthermore, ExaTENSOR-based parallel calculations with less than four (4) MPI ranks will actually run as a single node calculation.
 
 In the case ExaCorr has been compiled with GPU support for TAL-SH, and ExaTENSOR is not in use, the environment variable ``TALSH_GPUS`` can be used to control how many of the GPUs accessible to TAL-SH runs will be used (if ``TALSH_GPUS`` is not defined, all GPUs available to the process will be used). 
 
