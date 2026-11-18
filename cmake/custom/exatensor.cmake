@@ -57,7 +57,17 @@ if(ENABLE_EXATENSOR)
       set(TENSOR_EXECUTOR "$ENV{TENSOR_EXECUTOR}" CACHE STRING "" FORCE)
    endif()
 
-   if (TENSOR_EXECUTOR STREQUAL "1" AND ENABLE_TBLIS)
+   option(ENABLE_CTF_WITHIN_TAPP "Enable Cyclops CTF bindings" OFF)
+   set(ENABLE_CTF ${ENABLE_CTF_WITHIN_TAPP} CACHE BOOL "" FORCE)
+
+   # With CTF, TAPP runs every tensor operation on the CTF workers (TAPP executor 2 at the
+   # pinned TAPP version), so the Fortran side (tapp_top.F90) must use executor 2 as well:
+   # with executor 1 it keeps its own copies of the tensors on rank 0, which get out of
+   # step with the copies on the workers and give wrong results.
+   if (TENSOR_EXECUTOR STREQUAL "1" AND ENABLE_CTF_WITHIN_TAPP)
+     add_definitions(-DTENSOR_EXECUTOR_=1)
+     add_definitions(-DDEFAULT_EXECUTOR_WITHIN_TAPP=2)
+   elseif (TENSOR_EXECUTOR STREQUAL "1" AND ENABLE_TBLIS)
      add_definitions(-DTENSOR_EXECUTOR_=1)
      add_definitions(-DDEFAULT_EXECUTOR_WITHIN_TAPP=2)
    elseif(TENSOR_EXECUTOR STREQUAL "4")
@@ -74,8 +84,6 @@ if(ENABLE_EXATENSOR)
 #   option(ENABLE_TBLIS_WITHIN_TAPP "Build and link TBLIS and TBLIS bindings" OFF)
 #   set(ENABLE_TBLIS ${ENABLE_TBLIS_WITHIN_TAPP} CACHE BOOL "" FORCE)
 
-   option(ENABLE_CTF_WITHIN_TAPP "Enable Cyclops CTF bindings" OFF)
-   set(ENABLE_CTF ${ENABLE_CTF_WITHIN_TAPP} CACHE BOOL "" FORCE)
 
    if(DEFINED ENV{TAPP_MPI_ROOT})
      set(TAPP_MPI_PATH "$ENV{TAPP_MPI_ROOT}" CACHE PATH "Forcing TAPP subproject to use this specific MPI" FORCE)
