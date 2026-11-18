@@ -1,5 +1,6 @@
 module openrsp_interface_1el
 
+      use dcbcls_mod, only: CLSCAL, CLSCMB, CLSINT, IORDCL, MAXCLS, NPRPCLS
       use dgroup_mod, only: NZ
       use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBASX, NTBAS
       use dcbgen_mod, only: CVAL, LU1INT
@@ -23,7 +24,6 @@ module openrsp_interface_1el
    integer, parameter :: max_aoproper_indices = 900
    character(16)      :: op_name_to_aoproper_index(max_aoproper_indices) = '----------------'
 
-#include "dcbcls.h"
 #include "dcbprl.h"
 #include "dcbxpr.h"
 

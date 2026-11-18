@@ -1,5 +1,7 @@
-! FILE : dcbkrmc_itinfo.h
-!
+!-----------------------------------------
+! Module with variables previously defined
+! at dcbkrmc_itinfo.h include file (COMMON /IITINFO/, /RITINFO/)
+!-----------------------------------------
 !     i     IINFO      DINFO
 !    ---   -------    -------
 !     01    ITMAC      EMY
@@ -24,12 +26,10 @@
 !     20               E STPLNG
 !     21               P STPLNG
 !     22               LEVEL SHIFT
-!
-      INTEGER LDINFO, LIINFO
-      PARAMETER (LDINFO = 22, LIINFO = 6)
-
-      INTEGER IINFO(LIINFO)
-      COMMON /IITINFO/ IINFO
-
-      REAL*8 DINFO(LDINFO)
-      COMMON /RITINFO/ DINFO
+   module dcbkrmc_itinfo_mod
+   implicit none
+   integer, parameter :: LDINFO = 22
+   integer, parameter :: LIINFO = 6
+   real*8 :: DINFO(LDINFO)
+   integer :: IINFO(LIINFO)
+   end module dcbkrmc_itinfo_mod

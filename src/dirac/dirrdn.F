@@ -5259,11 +5259,10 @@ C***********************************************************************
       use consts_mod, only: D0
 !      use dcbxpr_mod, only: NPRPS
       use huckel_mod, only: HUCCNT, IHUCPT, IPRHUC, NHUCAO
-!      use dcbcls_mod, only: NPRPCLS
+      use dcbcls_mod, only: NPRPCLS
 #include "implicit.h"
 C
 #include "dcbxpr.h"
-#include "dcbcls.h"
 #include "dcbprl.h"
 C
 C     Initialize temporary variables

@@ -68,7 +68,7 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use cbihr1_mod, only: IPRONE
       use cbiher_mod, only: ALLATM, IPATOM, NPATOM
-!      use dcbcls_mod, only: CLSCAL, CLSCMB, CLSINT, IORDCL, NPRPCLS
+      use dcbcls_mod, only: CLSCAL, CLSCMB, CLSINT, IORDCL, NPRPCLS
       use dcbham_mod, only: MDIRAC, NOSMLV
       use interface_ao_specific
       use fde_mod
@@ -82,7 +82,6 @@ C
       LOGICAL TEST
       type(fde_import) :: itmp
 C
-#include "dcbcls.h"
 
       CHARACTER CPUTID*12, WALLTID*12, SECTID*12
 
@@ -241,7 +240,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use symmet_mod, only: ISYMAX, MULT, PT
       use dcbbas_mod, only: NNBBASX, NTBAS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use dcbcls_mod, only: WRITI
+      use dcbcls_mod, only: CLSINT
       use pi_mod, only: PI
       use maxorb_mod, only: MXCORB
       use nuclei_mod, only: CHARGE, CORD, GNUEXP, ISTBNU, NAMN, NOORBT,
@@ -257,7 +256,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h" 
       INTEGER :: I,J
 C
-#include "dcbcls.h"
 C      
       LOGICAL ADDSML
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4,MATINF*2
@@ -486,10 +484,9 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use nuclei_mod, only: GAUNUC
       use priunit_mod, only: LUPRI
-!      use dcbcls_mod, only: WRITI
+      use dcbcls_mod, only: CLSINT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h" 
-#include "dcbcls.h"
 C
       REAL*8 NUMIR(MXNP), R(MXNP)
 C     
@@ -4321,9 +4318,9 @@ C     Last revision May 21 1996 - tsaue
 C                    2006 - M.Ilias
 C
 C*****************************************************************************
-!      use dcbcls_mod, only: CLSCAL, NPRPCLS
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NESH, NESHT, NFORB, NFRO, NORB, NORBT, NPSH
 !      use dcbdhf_mod, only: AOC, DF, I2TMOT, N2TMOTQ, NFMAT
+      use dcbcls_mod, only: CLSCAL, NPRPCLS
       use dcbham_mod
       use dgroup_mod, only: ATOMIC, IPQTOQ, LINEAR, NFSYM, NZ
       use memory_allocator
@@ -4381,7 +4378,6 @@ C
 C Used from COMMON blocks:
 C   DCBBAS: N2BBASX
 C   PAMIOU: LUTMAT
-#include "dcbcls.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
 ! needed for restart from X2CMAT
@@ -10634,9 +10630,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C***********************************************************************      
       use mxcent_mod, only: MXCOOR
       use dcbgrd_mod, only: IGRD_INTBUF, IGRD_INTFLG
-!      use dcbkrci_mod, only: IKRCI_INTBUF, IKRCI_INTDEF, IKRCI_INTFLG
+      use dcbkrci_mod, only: IKRCI_INTBUF, IKRCI_INTDEF, IKRCI_INTFLG
 !      use mxgas_mod, only: MXGAS
-!      use dcbmp2_mod, only: MP2_INTFLG
+      use dcbmp2_mod, only: MP2_INTFLG
 !      use dcbopt_mod, only: IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG
 !      use dcbdhf_mod, only: INTBUF, INTDEF, INTDEF_SAVE, INTFLG
       use dcbcosc_mod, only: ICOSC_INTBUF, ICOSC_INTDEF, ICOSC_INTFLG
@@ -10644,8 +10640,6 @@ C***********************************************************************
       integer, intent(in) :: new_intflg
 #include "mxgas.h"
 #include "dcbdhf.h"
-#include "dcbkrci.h"
-#include "dcbmp2.h"
 #include "dcbopt.h"
 #include "../prp/dcbxqr.h"
       ICOSC_INTDEF = new_intflg
@@ -11072,8 +11066,8 @@ C     X2CMAT available:
 C     1) open X2CMAT and remove all property integrals
 C     2) do picture change transformation of integrals on CHECKPOINT
 C***********************************************************************
-!      use dcbcls_mod, only: CLSCAL, NPRPCLS
 !      use dcbdhf_mod, only: DF
+      use dcbcls_mod, only: CLSCAL, NPRPCLS
       use dgroup_mod, only: ATOMIC, IPQTOQ, IQDEF, IQTOPQ, IRQMAT,
      &  JBTOF, JQBAS, LINEAR, NFSYM, NZ
       use dcbgen_mod, only: LU1INT, LUX2C, NEWPRP, RDINPC, TWOCOMP
@@ -11092,7 +11086,6 @@ C***********************************************************************
 #include "implicit.h"
 C
 #include "dcbdhf.h"
-#include "dcbcls.h"
 #include "dcbxpr.h"            
       real(8), allocatable :: WORK(:)
       logical              :: x2c_AOA,x2c_Aon

@@ -1795,7 +1795,7 @@
 !***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbprl_mod, only: NPRPLBL, PDOINT, PRPLBL
-!      use dcbcls_mod, only: CLSCAL, CLSCMB, CLSINT, IORDCL, MAXCLS, NPRPCLS
+      use dcbcls_mod, only: CLSCAL, CLSCMB, CLSINT, IORDCL, MAXCLS, NPRPCLS
 #include "implicit.h"
       INTEGER :: I
       CHARACTER PLABEL*8, PCOMB*4,CLASLB*7
@@ -1804,7 +1804,6 @@
 !   XCBPRL : PRPFILE
 !
 #include "dcbprl.h"
-#include "dcbcls.h"
 !
       CALL QENTER('INDXPL')
 !

@@ -39,7 +39,7 @@ C     Last revision :
 C
 C***********************************************************************
 !      use dcbopt_mod, only: GNORM, NZCONF, NZCONFQ, NZHOPE, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
-!      use dcbkrmc_itinfo_mod, only: DINFO
+      use dcbkrmc_itinfo_mod, only: DINFO
       use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -47,7 +47,6 @@ C
       REAL(dp), PARAMETER :: D0 = 0.0D00
 C
 #include "dcbopt.h"
-#include "dcbkrmc_itinfo.h"
 C
       DIMENSION GCI(NZCONF,*),GOEE(NZHOPE,*),GOEP(NZXOPP,*)
 C

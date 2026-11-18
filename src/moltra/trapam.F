@@ -717,7 +717,8 @@ C***********************************************************************
 
       use priunit_mod, only: LUPRI
       use dummy_mod, only: DUMMY
-!      use dcbmp2_mod, only: DMP2_VIRTHR, EMP2, IPRMP2, ISTRMP2, MP2NOP, MP2_ANTIS, MP2_INDSTR, MP2_INTFLG, SCRMP2
+      use dcbmp2_mod, only: DMP2_VIRTHR, EMP2, IPRMP2, ISTRMP2, MP2NOP,
+     &  MP2_ANTIS, MP2_INDSTR, MP2_INTFLG, SCRMP2
 !      use dcbtra_mod, only: IPRTRA, ISAME, ISTRAT, NOPAIR, NQQCLASS, SCRTRA
       use dcbbas_mod, only: N2BBASXQ, NFBAS
 !      use dcborb_mod, only: ICMOQ, IORB, NESH, NOCC, NORB, NORBT, NPSH, NSSH
@@ -728,7 +729,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcbmp2.h"
 #include "dcbtra.h"
 #include "dcborb.h"
       LOGICAL TOBE,TRANOP
@@ -4763,7 +4763,7 @@ C
 !      use dcbtra_mod, only: IPRTRA, ISAME, NDCBTRI, NDCBTRL, NDCBTRR, SCRTRA, THROUT, TRA_ANTIS
       use comdis_mod, only: ISPCK, NSPCK
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
-!      use dcbmp2_mod, only: CMMNFO, TPRI34, TPRI44
+      use dcbmp2_mod, only: CMMNFO, TPRI34, TPRI44
       use dcbmpt_mod, only: TESTLS, TESTSL
       use dcbbas_mod
       use symmet_mod
@@ -4782,7 +4782,6 @@ C
 #include "dcborb.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
-#include "dcbmp2.h"
 C
       LOGICAL ANTIS,LMP2,NSAME
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)

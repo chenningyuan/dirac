@@ -1256,7 +1256,8 @@ C***********************************************************************
       use dgroup_mod, only: NZ
 !      use dcbopt_mod, only: OPT_CIPROGRAM
 !      use krciprop_mod, only: ISYMEIG_KRCI, LXPRPKRCI, NPROP_KRCI, NPROP_ROOTS_KRCI
-!      use dcbkrci_mod, only: NKRCI_CIROOTS, NKRCI_MAX_SYM, NKRCI_SELOM, NOMEGASEL_STATENR, STATE_SELECT_KRCI
+      use dcbkrci_mod, only: NKRCI_CIROOTS, NKRCI_MAX_SYM, NKRCI_SELOM,
+     &  NOMEGASEL_STATENR, STATE_SELECT_KRCI
 #include "implicit.h"
       INTEGER :: I, J
 !#include "maxash.h"
@@ -1266,7 +1267,6 @@ C
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "krciprop.h"
-#include "dcbkrci.h"
 C
       DIMENSION CMO(*), WORK(*)
       integer, allocatable :: iomval(:)
@@ -1597,7 +1597,8 @@ C***********************************************************************
       use dcbgen_mod, only: CVAL
       use dgroup_mod, only: NZ
 !      use krciprop_mod, only: DODIPMOM_KRCI, DOEEDM_KRCI, DOENSPS_KRCI, DOGENP_KRCI, DOJZEXP, DOMHYP_KRCI, DONMQM_KRCI, DOOSCILLST, ISYMEIG_KRCI, LPROP_KRCI, NPROP_KRCI, NPROP_ROOTS_KRCI, VKRCI_NUCMAGMOM, VKRCI_NUCSPIN, XREPEIG
-!      use dcbkrci_mod, only: MAX_NKRCI_MAX_SYM, NKRCI_CIROOTS, NKRCI_MAX_SYM
+      use dcbkrci_mod, only: MAX_NKRCI_MAX_SYM, NKRCI_CIROOTS,
+     &  NKRCI_MAX_SYM
 !      use dcbxpr_mod, only: PRPNAM
       use mxcent_mod, only: MXCOOR
       use dipole_mod, only: DIPMN
@@ -1611,7 +1612,6 @@ C
 #include "dcborb.h"
 !#include "dcbopt.h"
 #include "krciprop.h"
-#include "dcbkrci.h"
 #include "dcbxpr.h"
 !#include "dcbprl.h"
       DOUBLE COMPLEX XMOM

@@ -27,14 +27,18 @@ set(MODULE_SOURCES
     csym1.F90
     dcbbas.F90
     dcbbos.F90
+    dcbcls.F90
     dcbgen.F90
     dcbgrd.F90
     dcbham.F90
     dcbibt.F90
     dcbimp.F90
+    dcbkrci.F90
     dcbkrmc.F90
+    dcbkrmc_itinfo.F90
     dcblap.F90
     dcbloc.F90
+    dcbmp2.F90
     dcbmp2no.F90
     dcbnrt.F90
     dcbsusc.F90

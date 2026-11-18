@@ -328,7 +328,7 @@ C***********************************************************************
 !      use thrzer_mod, only: THRZER
       use maxorb_mod, only: MXCORB
       use dcbnrt_mod, only: LNOROT, NOROT
-!      use dcbkrmc_itinfo_mod, only: DINFO, IINFO, LDINFO, LIINFO
+      use dcbkrmc_itinfo_mod, only: DINFO, IINFO, LDINFO, LIINFO
       use dcbgen_mod, only: LUITFO, LUKRMC
 !      use dcbopt_mod, only: BETA, BETMAX, BETMIN, COMPROT, CPUOPT, DEPRED, DONR, EACTIV, EMCOLD, EMCSCF, EMY, E_LVCORR_MC, FLAG, FROZCI, GNORM, IDENSLR_STATE, IOPTST, IOPT_IFCKOP, IOPT_IHRMOP, IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ISYMOP, IOPT_ITRINT, IPROPT, ITABS, ITBCK, ITMAC, ITMACN, JKRRUNTYPE, JMCMIN, JTRLVL, KTRLVL, LDIRNR, MCTYPE, MOPT_MAXBCK, MOPT_MXMACRO, NATOLCR, NCIROOT, NO1PDENS_SAVE, NOPTTIM, OPT_CHCKJZ, OPT_CIPROGRAM, OPT_CNVINT, OPT_INTTYP, OPT_NOCI, OPT_THRGRD, RTRUST, SPINFR_KRMC, STPLCI, STPLEE, STPLEN, STPLEP, WLLOPT
 !      use dcborb_mod, only: N2ASHXQ, NCMOTQ, NORBT
@@ -341,7 +341,6 @@ C***********************************************************************
 C
 #include "thrzer.h"
 C
-#include "dcbkrmc_itinfo.h"
 #include "dcbopt.h"
 #include "dcborb.h"
 C
@@ -3820,12 +3819,11 @@ C***********************************************************************
       use dcbnrt_mod, only: NOROTC
 !      use dcbopt_mod, only: COMPROT, EACTIV, FROZCI, IOPT_INTDEF, IOPT_INTFLG, IPROPT, JMCMIN, JTRLVL, KTRLVL, KZCONF, MCTYPE, MOPT_MXMICRO, NZCONF, NZCONFQ, NZHOPE, NZHOPEQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZXOPT, NZXOPTQ, OPT_CIPROGRAM, OPT_NOFQX, OPT_NOPFQ, RBETA, STPLCI, STPLEE, STPLEN, STPLEP
       use dgroup_mod, only: NZ
-!      use dcbkrmc_itinfo_mod, only: DINFO
+      use dcbkrmc_itinfo_mod, only: DINFO
       use orbital_rotation_indices
 #include "implicit.h"
 C
 #include "dcbopt.h"
-#include "dcbkrmc_itinfo.h"
 C
       LOGICAL OPTRST,OPTNRM,OPTDIH,OPTSTERN, GOEER
       DIMENSION CREF(*),GCI(*),DV(*),FC(*),FV(*),
@@ -4415,14 +4413,13 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use consts_mod, only: D0
 !      use dcbopt_mod, only: DEPRED, DONR, EMCOLD, EMCSCF, IOPT_STATE, IPROPT, LDIRNR, RATGOD, RATMIN, RATREJ, RTRUST, STPINC, STPLEN, STPMAX, STPRED
-!      use dcbkrmc_itinfo_mod, only: DINFO
+      use dcbkrmc_itinfo_mod, only: DINFO
       use kinds_mod, only: dp
 #include "implicit.h"
 C
       REAL(dp), PARAMETER :: THDE = 1.0D-10, DP1 = 0.1D00
 C
 #include "dcbopt.h"
-#include "dcbkrmc_itinfo.h"
 C
       DIMENSION CMO(*), CREF(*), WORK(*)
       LOGICAL   NOREJT
@@ -4698,14 +4695,13 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use consts_mod, only: D0, DP5
 !      use dcbopt_mod, only: DLVLSH, DONR, IOPT_STATE, IPROPT, JHESSIAN, RBETA, RTRUST, RTTOL
-!      use dcbkrmc_itinfo_mod, only: DINFO, IINFO
+      use dcbkrmc_itinfo_mod, only: DINFO, IINFO
       use kinds_mod, only: dp
 #include "implicit.h"
 C
       REAL(dp), PARAMETER :: DLVLSTEP = 0.2D0
 C
 #include "dcbopt.h"
-#include "dcbkrmc_itinfo.h"
 C
       DIMENSION REDE(NREDM,NREDM), REDS(NREDM,NREDM)
       DIMENSION REDGP(NREDM), EVECR(NREDM)
@@ -4813,7 +4809,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use consts_mod, only: D0, DP5
 !      use dcbopt_mod, only: DLVLSH, DONR, IOPT_STATE, IPROPT, JHESSIAN, RBETA, RTRUST, RTTOL
-!      use dcbkrmc_itinfo_mod, only: DINFO, IINFO
+      use dcbkrmc_itinfo_mod, only: DINFO, IINFO
 !      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -4822,7 +4818,6 @@ C
       REAL(dp), PARAMETER :: DLVLSTEP = 0.2D0
 C
 #include "dcbopt.h"
-#include "dcbkrmc_itinfo.h"
 #include "dcbibn.h"
 C
       DIMENSION REDE(NREDM,NREDM), REDS(NREDM,NREDM)

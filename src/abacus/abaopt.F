@@ -2257,9 +2257,9 @@ C     (by running HERMIT and SIRIUS).
 C
 !      use infinp_mod, only: THRGRD
 !      use dcbpsi_mod, only: DOCCM, DOCIM, DOMP2
-!      use dcbmp2_mod, only: EMP2
 !      use dcbdhf_mod, only: DHFERG, EVCCNV, FCKCNV, SCFCNV
 #ifdef PRG_DIRAC
+      use dcbmp2_mod, only: EMP2
 #if defined (HAS_PCMSOLVER)
       use dcbham_mod, only: BSS, X2C
 #endif
@@ -2287,7 +2287,6 @@ C
 #include "implicit.h"
 #ifdef PRG_DIRAC
 #include "dcbdhf.h"
-#include "dcbmp2.h"
 #include "dcbpsi.h"
 #endif /* PRG_DIRAC */
       LOGICAL EXHER, EXSIR, EXABA
@@ -7407,6 +7406,7 @@ C     no need to run without symmetry).
 C
 C
 #ifdef PRG_DIRAC
+      use dcbmp2_mod, only: EMP2
          use dirac_cfg
          use hermodules, only: unit_conversion
 #endif
@@ -7440,7 +7440,6 @@ C numder.h : NOMOVE
 C
 #ifdef PRG_DIRAC
 #include "dcbdhf.h"
-#include "dcbmp2.h"
 #include "dcbpsi.h"
 #endif
       real(8), allocatable :: STPSYM1(:),STPCAR1(:)

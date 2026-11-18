@@ -1752,7 +1752,7 @@ C**********************************************************************
 C
 !      use parluci_mod, only: MASTER, MYPROC, MY_ACT_BLK2, MY_LU1_OFF, MY_VEC2_IOFF, NUM_BLOCKS
 !      use mxgas_mod, only: MXGAS
-!      use dcbkrci_mod, only: MAX_NKRCI_MAX_SYM, NKRCI_CIROOTS
+      use dcbkrci_mod, only: MAX_NKRCI_MAX_SYM, NKRCI_CIROOTS
       use interface_to_mpi
 #include "implicit.h"
       DIMENSION VEC1(*), IXBLK(*), IXSYMLIST(*)
@@ -1762,7 +1762,6 @@ C
       LOGICAL EX
 #include "parluci.h"
 #include "mxgas.h"
-#include "dcbkrci.h"
       ILU1_IOFFX = 0
       MULTX      = 0
       NVEC_TOT   = 0
@@ -10207,15 +10206,14 @@ C**********************************************************************
 !      use parluci_mod, only: MASTER
 !      use dcborb_mod, only: MXGAS
 !      use krciprop_mod, only: DOPROPREOD, IHTYPE_X, IN1ELPRP_KRCI, ISYMEIG_KRCI, ISYMOPPRP_KRCI, LPROP_KRCI, MXPROP_KRCI, MXPRPE_KRCI, NPROP_KRCI, NPROP_ROOTS_KRCI
-!      use dcbkrci_mod, only: MAX_NKRCI_MAX_SYM, NKRCI_CIROOTS
 !      use dcbxpr_mod, only: IPRPTIM, MAXPRPS, PRPNAM
+      use dcbkrci_mod, only: MAX_NKRCI_MAX_SYM, NKRCI_CIROOTS
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "dcborb.h"
 #include "krciprop.h"
-#include "dcbkrci.h"
 #include "dcbxpr.h"
 C
 C     common block in dcbkrci.h

@@ -2464,7 +2464,7 @@ C***********************************************************************
       use pgroup_mod, only: REP
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
 !      use krciprop_mod, only: DODIPMOM_KRCI, DOOSCILLST, ISYMOPPRP_KRCI, LPROP_KRCI, NPROP_KRCI
-!      use dcbkrci_mod, only: NKRCIAELEC, NKRCI_CIROOTS
+      use dcbkrci_mod, only: NKRCIAELEC, NKRCI_CIROOTS
       use symmetry_setup_krci
 #include "implicit.h"
       INTEGER :: I
@@ -2473,7 +2473,6 @@ C
 #include "dcbxpr.h"
 !#include "dcbprl.h"
 #include "krciprop.h"
-#include "dcbkrci.h"
       DIMENSION WORK(*)
       CHARACTER REPVOP_KRCI*3, FILELAB*8
       integer, allocatable :: nroots_temp(:)

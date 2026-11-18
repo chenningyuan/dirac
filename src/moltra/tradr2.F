@@ -869,11 +869,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: SCRTRA
-!      use dcbmp2_mod, only: SRTSHL, TPRI34, TPRI44
+      use dcbmp2_mod, only: SRTSHL, TPRI34, TPRI44
 #include "implicit.h"
       INTEGER :: I
 #include "dcbtra.h"
-#include "dcbmp2.h"
       DIMENSION KQ(2,4), KE(2,2), NSTR(2,0:2,4), INDX(3,*),
      &     NSTRT(4), ITQMT(0:7,0:7,2), IJP12(0:7), NDMOQR(2,2,4),
      &     ICMOQR(2,4), TIM1(7), DINTSKP(*), GABRAO(*), WORK(*),
@@ -2573,7 +2572,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use infpar_mod, only: MPARID, NODE, NODES
 !      use dcbtr3_mod, only: ICMOQR
-!      use dcbmp2_mod, only: CMMNFO, SRTSHL, TPRI44
+      use dcbmp2_mod, only: CMMNFO, SRTSHL, TPRI44
       use interface_to_mpi
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2583,7 +2582,6 @@ C
 !#include "dcborb.h"
 !#include "dcbtra.h"
 #include "dcbtr3.h"
-#include "dcbmp2.h"
       DIMENSION KQ(2,4), KE(2,2), KIBE(2,4), ICMOIJ(2,4),
      &     NSTR(2,0:2,4), NSTRT(4), NSTRIJ(2,0:2,4), NSTTIJ(4),
      &     WORK(*), IDSLST(6,NDSLST), TIMDIS(NDSLST),DINTSKP(8),
@@ -2914,7 +2912,7 @@ C***********************************************************************
       use infpar_mod, only: MPARID, MYTID
 !      use dcbtra_mod, only: SCRTRA
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
-!      use dcbmp2_mod, only: CMMNFO, TPRI34, TPRI44
+      use dcbmp2_mod, only: CMMNFO, TPRI34, TPRI44
       use interface_to_mpi
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2923,7 +2921,6 @@ C
 !#include "dcborb.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
-#include "dcbmp2.h"
       LOGICAL ANTIS, LMP2, L2TYP(0:3), TRIAN(2), MP2FIN
       DIMENSION KQ(2,4), KE(2,2), NSTR(2,0:2,4), NSTRT(4), KIBE(2,4),
      &     WORK(*), TIM1(7), DINTSKP(8), IDSNFO(6), IBTNFO(2),

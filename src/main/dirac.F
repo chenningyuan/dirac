@@ -891,7 +891,6 @@ C***********************************************************************
 C
 #include "maxash.h"
 #include "dcborb.h"
-!#include "dcbkrci.h"
 #include "dcbopt.h"
 !#include "dcbgascip.h"
 #include "dcbdhf.h"
@@ -1073,15 +1072,14 @@ C     Last revision:
 C
 C***********************************************************************
 !      use dcborb_mod, only: MXGAS, NAELEC, NASH, NFRO, NGASSP, NGAS_DC, NGSH, NGSHT, NISH, NOCC, NPSHT, NSSH
-!      use dcbkrci_mod, only: CHCKPT_KRCI, CINT_REORD_KRCI, CINT_SPLIT_KRCI, CRDFO_MAT_KRCI, CSHMEMO_KRCI, CUSE_PBLFL_KRCI, CWRTFO_MAT_KRCI, DKRCI_CNVINT, DKRCI_THRECI, DKRCI_THRGCI, DKRCI_THRPCI, DOMCANA_KRCI, FCIDUMP_KRCI, IANACI_KRCI, IDOPARIO_KRCI, IKRCI_INTBUF, IKRCI_INTDEF, IKRCI_INTFLG, IKRCI_ITRINT, IKRCI_MEMFAC, IKRCI_SVRONO, IPRKRCI, IRESTRK_KRCI, KRCI_CIPROGRAM, KRCI_UCIBOS, KTRLVL_KRCI, LOWSORT_KRCI, MAXCIT_KRCI, MXCIV_KRCI, NATOLCR_KRCI, NKRCIAELEC, NKRCIASH, NKRCIFRO, NKRCIGAS, NKRCIGSH, NKRCIGSP, NKRCIISH, NKRCISSH, NKRCI_MAXMK2, NKRCI_MAX_SYM, NKRCI_MINMK2, NKRCI_MK2DEL, NKRCI_MK2REF, SAVE_REORDERED_NOS_KRCI, TRANATO_KRCI
 !      use dcbopt_mod, only: CANA_MCSCF, CHCKPT_WRT, CINT_LOWSRT, CINT_REORD, CINT_SPLIT, COMPFAC, COMPROT, CPBLCK_FILE, CRDFO_MAT, CSHMEMO, CWRTFO_MAT, E_LVCORR_MC, FCIDUMP, FLAG, FOCKONLY, IANACI, IDOPARIO, IKRMCCNO, IMEMFAC, IOPTST, IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ITRINT, IOPT_MAXMK2, IOPT_MINMK2, IOPT_MK2DEL, IOPT_MK2REF, IOPT_STATE, IOPT_SYMMETRY, IPROPT, IRESTRK, ISVRONO, JKRRUNTYPE, KTRLVL, MAXCIT, MOPT_MAXBCK, MOPT_MXMACRO, MOPT_MXMICRO, MXCIV, NATOLCR, NATONLY, NCIROOT, NMAX_SYM, NO1PDENS_SAVE, NOPEN_MC, NOPTFLAGS, OPT_CHCKJZ, OPT_CIPROGRAM, OPT_CNVINT, OPT_DELSTR, OPT_FRZSTR, OPT_NOCI, OPT_NOFQX, OPT_NOPFQ, OPT_SKIPEE, OPT_SKIPEP, OPT_THRECI, OPT_THRGRD, OPT_THR_CVEC, OPT_UCIBOS, SAVE_REORDERED_NOS, THRPCI, TRA_NATO
 !      use dcbdhf_mod, only: NOPEN
+      use dcbkrci_mod
       use dgroup_mod, only: LINEAR, NFSYM
 #include "implicit.h"
       INTEGER :: I, J
 C
 #include "dcborb.h"
-#include "dcbkrci.h"
 #include "dcbopt.h"
 !#include "dcbgascip.h"
 #include "dcbdhf.h"
@@ -1805,7 +1803,6 @@ C***********************************************************************
 #include "implicit.h"
 C
 #include "dcborb.h"
-C#include "dcbkrci.h"
 #include "dcbopt.h"
 !#include "dcbgascip.h"
 C Scratch

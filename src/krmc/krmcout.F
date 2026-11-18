@@ -26,13 +26,12 @@ C     Written by J. Thyssen - Nov 30 1998
 C     Last revision :
 C
 C***********************************************************************
-!      use dcbkrmc_itinfo_mod, only: LDINFO, LIINFO
 !      use dcbopt_mod, only: MOPT_MXMACRO
+      use dcbkrmc_itinfo_mod, only: LDINFO, LIINFO
 #include "implicit.h"
 C
       DIMENSION WORK(*)
 C
-#include "dcbkrmc_itinfo.h"
 #include "dcbopt.h"
 C
       CALL QENTER('KRMCOUT')

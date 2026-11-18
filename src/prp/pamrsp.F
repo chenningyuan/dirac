@@ -364,7 +364,7 @@ C***********************************************************************
 !      use dcbxrs_mod, only: BVTYP, E2CHEK, FKRMC, GPTNRM, ICRED, IERED, INTBUF, INTDEF, INTFLG, IPRED, IPRXRS, ITMIC, IZRED, JSYMOP, JTIMOP, KBCI, KBOE, KBOP, KCONV, LINEQ, LOFFTY, LUBCI, LUBOE, LUBOP, LUCYCL, LURSP, LUSCI, LUSOE, LUSOP, MAXITR, MAXSIM, NCRED, NCSIM, NDAMP, NERED, NESIM, NEVEC, NFREQ, NOSIM, NPRED, NPSIM, NREDM, NTSIM, NVPAR, NZCONF, NZCONFQ, NZRED, NZVARQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, THCXRS, TKNORM, UNCOUP, XRS_INTTYP
       use cbihr2_mod, only: SCRFCK, USRSCR
       use dcbbas_mod, only: N2BBAST, N2BBASXQ
-!      use dcbkrmc_itinfo_mod, only: DINFO, IINFO
+      use dcbkrmc_itinfo_mod, only: DINFO, IINFO
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
@@ -372,7 +372,6 @@ C
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
 #include "dcbxrs.h"
-#include "dcbkrmc_itinfo.h"
 C
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION GPCI(*),GPOE(*),GPOP(*),
