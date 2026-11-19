@@ -1328,12 +1328,20 @@ module exacorr_tensor_interface
 
         end subroutine eti_executor_initialize
 
-        subroutine eti_executor_shutdown()
+        subroutine eti_executor_shutdown(final)
+          ! final = .true. only at the very end of the program (main.F90). With TAPP the
+          ! shutdown stops the worker processes of distributed back ends (CTF) and finalizes MPI,
+          ! so it may happen only once; the calls at the end of each exacorr module do nothing.
+          logical, intent(in), optional :: final
           integer(c_int)       :: tapp_err
+          logical              :: final_
+
+          final_ = .false.
+          if (present(final)) final_ = final
 
           SELECT CASE(get_default_executor())
              CASE(1)
-                 tapp_err = finalize_tapp_tensor_t()
+                 if (final_) tapp_err = finalize_tapp_tensor_t()
              CASE(2)
                 print *, " Shutting down the TALSH library "
                 call eti_talsh_shutdown()

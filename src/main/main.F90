@@ -243,6 +243,6 @@ end interface
 
    call interface_ao_clear()
    call interface_mo_clear()
-   call eti_executor_shutdown()
+   call eti_executor_shutdown(final=.true.)
 
 end program
