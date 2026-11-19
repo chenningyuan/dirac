@@ -786,34 +786,34 @@ Default: IHSCHEME = 2
  
 Next key options are used only in case of XIH (IHSCHEME = 1).
  
-keyword(SHIFTH11)
+keyword(SH_H11)
 
 Energy shift for the one-electronic excitations in (1,0) sector. Arguments: real.
 
-keyword(SHIFTH12)
+keyword(SH_H12)
 
 Energy shift for the two-electronic excitations in (1,0) sector. Arguments: real.
 
-keyword(SHIFTH2)
+keyword(SH_H2)
 
 Energy shift for the two-electronic excitations in (2,0) sector. Arguments: real.
 
-keyword(SHIFTP11)
+keyword(SH_P11)
 
 Energy shift for the one-electronic excitations in (0,1) sector. Arguments: real.
 
-keyword(SHIFTP12)
+keyword(SH_P12)
 
 Energy shift for the two-electronic excitations in (0,1) sector. Arguments: real.
 
-keyword(SHIFTP2)
+keyword(SH_P2)
 
 Energy shift for the two-electronic excitations in (0,2) sector. Arguments: real.
 Usually we choose the approximate difference between the highest orbital energy belonging to Pi and the lowest
 orbital energy belonging to the Pm space. 
 Works only with the old style of RELCC input.
 
-keyword(SHIFTHP)
+keyword(SH_HP)
 
 Energy shift for the two-electronic excitations in (1,1) sector. Arguments: real
 
