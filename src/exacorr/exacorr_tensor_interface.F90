@@ -211,6 +211,7 @@ module exacorr_tensor_interface
                 ! internal
                 integer(INTD)                    :: ierr
                 integer(c_int64_t)               :: tapp_err
+                integer(c_int)                   :: nmodes_b
 
                 ! tapp
                 integer(c_int) :: op_A, op_B, op_C, op_D ! 0 .. identitity, 1 .. element-wise complex conjugate
@@ -242,7 +243,15 @@ module exacorr_tensor_interface
                 SELECT CASE(a%which_executor)
                 CASE(1) ! tapp
                         ! to.do: what if A/B/C is scalar? empty idx arrays and nmodes=0?
-                        if     (present(a) .and. present(b) .and. present(c)) then
+                        if (present(a) .and. present(b) .and. .not.present(c) .and. index(expression,'*') == 0) then
+                          ! Expression without a B term, e.g. "T(a,i)+=V+(i,a)" called with a scalar one_tensor
+                          ! as b (an idiom from TAL-SH): this is the copy D += alpha*A and b is not used.
+                          ! Passing b on to TAPP without index labels gives undefined results.
+                          ierr = get_nmodes(b, nmodes_b)
+                          if (nmodes_b /= 0) call quit("t_einsum: tensor b given, but not used in expression "//expression)
+                          tapp_err = tapp_einsum(d%tens_tapp, arr_idx_D, op_D, a%tens_tapp, arr_idx_A, op_A, &
+                            alpha=alpha, beta=beta)
+                        elseif (present(a) .and. present(b) .and. present(c)) then
                           tapp_err = tapp_einsum(d%tens_tapp, arr_idx_D, op_D, a%tens_tapp, arr_idx_A, op_A, &
                             b%tens_tapp, arr_idx_B, op_B, c%tens_tapp, arr_idx_C, op_C, alpha=alpha, beta=beta)
                         elseif (present(a) .and. present(b)) then
