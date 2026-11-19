@@ -15,6 +15,25 @@ C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
 C
+C---------------Reference----------------------------------------------
+C
+C     [VLD96] L. Visscher, T. J. Lee and K. G. Dyall,
+C             J. Chem. Phys. 105, 8769 (1996), doi:10.1063/1.472655
+C
+C     The T2 equations are VLD96 Eq. (5), with P_PQ f(P,Q) =
+C     f(P,Q) - f(Q,P), Eq. (6). Terms are numbered in order of
+C     appearance; implicit sums run over repeated indices:
+C
+C       1   V_IJ^AB                     (added in S1S2_ADDFO)
+C       2   + P_AB G_C^A T_IJ^CB        G_C^A = GV, Eq. (12)
+C       3   - P_AB V_IJ^AK T_K^B
+C       4   - P_IJ G_I^K T_KJ^AB        G_I^K = GO, Eq. (13)
+C       5   + P_IJ V_IC^AB T_J^C
+C       6   + A_IJ^KL tau_KL^AB  (K<L)  A = AZ, Eq. (14); tau Eq. (8)
+C       7   + B_CD^AB tau_IJ^CD  (C<D)  B: Eq. (15), done in BINTM
+C       8   + P_IJ P_AB H_IC^AK T_JK^BC H = H, Eq. (16)
+C       9   - P_IJ P_AB V_IC^AK T_J^C T_K^B
+C
 C---------------Calling variables--------------------------------------
 C
       INTEGER NBUF3
@@ -54,6 +73,7 @@ C---- Initialize to zero...
       CALL XCOPY (NDIMT2,A0,0,S2,1)
 C---------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + TAU(AB,KL) * AZ(KL,IJ)
+C VLD96 Eq. (5), term 6
 C---------------------------------------------
       CALL XTIME(0,1,'--- T2EQNS: TAU*AINTM contraction')
       CALL GETTAU (T1,T2,BUF1)
@@ -90,6 +110,7 @@ C ********************
       IF(MYPROC.EQ.MASTER) THEN
 C----------------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) - PIJ [ T2(AB,IK) * GO(K,J) ]
+C VLD96 Eq. (5), term 4 (equal to the paper's form under P_IJ)
 C----------------------------------------------------------------
       CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
      &             T2,BUF1)
@@ -105,6 +126,8 @@ C ***************************
       ENDIF
 C-----------------------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + PIJ [ W(AB,CJ) * T1(C,I) ]
+C VLD96 Eq. (5), term 5 (equal to the paper's form under P_IJ)
+C Integrals are read in batches to limit memory (VLD96, Sec. IV)
 C-----------------------------------------------------------------------
       CALL XTIME(0,1,'--- T2EQNS: VOVV*T1              ')
       DO 30 IRP = 1, NREP
@@ -168,7 +191,7 @@ C-----------------------------------------------------------------------
 C ********************
 C ** TASK SPLITTING **
 C ********************
-C ** here a VOOV dependent contribution (Term 7 in the paper) is to be
+C ** here a VOOV dependent contribution (VLD96 Eq. (5), term 9) is to be
 C ** calculated only by the master
 
       IF(MYPROC.EQ.MASTER) THEN
@@ -179,6 +202,8 @@ C--------------------------------
                    
 C-----------------------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + PAB.PIJ [T1(A,K)*W(BK,IC)*T1(C,J)]
+C VLD96 Eq. (5), term 9. Only W*T1 is formed here; it is added to
+C the VOOO integrals below and contracted with T1(A,K) with term 3.
 C-----------------------------------------------------------------------
          CALL GETVOVO (BUF1)
          CALL DELINT ('VOVO','KDDK',BUF1,0,0,0)
@@ -204,6 +229,7 @@ C ** of the G(A,C) array before entering T2EQNS
 
 C-------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + PAB [ GV(A,C) * T2(CB,IJ)]
+C VLD96 Eq. (5), term 2
 C-------------------------------------------------
       CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,T2,BUF2)
       CALL CNTRCT ('N','N',NV,NVOOT,NV,A1,GV,BUF2,A0,BUF1,NREP)
@@ -219,6 +245,7 @@ C ***
 
 C------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) - PAB [ T1(A,K) *W(KB,IJ) ]
+C VLD96 Eq. (5), term 3, together with term 9 (in BUF3)
 C------------------------------------------------
                    
          CALL GETVOOO (BUF2)
@@ -245,6 +272,7 @@ C ** it already.
 
 C-----------------------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + PAB.PIJ [H(AI,CK)*T2(CK,BJ)]
+C VLD96 Eq. (5), term 8
 C-----------------------------------------------------------------------
 
       CALL XTIME(0,1,'--- T2EQNS: HINTM*T2           ')
@@ -274,6 +302,7 @@ C-----------------------------------------------------------------------
 C
 C
 C  Finally we ADD the B INTERMEDIATE CONTRIBUTION
+C  VLD96 Eq. (5), term 7
 C
 C
       CALL XTIME(5,1,'-- BINTM                       ')
