@@ -51,7 +51,6 @@ install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE
 
 # workaround to install the utilities executable symlink:
 # 1) copy *.x to *-dirac
-install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/diag.x ${PROJECT_BINARY_DIR}/diag-dirac)")
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/dirac_mointegral_export.x ${PROJECT_BINARY_DIR}/dirac_mointegral_export-dirac)")
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/mx2fit.x ${PROJECT_BINARY_DIR}/mx2fit-dirac)")
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/pcmo_addlabels.x ${PROJECT_BINARY_DIR}/pcmo_addlabels-dirac)")
@@ -64,7 +63,6 @@ install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_
 # 2) install real files *-dirac
 install(
     FILES
-    ${PROJECT_BINARY_DIR}/diag-dirac
     ${PROJECT_BINARY_DIR}/dirac_mointegral_export-dirac
     ${PROJECT_BINARY_DIR}/mx2fit-dirac
     ${PROJECT_BINARY_DIR}/pcmo_addlabels-dirac
@@ -81,7 +79,6 @@ install(
     WORLD_READ             WORLD_EXECUTE
     )
 # 3) remove real files
-install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL_PREFIX}/bin/diag-dirac)")
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL_PREFIX}/bin/dirac_mointegral_export-dirac)")
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL_PREFIX}/bin/mx2fit-dirac)")
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL_PREFIX}/bin/pcmo_addlabels-dirac)")
@@ -92,7 +89,6 @@ install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL_PREFIX}/bin/process_schema-dirac)")
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL_PREFIX}/bin/merge_amf-dirac)")
 # 4) create symlink
-install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/share/dirac/diag.x ${CMAKE_INSTALL_PREFIX}/bin/diag-dirac)")
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/share/dirac/dirac_mointegral_export.x ${CMAKE_INSTALL_PREFIX}/bin/dirac_mointegral_export-dirac)")
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/share/dirac/mx2fit.x ${CMAKE_INSTALL_PREFIX}/bin/mx2fit-dirac)")
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/share/dirac/pcmo_addlabels.x ${CMAKE_INSTALL_PREFIX}/bin/pcmo_addlabels-dirac)")

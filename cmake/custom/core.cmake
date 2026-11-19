@@ -37,6 +37,19 @@ macro(compile_standalone _executable _source _list_of_executables)
     )
 endmacro()
 
+# Executables that are not part of the default build ("make", "make all") and are not installed.
+# Each one is built only when requested by name, e.g. "make exacorr.x".
+set(_list_of_optional_executables)
+macro(compile_optional _executable _source)
+    add_executable(
+        ${_executable}
+        EXCLUDE_FROM_ALL
+        ${_source}
+    )
+    set_property(TARGET ${_executable} PROPERTY LINKER_LANGUAGE Fortran)
+    list(APPEND _list_of_optional_executables ${_executable})
+endmacro()
+
 # collect all object files in one static library for all executables
     add_library(diracobj STATIC ${EXTERNAL_OBJECTS} )
     SET_TARGET_PROPERTIES(diracobj PROPERTIES LINKER_LANGUAGE Fortran)
@@ -46,9 +59,9 @@ compile_standalone(dirac.x src/main/main.F90 "${_list_of_executables}")
 #synchronize basis set directories of trunk/basis* into the installation directory
 add_custom_command(TARGET dirac.x PRE_LINK COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis ${PROJECT_BINARY_DIR}/basis COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis_ecp ${PROJECT_BINARY_DIR}/basis_ecp  COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis_dalton ${PROJECT_BINARY_DIR}/basis_dalton COMMAND ${CMAKE_COMMAND} -E echo "INFO:basis set directories, basis*, synchronized into current installation directory")
 
-# If exatensor is enabled we also make a stand-alone binary for convenience.
+# If exatensor is enabled, a stand-alone binary can be built on request ("make exacorr.x").
 if (ENABLE_EXATENSOR)
-   compile_standalone(exacorr.x src/exacorr/exacorr_main.F90   "${_list_of_executables}")
+   compile_optional(exacorr.x src/exacorr/exacorr_main.F90)
 endif()
 
 option(ENABLE_UTILITIES "Enable utilities" ON)
@@ -62,7 +75,7 @@ if(ENABLE_UTILITIES)
     compile_standalone(vibcal.x                  utils/vibcal.F90                    "${_list_of_executables}")
     compile_standalone(polfit.x                  utils/polfit.F90                    "${_list_of_executables}")
     compile_standalone(mx2fit.x                  utils/mx2fit.F90                    "${_list_of_executables}")
-    compile_standalone(diag.x                    utils/diag.F90                      "${_list_of_executables}")
+    compile_optional(diag.x                      utils/diag.F90)
     compile_standalone(test_allocator.x          utils/test_allocator.F90            "${_list_of_executables}")
 #   compile_standalone(test_davidson.x           utils/test_davidson.F90             "${_list_of_executables}")
     if(HDF5_FOUND)
@@ -70,7 +83,7 @@ if(ENABLE_UTILITIES)
     	set_property(TARGET h5towfx.x PROPERTY LINKER_LANGUAGE CXX)
     endif()
     if (ENABLE_EXATENSOR)
-        compile_standalone(test_sigma_eti.x          utils/test_sigma_eti.F90            "${_list_of_executables}")
+        compile_optional(test_sigma_eti.x            utils/test_sigma_eti.F90)
     endif()
 endif()
 
@@ -81,9 +94,16 @@ if(ENABLE_RELCCSD_STANDALONE)
     compile_standalone(relccsd.x                 src/relccsd/ccmain.F                "${_list_of_executables}")
 endif()
 
+if(_list_of_optional_executables)
+    message(STATUS "Not built by default (build each with 'make <name>'): ${_list_of_optional_executables}")
+endif()
+
+# linking setup applies to default and optional executables alike;
+# only the default ones (_list_of_executables) are installed (install.cmake)
 foreach(
     _executable
     ${_list_of_executables}
+    ${_list_of_optional_executables}
     )
     if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
         SET_TARGET_PROPERTIES(${_executable} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc")
@@ -137,6 +157,7 @@ if(ENABLE_STATIC_LINKING)
     foreach(
         _executable
         ${_list_of_executables}
+        ${_list_of_optional_executables}
         )
         if(ENABLE_OLD_LINKER)
            set(_no_dyn_export "")
