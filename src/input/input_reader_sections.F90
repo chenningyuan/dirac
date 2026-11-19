@@ -102,9 +102,6 @@
         case ('*QCORR ')
            call read_input_qcorr(word, kw_section)
 
-        case ('**DIAG ')  ! Miro's standalone program
-           call read_input_diagonalization_tests(word, kw_section)
-
         case default
 !          activate as soon as everything is merged to here
 !          call quit('section '//kw_section//' not recognized')
@@ -3155,62 +3152,6 @@
 
    end subroutine
 
-
-! reading subroutine for the standalone testing program of diagonalization
-! routines (miro ilias)
-     subroutine read_input_diagonalization_tests(word, kw_section)
-      use input_reader
-      use diagmod
-      implicit none
-!     ---------------------------------------------------------------------------
-      character(kw_length), intent(in):: word
-      character(kw_length), intent(in):: kw_section
-!     ---------------------------------------------------------------------------
-      call reset_available_kw_list()
-
-     if (kw_matches(word, '.TITLE ')) then
-         call kw_read(word, title_text)
-     end if
-
-     if (kw_matches(word, '.PRINT ')) then
-         call kw_read(word, print_level)
-     end if
-
-     if (kw_matches(word, '.MTXFIL')) then
-         call kw_read(word, matrix_file_name)
-     end if
-
-     if (kw_matches(word, '.DSYEVR')) then
-        do_dsyevr = .true.
-     end if
-
-     ! Ulf's simple routine
-     if (kw_matches(word, '.ULF   ')) then
-        do_dsyevr_ulf = .true.
-     end if
-
-     if (kw_matches(word, '.RS    ')) then
-        do_rs = .true.
-     end if
-
-     if (kw_matches(word, '.RSJACO')) then
-        do_rsjaco = .true.
-     end if
-
-     if (kw_matches(word, '.QJACO ')) then
-        do_qjaco = .true.
-     end if
-
-     if (kw_matches(word, '.PAUL  ')) then
-        do_householder_psb = .true.
-     end if
-
-     if (kw_matches(word, '.EIGVTS')) then
-        do_eigv_check = .true.
-     end if
-
-     call check_whether_kw_found(word, kw_section)
-   end subroutine
 
    ! This routine is called from in HAMINP routine in dirac/dirrdn.F
    subroutine read_input_effqed(word,kw_section)
