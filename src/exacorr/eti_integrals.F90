@@ -97,6 +97,8 @@ module eti_integrals
             ierr=direct_data_pointer(aoint_tensor,body_p)
             call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
             call compute_ao_integrals (nao,ao_tens_complex=ao_tens)
+            ierr=broadcast_tensor_t_body_data(aoint_tensor)          ! distributed tensors (CTF)
+            ierr=deallocate_temporary_full_data_tensor_t(aoint_tensor) ! free the rank-0 copy (CTF)
             call print_date('finished ao integral calculation')
 
 !           Get antisymmetric oovv tensor
@@ -233,6 +235,8 @@ module eti_integrals
                call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
      
                call compute_ao_integrals (first_ao,aoint_dims,ao_tens_complex=ao_tens)
+               ierr=broadcast_tensor_t_body_data(aoint_tensor)          ! distributed tensors (CTF)
+               ierr=deallocate_temporary_full_data_tensor_t(aoint_tensor) ! free the rank-0 copy (CTF)
 
                ! Setting dimensions for the half transformed integral tensor, the last two are the untransformed AO spaces
                a2int_dims(3:4)   = aoint_dims(3:4)

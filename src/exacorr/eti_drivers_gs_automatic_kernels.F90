@@ -94,8 +94,6 @@ module eti_drivers_gs_automatic
          result_dims = 1
          ierr=construct_tensor_t(one_tensor,C8,result_dims(1:0),init_val=ONE)
          ierr=construct_tensor_t(result_tensor,C8,result_dims(1:0),init_val=ZERO)
-         ierr=direct_data_pointer(result_tensor,body_p)
-         call c_f_pointer(body_p,result_tens,result_dims)
 
          if (.not.CCD) then
             oo_dims = (/nocc, nocc/)
@@ -650,6 +648,8 @@ module eti_drivers_gs_automatic
           if (.not.CCD) then
             ierr=initialize_tensor_t(result_tensor)
             ierr=t_einsum("E()+=T(a,i)*F(i,a)",result_tensor,comm_t%t1,comm_t%fov) ! o(1)v(1)
+            ierr=direct_data_pointer(result_tensor,body_p)
+            call c_f_pointer(body_p,result_tens,result_dims)
             ccsd_energy=result_tens(1)
           else
             ccsd_energy = 0.D0
@@ -660,6 +660,8 @@ module eti_drivers_gs_automatic
 
           ierr=initialize_tensor_t(result_tensor)
           ierr=t_einsum("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
+          ierr=direct_data_pointer(result_tensor,body_p)
+          call c_f_pointer(body_p,result_tens,result_dims)
           ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER_R
           endif
 !!aspg, checking energy calculation/printout
