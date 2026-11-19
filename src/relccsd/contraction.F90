@@ -1,4 +1,17 @@
   module contraction
+! Generic tensor contraction routines contraction_xyz: a rank-x tensor
+! contracted with a rank-y tensor gives a rank-z tensor. Described in
+! [SVS16] A. Shee, L. Visscher, T. Saue, J. Chem. Phys. 145, 184107 (2016),
+!         Sec. III A and App. B;
+! non-totally symmetric tensors: [SSVG18] J. Chem. Phys. 149, 174113 (2018), App. A.
+! Arguments: index strings of left, right and output tensors ("o"/"p"/"c"
+! + number), output tensor, diagram factor, scaling factor of the product,
+! nrep, then optional input tensors and irreps.
+! Notes (see doc/development/relccsd.rst):
+! - the size of the output tensor is taken from size(ImTensor); declare the
+!   actual argument with exactly the tensor size, not a larger buffer.
+! - dia_sum_factor acts as beta of DGEMM only when the product needs no
+!   sorting; otherwise it scales the product, and ImTensor is not scaled.
   use wrapper_sorting
   use symmetry_offset
   use modified_sorting

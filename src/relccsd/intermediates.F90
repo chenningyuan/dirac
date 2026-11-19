@@ -1,4 +1,7 @@
   module intermediates_1b_2b
+! Equation numbers in the comments refer to
+! [SVS16] A. Shee, L. Visscher, T. Saue, J. Chem. Phys. 145, 184107 (2016)
+! See also doc/development/relccsd.rst
 
 ! Module to make intermediates needed in the CC and Lambda equations and for EOMCC
 ! Written by Avijit Shee and Lucas Visscher, 2014
@@ -86,6 +89,7 @@
 
    end subroutine
 
+   ! SVS16 Eq. (A4): Fbar_m^i
    subroutine f_bar_mi(foo,fvo,t1,t2,ho)
 
 #include "symm.inc"
@@ -162,6 +166,7 @@
 
   end subroutine
 
+   ! SVS16 Eq. (A5): Fbar_a^e
    subroutine f_bar_ae(fvv,fvo,t1,t2,hv)
 
 !---------------Common Blocks--------------------------------------
@@ -225,6 +230,7 @@
   end subroutine
 
 
+  ! SVS16 Eq. (A6): Fbar_e^m
   subroutine f_bar_me(fvo,t1,hov)
 
 #include "symm.inc"
@@ -278,6 +284,7 @@
   &                      RightTensor=t2)
   end subroutine
  
+  ! SVS16 Eq. (A7): W_mn^ij
   subroutine w_ijmn(t1,t2,w_oooo)
 
 !---------------Description--------------------------------------------
@@ -364,6 +371,7 @@
 
  
 !===============================================================================================
+ ! SVS16 Eq. (A8): W_ej^mb
  subroutine w_ejmb(t1,t2,w_voov)
 !---------------Description--------------------------------------------
 !     Calculates w_voov intermediate
@@ -571,6 +579,7 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
   end subroutine
 
 
+ ! SVS16 Eq. (A9): W_mn^ie
  subroutine w_iemn(t1,t2,w_ovoo,wbar_ovvo,w_oooo,hov)
 
 !---------------Description--------------------------------------------
@@ -621,6 +630,7 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
   deallocate(tau)
   end subroutine
 
+ ! SVS16 Eq. (A12): Wbar_ej^mb
  subroutine wbar_mbej(t2,wbar_ovvo)
 
   external srt1l1
@@ -720,6 +730,7 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
  end subroutine
 
 
+ ! SVS16 Eq. (A13): W_ie^mn
  subroutine w_mnie(t1,int_wooop)
 !---------------Description--------------------------------------------
 !     Calculates w_mnie intermediate
@@ -766,6 +777,7 @@ subroutine w_amef_MBPT2(t1,w_v_temp_MBPT2)
  end subroutine
 
 
+ ! SVS16 Eq. (A14): W_ef^am
  subroutine w_amef(t1,w_v_temp)
 !---------------Description--------------------------------------------
 !     Calculates w_amef intermediate
@@ -872,6 +884,7 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
  end subroutine
 
 
+ ! SVS16 Eq. (A10): W_am^ef
  subroutine w_efam(t1,t2,wbar_ovvo,hov,w_vvvo)
 !--------------------DESCRIPTION---------------------------
 !        calculates vvvo type intermediate in-core fashion.      
@@ -1564,6 +1577,7 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 end subroutine
 
 
+   ! SVS16 Eq. (A11): W_ab^ef, VVVV integrals read in batches
    subroutine w_efab_out_of_core (irp,istart,done,tau,buf1,t1,nbuf3,w_vvvv,nint)
 
 !-----------------------description------------------------------------------------
@@ -1690,6 +1704,7 @@ end subroutine
 
    end subroutine
 
+  ! SVS16 Eqs. (A15), (A16): G_a^e and G_m^i
   subroutine G_intm (t2,l2,G_vv,G_oo)
 
 !---------------Common Blocks--------------------------------------

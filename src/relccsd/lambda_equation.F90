@@ -1,4 +1,7 @@
   module lambda_equation
+! Equation numbers in the comments refer to
+! [SVS16] A. Shee, L. Visscher, T. Saue, J. Chem. Phys. 145, 184107 (2016)
+! See also doc/development/relccsd.rst
 
 !this module consists of subroutines for lambda-equations at different level of theory.
 
@@ -81,6 +84,7 @@
       end subroutine lambda_equation_mp2
 
 
+      ! SVS16 Eq. (A2): Lambda_2 equation
       subroutine lambda_equation_L2 (t1,t2,l1,l2,ho,hv,hov, &
      &             w_voov,w_oooo,int_wooop,w_v_temp,G_oo,G_vv,buf1,buf2, &
      &             buf3,nbuf3,resL2,iprnt,niter)
@@ -446,6 +450,7 @@
       end subroutine
 
 
+      ! SVS16 Eq. (A1): Lambda_1 equation
       subroutine lambda_equation_L1(t1,t2,l1,l2,ho,hv,hov,w_voov,w_ovoo, &
      &               w_vvvo,w_v_temp,int_wooop,G_oo,G_vv,buf1,buf2,buf3, &
      &               nbuf2,nbuf3,ResL1,iprnt)
