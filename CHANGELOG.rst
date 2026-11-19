@@ -1,6 +1,7 @@
 :orphan:
 
 - Parallel efficiency (MPI and MPI+threads):
+
   - Up to 8 MPI processes, the master also computes the Fock tasks of HER_PARDRV
     (SCF, response, London Fock derivatives) instead of only dispatching them.
   - Idle MPI slaves sleep instead of busy-waiting; in serial phases (Lowdin, X2C, AMFI,
@@ -23,6 +24,7 @@
   - Contributor: J. J. Aucar
 
 - VISUAL: visualization of molecular spinor components:
+
   - Added the spinor_components grid function for exporting the real and
     imaginary parts of the large- and small-component alpha and beta spinor
     components to Gaussian cube files.
@@ -34,11 +36,13 @@
     Occupation numbers consistency has the same issue as numbering
 
 - Detailed analysis of SCF energy:
+
   - Prints breakdown of energy in terms of Coulomb and Exchange as well as in terms of integral classes (for 4C calculations)
   - Contributor: L. Visscher
   - Unpublished feature
 
 - Orbital localization code ROSE integrated into DIRAC:
+
   - Allows for subsystem calculations with orthogonal localized orbitals
   - Contributor: L. Visscher
   - References: B. Senjean, S. Sen, M. Repisky, G. Knizia, L. Visscher, JCTC 17, 1337–1354 (2021);
@@ -410,6 +414,7 @@ Bugfix:
 Revised features:
 
 - Enhanced pam script: now it also looks in job directory for .diracrc, and it looks there first. pam looks for .diracrc three places: 1) job directory ("local .diracrc"), 2) home directory ("global .diracrc"), 3) pam script directory ("system .diracrc). The first .diracrc found is used. (H. J. Aa. Jensen).
+
   - added ENABLE_EXATENSOR to the options you can change with 'ccmake --' (H. J. Aa. Jensen).
   - enable talsh only with unsupported mpi libraries (Andre Gomes)
   - improved exatensor MPI identification (Johann Pototschnig)

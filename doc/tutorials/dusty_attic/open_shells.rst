@@ -7,7 +7,7 @@ Examples of open-shell systems
 Here we provide few examples of open-shell systems.
 
 .. comment out ...
- .. include:: ../../test/open-shells/README.rst
+ .. include:: ../../../test/open-shells/README.rst
 
 Boron atom: open-shell SCF and small CI relativistic calculations
 -----------------------------------------------------------------------

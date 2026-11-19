@@ -118,7 +118,7 @@ iv) canceling (deallocating) the string
   call cancel_string(this_string)
 
 For more details about the dynamical string functionalities check directly
-the :download:`dynamic_string.F90 <../../../src/gp/dynamic_string.F90>` source file.
+the :download:`dynamic_string.F90 <../../src/gp/dynamic_string.F90>` source file.
 
 Code debugging with LINEFILE
 ----------------------------
