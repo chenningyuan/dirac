@@ -139,7 +139,6 @@ C*****************************************************************************
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-#include "priunit.h"
       PARAMETER (D0 = 0.0D0)
 C
       DIMENSION XCHARGE(NUCIND), COORC(3,MXCENTC), SIGNC(3,MXCENTC),

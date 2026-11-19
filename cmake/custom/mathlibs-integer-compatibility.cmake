@@ -17,8 +17,8 @@
 # and link it against desired BLAS library, for example:
 #
 #        ifx -i8 test-blas-integer-compatibility.F90 -lblas
-#        ifx -mkl=parallel test-blas-integer-compatibility.F90
-#        ifx -i8 -mkl=sequential test-blas-integer-compatibility.F90
+#        ifx -qmkl=parallel test-blas-integer-compatibility.F90
+#        ifx -i8 -qmkl=sequential test-blas-integer-compatibility.F90
 #        gfortran test-blas-integer-compatibility.F90 -L${MKLROOT}/lib/intel64 -lmkl_intel_ilp64 -lmkl_core -lmkl_sequential -lpthread -lm
 #        ifx  test-blas-integer-compatibility.F90 -L${MKLROOT}/lib/intel64 -lmkl_intel_lp64 -lmkl_core -lmkl_sequential -lpthread -lm
 #

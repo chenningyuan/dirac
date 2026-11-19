@@ -151,9 +151,6 @@ C
       integer itape,jcode
 C
 #include "waio.h"
-#if defined (VAR_MPI)
-#include "ccpar.inc"
-#endif
 C
       INTEGER*8 STAT
       IF(JCODE.NE.3.AND.JCODE.NE.4) THEN
@@ -372,7 +369,6 @@ C     either be zero (start at begin of file) or positive.
 C
       implicit none
 C
-#include "waio.h"
 #include "complex.inc"
       INTEGER*8 OFFSET,OFFSETI
 C

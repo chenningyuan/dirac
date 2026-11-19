@@ -13,7 +13,7 @@
 C FILE : dlamch.F
 C
 C     With many compilers this file has to be compiled 
-C     without optimization (ifort, gfortran and more),
+C     without optimization (ifx, gfortran and more),
 C     otherwise the function will hang forever for certain CMACH.
 C     ulfek June 2008 
 C

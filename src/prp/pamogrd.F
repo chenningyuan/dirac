@@ -236,7 +236,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       PARAMETER (D1 = 1.00D00, D0 = 0.00D00 )
 C

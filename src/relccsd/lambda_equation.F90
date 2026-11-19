@@ -48,13 +48,7 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "files.inc"
-#include "param.inc"
 #include "symm.inc"
-#include "eqns.inc"
-#include "inpt.inc"
-#include "results.inc"
-#include "complex.inc"
 
 !---------------Local variables--------------------------------------
 
@@ -477,10 +471,8 @@
 
 !   common blocks
 !   -------------
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
-#include "ccpar.inc"
 #include "files.inc"
 
 !       calling variables

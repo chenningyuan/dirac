@@ -24,8 +24,6 @@
 
   subroutine set_continuous_orbital(active_irrep)
 #include "symm.inc"
-#include "dcbham.h"
-#include "dgroup.h"
     integer, intent(in) :: active_irrep
 
 !Assigning Dimension to the continuous orbital
@@ -37,8 +35,6 @@
 
   subroutine verify_input()
 #include "symm.inc"
-#include "dcbham.h"
-#include "dgroup.h"
 #include "files.inc"
     logical :: reset_roots_in_symmetry = .false.
     integer :: max_manifold = 0
@@ -1293,8 +1289,6 @@
 #include "symm.inc"
 #include "complex.inc"
 #include "files.inc"
-#include "ccpar.inc"
-#include "dgroup.h"
 !--------------------------------------------------
  integer, intent(in)                   :: icalc
  integer(kind=klongint), intent(inout) :: mxcorr
@@ -1473,10 +1467,7 @@
 ! calculate density matrices of sym target symmetry. which combinations of L and R ?
       use davidson
 #include "symm.inc"
-#include "complex.inc"
 #include "files.inc"
-#include "ccpar.inc"
-#include "dgroup.h"
 !--------------------------------------------------
       integer :: iroot, i
       integer, intent(in) :: state_sym
@@ -1514,9 +1505,6 @@ subroutine eom_renormalize_birthogonal(state_sym, davResultsL, davResultsR)
 
 #include "symm.inc"
 #include "complex.inc"
-#include "files.inc"
-#include "ccpar.inc"
-#include "dgroup.h"
 !--------------------------------------------------
    type(davidson_results), intent(inout) :: davResultsR(nrep), davResultsL(nrep)
    integer, intent(in) :: state_sym
@@ -1621,7 +1609,6 @@ subroutine eom_calculate_store_density_matrices(B, davResultsL, davResultsR)
 #include "symm.inc"
 #include "complex.inc"
 #include "files.inc"
-#include "ccpar.inc"
 #include "dgroup.h"
 !--------------------------------------------------
    type(davidson_results), intent(inout) :: davResultsR(nrep), davResultsL(nrep)
@@ -1769,12 +1756,10 @@ subroutine eom_calculate_store_density_matrices(B, davResultsL, davResultsR)
 
 ! Analyse the R-vectors of EOM-IP,EE,EA. Based on FS_ANALYSIS1 routine by Luuk
 
-#include "param.inc"
 #include "inpt.inc"
 #include "complex.inc"
 #include "symm.inc"
 #include "results.inc"
-#include "ccpar.inc"
 #include "files.inc"
 
 !---------------Calling variables--------------------------------------
@@ -1876,8 +1861,6 @@ subroutine eom_calculate_store_density_matrices(B, davResultsL, davResultsR)
 !---------------Common Blocks--------------------------------------
 
 #include "files.inc"
-#include "param.inc"
-#include "ccpar.inc"
 
 !---------------Local variables--------------------------------------
 
@@ -2164,11 +2147,8 @@ subroutine eom_set_davidson_mode_energies(left_vectors, right_vectors)
    use davidson
    use allocator_parameters, only : klongint
    use symmetry_offset
-#include "symm.inc"
 #include "complex.inc"
 #include "files.inc"
-#include "inpt.inc"
-#include "ccpar.inc"
    logical, intent(in) :: left_vectors
    logical, intent(in) :: right_vectors
    logical, save :: davidson_splash = .true.
@@ -2206,7 +2186,6 @@ subroutine eom_solve_for_left_or_right(state_sym, left_vectors, right_vectors, d
 #include "complex.inc"
 #include "files.inc"
 #include "inpt.inc"
-#include "ccpar.inc"
 !--------------------------------------------------
    integer, intent(in) :: state_sym
    type(davidson_results), intent(inout) :: davResultsL(nrep)
@@ -2447,10 +2426,7 @@ subroutine eom_solve_for_left_or_right(state_sym, left_vectors, right_vectors, d
 end subroutine
 
 subroutine eom_initialize_HII(H_II)
-#include "symm.inc"
 #include "complex.inc"
-#include "files.inc"
-#include "ccpar.inc"
 
     real(kind=8), intent(inout) :: H_II(:)
     integer :: i
@@ -2470,7 +2446,6 @@ subroutine eom_analysis_allirreps(davResults, eps)
 #include "symm.inc"
 #include "complex.inc"
 #include "files.inc"
-#include "ccpar.inc"
 #include "results.inc"
 !--------------------------------------------------
    type(davidson_results), intent(inout) :: davResults(nrep)
@@ -2568,6 +2543,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+
       REAL*8 FAC,FAC1,FAC2,FAC3,VALUE,FACIH
       complex*16 CFACIH
       REAL*8 AFAC

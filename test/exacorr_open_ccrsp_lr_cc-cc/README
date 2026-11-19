@@ -1,0 +1,19 @@
+! calculation of zz component of the dipole polarizability for
+! the CH "beta" spin  doublet system.
+! 
+! the test carries out the calculation with the linear response
+! (cc-cc) code, for static (\omega_A = 0) and dynamic cases 
+! (\omega_A = 0.01, 0.02, 0.03).
+!
+! as a verification of results for the static case, finite-field
+! calculations with a perturbation strenght of h = 5e-4 are also
+! carried out. the polarizability, calculated using a 5-point 
+! formula such as
+! 
+! d2/dx2 f = -1*f(x-2h) + 16*f(x-1h) - 30*f(x+0h) + 16*f(x+1h) -1*f(x+2h)/(12h^2)  
+! 
+! should match the zz component calculated with linear response.
+!
+! in addition to linear response we also calculate the first-order 
+! pseudo property expectation value implementation at the KU DHF/CCSD level 
+!

@@ -477,7 +477,6 @@ C     Generate INFORB for DIRAC
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "mxcent.h"
 #include "maxaqn.h"

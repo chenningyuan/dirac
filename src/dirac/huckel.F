@@ -23,14 +23,9 @@ C     Driver routine for solving the extended Huckel problem
 C     panor+hjj 2010
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "symmet.h"
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "huckel.h"
 C
       LOGICAL   AUTO_OCC
       DIMENSION FMAT(*),NOCCUP(8),WORK(LWORK)
@@ -112,8 +107,6 @@ C ========================================================================
      &     NBAS_LS,NBASHUC,HUCMAT,HUCOVL,EIGVEC,EIGVAL,WORK,LWORK)
 C
 #include "implicit.h"
-#include "priunit.h"
-#include "dgroup.h"
 C
       LOGICAL   AUTO_OCC
       DIMENSION F2MAT(*),NOCCUP(8),WORK(LWORK)
@@ -162,7 +155,6 @@ C
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "symmet.h"
 #include "huckel.h"
 C
       DIMENSION HUCMAT(NBASHUC,NBASHUC),HUCOVL(NBASHUC,NBASHUC),
@@ -356,7 +348,6 @@ C
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "symmet.h"
 #include "huckel.h"
 C
       DIMENSION DENHUC(NBASHUC,NBASHUC),EIGVEC(NBASHUC,NBASHUC),
@@ -397,7 +388,6 @@ C
       DIMENSION DNTSKP(8)
 #include "cbihr2.h"
 #include "mxcent.h"
-#include "nuclei.h"
 #include "maxorb.h"
 #include "huckel.h"
 ! dcbham.h : NOSMLV and BSS
@@ -565,7 +555,6 @@ C     Output:
 C     ORBENERGY = orbital energy
 C
 #include <implicit.h>
-#include <priunit.h>
 C
       INTEGER IOFF(4)
       SAVE    IOFF

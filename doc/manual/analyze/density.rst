@@ -18,7 +18,7 @@ command
 
     pam -get ``rhoL.cube rhoS.cube ...
 
-Note also that the coefficient file DFCOEF must be present in order to
+Note also that the checkpoint file CHECKPOINT.h5 must be present in order to
 generate the density.
 
 ::

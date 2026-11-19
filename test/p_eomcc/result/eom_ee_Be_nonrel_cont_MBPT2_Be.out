@@ -1,4 +1,4 @@
-DIRAC serial starts by allocating 110000000 words (    839.23 MB -      0.820 GB) of memory    out of the allowed maximum of 256000000 words (   1953.12 MB -      1.907 GB)
+DIRAC serial starts by allocating 110000000 words (    839.23 MB -      0.820 GB) of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
 
 Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 
@@ -100,6 +100,7 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Elke Fasshauer           University of Tubingen            Germany       *
  *    Timo Fleig               Universite Toulouse III           France        *
  *    Olav Fossgaard           UiT The Arctic University of      Norway        *
+ *    Konstantin J. Gaul       Helmholtz Institute Mainz         Germany       *
  *    Loic Halbert             Universite de Lille               France        *
  *    Erik D. Hedegaard        University of Southern Denmark    Denmark       *
  *    Trygve Helgaker          University of Oslo                Norway        *
@@ -164,16 +165,17 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    T. Saue, L. Visscher, H. J. Aa. Jensen, R. Bast and A. S. P. Gomes       *
  *    with contributions from I. A. Aucar, V. Bakken, J. Brandejs, C. Chibueze,*
  *    J. Creutzberg, K. G. Dyall, S. Dubillard, U. Ekstroem, E. Eliav,         *
- *    T. Enevoldsen, E. Fasshauer, T. Fleig, O. Fossgaard, L. Halbert,         *
- *    E. D. Hedegaard, T. Helgaker, J. Henriksson, M. van Horn, M. Ilias,      *
- *    Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie, J. K. Laerdahl,       *
- *    C. V. Larsen, Y. S. Lee, N. H. List, H. S. Nataraj, M. K. Nayak,         *
- *    P. Norman, A. Nyvang, M. Olejniczak, J. Olsen, J. M. H. Olsen,           *
- *    A. Papadopoulos, Y. C. Park, J. K. Pedersen, M. Pernpointner,            *
- *    J. V. Pototschnig, R. Di Remigio, M. Repisky, C. M. R. Rocha, K. Ruud,   *
- *    P. Salek,  B. Schimmelpfennig, B. Senjean, A. Shee, J. Sikkema,          *
- *    A. Sunaga, A. J. Thorvaldsen, J. Thyssen, J. N. P. van Stralen,          *
- *    M. L. Vidal, S. Villaume, O. Visser, T. Winther, S. Yamamoto and X. Yuan *
+ *    T. Enevoldsen, E. Fasshauer, T. Fleig, O. Fossgaard, K. J. Gaul,         *
+ *    L. Halbert, E. D. Hedegaard, T. Helgaker, J. Henriksson, M. van Horn,    *
+ *    M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie,             *
+ *    J. K. Laerdahl, C. V. Larsen, Y. S. Lee, N. H. List, H. S. Nataraj,      *
+ *    M. K. Nayak, P. Norman, A. Nyvang, M. Olejniczak, J. Olsen,              *
+ *    J. M. H. Olsen, A. Papadopoulos, Y. C. Park, J. K. Pedersen,             *
+ *    M. Pernpointner, J. V. Pototschnig, R. Di Remigio, M. Repisky,           *
+ *    C. M. R. Rocha, K. Ruud, P. Salek, B. Schimmelpfennig, B. Senjean,       *
+ *    A. Shee, J. Sikkema, A. Sunaga, A. J. Thorvaldsen, J. Thyssen,           *
+ *    J. N. P. van Stralen, M. L. Vidal, S. Villaume, O. Visser, T. Winther,   *
+ *    S. Yamamoto and X. Yuan                                                  *
  *    (see http://diracprogram.org).                                           *
  *                                                                             *
  *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104         *
@@ -185,46 +187,46 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 Version information
 -------------------
 
-Branch        | gomeasasp/peom
-Commit hash   | 10e8f9cc3
-Commit author | Andre Gomes
-Commit date   | Mon Feb 3 18:48:58 2025 +0100
+Branch        | iaa-cvel-codata
+Commit hash   | 1f7e938d6
+Commit author | Agustin
+Commit date   | Thu Mar 6 08:57:19 2025 +0100
 
 
 Configuration and build information
 -----------------------------------
 
-Who compiled             | andre
-Compiled on server       | utonium
-Operating system         | Darwin-24.3.0
-CMake version            | 3.26.4
+Who compiled             | agustin
+Compiled on server       | aucaria
+Operating system         | Linux-6.8.0-52-generic
+CMake version            | 3.22.1
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2025-02-03 17:04:40.550807+00:00
-Fortran compiler         | /opt/local/bin/gfortran-mp-14
-Fortran compiler version | 14.2.0
-Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto
-C compiler               | /opt/local/bin/gcc-mp-14
-C compiler version       | 14.2.0
-C compiler flags         |  -g -fopenmp -fno-lto -g -fopenmp -fno-lto
-C++ compiler             | /opt/local/bin/g++-mp-14
-C++ compiler version     | 14.2.0
-C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto
+Configuration time       | 2025-03-06 08:44:38.978923+00:00
+Fortran compiler         | /usr/bin/gfortran
+Fortran compiler version | 11.4.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto
+C compiler               | /usr/bin/gcc
+C compiler version       | 11.4.0
+C compiler flags         |  -g -fopenmp -fno-lto
+C++ compiler             | /usr/bin/g++
+C++ compiler version     | 11.4.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto
 Static linking           | False
 64-bit integers          | False
 MPI parallelization      | False
 MPI launcher             | unknown
-Math libraries           | /opt/local/lib/libopenblas.dylib;/opt/local/lib/libopenblas.dylib
+Math libraries           | /usr/lib/x86_64-linux-gnu/libopenblas.so;/usr/lib/x86_64-linux-gnu/libopenblas.so
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | HAVE_OPENMP;SYS_DARWIN;VAR_MFDS;PRG_DIRAC;INSTALL_WRKMEM=64000000;EXA_TALSH_ONLY;BUILD_GEN1INT;HAS_PELIB;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
+Compile definitions      | HAVE_OPENBLAS_BLAS;HAVE_OPENBLAS_LAPACK;HAVE_OPENMP;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;EXA_TALSH_ONLY;BUILD_GEN1INT;HAS_PELIB;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
 
 EXACORR dependencies
 --------------------
 Exatensor source repo    | https://github.com/RelMBdev/ExaTENSOR.git
 Exatensor git hash       | bc0d8ef36703e0526fe96fe0a0c4c2e69ad02cd9
-Exatensor configuration  | WRAP=NOWRAP BUILD_TYPE=OPT EXA_TALSH_ONLY=YES CMAKE_Fortran_COMPILER=/opt/local/bin/gfortran-mp-14 CMAKE_C_COMPILER=/opt/local/bin/gcc-mp-14 CMAKE_CXX_COMPILER=/opt/local/bin/g++-mp-14 TOOLKIT=GNU EXA_OS=NO_LINUX GPU_CUDA=NOCUDA MPILIB=NONE BLASLIB=OPENBLAS PATH_BLAS_OPENBLAS=/opt/local/lib     
+Exatensor configuration  | WRAP=NOWRAP BUILD_TYPE=OPT EXA_TALSH_ONLY=YES CMAKE_Fortran_COMPILER=/usr/bin/gfortran CMAKE_C_COMPILER=/usr/bin/gcc CMAKE_CXX_COMPILER=/usr/bin/g++ TOOLKIT=GNU EXA_OS=LINUX GPU_CUDA=NOCUDA MPILIB=NONE BLASLIB=OPENBLAS PATH_BLAS_OPENBLAS=/usr/lib/x86_64-linux-gnu     
 
 
  LAPACK integer*4/8 selftest passed
@@ -234,8 +236,8 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Mac OSX): Tue Feb  4 12:51:54 2025
-     Host name              : utonium                                 
+     Date and time (Linux)  : Thu Mar  6 10:26:44 2025
+     Host name              : aucaria                                 
 
  * Opening checkpoint file 
     - New checkpoint file created
@@ -389,8 +391,8 @@ FINISH
 
    Codata Internationally Recommended 2022 Values of the Fundamental Physical Constants  
             Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor            
-            https://physics.nist.gov/constants (Accessed June 4, 2024)                   
- * The speed of light :        137.0359993
+            https://physics.nist.gov/constants (Accessed March 6, 2025)                  
+ * The speed of light :      137.035999177
  * Running in two-component mode
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
@@ -778,17 +780,17 @@ Be     0.0000000000   0.0000000000   0.0000000000
  *The following operators will be transformed:
     1  XDIPLEN              B3u     T+
 ...........................................................................
-      Operator type DIAGONAL : scalar operator
+      Operator type DIAGONAL : diagonal times scalar operator
       Labels and factors     : XDIPLEN  +00+     1.0000000000000 (real)     
 ...........................................................................
     2  YDIPLEN              B2u     T+
 ...........................................................................
-      Operator type DIAGONAL : scalar operator
+      Operator type DIAGONAL : diagonal times scalar operator
       Labels and factors     : YDIPLEN  +00+     1.0000000000000 (real)     
 ...........................................................................
     3  ZDIPLEN              B1u     T+
 ...........................................................................
-      Operator type DIAGONAL : scalar operator
+      Operator type DIAGONAL : diagonal times scalar operator
       Labels and factors     : ZDIPLEN  +00+     1.0000000000000 (real)     
 ...........................................................................
 ---------------------------------------------------------------------------
@@ -868,6 +870,8 @@ Be     0.0000000000   0.0000000000   0.0000000000
    L   B3u   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.21E-01
    L   B2u   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.21E-01
    L   B1u   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.21E-01
+ MCayaki in GMOTRA           1
+ MCayaki2 in GMOTRA           1
 
 
  WARNING : atomic symmetry is not implemented for spinfree yet
@@ -895,7 +899,7 @@ Total no. of orbitals      (NORB):    34      27      61
  Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
 
 
-########## START ITERATION NO.   1 ##########   Tue Feb  4 12:51:54 2025
+########## START ITERATION NO.   1 ##########   Thu Mar  6 10:26:44 2025
 
 
 * AUTOCC( 0) : Initial occupation:
@@ -906,141 +910,141 @@ E_HOMO...E_LUMO, symmetry 1:                                  2  -0.17192    3  
 E_HOMO...E_LUMO, symmetry 2:                                 35  -0.04174
 
 => Calculating sum of orbital energies
-It.    1    -8.151549352184      0.00D+00  0.00D+00  0.00D+00               0.01187000s   Atom. scrpot   Tue Feb  4
+It.    1    -8.151549352184      0.00D+00  0.00D+00  0.00D+00               0.00708300s   Atom. scrpot   Thu Mar  6
 
-########## START ITERATION NO.   2 ##########   Tue Feb  4 12:52:08 2025
+########## START ITERATION NO.   2 ##########   Thu Mar  6 10:26:44 2025
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-18   86.17%    2.21%    2.12%    3.80%   0.68590502s
- >>> CPU  time used in SO Fock is   0.70 seconds
- >>> WALL time used in SO Fock is   0.71 seconds
+SOfock:LL  1.00D-18   84.35%    3.17%    2.17%    4.00%   0.64505597s
+ >>> CPU  time used in SO Fock is   0.65 seconds
+ >>> WALL time used in SO Fock is   0.65 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.30893    3   0.00144
 E_HOMO...E_LUMO, symmetry 2:                                 35   0.00220
->>> Total wall time:  0.72500000s, and total CPU time :  0.70342097s
+>>> Total wall time:  0.65800000s, and total CPU time :  0.65780002s
 
-########## END ITERATION NO.   2 ##########   Tue Feb  4 12:52:09 2025
+########## END ITERATION NO.   2 ##########   Thu Mar  6 10:26:45 2025
 
-It.    2    -14.56848158658      6.42D+00  3.61D-01  2.92D-01               0.72500000s   LL             Tue Feb  4
+It.    2    -14.56848158658      6.42D+00  3.61D-01  2.92D-01               0.65800000s   LL             Thu Mar  6
 
-########## START ITERATION NO.   3 ##########   Tue Feb  4 12:52:09 2025
+########## START ITERATION NO.   3 ##########   Thu Mar  6 10:26:45 2025
 
     3 *** Differential density matrix. DCOVLP     = 1.0102
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-18   84.74%    2.89%    2.37%    3.92%   0.69002002s
- >>> CPU  time used in SO Fock is   0.69 seconds
- >>> WALL time used in SO Fock is   0.69 seconds
+SOfock:LL  1.00D-18   83.37%    3.57%    2.20%    4.17%   0.70495999s
+ >>> CPU  time used in SO Fock is   0.71 seconds
+ >>> WALL time used in SO Fock is   0.70 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.30943    3   0.00144
 E_HOMO...E_LUMO, symmetry 2:                                 35   0.00220
->>> Total wall time:  0.70900000s, and total CPU time :  0.69438201s
+>>> Total wall time:  0.71100000s, and total CPU time :  0.71052498s
 
-########## END ITERATION NO.   3 ##########   Tue Feb  4 12:52:10 2025
+########## END ITERATION NO.   3 ##########   Thu Mar  6 10:26:45 2025
 
-It.    3    -14.57251298762      4.03D-03 -6.62D-03  1.58D-02   DIIS   2    0.70900000s   LL             Tue Feb  4
+It.    3    -14.57251298762      4.03D-03 -6.62D-03  1.58D-02   DIIS   2    0.71100000s   LL             Thu Mar  6
 
-########## START ITERATION NO.   4 ##########   Tue Feb  4 12:52:10 2025
+########## START ITERATION NO.   4 ##########   Thu Mar  6 10:26:45 2025
 
     4 *** Differential density matrix. DCOVLP     = 1.0052
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-18   85.55%    2.49%    2.22%    3.86%   0.68376887s
- >>> CPU  time used in SO Fock is   0.68 seconds
- >>> WALL time used in SO Fock is   0.69 seconds
+SOfock:LL  1.00D-18   85.68%    2.62%    2.33%    3.78%   0.70678210s
+ >>> CPU  time used in SO Fock is   0.71 seconds
+ >>> WALL time used in SO Fock is   0.71 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.30932    3   0.00144
 E_HOMO...E_LUMO, symmetry 2:                                 35   0.00220
->>> Total wall time:  0.71100000s, and total CPU time :  0.68797886s
+>>> Total wall time:  0.71200000s, and total CPU time :  0.71235812s
 
-########## END ITERATION NO.   4 ##########   Tue Feb  4 12:52:10 2025
+########## END ITERATION NO.   4 ##########   Thu Mar  6 10:26:46 2025
 
-It.    4    -14.57254225892      2.93D-05 -3.27D-04  1.09D-03   DIIS   3    0.71100000s   LL             Tue Feb  4
+It.    4    -14.57254225892      2.93D-05  3.27D-04  1.09D-03   DIIS   3    0.71200000s   LL             Thu Mar  6
 
-########## START ITERATION NO.   5 ##########   Tue Feb  4 12:52:10 2025
+########## START ITERATION NO.   5 ##########   Thu Mar  6 10:26:46 2025
 
     5 *** Differential density matrix. DCOVLP     = 1.0015
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-18   85.67%    2.45%    2.12%    3.86%   0.68935299s
- >>> CPU  time used in SO Fock is   0.69 seconds
- >>> WALL time used in SO Fock is   0.69 seconds
+SOfock:LL  1.00D-18   84.39%    3.30%    2.47%    3.91%   0.69672084s
+ >>> CPU  time used in SO Fock is   0.70 seconds
+ >>> WALL time used in SO Fock is   0.70 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.30927    3   0.00144
 E_HOMO...E_LUMO, symmetry 2:                                 35   0.00220
->>> Total wall time:  0.73600000s, and total CPU time :  0.69368410s
+>>> Total wall time:  0.70300000s, and total CPU time :  0.70221305s
 
-########## END ITERATION NO.   5 ##########   Tue Feb  4 12:52:11 2025
+########## END ITERATION NO.   5 ##########   Thu Mar  6 10:26:47 2025
 
-It.    5    -14.57254317080      9.12D-07  1.28D-04  1.68D-04   DIIS   4    0.73600000s   LL             Tue Feb  4
+It.    5    -14.57254317080      9.12D-07  1.28D-04  1.68D-04   DIIS   4    0.70300000s   LL             Thu Mar  6
 
-########## START ITERATION NO.   6 ##########   Tue Feb  4 12:52:11 2025
+########## START ITERATION NO.   6 ##########   Thu Mar  6 10:26:47 2025
 
     6 *** Differential density matrix. DCOVLP     = 1.0004
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-18   84.76%    3.00%    2.15%    3.92%   0.68071604s
- >>> CPU  time used in SO Fock is   0.68 seconds
- >>> WALL time used in SO Fock is   0.68 seconds
-E_HOMO...E_LUMO, symmetry 1:                                  2  -0.30926    3   0.00144
-E_HOMO...E_LUMO, symmetry 2:                                 35   0.00220
->>> Total wall time:  0.69800000s, and total CPU time :  0.68464208s
-
-########## END ITERATION NO.   6 ##########   Tue Feb  4 12:52:12 2025
-
-It.    6    -14.57254321956      4.88D-08  4.24D-05  1.42D-05   DIIS   5    0.69800000s   LL             Tue Feb  4
-
-########## START ITERATION NO.   7 ##########   Tue Feb  4 12:52:12 2025
-
-    7 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-18   84.21%    3.10%    2.20%    4.14%   0.67411590s
- >>> CPU  time used in SO Fock is   0.67 seconds
- >>> WALL time used in SO Fock is   0.68 seconds
-E_HOMO...E_LUMO, symmetry 1:                                  2  -0.30926    3   0.00144
-E_HOMO...E_LUMO, symmetry 2:                                 35   0.00220
->>> Total wall time:  0.69700000s, and total CPU time :  0.67813325s
-
-########## END ITERATION NO.   7 ##########   Tue Feb  4 12:52:12 2025
-
-It.    7    -14.57254321994      3.80D-10  5.02D-06  4.63D-07   DIIS   6    0.69700000s   LL             Tue Feb  4
-
-########## START ITERATION NO.   8 ##########   Tue Feb  4 12:52:12 2025
-
-    8 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-18   84.21%    3.20%    2.14%    4.01%   0.68770313s
+SOfock:LL  1.00D-18   84.10%    3.43%    2.40%    4.03%   0.69436693s
  >>> CPU  time used in SO Fock is   0.69 seconds
  >>> WALL time used in SO Fock is   0.69 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.30926    3   0.00144
 E_HOMO...E_LUMO, symmetry 2:                                 35   0.00220
->>> Total wall time:  0.70900000s, and total CPU time :  0.69171524s
+>>> Total wall time:  0.70000000s, and total CPU time :  0.69994497s
 
-########## END ITERATION NO.   8 ##########   Tue Feb  4 12:52:13 2025
+########## END ITERATION NO.   6 ##########   Thu Mar  6 10:26:47 2025
 
-It.    8    -14.57254321994      2.49D-13  1.82D-07  4.39D-08   DIIS   7    0.70900000s   LL             Tue Feb  4
+It.    6    -14.57254321956      4.88D-08  4.24D-05  1.42D-05   DIIS   5    0.70000000s   LL             Thu Mar  6
 
-########## START ITERATION NO.   9 ##########   Tue Feb  4 12:52:13 2025
+########## START ITERATION NO.   7 ##########   Thu Mar  6 10:26:47 2025
+
+    7 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-18   84.67%    3.10%    2.26%    3.94%   0.69475007s
+ >>> CPU  time used in SO Fock is   0.69 seconds
+ >>> WALL time used in SO Fock is   0.69 seconds
+E_HOMO...E_LUMO, symmetry 1:                                  2  -0.30926    3   0.00144
+E_HOMO...E_LUMO, symmetry 2:                                 35   0.00220
+>>> Total wall time:  0.70000000s, and total CPU time :  0.70032310s
+
+########## END ITERATION NO.   7 ##########   Thu Mar  6 10:26:48 2025
+
+It.    7    -14.57254321994      3.80D-10  5.02D-06  4.63D-07   DIIS   6    0.70000000s   LL             Thu Mar  6
+
+########## START ITERATION NO.   8 ##########   Thu Mar  6 10:26:48 2025
+
+    8 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-18   84.42%    3.08%    2.24%    3.96%   0.69434690s
+ >>> CPU  time used in SO Fock is   0.69 seconds
+ >>> WALL time used in SO Fock is   0.69 seconds
+E_HOMO...E_LUMO, symmetry 1:                                  2  -0.30926    3   0.00144
+E_HOMO...E_LUMO, symmetry 2:                                 35   0.00220
+>>> Total wall time:  0.70000000s, and total CPU time :  0.69983912s
+
+########## END ITERATION NO.   8 ##########   Thu Mar  6 10:26:49 2025
+
+It.    8    -14.57254321994      2.40D-13  1.82D-07  4.39D-08   DIIS   7    0.70000000s   LL             Thu Mar  6
+
+########## START ITERATION NO.   9 ##########   Thu Mar  6 10:26:49 2025
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-18   85.89%    2.31%    2.23%    3.79%   0.67363405s
- >>> CPU  time used in SO Fock is   0.67 seconds
- >>> WALL time used in SO Fock is   0.68 seconds
+SOfock:LL  1.00D-18   86.66%    1.91%    2.13%    3.70%   0.69085026s
+ >>> CPU  time used in SO Fock is   0.69 seconds
+ >>> WALL time used in SO Fock is   0.69 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.30926    3   0.00144
 E_HOMO...E_LUMO, symmetry 2:                                 35   0.00220
->>> Total wall time:  0.69500000s, and total CPU time :  0.67767763s
+>>> Total wall time:  0.69700000s, and total CPU time :  0.69643974s
 
-########## END ITERATION NO.   9 ##########   Tue Feb  4 12:52:14 2025
+########## END ITERATION NO.   9 ##########   Thu Mar  6 10:26:50 2025
 
-It.    9    -14.57254321994      2.84D-14  9.79D-09  1.27D-09   DIIS   3    0.69500000s   LL             Tue Feb  4
+It.    9    -14.57254321994      3.55D-15  9.79D-09  1.27D-09   DIIS   3    0.69700000s   LL             Thu Mar  6
 
-########## START ITERATION NO.  10 ##########   Tue Feb  4 12:52:14 2025
+########## START ITERATION NO.  10 ##########   Thu Mar  6 10:26:50 2025
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-18   85.62%    2.52%    2.11%    3.86%   0.67972183s
- >>> CPU  time used in SO Fock is   0.68 seconds
- >>> WALL time used in SO Fock is   0.68 seconds
->>> Total wall time:  0.68400000s, and total CPU time :  0.68032074s
+SOfock:LL  1.00D-18   86.05%    2.29%    2.17%    3.76%   0.69131899s
+ >>> CPU  time used in SO Fock is   0.69 seconds
+ >>> WALL time used in SO Fock is   0.69 seconds
+>>> Total wall time:  0.69100000s, and total CPU time :  0.69170713s
 
-########## END ITERATION NO.  10 ##########   Tue Feb  4 12:52:14 2025
+########## END ITERATION NO.  10 ##########   Thu Mar  6 10:26:50 2025
 
-It.   10    -14.57254321994     -3.20D-14  1.81D-10  2.50D-10   DIIS   3    0.68400000s   LL             Tue Feb  4
+It.   10    -14.57254321994     -8.88D-15  1.81D-10  2.50D-10   DIIS   3    0.69100000s   LL             Thu Mar  6
 
 
                                    SCF - CYCLE
@@ -1056,21 +1060,21 @@ It.   10    -14.57254321994     -3.20D-14  1.81D-10  2.50D-10   DIIS   3    0.68
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -8.151549352184      0.00D+00  0.00D+00  0.00D+00               0.01187000s   Atom. scrpot   Tue Feb  4
-It.    2    -14.56848158658      6.42D+00  3.61D-01  2.92D-01               0.72500000s   LL             Tue Feb  4
-It.    3    -14.57251298762      4.03D-03 -6.62D-03  1.58D-02   DIIS   2    0.70900000s   LL             Tue Feb  4
-It.    4    -14.57254225892      2.93D-05 -3.27D-04  1.09D-03   DIIS   3    0.71100000s   LL             Tue Feb  4
-It.    5    -14.57254317080      9.12D-07  1.28D-04  1.68D-04   DIIS   4    0.73600000s   LL             Tue Feb  4
-It.    6    -14.57254321956      4.88D-08  4.24D-05  1.42D-05   DIIS   5    0.69800000s   LL             Tue Feb  4
-It.    7    -14.57254321994      3.80D-10  5.02D-06  4.63D-07   DIIS   6    0.69700000s   LL             Tue Feb  4
-It.    8    -14.57254321994      2.49D-13  1.82D-07  4.39D-08   DIIS   7    0.70900000s   LL             Tue Feb  4
-It.    9    -14.57254321994      2.84D-14  9.79D-09  1.27D-09   DIIS   3    0.69500000s   LL             Tue Feb  4
-It.   10    -14.57254321994     -3.20D-14  1.81D-10  2.50D-10   DIIS   3    0.68400000s   LL             Tue Feb  4
+It.    1    -8.151549352184      0.00D+00  0.00D+00  0.00D+00               0.00708300s   Atom. scrpot   Thu Mar  6
+It.    2    -14.56848158658      6.42D+00  3.61D-01  2.92D-01               0.65800000s   LL             Thu Mar  6
+It.    3    -14.57251298762      4.03D-03 -6.62D-03  1.58D-02   DIIS   2    0.71100000s   LL             Thu Mar  6
+It.    4    -14.57254225892      2.93D-05  3.27D-04  1.09D-03   DIIS   3    0.71200000s   LL             Thu Mar  6
+It.    5    -14.57254317080      9.12D-07  1.28D-04  1.68D-04   DIIS   4    0.70300000s   LL             Thu Mar  6
+It.    6    -14.57254321956      4.88D-08  4.24D-05  1.42D-05   DIIS   5    0.70000000s   LL             Thu Mar  6
+It.    7    -14.57254321994      3.80D-10  5.02D-06  4.63D-07   DIIS   6    0.70000000s   LL             Thu Mar  6
+It.    8    -14.57254321994      2.40D-13  1.82D-07  4.39D-08   DIIS   7    0.70000000s   LL             Thu Mar  6
+It.    9    -14.57254321994      3.55D-15  9.79D-09  1.27D-09   DIIS   3    0.69700000s   LL             Thu Mar  6
+It.   10    -14.57254321994     -8.88D-15  1.81D-10  2.50D-10   DIIS   3    0.69100000s   LL             Thu Mar  6
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   10 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :   14.12800000s
-      LL           :    0.70711111s
+      No 2-ints    :    0.00700000s
+      LL           :    0.69688889s
 
 
                                    TOTAL ENERGY
@@ -1078,13 +1082,13 @@ It.   10    -14.57254321994     -3.20D-14  1.81D-10  2.50D-10   DIIS   3    0.68
 
    Charge of molecule : 0
 
-   Electronic energy                        :    -14.572543219938247
+   Electronic energy                        :    -14.572543219938261
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      0.000000000000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -14.572543219938247
+   Total energy                             :    -14.572543219938261
 
 
                                    Eigenvalues
@@ -1095,17 +1099,17 @@ It.   10    -14.57254321994     -3.20D-14  1.81D-10  2.50D-10   DIIS   3    0.68
   * Closed shell, f = 1.0000
  -4.73267395135269  ( 2)    -0.30926010335858  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  0.00143839615614  ( 2)     0.00786800096716  ( 2)     0.01098362789529  ( 4)     0.02857066479310  ( 2)     0.05574630415653  ( 4)
-  0.09607370437590  ( 2)     0.23557236537415  ( 4)     0.34139150166651  ( 2)     0.71670436628410  ( 4)     1.30526827419366  ( 2)
-  2.22676054737613  ( 4)     9.00995748704890  ( 2)
+  0.00143839615614  ( 2)     0.00786800096716  ( 2)     0.01098362789529  ( 4)     0.02857066479308  ( 2)     0.05574630415653  ( 4)
+  0.09607370437587  ( 2)     0.23557236537415  ( 4)     0.34139150166643  ( 2)     0.71670436628410  ( 4)     1.30526827419364  ( 2)
+  2.22676054737613  ( 4)     9.00995748704901  ( 2)
 
 * Boson symmetry B1g
   * Virtual eigenvalues, f = 0.0000
-  0.01098362789529  ( 2)     0.05574630415653  ( 2)     0.23557236537415  ( 2)     0.71670436628410  ( 2)     2.22676054737613  ( 2)
+  0.01098362789529  ( 2)     0.05574630415653  ( 2)     0.23557236537415  ( 2)     0.71670436628410  ( 2)     2.22676054737612  ( 2)
 
 * Boson symmetry B2g
   * Virtual eigenvalues, f = 0.0000
-  0.01098362789529  ( 2)     0.05574630415653  ( 2)     0.23557236537415  ( 2)     0.71670436628410  ( 2)     2.22676054737613  ( 2)
+  0.01098362789529  ( 2)     0.05574630415653  ( 2)     0.23557236537415  ( 2)     0.71670436628410  ( 2)     2.22676054737612  ( 2)
 
 * Boson symmetry B3g
   * Virtual eigenvalues, f = 0.0000
@@ -1113,18 +1117,18 @@ It.   10    -14.57254321994     -3.20D-14  1.81D-10  2.50D-10   DIIS   3    0.68
 
 * Boson symmetry B3u
   * Virtual eigenvalues, f = 0.0000
-  0.00220114006220  ( 2)     0.00853548758183  ( 2)     0.02194048640026  ( 2)     0.04552774055110  ( 2)     0.10807712291809  ( 2)
-  0.31086872701259  ( 2)     0.93551305343685  ( 2)     3.20259359012936  ( 2)    14.95001694042303  ( 2)
+  0.00220114006220  ( 2)     0.00853548758184  ( 2)     0.02194048640026  ( 2)     0.04552774055110  ( 2)     0.10807712291809  ( 2)
+  0.31086872701260  ( 2)     0.93551305343685  ( 2)     3.20259359012936  ( 2)    14.95001694042304  ( 2)
 
 * Boson symmetry B2u
   * Virtual eigenvalues, f = 0.0000
-  0.00220114006220  ( 2)     0.00853548758183  ( 2)     0.02194048640026  ( 2)     0.04552774055110  ( 2)     0.10807712291809  ( 2)
-  0.31086872701259  ( 2)     0.93551305343685  ( 2)     3.20259359012936  ( 2)    14.95001694042302  ( 2)
+  0.00220114006220  ( 2)     0.00853548758184  ( 2)     0.02194048640026  ( 2)     0.04552774055110  ( 2)     0.10807712291809  ( 2)
+  0.31086872701259  ( 2)     0.93551305343685  ( 2)     3.20259359012937  ( 2)    14.95001694042305  ( 2)
 
 * Boson symmetry B1u
   * Virtual eigenvalues, f = 0.0000
-  0.00220114006220  ( 2)     0.00853548758183  ( 2)     0.02194048640026  ( 2)     0.04552774055110  ( 2)     0.10807712291809  ( 2)
-  0.31086872701259  ( 2)     0.93551305343685  ( 2)     3.20259359012936  ( 2)    14.95001694042303  ( 2)
+  0.00220114006220  ( 2)     0.00853548758184  ( 2)     0.02194048640026  ( 2)     0.04552774055110  ( 2)     0.10807712291809  ( 2)
+  0.31086872701260  ( 2)     0.93551305343685  ( 2)     3.20259359012937  ( 2)    14.95001694042303  ( 2)
 
 * Boson symmetry Au 
   * No eigenvalues.
@@ -1133,13 +1137,13 @@ It.   10    -14.57254321994     -3.20D-14  1.81D-10  2.50D-10   DIIS   3    0.68
   * Inactive orbitals
       Ag   Ag 
   * Virtual orbitals
-      Ag   Ag   Ag   B2g  B1g  Ag   B3g  Ag   B1g  B3g  Ag   Ag   B2g  Ag   B1g  B3g  B2g  Ag 
-      Ag   Ag   B1g  Ag   B2g  B3g  Ag   Ag   B1g  Ag   B2g  B3g  Ag   Ag 
+      Ag   Ag   Ag   B2g  B1g  Ag   B3g  Ag   Ag   B2g  B1g  B3g  Ag   Ag   Ag   Ag   B1g  B3g
+      B2g  Ag   B2g  B1g  B3g  Ag   Ag   Ag   B1g  B2g  Ag   B3g  Ag   Ag 
 
 * Occupation in fermion symmetry E1u
   * Virtual orbitals
-      B1u  B3u  B2u  B2u  B1u  B3u  B2u  B1u  B3u  B1u  B2u  B3u  B1u  B3u  B2u  B3u  B1u  B2u
-      B1u  B3u  B2u  B1u  B3u  B2u  B2u  B1u  B3u
+      B3u  B1u  B2u  B1u  B3u  B2u  B2u  B1u  B3u  B2u  B1u  B3u  B2u  B1u  B3u  B2u  B1u  B3u
+      B1u  B2u  B3u  B3u  B2u  B1u  B1u  B3u  B2u
 
 * Occupation of subblocks
                        E1g:  Ag   B1g  B2g  B3g                                                             
@@ -1177,9 +1181,9 @@ tot.num. of pos.erg shells:    9    9    9    0
      ************************************************************************
 
 
- Transformation started at : Tue Feb  4 12:52:14 2025
+ Transformation started at : Thu Mar  6 10:26:50 2025
 
-* REACMO: Coefficients read from CHECKPOINT  - Total energy: -14.5725432199382787
+* REACMO: Coefficients read from CHECKPOINT  - Total energy: -14.5725432199382698
 * Heading : Data read from the checkpoint file                                       
 
 * Orbital ranges for 4-index transformation:
@@ -1261,13 +1265,13 @@ tot.num. of pos.erg shells:    9    9    9    0
        ********************************************************************
 
 
- Transformation started at : Tue Feb  4 12:52:15 2025
+ Transformation started at : Thu Mar  6 10:26:50 2025
 
-* REACMO: Coefficients read from CHECKPOINT  - Total energy: -14.5725432199382787
+* REACMO: Coefficients read from CHECKPOINT  - Total energy: -14.5725432199382698
 * Heading : Data read from the checkpoint file                                       
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :DIRAC: No title specified !!!                     Tue Feb  4 12:51:54 2025
+* Heading :DIRAC: No title specified !!!                     Thu Mar  6 10:26:44 2025
 
 
  Core energy (includes nuclear repulsion) :              0.0000000000
@@ -1306,7 +1310,7 @@ tot.num. of pos.erg shells:    9    9    9    0
 
 
    Integrals written :
- >>> CPU time used in 2HT_all is   3.84 seconds
+ >>> CPU time used in 2HT_all is   4.82 seconds
  - Binary  file MDCINT was written.
 * Screening statistics:
    (LL|LL)ints :   0.00%
@@ -1314,14 +1318,14 @@ tot.num. of pos.erg shells:    9    9    9    0
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  First halftransformation            1.905 seconds
- Time in  Second halftransformation           3.844 seconds
+ Time in  First halftransformation            2.012 seconds
+ Time in  Second halftransformation           4.824 seconds
 
 
- Total wall time used in PAMTRA :   00:00:06
- Total CPU  time used in PAMTRA (master only) :   00:00:06
+ Total wall time used in PAMTRA :   00:00:07
+ Total CPU  time used in PAMTRA (master only) :   00:00:07
 
- Transformation ended at : Tue Feb  4 12:52:20 2025
+ Transformation ended at : Thu Mar  6 10:26:57 2025
 
 
 ---< Process     1 of     1----<
@@ -1351,8 +1355,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   - Approx. EOM energies   : L. Halbert and A.S.P. Gomes, Mol. Phys. (2023) e2246592
 
 
- Today is :     4 Feb 25
- The time is :  12:52:20
+ Today is :     6 Mar 25
+ The time is :  10:26:57
 
  Initializing word-addressable I/O : the FORTRAN-interface is used with    16 KB records
 ===========================================================================
@@ -1361,7 +1365,7 @@ tot.num. of pos.erg shells:    9    9    9    0
  * General print level   :   1
  NEL_F1:  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
 
- Total memory available :        1953.12 MB    1.907 GB
+ Total memory available :       16384.00 MB   16.000 GB
 
  INFO: No old restart file(s) found!
 
@@ -1396,7 +1400,7 @@ tot.num. of pos.erg shells:    9    9    9    0
  Debug information       :                 F
  Timing information      :                 F
  Print level          :                    1
- Memory limit (MWord) :                       244
+ Memory limit (MWord) :                      2048
  Interface used       :                DIRAC6    
 
 
@@ -1421,32 +1425,32 @@ tot.num. of pos.erg shells:    9    9    9    0
  Type VOVV :          173020 integrals
  Type VVVV :         2347491 integrals
 
- Start sorting of integral classes at   4 Feb 25 12:52:20
+ Start sorting of integral classes at   6 Mar 25 10:26:57
 
 
- Sorting of first 4 classes done at   4 Feb 25 12:52:21
+ Sorting of first 4 classes done at   6 Mar 25 10:26:57
 
  Need      1 passes to sort VOVV integrals
 
- Pass     1 ended at   4 Feb 25 12:52:21
+ Pass     1 ended at   6 Mar 25 10:26:57
 
- VOVV sorting done at   4 Feb 25 12:52:21
+ VOVV sorting done at   6 Mar 25 10:26:57
 
  Need      1 passes to sort VVVV integrals
 
- Pass     1 ended at   4 Feb 25 12:52:21
+ Pass     1 ended at   6 Mar 25 10:26:58
 
- VVVV sorting done at   4 Feb 25 12:52:21
+ VVVV sorting done at   6 Mar 25 10:26:58
 
  Reading Coulomb integrals :
- File date :       4 Feb 25
- File time :       12:52:21
+ File date :       6 Mar 25
+ File time :       10:26:58
  # of integrals             1802145
 
  Finished sorting of integrals
 
 
- Single determinant electronic energy :      -14.572543219938233
+ Single determinant electronic energy :      -14.572543219938247
 
 
  Checking the orbital energies, the program computes the diagonal elements of the
@@ -1468,10 +1472,10 @@ tot.num. of pos.erg shells:    9    9    9    0
 
 
  Nuclear repulsion + core energy :             0.000000000000000
- Zero order electronic energy :              -10.083868108982390
- First order electronic energy :              -4.488675110955842
- Electronic energy :                         -14.572543219938233
- SCF energy :                                -14.572543219938233
+ Zero order electronic energy :              -10.083868108982395
+ First order electronic energy :              -4.488675110955850
+ Electronic energy :                         -14.572543219938247
+ SCF energy :                                -14.572543219938247
  
  INFO: (P-)EOM-MBPT(2) requested
  
@@ -1485,10 +1489,10 @@ tot.num. of pos.erg shells:    9    9    9    0
 
   MP2 results
 
- SCF energy :                                -14.572543219938233
+ SCF energy :                                -14.572543219938247
  MP2 correlation energy :                     -0.062853962118611
- Total MP2 energy :                          -14.635397182056844
- T1 diagnostic :                               0.000000000239974
+ Total MP2 energy :                          -14.635397182056858
+ T1 diagnostic :                               0.000000000239972
 
 
  CCSD options :
@@ -1502,17 +1506,17 @@ tot.num. of pos.erg shells:    9    9    9    0
     1       -0.074409430451991   0.001296054186297   0.01059
     2       -0.083312081126447   0.000711606698199   0.02202
     3       -0.083422609625211   0.000092759749634   0.02311
-    4       -0.083571389539590   0.000014584136148   0.02325
+    4       -0.083571389539591   0.000014584136148   0.02325
     5       -0.083547124108825   0.000003342379498   0.02322
     6       -0.083546191568346   0.000000645615892   0.02322
-    7       -0.083546879776563   0.000000230454439   0.02321
-    8       -0.083546887566523   0.000000085006049   0.02321
-    9       -0.083546812792348   0.000000014866632   0.02321
+    7       -0.083546879776564   0.000000230454439   0.02321
+    8       -0.083546887566524   0.000000085006049   0.02321
+    9       -0.083546812792349   0.000000014866632   0.02321
    10       -0.083546833641044   0.000000003867541   0.02321
-   11       -0.083546832182467   0.000000000897486   0.02321
+   11       -0.083546832182468   0.000000000897486   0.02321
    12       -0.083546832552826   0.000000000266670   0.02321
-   13       -0.083546832553484   0.000000000073053   0.02321
-   14       -0.083546832455819   0.000000000022198   0.02321
+   13       -0.083546832553485   0.000000000073053   0.02321
+   14       -0.083546832455820   0.000000000022198   0.02321
    15       -0.083546832430123   0.000000000006266   0.02321
    16       -0.083546832422333   0.000000000001577   0.02321
    17       -0.083546832420074   0.000000000000448   0.02321
@@ -1520,10 +1524,10 @@ tot.num. of pos.erg shells:    9    9    9    0
 
   CCSD results
 
- SCF energy :                                -14.572543219938233
+ SCF energy :                                -14.572543219938247
  CCSD correlation energy :                    -0.083546832420074
- Total CCSD energy :                         -14.656090052358307
- T1 diagnostic :                               0.023212073618822
+ Total CCSD energy :                         -14.656090052358321
+ T1 diagnostic :                               0.023212073618816
  Convergence :                                 0.000000000000448
  Number or iterations used :                                  17
   
@@ -1614,7 +1618,7 @@ tot.num. of pos.erg shells:    9    9    9    0
  
  Iteration            1
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.282125637483E+00
     Eigenvalue      2 :   0.282907872813E+00
     Eigenvalue      3 :   0.304032401338E+00
@@ -1628,10 +1632,10 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            2
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.249367254133E+00
-    Eigenvalue      2 :   0.254462752366E+00
-    Eigenvalue      3 :   0.287969799735E+00
+    Eigenvalue      2 :   0.254462752365E+00
+    Eigenvalue      3 :   0.287969799734E+00
     Eigenvalue      4 :   0.298185963305E+00
     Eigenvalue      5 :   0.298530253682E+00
     Root      1  ||q_k,M||   0.117546E+00
@@ -1642,12 +1646,12 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            3
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.228085226404E+00
     Eigenvalue      2 :   0.239106774743E+00
     Eigenvalue      3 :   0.281173957547E+00
-    Eigenvalue      4 :   0.287102059540E+00
-    Eigenvalue      5 :   0.289820944147E+00
+    Eigenvalue      4 :   0.287102059539E+00
+    Eigenvalue      5 :   0.289820944146E+00
     Root      1  ||q_k,M||   0.100802E+00
     Root      2  ||q_k,M||   0.868705E-01
     Root      3  ||q_k,M||   0.101856E+00
@@ -1656,11 +1660,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            4
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.221729928891E+00
-    Eigenvalue      2 :   0.234130780230E+00
-    Eigenvalue      3 :   0.270599737232E+00
-    Eigenvalue      4 :   0.280298102746E+00
+    Eigenvalue      2 :   0.234130780231E+00
+    Eigenvalue      3 :   0.270599737231E+00
+    Eigenvalue      4 :   0.280298102745E+00
     Eigenvalue      5 :   0.283297228252E+00
     Root      1  ||q_k,M||   0.441215E-01
     Root      2  ||q_k,M||   0.384822E-01
@@ -1670,8 +1674,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            5
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.220403307361E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.220403307360E+00
     Eigenvalue      2 :   0.232925885967E+00
     Eigenvalue      3 :   0.268686588544E+00
     Eigenvalue      4 :   0.278104737102E+00
@@ -1684,11 +1688,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            6
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.220286554757E+00
-    Eigenvalue      2 :   0.232808309411E+00
+    Eigenvalue      2 :   0.232808309412E+00
     Eigenvalue      3 :   0.265386508325E+00
-    Eigenvalue      4 :   0.277665022087E+00
+    Eigenvalue      4 :   0.277665022086E+00
     Eigenvalue      5 :   0.281165840440E+00
     Root      1  ||q_k,M||   0.474936E-02
     Root      2  ||q_k,M||   0.426672E-02
@@ -1698,12 +1702,12 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            7
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.220276362552E+00
-    Eigenvalue      2 :   0.232796958113E+00
-    Eigenvalue      3 :   0.260502836371E+00
+    Eigenvalue      2 :   0.232796958114E+00
+    Eigenvalue      3 :   0.260502836370E+00
     Eigenvalue      4 :   0.277627360044E+00
-    Eigenvalue      5 :   0.281118603974E+00
+    Eigenvalue      5 :   0.281118603975E+00
     Root      1  ||q_k,M||   0.163237E-02
     Root      2  ||q_k,M||   0.258799E-02
     Root      3  ||q_k,M||   0.681547E-01
@@ -1712,8 +1716,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            8
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.220273775840E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.220273775839E+00
     Eigenvalue      2 :   0.232786980231E+00
     Eigenvalue      3 :   0.250298023014E+00
     Eigenvalue      4 :   0.276181476307E+00
@@ -1726,7 +1730,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            9
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.220272969676E+00
     Eigenvalue      2 :   0.232778416442E+00
     Eigenvalue      3 :   0.247385788620E+00
@@ -1740,9 +1744,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           10
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.220272750079E+00
-    Eigenvalue      2 :   0.232774060403E+00
+    Eigenvalue      2 :   0.232774060404E+00
     Eigenvalue      3 :   0.246277126115E+00
     Eigenvalue      4 :   0.269857569277E+00
     Eigenvalue      5 :   0.277611777175E+00
@@ -1754,7 +1758,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           11
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.220272728845E+00
     Eigenvalue      2 :   0.232773181675E+00
     Eigenvalue      3 :   0.246074063255E+00
@@ -1768,8 +1772,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           12
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.220272735238E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.220272735237E+00
     Eigenvalue      2 :   0.232773108358E+00
     Eigenvalue      3 :   0.246054592311E+00
     Eigenvalue      4 :   0.268825204572E+00
@@ -1782,9 +1786,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           13
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.220272737394E+00
-    Eigenvalue      2 :   0.232773155067E+00
+    Eigenvalue      2 :   0.232773155068E+00
     Eigenvalue      3 :   0.246052317329E+00
     Eigenvalue      4 :   0.268785704041E+00
     Eigenvalue      5 :   0.277611786000E+00
@@ -1796,7 +1800,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           14
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.220272737806E+00
     Eigenvalue      2 :   0.232773182421E+00
     Eigenvalue      3 :   0.246051676239E+00
@@ -1810,10 +1814,10 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           15
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.220272737767E+00
     Eigenvalue      2 :   0.232773190628E+00
-    Eigenvalue      3 :   0.246051375368E+00
+    Eigenvalue      3 :   0.246051375367E+00
     Eigenvalue      4 :   0.268780303187E+00
     Eigenvalue      5 :   0.277611785787E+00
     Root      1  ||q_k,M||   0.150916E-06
@@ -1824,12 +1828,12 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           16
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.220272737746E+00
-    Eigenvalue      2 :   0.232773193253E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.220272737745E+00
+    Eigenvalue      2 :   0.232773193254E+00
     Eigenvalue      3 :   0.246051324437E+00
     Eigenvalue      4 :   0.268780162606E+00
-    Eigenvalue      5 :   0.277611785995E+00
+    Eigenvalue      5 :   0.277611785994E+00
     Root      1  ||q_k,M||   0.652104E-07
     Root      2  ||q_k,M||   0.622049E-06
     Root      3  ||q_k,M||   0.669205E-04
@@ -1838,9 +1842,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           17
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.220272737743E+00
-    Eigenvalue      2 :   0.232773193675E+00
+    Eigenvalue      2 :   0.232773193676E+00
     Eigenvalue      3 :   0.246051314385E+00
     Eigenvalue      4 :   0.268780056203E+00
     Eigenvalue      5 :   0.277611786026E+00
@@ -1852,9 +1856,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           18
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.220272737742E+00
-    Eigenvalue      2 :   0.232773193659E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.220272737741E+00
+    Eigenvalue      2 :   0.232773193660E+00
     Eigenvalue      3 :   0.246051304048E+00
     Eigenvalue      4 :   0.268780024035E+00
     Eigenvalue      5 :   0.277611786016E+00
@@ -1866,9 +1870,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           19
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.220272737742E+00
-    Eigenvalue      2 :   0.232773193574E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.220272737741E+00
+    Eigenvalue      2 :   0.232773193575E+00
     Eigenvalue      3 :   0.246051300564E+00
     Eigenvalue      4 :   0.268780017008E+00
     Eigenvalue      5 :   0.277611786016E+00
@@ -1880,13 +1884,13 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           20
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.220272737742E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.220272737741E+00
     Eigenvalue      2 :   0.232773193561E+00
     Eigenvalue      3 :   0.246051300879E+00
     Eigenvalue      4 :   0.268780019884E+00
     Eigenvalue      5 :   0.277611786016E+00
-    Root      1  ||q_k,M||   0.273122E-08     <<< converged ! 
+    Root      1  ||q_k,M||   0.273121E-08     <<< converged ! 
     Root      2  ||q_k,M||   0.147654E-07
     Root      3  ||q_k,M||   0.163871E-05
     Root      4  ||q_k,M||   0.652879E-05
@@ -1894,13 +1898,13 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           21
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.220272737742E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.220272737741E+00
     Eigenvalue      2 :   0.232773193566E+00
     Eigenvalue      3 :   0.246051301905E+00
     Eigenvalue      4 :   0.268780021654E+00
     Eigenvalue      5 :   0.277611786016E+00
-    Root      1  ||q_k,M||   0.273121E-08     <<< converged ! 
+    Root      1  ||q_k,M||   0.273122E-08     <<< converged ! 
     Root      2  ||q_k,M||   0.495509E-08     <<< converged ! 
     Root      3  ||q_k,M||   0.740375E-06
     Root      4  ||q_k,M||   0.249056E-05
@@ -1908,8 +1912,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           22
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.220272737742E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.220272737741E+00
     Eigenvalue      2 :   0.232773193566E+00
     Eigenvalue      3 :   0.246051302454E+00
     Eigenvalue      4 :   0.268780021375E+00
@@ -1922,22 +1926,22 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           23
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.220272737742E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.220272737741E+00
     Eigenvalue      2 :   0.232773193566E+00
     Eigenvalue      3 :   0.246051302490E+00
     Eigenvalue      4 :   0.268780021645E+00
     Eigenvalue      5 :   0.277611786016E+00
-    Root      1  ||q_k,M||   0.273121E-08     <<< converged ! 
+    Root      1  ||q_k,M||   0.273122E-08     <<< converged ! 
     Root      2  ||q_k,M||   0.495509E-08     <<< converged ! 
     Root      3  ||q_k,M||   0.115115E-06
-    Root      4  ||q_k,M||   0.383442E-06
+    Root      4  ||q_k,M||   0.383443E-06
     Root      5  ||q_k,M||   0.598939E-08     <<< converged ! 
   
  Iteration           24
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.220272737742E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.220272737741E+00
     Eigenvalue      2 :   0.232773193566E+00
     Eigenvalue      3 :   0.246051302455E+00
     Eigenvalue      4 :   0.268780021864E+00
@@ -1950,13 +1954,13 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           25
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.220272737742E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.220272737741E+00
     Eigenvalue      2 :   0.232773193566E+00
     Eigenvalue      3 :   0.246051302436E+00
     Eigenvalue      4 :   0.268780021915E+00
     Eigenvalue      5 :   0.277611786016E+00
-    Root      1  ||q_k,M||   0.273122E-08     <<< converged ! 
+    Root      1  ||q_k,M||   0.273121E-08     <<< converged ! 
     Root      2  ||q_k,M||   0.495509E-08     <<< converged ! 
     Root      3  ||q_k,M||   0.211890E-07
     Root      4  ||q_k,M||   0.883523E-07
@@ -1964,8 +1968,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           26
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.220272737742E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.220272737741E+00
     Eigenvalue      2 :   0.232773193566E+00
     Eigenvalue      3 :   0.246051302439E+00
     Eigenvalue      4 :   0.268780021872E+00
@@ -1978,8 +1982,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           27
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.220272737742E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.220272737741E+00
     Eigenvalue      2 :   0.232773193566E+00
     Eigenvalue      3 :   0.246051302440E+00
     Eigenvalue      4 :   0.268780021844E+00
@@ -1987,7 +1991,7 @@ tot.num. of pos.erg shells:    9    9    9    0
     Root      1  ||q_k,M||   0.273122E-08     <<< converged ! 
     Root      2  ||q_k,M||   0.495509E-08     <<< converged ! 
     Root      3  ||q_k,M||   0.493502E-08     <<< converged ! 
-    Root      4  ||q_k,M||   0.678286E-08     <<< converged ! 
+    Root      4  ||q_k,M||   0.678285E-08     <<< converged ! 
     Root      5  ||q_k,M||   0.598939E-08     <<< converged ! 
   
  All roots converged.
@@ -2001,10 +2005,10 @@ tot.num. of pos.erg shells:    9    9    9    0
 
  Level   Abs eigenvalue      Total Energy   (atomic units)
 
-    1     0.2202727377    -14.435817314616  
-    2     0.2327731936    -14.423316858793  
+    1     0.2202727377    -14.435817314617  
+    2     0.2327731936    -14.423316858792  
     3     0.2460513024    -14.410038749918  
-    4     0.2687800218    -14.387310030514  
+    4     0.2687800218    -14.387310030515  
     5     0.2776117860    -14.378478266342  
 --------------------------------------------------------------------------------
 
@@ -2015,76 +2019,72 @@ tot.num. of pos.erg shells:    9    9    9    0
 
  Irrep Ag 0 State     1    -14.43581731      0.22027274
         0.11848    Ag a #   2 (  -0.309) -> Ag a #   3 (   0.001)   
-       -0.28830    Ag a #   2 (  -0.309) -> Ag a #   4 (   0.008)   
-       -0.45551    Ag a #   2 (  -0.309) -> Ag a #   7 (   0.029)   
+        0.28830    Ag a #   2 (  -0.309) -> Ag a #   4 (   0.008)   
+        0.45551    Ag a #   2 (  -0.309) -> Ag a #   7 (   0.029)   
        -0.39731    Ag a #   2 (  -0.309) -> Ag a #  10 (   0.096)   
        -0.14354    Ag a #   2 (  -0.309) -> Ag a #  13 (   0.341)   
        -0.11848    Ag b #   2 (  -0.309) -> Ag b #   3 (   0.001)   
-        0.28830    Ag b #   2 (  -0.309) -> Ag b #   4 (   0.008)   
-        0.45551    Ag b #   2 (  -0.309) -> Ag b #   7 (   0.029)   
+       -0.28830    Ag b #   2 (  -0.309) -> Ag b #   4 (   0.008)   
+       -0.45551    Ag b #   2 (  -0.309) -> Ag b #   7 (   0.029)   
         0.39731    Ag b #   2 (  -0.309) -> Ag b #  10 (   0.096)   
         0.14354    Ag b #   2 (  -0.309) -> Ag b #  13 (   0.341)   
 
  Irrep Ag 0 State     2    -14.42331686      0.23277319
         0.14575    Ag a #   2 (  -0.309) -> Ag a #   3 (   0.001)   
-       -0.34048    Ag a #   2 (  -0.309) -> Ag a #   4 (   0.008)   
-       -0.47852    Ag a #   2 (  -0.309) -> Ag a #   7 (   0.029)   
+        0.34048    Ag a #   2 (  -0.309) -> Ag a #   4 (   0.008)   
+        0.47852    Ag a #   2 (  -0.309) -> Ag a #   7 (   0.029)   
        -0.31716    Ag a #   2 (  -0.309) -> Ag a #  10 (   0.096)   
         0.14575    Ag b #   2 (  -0.309) -> Ag b #   3 (   0.001)   
-       -0.34048    Ag b #   2 (  -0.309) -> Ag b #   4 (   0.008)   
-       -0.47852    Ag b #   2 (  -0.309) -> Ag b #   7 (   0.029)   
+        0.34048    Ag b #   2 (  -0.309) -> Ag b #   4 (   0.008)   
+        0.47852    Ag b #   2 (  -0.309) -> Ag b #   7 (   0.029)   
        -0.31716    Ag b #   2 (  -0.309) -> Ag b #  10 (   0.096)   
 
  Irrep Ag 0 State     3    -14.41003875      0.24605130
-        0.25013    Ag a #   2 (  -0.309) -> Ag a #   8 (   0.056)   
-       -0.20545    Ag a #   2 (  -0.309) -> Ag a #   9 (   0.056)   
-       -0.17249    Ag a #   2 (  -0.309) -> Ag a #  11 (   0.236)   
-       -0.22277    Ag a #   2 (  -0.309) -> Ag a #  12 (   0.236)   
-        0.25013    Ag b #   2 (  -0.309) -> Ag b #   8 (   0.056)   
-       -0.20545    Ag b #   2 (  -0.309) -> Ag b #   9 (   0.056)   
-       -0.17249    Ag b #   2 (  -0.309) -> Ag b #  11 (   0.236)   
-       -0.22277    Ag b #   2 (  -0.309) -> Ag b #  12 (   0.236)   
-        0.11169    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   3 (   0.022), B2ua #   3 (   0.022)       
-        0.17330    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   4 (   0.046), B2ua #   3 (   0.022)       
-       -0.14808    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   5 (   0.108), B2ua #   3 (   0.022)       
-        0.17330    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   3 (   0.022), B2ua #   4 (   0.046)       
-        0.26544    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   4 (   0.046), B2ua #   4 (   0.046)       
-       -0.22025    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   5 (   0.108), B2ua #   4 (   0.046)       
-       -0.10758    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   6 (   0.311), B2ua #   4 (   0.046)       
-       -0.14808    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   3 (   0.022), B2ua #   5 (   0.108)       
-       -0.22025    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   4 (   0.046), B2ua #   5 (   0.108)       
-        0.16978    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   5 (   0.108), B2ua #   5 (   0.108)       
-       -0.10758    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   4 (   0.046), B2ua #   6 (   0.311)       
-       -0.12289    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   4 (   0.046), B1ua #   3 (   0.022)       
-        0.10500    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   5 (   0.108), B1ua #   3 (   0.022)       
-       -0.12289    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   3 (   0.022), B1ua #   4 (   0.046)       
-       -0.18822    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   4 (   0.046), B1ua #   4 (   0.046)       
-        0.15618    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   5 (   0.108), B1ua #   4 (   0.046)       
-        0.10500    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   3 (   0.022), B1ua #   5 (   0.108)       
-        0.15618    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   4 (   0.046), B1ua #   5 (   0.108)       
-       -0.12039    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   5 (   0.108), B1ua #   5 (   0.108)       
+        0.31845    Ag a #   2 (  -0.309) -> Ag a #   9 (   0.056)   
+        0.19179    Ag a #   2 (  -0.309) -> Ag a #  11 (   0.236)   
+       -0.20639    Ag a #   2 (  -0.309) -> Ag a #  12 (   0.236)   
+        0.31845    Ag b #   2 (  -0.309) -> Ag b #   9 (   0.056)   
+        0.19179    Ag b #   2 (  -0.309) -> Ag b #  11 (   0.236)   
+       -0.20639    Ag b #   2 (  -0.309) -> Ag b #  12 (   0.236)   
+        0.15032    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B3ub #   4 (   0.046), B3ua #   3 (   0.022)       
+       -0.12844    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B3ub #   5 (   0.108), B3ua #   3 (   0.022)       
+        0.15032    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B3ub #   3 (   0.022), B3ua #   4 (   0.046)       
+        0.23024    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B3ub #   4 (   0.046), B3ua #   4 (   0.046)       
+       -0.19104    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B3ub #   5 (   0.108), B3ua #   4 (   0.046)       
+       -0.12844    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B3ub #   3 (   0.022), B3ua #   5 (   0.108)       
+       -0.19104    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B3ub #   4 (   0.046), B3ua #   5 (   0.108)       
+        0.14727    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B3ub #   5 (   0.108), B3ua #   5 (   0.108)       
+       -0.10194    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   3 (   0.022), B1ua #   3 (   0.022)       
+       -0.15817    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   4 (   0.046), B1ua #   3 (   0.022)       
+        0.13515    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   5 (   0.108), B1ua #   3 (   0.022)       
+       -0.15817    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   3 (   0.022), B1ua #   4 (   0.046)       
+       -0.24227    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   4 (   0.046), B1ua #   4 (   0.046)       
+        0.20102    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   5 (   0.108), B1ua #   4 (   0.046)       
+        0.13515    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   3 (   0.022), B1ua #   5 (   0.108)       
+        0.20102    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   4 (   0.046), B1ua #   5 (   0.108)       
+       -0.15496    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   5 (   0.108), B1ua #   5 (   0.108)       
 
  Irrep Ag 0 State     4    -14.38731003      0.26878002
-        0.28268    Ag a #   2 (  -0.309) -> Ag a #   6 (   0.011)   
-       -0.47097    Ag a #   2 (  -0.309) -> Ag a #   8 (   0.056)   
-        0.38683    Ag a #   2 (  -0.309) -> Ag a #   9 (   0.056)   
-        0.10893    Ag a #   2 (  -0.309) -> Ag a #  11 (   0.236)   
-        0.14069    Ag a #   2 (  -0.309) -> Ag a #  12 (   0.236)   
-       -0.28268    Ag b #   2 (  -0.309) -> Ag b #   6 (   0.011)   
-        0.47097    Ag b #   2 (  -0.309) -> Ag b #   8 (   0.056)   
-       -0.38683    Ag b #   2 (  -0.309) -> Ag b #   9 (   0.056)   
-       -0.10893    Ag b #   2 (  -0.309) -> Ag b #  11 (   0.236)   
-       -0.14069    Ag b #   2 (  -0.309) -> Ag b #  12 (   0.236)   
+       -0.28268    Ag a #   2 (  -0.309) -> Ag a #   6 (   0.011)   
+       -0.10924    Ag a #   2 (  -0.309) -> Ag a #   8 (   0.056)   
+       -0.59959    Ag a #   2 (  -0.309) -> Ag a #   9 (   0.056)   
+       -0.12112    Ag a #   2 (  -0.309) -> Ag a #  11 (   0.236)   
+        0.13034    Ag a #   2 (  -0.309) -> Ag a #  12 (   0.236)   
+        0.28268    Ag b #   2 (  -0.309) -> Ag b #   6 (   0.011)   
+        0.10924    Ag b #   2 (  -0.309) -> Ag b #   8 (   0.056)   
+        0.59959    Ag b #   2 (  -0.309) -> Ag b #   9 (   0.056)   
+        0.12112    Ag b #   2 (  -0.309) -> Ag b #  11 (   0.236)   
+       -0.13034    Ag b #   2 (  -0.309) -> Ag b #  12 (   0.236)   
 
  Irrep Ag 0 State     5    -14.37847827      0.27761179
-        0.37362    Ag a #   2 (  -0.309) -> Ag a #   3 (   0.001)   
+       -0.37362    Ag a #   2 (  -0.309) -> Ag a #   3 (   0.001)   
        -0.47155    Ag a #   2 (  -0.309) -> Ag a #   4 (   0.008)   
-        0.32620    Ag a #   2 (  -0.309) -> Ag a #  10 (   0.096)   
-        0.10347    Ag a #   2 (  -0.309) -> Ag a #  13 (   0.341)   
-       -0.37362    Ag b #   2 (  -0.309) -> Ag b #   3 (   0.001)   
+       -0.32620    Ag a #   2 (  -0.309) -> Ag a #  10 (   0.096)   
+       -0.10347    Ag a #   2 (  -0.309) -> Ag a #  13 (   0.341)   
+        0.37362    Ag b #   2 (  -0.309) -> Ag b #   3 (   0.001)   
         0.47155    Ag b #   2 (  -0.309) -> Ag b #   4 (   0.008)   
-       -0.32620    Ag b #   2 (  -0.309) -> Ag b #  10 (   0.096)   
-       -0.10347    Ag b #   2 (  -0.309) -> Ag b #  13 (   0.341)   
+        0.32620    Ag b #   2 (  -0.309) -> Ag b #  10 (   0.096)   
+        0.10347    Ag b #   2 (  -0.309) -> Ag b #  13 (   0.341)   
 ================================================================================
  
  Configuration variables for matrix-free diagonalizer
@@ -2124,7 +2124,7 @@ tot.num. of pos.erg shells:    9    9    9    0
  
  Iteration            1
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.249999287840E+00
     Eigenvalue      2 :   0.291077409844E+00
     Eigenvalue      3 :   0.304675791654E+00
@@ -2138,11 +2138,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            2
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.147365110962E+00
-    Eigenvalue      2 :   0.239746500928E+00
+    Eigenvalue      2 :   0.239746500926E+00
     Eigenvalue      3 :   0.282454322224E+00
-    Eigenvalue      4 :   0.300409020566E+00
+    Eigenvalue      4 :   0.300409020565E+00
     Eigenvalue      5 :   0.304407037066E+00
     Root      1  ||q_k,M||   0.186456E+00
     Root      2  ||q_k,M||   0.160598E+00
@@ -2152,11 +2152,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            3
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.916946452574E-01
-    Eigenvalue      2 :   0.194709844802E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.916946452571E-01
+    Eigenvalue      2 :   0.194709844800E+00
     Eigenvalue      3 :   0.264521128339E+00
-    Eigenvalue      4 :   0.283168578736E+00
+    Eigenvalue      4 :   0.283168578735E+00
     Eigenvalue      5 :   0.295839713189E+00
     Root      1  ||q_k,M||   0.114963E+00
     Root      2  ||q_k,M||   0.126893E+00
@@ -2166,11 +2166,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            4
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.839524380374E-01
-    Eigenvalue      2 :   0.181938550669E+00
+    Eigenvalue      2 :   0.181938550668E+00
     Eigenvalue      3 :   0.256132743872E+00
-    Eigenvalue      4 :   0.270871542506E+00
+    Eigenvalue      4 :   0.270871542504E+00
     Eigenvalue      5 :   0.291388969031E+00
     Root      1  ||q_k,M||   0.378210E-01
     Root      2  ||q_k,M||   0.623723E-01
@@ -2180,11 +2180,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            5
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.833185179415E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.833185179416E-01
     Eigenvalue      2 :   0.179202484089E+00
     Eigenvalue      3 :   0.253019882759E+00
-    Eigenvalue      4 :   0.262011171540E+00
+    Eigenvalue      4 :   0.262011171539E+00
     Eigenvalue      5 :   0.288897708520E+00
     Root      1  ||q_k,M||   0.108159E-01
     Root      2  ||q_k,M||   0.276315E-01
@@ -2194,8 +2194,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            6
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832562027319E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832562027320E-01
     Eigenvalue      2 :   0.178831755052E+00
     Eigenvalue      3 :   0.252474867543E+00
     Eigenvalue      4 :   0.259305145939E+00
@@ -2208,10 +2208,10 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            7
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832450854422E-01
-    Eigenvalue      2 :   0.178787439135E+00
-    Eigenvalue      3 :   0.252333812688E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832450854423E-01
+    Eigenvalue      2 :   0.178787439136E+00
+    Eigenvalue      3 :   0.252333812687E+00
     Eigenvalue      4 :   0.258243684375E+00
     Eigenvalue      5 :   0.288314790210E+00
     Root      1  ||q_k,M||   0.100132E-02
@@ -2222,9 +2222,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            8
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832409129368E-01
-    Eigenvalue      2 :   0.178787310301E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832409129369E-01
+    Eigenvalue      2 :   0.178787310302E+00
     Eigenvalue      3 :   0.252309348044E+00
     Eigenvalue      4 :   0.258007968183E+00
     Eigenvalue      5 :   0.288283391576E+00
@@ -2236,8 +2236,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            9
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832398590438E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832398590439E-01
     Eigenvalue      2 :   0.178788904069E+00
     Eigenvalue      3 :   0.252304993189E+00
     Eigenvalue      4 :   0.257989700671E+00
@@ -2250,11 +2250,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           10
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397321142E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397321143E-01
     Eigenvalue      2 :   0.178789348625E+00
     Eigenvalue      3 :   0.252304264847E+00
-    Eigenvalue      4 :   0.257986206665E+00
+    Eigenvalue      4 :   0.257986206664E+00
     Eigenvalue      5 :   0.288278740379E+00
     Root      1  ||q_k,M||   0.208015E-04
     Root      2  ||q_k,M||   0.211050E-03
@@ -2264,8 +2264,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           11
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397245518E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397245519E-01
     Eigenvalue      2 :   0.178789403387E+00
     Eigenvalue      3 :   0.252303997873E+00
     Eigenvalue      4 :   0.257985173831E+00
@@ -2278,8 +2278,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           12
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397263702E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397263703E-01
     Eigenvalue      2 :   0.178789392897E+00
     Eigenvalue      3 :   0.252303920502E+00
     Eigenvalue      4 :   0.257984700444E+00
@@ -2292,9 +2292,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           13
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397273280E-01
-    Eigenvalue      2 :   0.178789387956E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397273281E-01
+    Eigenvalue      2 :   0.178789387957E+00
     Eigenvalue      3 :   0.252303919821E+00
     Eigenvalue      4 :   0.257984695580E+00
     Eigenvalue      5 :   0.288278445870E+00
@@ -2306,11 +2306,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           14
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.832397275742E-01
     Eigenvalue      2 :   0.178789387268E+00
     Eigenvalue      3 :   0.252303923375E+00
-    Eigenvalue      4 :   0.257984722269E+00
+    Eigenvalue      4 :   0.257984722268E+00
     Eigenvalue      5 :   0.288278452353E+00
     Root      1  ||q_k,M||   0.764787E-07
     Root      2  ||q_k,M||   0.194626E-05
@@ -2320,9 +2320,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           15
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276145E-01
-    Eigenvalue      2 :   0.178789387071E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276146E-01
+    Eigenvalue      2 :   0.178789387072E+00
     Eigenvalue      3 :   0.252303925284E+00
     Eigenvalue      4 :   0.257984724938E+00
     Eigenvalue      5 :   0.288278453903E+00
@@ -2334,8 +2334,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           16
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276198E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276199E-01
     Eigenvalue      2 :   0.178789387046E+00
     Eigenvalue      3 :   0.252303925627E+00
     Eigenvalue      4 :   0.257984723172E+00
@@ -2348,22 +2348,22 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           17
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276195E-01
-    Eigenvalue      2 :   0.178789387067E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276196E-01
+    Eigenvalue      2 :   0.178789387068E+00
     Eigenvalue      3 :   0.252303925551E+00
     Eigenvalue      4 :   0.257984723149E+00
     Eigenvalue      5 :   0.288278454529E+00
     Root      1  ||q_k,M||   0.313385E-08     <<< converged ! 
     Root      2  ||q_k,M||   0.548081E-07
-    Root      3  ||q_k,M||   0.272550E-06
+    Root      3  ||q_k,M||   0.272549E-06
     Root      4  ||q_k,M||   0.165927E-05
     Root      5  ||q_k,M||   0.901026E-06
   
  Iteration           18
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276197E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276198E-01
     Eigenvalue      2 :   0.178789387087E+00
     Eigenvalue      3 :   0.252303925504E+00
     Eigenvalue      4 :   0.257984723682E+00
@@ -2376,8 +2376,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           19
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276200E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276201E-01
     Eigenvalue      2 :   0.178789387089E+00
     Eigenvalue      3 :   0.252303925505E+00
     Eigenvalue      4 :   0.257984723796E+00
@@ -2390,8 +2390,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           20
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276200E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276201E-01
     Eigenvalue      2 :   0.178789387089E+00
     Eigenvalue      3 :   0.252303925500E+00
     Eigenvalue      4 :   0.257984723694E+00
@@ -2404,8 +2404,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           21
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276201E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276202E-01
     Eigenvalue      2 :   0.178789387089E+00
     Eigenvalue      3 :   0.252303925498E+00
     Eigenvalue      4 :   0.257984723673E+00
@@ -2418,8 +2418,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           22
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276200E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276201E-01
     Eigenvalue      2 :   0.178789387089E+00
     Eigenvalue      3 :   0.252303925499E+00
     Eigenvalue      4 :   0.257984723681E+00
@@ -2500,18 +2500,18 @@ tot.num. of pos.erg shells:    9    9    9    0
         0.15048    Ag b #   2 (  -0.309) -> B3ub #   6 (   0.311)   
 
  Irrep B3u0 State     5    -14.36781160      0.28827845
-       -0.34470    Ag a #   2 (  -0.309) -> B3ua #   1 (   0.002)   
-       -0.45878    Ag a #   2 (  -0.309) -> B3ua #   2 (   0.009)   
-       -0.21682    Ag a #   2 (  -0.309) -> B3ua #   3 (   0.022)   
-       -0.21421    Ag a #   2 (  -0.309) -> B3ua #   4 (   0.046)   
-       -0.22340    Ag a #   2 (  -0.309) -> B3ua #   5 (   0.108)   
-       -0.11623    Ag a #   2 (  -0.309) -> B3ua #   6 (   0.311)   
-        0.34470    Ag b #   2 (  -0.309) -> B3ub #   1 (   0.002)   
-        0.45878    Ag b #   2 (  -0.309) -> B3ub #   2 (   0.009)   
-        0.21682    Ag b #   2 (  -0.309) -> B3ub #   3 (   0.022)   
-        0.21421    Ag b #   2 (  -0.309) -> B3ub #   4 (   0.046)   
-        0.22340    Ag b #   2 (  -0.309) -> B3ub #   5 (   0.108)   
-        0.11623    Ag b #   2 (  -0.309) -> B3ub #   6 (   0.311)   
+        0.34470    Ag a #   2 (  -0.309) -> B3ua #   1 (   0.002)   
+        0.45878    Ag a #   2 (  -0.309) -> B3ua #   2 (   0.009)   
+        0.21682    Ag a #   2 (  -0.309) -> B3ua #   3 (   0.022)   
+        0.21421    Ag a #   2 (  -0.309) -> B3ua #   4 (   0.046)   
+        0.22340    Ag a #   2 (  -0.309) -> B3ua #   5 (   0.108)   
+        0.11623    Ag a #   2 (  -0.309) -> B3ua #   6 (   0.311)   
+       -0.34470    Ag b #   2 (  -0.309) -> B3ub #   1 (   0.002)   
+       -0.45878    Ag b #   2 (  -0.309) -> B3ub #   2 (   0.009)   
+       -0.21682    Ag b #   2 (  -0.309) -> B3ub #   3 (   0.022)   
+       -0.21421    Ag b #   2 (  -0.309) -> B3ub #   4 (   0.046)   
+       -0.22340    Ag b #   2 (  -0.309) -> B3ub #   5 (   0.108)   
+       -0.11623    Ag b #   2 (  -0.309) -> B3ub #   6 (   0.311)   
 ================================================================================
  
  Configuration variables for matrix-free diagonalizer
@@ -2551,7 +2551,7 @@ tot.num. of pos.erg shells:    9    9    9    0
  
  Iteration            1
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.249999287840E+00
     Eigenvalue      2 :   0.291077409844E+00
     Eigenvalue      3 :   0.304675791654E+00
@@ -2565,11 +2565,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            2
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.147365110962E+00
-    Eigenvalue      2 :   0.239746500928E+00
+    Eigenvalue      2 :   0.239746500926E+00
     Eigenvalue      3 :   0.282454322224E+00
-    Eigenvalue      4 :   0.300409020566E+00
+    Eigenvalue      4 :   0.300409020565E+00
     Eigenvalue      5 :   0.304407037066E+00
     Root      1  ||q_k,M||   0.186456E+00
     Root      2  ||q_k,M||   0.160598E+00
@@ -2579,11 +2579,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            3
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.916946452573E-01
-    Eigenvalue      2 :   0.194709844802E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.916946452571E-01
+    Eigenvalue      2 :   0.194709844801E+00
     Eigenvalue      3 :   0.264521128339E+00
-    Eigenvalue      4 :   0.283168578736E+00
+    Eigenvalue      4 :   0.283168578735E+00
     Eigenvalue      5 :   0.295839713189E+00
     Root      1  ||q_k,M||   0.114963E+00
     Root      2  ||q_k,M||   0.126893E+00
@@ -2593,11 +2593,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            4
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.839524380374E-01
-    Eigenvalue      2 :   0.181938550669E+00
-    Eigenvalue      3 :   0.256132743873E+00
-    Eigenvalue      4 :   0.270871542506E+00
+    Eigenvalue      2 :   0.181938550668E+00
+    Eigenvalue      3 :   0.256132743872E+00
+    Eigenvalue      4 :   0.270871542504E+00
     Eigenvalue      5 :   0.291388969031E+00
     Root      1  ||q_k,M||   0.378210E-01
     Root      2  ||q_k,M||   0.623723E-01
@@ -2607,11 +2607,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            5
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.833185179415E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.833185179416E-01
     Eigenvalue      2 :   0.179202484089E+00
     Eigenvalue      3 :   0.253019882759E+00
-    Eigenvalue      4 :   0.262011171540E+00
+    Eigenvalue      4 :   0.262011171539E+00
     Eigenvalue      5 :   0.288897708520E+00
     Root      1  ||q_k,M||   0.108159E-01
     Root      2  ||q_k,M||   0.276315E-01
@@ -2621,8 +2621,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            6
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832562027319E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832562027320E-01
     Eigenvalue      2 :   0.178831755052E+00
     Eigenvalue      3 :   0.252474867543E+00
     Eigenvalue      4 :   0.259305145939E+00
@@ -2635,10 +2635,10 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            7
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832450854422E-01
-    Eigenvalue      2 :   0.178787439135E+00
-    Eigenvalue      3 :   0.252333812688E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832450854423E-01
+    Eigenvalue      2 :   0.178787439136E+00
+    Eigenvalue      3 :   0.252333812687E+00
     Eigenvalue      4 :   0.258243684374E+00
     Eigenvalue      5 :   0.288314790210E+00
     Root      1  ||q_k,M||   0.100132E-02
@@ -2649,8 +2649,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            8
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832409129368E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832409129369E-01
     Eigenvalue      2 :   0.178787310302E+00
     Eigenvalue      3 :   0.252309348044E+00
     Eigenvalue      4 :   0.258007968183E+00
@@ -2663,8 +2663,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            9
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832398590438E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832398590439E-01
     Eigenvalue      2 :   0.178788904069E+00
     Eigenvalue      3 :   0.252304993189E+00
     Eigenvalue      4 :   0.257989700671E+00
@@ -2677,11 +2677,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           10
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397321142E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397321143E-01
     Eigenvalue      2 :   0.178789348625E+00
     Eigenvalue      3 :   0.252304264847E+00
-    Eigenvalue      4 :   0.257986206665E+00
+    Eigenvalue      4 :   0.257986206664E+00
     Eigenvalue      5 :   0.288278740379E+00
     Root      1  ||q_k,M||   0.208015E-04
     Root      2  ||q_k,M||   0.211050E-03
@@ -2691,8 +2691,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           11
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397245518E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397245519E-01
     Eigenvalue      2 :   0.178789403387E+00
     Eigenvalue      3 :   0.252303997873E+00
     Eigenvalue      4 :   0.257985173831E+00
@@ -2705,8 +2705,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           12
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397263702E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397263703E-01
     Eigenvalue      2 :   0.178789392897E+00
     Eigenvalue      3 :   0.252303920502E+00
     Eigenvalue      4 :   0.257984700444E+00
@@ -2719,8 +2719,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           13
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397273280E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397273281E-01
     Eigenvalue      2 :   0.178789387957E+00
     Eigenvalue      3 :   0.252303919821E+00
     Eigenvalue      4 :   0.257984695580E+00
@@ -2733,11 +2733,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           14
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397275741E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397275742E-01
     Eigenvalue      2 :   0.178789387268E+00
     Eigenvalue      3 :   0.252303923375E+00
-    Eigenvalue      4 :   0.257984722269E+00
+    Eigenvalue      4 :   0.257984722268E+00
     Eigenvalue      5 :   0.288278452353E+00
     Root      1  ||q_k,M||   0.764787E-07
     Root      2  ||q_k,M||   0.194626E-05
@@ -2747,9 +2747,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           15
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276145E-01
-    Eigenvalue      2 :   0.178789387071E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276146E-01
+    Eigenvalue      2 :   0.178789387072E+00
     Eigenvalue      3 :   0.252303925284E+00
     Eigenvalue      4 :   0.257984724938E+00
     Eigenvalue      5 :   0.288278453903E+00
@@ -2761,8 +2761,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           16
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276198E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276199E-01
     Eigenvalue      2 :   0.178789387046E+00
     Eigenvalue      3 :   0.252303925627E+00
     Eigenvalue      4 :   0.257984723172E+00
@@ -2775,22 +2775,22 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           17
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276195E-01
-    Eigenvalue      2 :   0.178789387067E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276196E-01
+    Eigenvalue      2 :   0.178789387068E+00
     Eigenvalue      3 :   0.252303925551E+00
     Eigenvalue      4 :   0.257984723149E+00
     Eigenvalue      5 :   0.288278454529E+00
     Root      1  ||q_k,M||   0.313385E-08     <<< converged ! 
     Root      2  ||q_k,M||   0.548081E-07
-    Root      3  ||q_k,M||   0.272550E-06
+    Root      3  ||q_k,M||   0.272549E-06
     Root      4  ||q_k,M||   0.165927E-05
     Root      5  ||q_k,M||   0.901026E-06
   
  Iteration           18
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276197E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276198E-01
     Eigenvalue      2 :   0.178789387087E+00
     Eigenvalue      3 :   0.252303925504E+00
     Eigenvalue      4 :   0.257984723682E+00
@@ -2803,8 +2803,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           19
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276200E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276201E-01
     Eigenvalue      2 :   0.178789387089E+00
     Eigenvalue      3 :   0.252303925505E+00
     Eigenvalue      4 :   0.257984723796E+00
@@ -2817,8 +2817,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           20
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276200E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276201E-01
     Eigenvalue      2 :   0.178789387089E+00
     Eigenvalue      3 :   0.252303925500E+00
     Eigenvalue      4 :   0.257984723694E+00
@@ -2831,8 +2831,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           21
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276201E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276202E-01
     Eigenvalue      2 :   0.178789387089E+00
     Eigenvalue      3 :   0.252303925498E+00
     Eigenvalue      4 :   0.257984723673E+00
@@ -2845,8 +2845,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           22
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276200E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276201E-01
     Eigenvalue      2 :   0.178789387089E+00
     Eigenvalue      3 :   0.252303925499E+00
     Eigenvalue      4 :   0.257984723681E+00
@@ -2854,7 +2854,7 @@ tot.num. of pos.erg shells:    9    9    9    0
     Root      1  ||q_k,M||   0.295210E-08     <<< converged ! 
     Root      2  ||q_k,M||   0.126387E-08     <<< converged ! 
     Root      3  ||q_k,M||   0.322852E-08     <<< converged ! 
-    Root      4  ||q_k,M||   0.634211E-08     <<< converged ! 
+    Root      4  ||q_k,M||   0.634212E-08     <<< converged ! 
     Root      5  ||q_k,M||   0.567975E-08     <<< converged ! 
   
  All roots converged.
@@ -2901,44 +2901,44 @@ tot.num. of pos.erg shells:    9    9    9    0
         0.27813    Ag b #   2 (  -0.309) -> B2ub #   5 (   0.108)   
 
  Irrep B2u0 State     3    -14.40378613      0.25230393
-        0.10440    Ag a #   2 (  -0.309) -> B2ua #   1 (   0.002)   
-        0.34612    Ag a #   2 (  -0.309) -> B2ua #   2 (   0.009)   
-       -0.46026    Ag a #   2 (  -0.309) -> B2ua #   3 (   0.022)   
-       -0.33928    Ag a #   2 (  -0.309) -> B2ua #   5 (   0.108)   
-       -0.15896    Ag a #   2 (  -0.309) -> B2ua #   6 (   0.311)   
-       -0.10440    Ag b #   2 (  -0.309) -> B2ub #   1 (   0.002)   
-       -0.34612    Ag b #   2 (  -0.309) -> B2ub #   2 (   0.009)   
-        0.46026    Ag b #   2 (  -0.309) -> B2ub #   3 (   0.022)   
-        0.33928    Ag b #   2 (  -0.309) -> B2ub #   5 (   0.108)   
-        0.15896    Ag b #   2 (  -0.309) -> B2ub #   6 (   0.311)   
+       -0.10440    Ag a #   2 (  -0.309) -> B2ua #   1 (   0.002)   
+       -0.34612    Ag a #   2 (  -0.309) -> B2ua #   2 (   0.009)   
+        0.46026    Ag a #   2 (  -0.309) -> B2ua #   3 (   0.022)   
+        0.33928    Ag a #   2 (  -0.309) -> B2ua #   5 (   0.108)   
+        0.15896    Ag a #   2 (  -0.309) -> B2ua #   6 (   0.311)   
+        0.10440    Ag b #   2 (  -0.309) -> B2ub #   1 (   0.002)   
+        0.34612    Ag b #   2 (  -0.309) -> B2ub #   2 (   0.009)   
+       -0.46026    Ag b #   2 (  -0.309) -> B2ub #   3 (   0.022)   
+       -0.33928    Ag b #   2 (  -0.309) -> B2ub #   5 (   0.108)   
+       -0.15896    Ag b #   2 (  -0.309) -> B2ub #   6 (   0.311)   
 
  Irrep B2u0 State     4    -14.39810533      0.25798472
-        0.11313    Ag a #   2 (  -0.309) -> B2ua #   1 (   0.002)   
-        0.34993    Ag a #   2 (  -0.309) -> B2ua #   2 (   0.009)   
-       -0.37752    Ag a #   2 (  -0.309) -> B2ua #   3 (   0.022)   
-        0.15030    Ag a #   2 (  -0.309) -> B2ua #   4 (   0.046)   
-       -0.38495    Ag a #   2 (  -0.309) -> B2ua #   5 (   0.108)   
-       -0.15048    Ag a #   2 (  -0.309) -> B2ua #   6 (   0.311)   
-        0.11313    Ag b #   2 (  -0.309) -> B2ub #   1 (   0.002)   
-        0.34993    Ag b #   2 (  -0.309) -> B2ub #   2 (   0.009)   
-       -0.37752    Ag b #   2 (  -0.309) -> B2ub #   3 (   0.022)   
-        0.15030    Ag b #   2 (  -0.309) -> B2ub #   4 (   0.046)   
-       -0.38495    Ag b #   2 (  -0.309) -> B2ub #   5 (   0.108)   
-       -0.15048    Ag b #   2 (  -0.309) -> B2ub #   6 (   0.311)   
+       -0.11313    Ag a #   2 (  -0.309) -> B2ua #   1 (   0.002)   
+       -0.34993    Ag a #   2 (  -0.309) -> B2ua #   2 (   0.009)   
+        0.37752    Ag a #   2 (  -0.309) -> B2ua #   3 (   0.022)   
+       -0.15030    Ag a #   2 (  -0.309) -> B2ua #   4 (   0.046)   
+        0.38495    Ag a #   2 (  -0.309) -> B2ua #   5 (   0.108)   
+        0.15048    Ag a #   2 (  -0.309) -> B2ua #   6 (   0.311)   
+       -0.11313    Ag b #   2 (  -0.309) -> B2ub #   1 (   0.002)   
+       -0.34993    Ag b #   2 (  -0.309) -> B2ub #   2 (   0.009)   
+        0.37752    Ag b #   2 (  -0.309) -> B2ub #   3 (   0.022)   
+       -0.15030    Ag b #   2 (  -0.309) -> B2ub #   4 (   0.046)   
+        0.38495    Ag b #   2 (  -0.309) -> B2ub #   5 (   0.108)   
+        0.15048    Ag b #   2 (  -0.309) -> B2ub #   6 (   0.311)   
 
  Irrep B2u0 State     5    -14.36781160      0.28827845
-       -0.34470    Ag a #   2 (  -0.309) -> B2ua #   1 (   0.002)   
-       -0.45878    Ag a #   2 (  -0.309) -> B2ua #   2 (   0.009)   
-       -0.21682    Ag a #   2 (  -0.309) -> B2ua #   3 (   0.022)   
-       -0.21421    Ag a #   2 (  -0.309) -> B2ua #   4 (   0.046)   
-       -0.22340    Ag a #   2 (  -0.309) -> B2ua #   5 (   0.108)   
-       -0.11623    Ag a #   2 (  -0.309) -> B2ua #   6 (   0.311)   
-        0.34470    Ag b #   2 (  -0.309) -> B2ub #   1 (   0.002)   
-        0.45878    Ag b #   2 (  -0.309) -> B2ub #   2 (   0.009)   
-        0.21682    Ag b #   2 (  -0.309) -> B2ub #   3 (   0.022)   
-        0.21421    Ag b #   2 (  -0.309) -> B2ub #   4 (   0.046)   
-        0.22340    Ag b #   2 (  -0.309) -> B2ub #   5 (   0.108)   
-        0.11623    Ag b #   2 (  -0.309) -> B2ub #   6 (   0.311)   
+        0.34470    Ag a #   2 (  -0.309) -> B2ua #   1 (   0.002)   
+        0.45878    Ag a #   2 (  -0.309) -> B2ua #   2 (   0.009)   
+        0.21682    Ag a #   2 (  -0.309) -> B2ua #   3 (   0.022)   
+        0.21421    Ag a #   2 (  -0.309) -> B2ua #   4 (   0.046)   
+        0.22340    Ag a #   2 (  -0.309) -> B2ua #   5 (   0.108)   
+        0.11623    Ag a #   2 (  -0.309) -> B2ua #   6 (   0.311)   
+       -0.34470    Ag b #   2 (  -0.309) -> B2ub #   1 (   0.002)   
+       -0.45878    Ag b #   2 (  -0.309) -> B2ub #   2 (   0.009)   
+       -0.21682    Ag b #   2 (  -0.309) -> B2ub #   3 (   0.022)   
+       -0.21421    Ag b #   2 (  -0.309) -> B2ub #   4 (   0.046)   
+       -0.22340    Ag b #   2 (  -0.309) -> B2ub #   5 (   0.108)   
+       -0.11623    Ag b #   2 (  -0.309) -> B2ub #   6 (   0.311)   
 ================================================================================
  
  Configuration variables for matrix-free diagonalizer
@@ -2978,7 +2978,7 @@ tot.num. of pos.erg shells:    9    9    9    0
  
  Iteration            1
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.284015126810E+00
     Eigenvalue      2 :   0.288399773554E+00
     Eigenvalue      3 :   0.308651484657E+00
@@ -2992,12 +2992,12 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            2
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.269598389022E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.269598389021E+00
     Eigenvalue      2 :   0.271737300598E+00
-    Eigenvalue      3 :   0.295334163085E+00
+    Eigenvalue      3 :   0.295334163084E+00
     Eigenvalue      4 :   0.296424832691E+00
-    Eigenvalue      5 :   0.358238741648E+00
+    Eigenvalue      5 :   0.358238741647E+00
     Root      1  ||q_k,M||   0.586970E-01
     Root      2  ||q_k,M||   0.648172E-01
     Root      3  ||q_k,M||   0.452673E-01
@@ -3006,7 +3006,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            3
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.261436901192E+00
     Eigenvalue      2 :   0.269320076853E+00
     Eigenvalue      3 :   0.290567831552E+00
@@ -3020,10 +3020,10 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            4
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.247701862033E+00
-    Eigenvalue      2 :   0.268867614556E+00
-    Eigenvalue      3 :   0.280765682497E+00
+    Eigenvalue      2 :   0.268867614555E+00
+    Eigenvalue      3 :   0.280765682496E+00
     Eigenvalue      4 :   0.294870832471E+00
     Eigenvalue      5 :   0.298463259237E+00
     Root      1  ||q_k,M||   0.630337E-01
@@ -3034,7 +3034,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            5
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246345494418E+00
     Eigenvalue      2 :   0.268790782514E+00
     Eigenvalue      3 :   0.280186453507E+00
@@ -3048,7 +3048,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            6
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246088053087E+00
     Eigenvalue      2 :   0.268780754578E+00
     Eigenvalue      3 :   0.280072133451E+00
@@ -3062,11 +3062,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            7
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246055245484E+00
     Eigenvalue      2 :   0.268780317374E+00
     Eigenvalue      3 :   0.280055663542E+00
-    Eigenvalue      4 :   0.294838311284E+00
+    Eigenvalue      4 :   0.294838311283E+00
     Eigenvalue      5 :   0.298206104219E+00
     Root      1  ||q_k,M||   0.277037E-02
     Root      2  ||q_k,M||   0.561270E-03
@@ -3076,7 +3076,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            8
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051755003E+00
     Eigenvalue      2 :   0.268780080909E+00
     Eigenvalue      3 :   0.280053714277E+00
@@ -3090,7 +3090,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            9
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051340121E+00
     Eigenvalue      2 :   0.268780028610E+00
     Eigenvalue      3 :   0.280053461262E+00
@@ -3104,9 +3104,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           10
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051298596E+00
-    Eigenvalue      2 :   0.268780023220E+00
+    Eigenvalue      2 :   0.268780023219E+00
     Eigenvalue      3 :   0.280053456233E+00
     Eigenvalue      4 :   0.294837995524E+00
     Eigenvalue      5 :   0.298205343475E+00
@@ -3118,7 +3118,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           11
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051293339E+00
     Eigenvalue      2 :   0.268780021002E+00
     Eigenvalue      3 :   0.280053454212E+00
@@ -3132,12 +3132,12 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           12
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051299497E+00
     Eigenvalue      2 :   0.268780021629E+00
     Eigenvalue      3 :   0.280053452720E+00
     Eigenvalue      4 :   0.294837993433E+00
-    Eigenvalue      5 :   0.298205343211E+00
+    Eigenvalue      5 :   0.298205343210E+00
     Root      1  ||q_k,M||   0.849705E-05
     Root      2  ||q_k,M||   0.118144E-05
     Root      3  ||q_k,M||   0.108873E-04
@@ -3146,9 +3146,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           13
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051301546E+00
-    Eigenvalue      2 :   0.268780021929E+00
+    Eigenvalue      2 :   0.268780021928E+00
     Eigenvalue      3 :   0.280053455504E+00
     Eigenvalue      4 :   0.294837993385E+00
     Eigenvalue      5 :   0.298205341933E+00
@@ -3160,9 +3160,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           14
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051302061E+00
-    Eigenvalue      2 :   0.268780021883E+00
+    Eigenvalue      2 :   0.268780021882E+00
     Eigenvalue      3 :   0.280053456390E+00
     Eigenvalue      4 :   0.294837993432E+00
     Eigenvalue      5 :   0.298205341840E+00
@@ -3174,7 +3174,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           15
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051302378E+00
     Eigenvalue      2 :   0.268780021837E+00
     Eigenvalue      3 :   0.280053456154E+00
@@ -3188,7 +3188,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           16
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051302445E+00
     Eigenvalue      2 :   0.268780021834E+00
     Eigenvalue      3 :   0.280053456099E+00
@@ -3202,7 +3202,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           17
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051302442E+00
     Eigenvalue      2 :   0.268780021837E+00
     Eigenvalue      3 :   0.280053456122E+00
@@ -3216,7 +3216,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           18
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051302442E+00
     Eigenvalue      2 :   0.268780021837E+00
     Eigenvalue      3 :   0.280053456123E+00
@@ -3282,32 +3282,32 @@ tot.num. of pos.erg shells:    9    9    9    0
         0.17793    Ag b #   2 (  -0.309) -> B1gb #   3 (   0.236)   
 
  Irrep B1g0 State     3    -14.37603660      0.28005346
-        0.42886    Ag a #   2 (  -0.309) -> B1ga #   1 (   0.011)   
-        0.45553    Ag a #   2 (  -0.309) -> B1ga #   2 (   0.056)   
-        0.42886    Ag b #   2 (  -0.309) -> B1gb #   1 (   0.011)   
-        0.45553    Ag b #   2 (  -0.309) -> B1gb #   2 (   0.056)   
-       -0.12757    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   4 (   0.046), B3ua #   4 (   0.046)       
-        0.11573    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   5 (   0.108), B3ua #   4 (   0.046)       
-        0.11573    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   4 (   0.046), B3ua #   5 (   0.108)       
-       -0.10004    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   5 (   0.108), B3ua #   5 (   0.108)       
-       -0.12757    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B3ub #   4 (   0.046), B2ua #   4 (   0.046)       
-        0.11573    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B3ub #   5 (   0.108), B2ua #   4 (   0.046)       
-        0.11573    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B3ub #   4 (   0.046), B2ua #   5 (   0.108)       
-       -0.10004    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B3ub #   5 (   0.108), B2ua #   5 (   0.108)       
+       -0.42886    Ag a #   2 (  -0.309) -> B1ga #   1 (   0.011)   
+       -0.45553    Ag a #   2 (  -0.309) -> B1ga #   2 (   0.056)   
+       -0.42886    Ag b #   2 (  -0.309) -> B1gb #   1 (   0.011)   
+       -0.45553    Ag b #   2 (  -0.309) -> B1gb #   2 (   0.056)   
+        0.12757    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   4 (   0.046), B3ua #   4 (   0.046)       
+       -0.11573    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   5 (   0.108), B3ua #   4 (   0.046)       
+       -0.11573    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   4 (   0.046), B3ua #   5 (   0.108)       
+        0.10004    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   5 (   0.108), B3ua #   5 (   0.108)       
+        0.12757    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B3ub #   4 (   0.046), B2ua #   4 (   0.046)       
+       -0.11573    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B3ub #   5 (   0.108), B2ua #   4 (   0.046)       
+       -0.11573    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B3ub #   4 (   0.046), B2ua #   5 (   0.108)       
+        0.10004    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B3ub #   5 (   0.108), B2ua #   5 (   0.108)       
 
  Irrep B1g0 State     4    -14.36125206      0.29483799
-       -0.63641    Ag a #   2 (  -0.309) -> B1ga #   1 (   0.011)   
-        0.25739    Ag a #   2 (  -0.309) -> B1ga #   2 (   0.056)   
-        0.12027    Ag a #   2 (  -0.309) -> B1ga #   3 (   0.236)   
-        0.63641    Ag b #   2 (  -0.309) -> B1gb #   1 (   0.011)   
-       -0.25739    Ag b #   2 (  -0.309) -> B1gb #   2 (   0.056)   
-       -0.12027    Ag b #   2 (  -0.309) -> B1gb #   3 (   0.236)   
+        0.63641    Ag a #   2 (  -0.309) -> B1ga #   1 (   0.011)   
+       -0.25739    Ag a #   2 (  -0.309) -> B1ga #   2 (   0.056)   
+       -0.12027    Ag a #   2 (  -0.309) -> B1ga #   3 (   0.236)   
+       -0.63641    Ag b #   2 (  -0.309) -> B1gb #   1 (   0.011)   
+        0.25739    Ag b #   2 (  -0.309) -> B1gb #   2 (   0.056)   
+        0.12027    Ag b #   2 (  -0.309) -> B1gb #   3 (   0.236)   
 
  Irrep B1g0 State     5    -14.35788471      0.29820534
-       -0.54424    Ag a #   2 (  -0.309) -> B1ga #   1 (   0.011)   
-        0.40172    Ag a #   2 (  -0.309) -> B1ga #   2 (   0.056)   
-       -0.54424    Ag b #   2 (  -0.309) -> B1gb #   1 (   0.011)   
-        0.40172    Ag b #   2 (  -0.309) -> B1gb #   2 (   0.056)   
+        0.54424    Ag a #   2 (  -0.309) -> B1ga #   1 (   0.011)   
+       -0.40172    Ag a #   2 (  -0.309) -> B1ga #   2 (   0.056)   
+        0.54424    Ag b #   2 (  -0.309) -> B1gb #   1 (   0.011)   
+       -0.40172    Ag b #   2 (  -0.309) -> B1gb #   2 (   0.056)   
 ================================================================================
  
  Configuration variables for matrix-free diagonalizer
@@ -3347,7 +3347,7 @@ tot.num. of pos.erg shells:    9    9    9    0
  
  Iteration            1
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.249999287840E+00
     Eigenvalue      2 :   0.291077409844E+00
     Eigenvalue      3 :   0.304675791654E+00
@@ -3361,11 +3361,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            2
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.147365110962E+00
-    Eigenvalue      2 :   0.239746500928E+00
+    Eigenvalue      2 :   0.239746500926E+00
     Eigenvalue      3 :   0.282454322224E+00
-    Eigenvalue      4 :   0.300409020566E+00
+    Eigenvalue      4 :   0.300409020565E+00
     Eigenvalue      5 :   0.304407037066E+00
     Root      1  ||q_k,M||   0.186456E+00
     Root      2  ||q_k,M||   0.160598E+00
@@ -3375,11 +3375,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            3
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.916946452574E-01
-    Eigenvalue      2 :   0.194709844802E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.916946452571E-01
+    Eigenvalue      2 :   0.194709844801E+00
     Eigenvalue      3 :   0.264521128339E+00
-    Eigenvalue      4 :   0.283168578736E+00
+    Eigenvalue      4 :   0.283168578735E+00
     Eigenvalue      5 :   0.295839713189E+00
     Root      1  ||q_k,M||   0.114963E+00
     Root      2  ||q_k,M||   0.126893E+00
@@ -3389,11 +3389,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            4
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.839524380374E-01
-    Eigenvalue      2 :   0.181938550669E+00
+    Eigenvalue      2 :   0.181938550668E+00
     Eigenvalue      3 :   0.256132743872E+00
-    Eigenvalue      4 :   0.270871542506E+00
+    Eigenvalue      4 :   0.270871542504E+00
     Eigenvalue      5 :   0.291388969031E+00
     Root      1  ||q_k,M||   0.378210E-01
     Root      2  ||q_k,M||   0.623723E-01
@@ -3403,11 +3403,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            5
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.833185179415E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.833185179416E-01
     Eigenvalue      2 :   0.179202484089E+00
     Eigenvalue      3 :   0.253019882759E+00
-    Eigenvalue      4 :   0.262011171540E+00
+    Eigenvalue      4 :   0.262011171539E+00
     Eigenvalue      5 :   0.288897708520E+00
     Root      1  ||q_k,M||   0.108159E-01
     Root      2  ||q_k,M||   0.276315E-01
@@ -3417,8 +3417,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            6
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832562027319E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832562027320E-01
     Eigenvalue      2 :   0.178831755052E+00
     Eigenvalue      3 :   0.252474867543E+00
     Eigenvalue      4 :   0.259305145939E+00
@@ -3431,9 +3431,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            7
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832450854422E-01
-    Eigenvalue      2 :   0.178787439135E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832450854423E-01
+    Eigenvalue      2 :   0.178787439136E+00
     Eigenvalue      3 :   0.252333812687E+00
     Eigenvalue      4 :   0.258243684375E+00
     Eigenvalue      5 :   0.288314790210E+00
@@ -3445,9 +3445,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            8
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832409129368E-01
-    Eigenvalue      2 :   0.178787310301E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832409129369E-01
+    Eigenvalue      2 :   0.178787310302E+00
     Eigenvalue      3 :   0.252309348044E+00
     Eigenvalue      4 :   0.258007968183E+00
     Eigenvalue      5 :   0.288283391576E+00
@@ -3459,8 +3459,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            9
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832398590438E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832398590439E-01
     Eigenvalue      2 :   0.178788904069E+00
     Eigenvalue      3 :   0.252304993189E+00
     Eigenvalue      4 :   0.257989700671E+00
@@ -3473,11 +3473,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           10
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397321142E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397321143E-01
     Eigenvalue      2 :   0.178789348625E+00
     Eigenvalue      3 :   0.252304264847E+00
-    Eigenvalue      4 :   0.257986206665E+00
+    Eigenvalue      4 :   0.257986206664E+00
     Eigenvalue      5 :   0.288278740379E+00
     Root      1  ||q_k,M||   0.208015E-04
     Root      2  ||q_k,M||   0.211050E-03
@@ -3487,8 +3487,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           11
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397245518E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397245519E-01
     Eigenvalue      2 :   0.178789403387E+00
     Eigenvalue      3 :   0.252303997873E+00
     Eigenvalue      4 :   0.257985173831E+00
@@ -3501,8 +3501,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           12
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397263702E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397263703E-01
     Eigenvalue      2 :   0.178789392897E+00
     Eigenvalue      3 :   0.252303920502E+00
     Eigenvalue      4 :   0.257984700444E+00
@@ -3515,9 +3515,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           13
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397273280E-01
-    Eigenvalue      2 :   0.178789387956E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397273281E-01
+    Eigenvalue      2 :   0.178789387957E+00
     Eigenvalue      3 :   0.252303919821E+00
     Eigenvalue      4 :   0.257984695580E+00
     Eigenvalue      5 :   0.288278445870E+00
@@ -3529,11 +3529,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           14
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397275741E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397275742E-01
     Eigenvalue      2 :   0.178789387268E+00
     Eigenvalue      3 :   0.252303923375E+00
-    Eigenvalue      4 :   0.257984722269E+00
+    Eigenvalue      4 :   0.257984722268E+00
     Eigenvalue      5 :   0.288278452353E+00
     Root      1  ||q_k,M||   0.764787E-07
     Root      2  ||q_k,M||   0.194626E-05
@@ -3543,11 +3543,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           15
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276145E-01
-    Eigenvalue      2 :   0.178789387071E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276146E-01
+    Eigenvalue      2 :   0.178789387072E+00
     Eigenvalue      3 :   0.252303925284E+00
-    Eigenvalue      4 :   0.257984724939E+00
+    Eigenvalue      4 :   0.257984724938E+00
     Eigenvalue      5 :   0.288278453903E+00
     Root      1  ||q_k,M||   0.197863E-07
     Root      2  ||q_k,M||   0.611963E-06
@@ -3557,8 +3557,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           16
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276198E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276199E-01
     Eigenvalue      2 :   0.178789387046E+00
     Eigenvalue      3 :   0.252303925627E+00
     Eigenvalue      4 :   0.257984723172E+00
@@ -3571,9 +3571,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           17
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276195E-01
-    Eigenvalue      2 :   0.178789387067E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276196E-01
+    Eigenvalue      2 :   0.178789387068E+00
     Eigenvalue      3 :   0.252303925551E+00
     Eigenvalue      4 :   0.257984723149E+00
     Eigenvalue      5 :   0.288278454529E+00
@@ -3585,8 +3585,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           18
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276197E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276198E-01
     Eigenvalue      2 :   0.178789387087E+00
     Eigenvalue      3 :   0.252303925504E+00
     Eigenvalue      4 :   0.257984723682E+00
@@ -3599,8 +3599,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           19
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276200E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276201E-01
     Eigenvalue      2 :   0.178789387089E+00
     Eigenvalue      3 :   0.252303925505E+00
     Eigenvalue      4 :   0.257984723796E+00
@@ -3613,8 +3613,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           20
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276200E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276201E-01
     Eigenvalue      2 :   0.178789387089E+00
     Eigenvalue      3 :   0.252303925500E+00
     Eigenvalue      4 :   0.257984723694E+00
@@ -3627,8 +3627,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           21
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276201E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276202E-01
     Eigenvalue      2 :   0.178789387089E+00
     Eigenvalue      3 :   0.252303925498E+00
     Eigenvalue      4 :   0.257984723673E+00
@@ -3641,8 +3641,8 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           22
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.832397276200E-01
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.832397276201E-01
     Eigenvalue      2 :   0.178789387089E+00
     Eigenvalue      3 :   0.252303925499E+00
     Eigenvalue      4 :   0.257984723681E+00
@@ -3651,7 +3651,7 @@ tot.num. of pos.erg shells:    9    9    9    0
     Root      2  ||q_k,M||   0.126387E-08     <<< converged ! 
     Root      3  ||q_k,M||   0.322852E-08     <<< converged ! 
     Root      4  ||q_k,M||   0.634212E-08     <<< converged ! 
-    Root      5  ||q_k,M||   0.567974E-08     <<< converged ! 
+    Root      5  ||q_k,M||   0.567975E-08     <<< converged ! 
   
  All roots converged.
  Final size of reduced subspace :           99
@@ -3677,14 +3677,14 @@ tot.num. of pos.erg shells:    9    9    9    0
  other lines : Largest R1 and R2 Vectors (above a threshold of .1E+00)
 
  Irrep B1u0 State     1    -14.57285032      0.08323973
-        0.28708    Ag a #   2 (  -0.309) -> B1ua #   3 (   0.022)   
-        0.45536    Ag a #   2 (  -0.309) -> B1ua #   4 (   0.046)   
-       -0.39443    Ag a #   2 (  -0.309) -> B1ua #   5 (   0.108)   
-       -0.19540    Ag a #   2 (  -0.309) -> B1ua #   6 (   0.311)   
-       -0.28708    Ag b #   2 (  -0.309) -> B1ub #   3 (   0.022)   
-       -0.45536    Ag b #   2 (  -0.309) -> B1ub #   4 (   0.046)   
-        0.39443    Ag b #   2 (  -0.309) -> B1ub #   5 (   0.108)   
-        0.19540    Ag b #   2 (  -0.309) -> B1ub #   6 (   0.311)   
+       -0.28708    Ag a #   2 (  -0.309) -> B1ua #   3 (   0.022)   
+       -0.45536    Ag a #   2 (  -0.309) -> B1ua #   4 (   0.046)   
+        0.39443    Ag a #   2 (  -0.309) -> B1ua #   5 (   0.108)   
+        0.19540    Ag a #   2 (  -0.309) -> B1ua #   6 (   0.311)   
+        0.28708    Ag b #   2 (  -0.309) -> B1ub #   3 (   0.022)   
+        0.45536    Ag b #   2 (  -0.309) -> B1ub #   4 (   0.046)   
+       -0.39443    Ag b #   2 (  -0.309) -> B1ub #   5 (   0.108)   
+       -0.19540    Ag b #   2 (  -0.309) -> B1ub #   6 (   0.311)   
 
  Irrep B1u0 State     2    -14.47730067      0.17878939
         0.13552    Ag a #   2 (  -0.309) -> B1ua #   2 (   0.009)   
@@ -3697,16 +3697,16 @@ tot.num. of pos.erg shells:    9    9    9    0
         0.27813    Ag b #   2 (  -0.309) -> B1ub #   5 (   0.108)   
 
  Irrep B1u0 State     3    -14.40378613      0.25230393
-        0.10440    Ag a #   2 (  -0.309) -> B1ua #   1 (   0.002)   
-        0.34612    Ag a #   2 (  -0.309) -> B1ua #   2 (   0.009)   
-       -0.46026    Ag a #   2 (  -0.309) -> B1ua #   3 (   0.022)   
-       -0.33928    Ag a #   2 (  -0.309) -> B1ua #   5 (   0.108)   
-       -0.15896    Ag a #   2 (  -0.309) -> B1ua #   6 (   0.311)   
-       -0.10440    Ag b #   2 (  -0.309) -> B1ub #   1 (   0.002)   
-       -0.34612    Ag b #   2 (  -0.309) -> B1ub #   2 (   0.009)   
-        0.46026    Ag b #   2 (  -0.309) -> B1ub #   3 (   0.022)   
-        0.33928    Ag b #   2 (  -0.309) -> B1ub #   5 (   0.108)   
-        0.15896    Ag b #   2 (  -0.309) -> B1ub #   6 (   0.311)   
+       -0.10440    Ag a #   2 (  -0.309) -> B1ua #   1 (   0.002)   
+       -0.34612    Ag a #   2 (  -0.309) -> B1ua #   2 (   0.009)   
+        0.46026    Ag a #   2 (  -0.309) -> B1ua #   3 (   0.022)   
+        0.33928    Ag a #   2 (  -0.309) -> B1ua #   5 (   0.108)   
+        0.15896    Ag a #   2 (  -0.309) -> B1ua #   6 (   0.311)   
+        0.10440    Ag b #   2 (  -0.309) -> B1ub #   1 (   0.002)   
+        0.34612    Ag b #   2 (  -0.309) -> B1ub #   2 (   0.009)   
+       -0.46026    Ag b #   2 (  -0.309) -> B1ub #   3 (   0.022)   
+       -0.33928    Ag b #   2 (  -0.309) -> B1ub #   5 (   0.108)   
+       -0.15896    Ag b #   2 (  -0.309) -> B1ub #   6 (   0.311)   
 
  Irrep B1u0 State     4    -14.39810533      0.25798472
         0.11313    Ag a #   2 (  -0.309) -> B1ua #   1 (   0.002)   
@@ -3774,7 +3774,7 @@ tot.num. of pos.erg shells:    9    9    9    0
  
  Iteration            1
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.284015126810E+00
     Eigenvalue      2 :   0.288399773554E+00
     Eigenvalue      3 :   0.308651484657E+00
@@ -3788,12 +3788,12 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            2
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.269598389022E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.269598389021E+00
     Eigenvalue      2 :   0.271737300598E+00
-    Eigenvalue      3 :   0.295334163085E+00
+    Eigenvalue      3 :   0.295334163084E+00
     Eigenvalue      4 :   0.296424832691E+00
-    Eigenvalue      5 :   0.358238741648E+00
+    Eigenvalue      5 :   0.358238741647E+00
     Root      1  ||q_k,M||   0.586970E-01
     Root      2  ||q_k,M||   0.648172E-01
     Root      3  ||q_k,M||   0.452673E-01
@@ -3802,7 +3802,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            3
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.261436901192E+00
     Eigenvalue      2 :   0.269320076853E+00
     Eigenvalue      3 :   0.290567831552E+00
@@ -3816,9 +3816,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            4
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.247701862033E+00
-    Eigenvalue      2 :   0.268867614556E+00
+    Eigenvalue      2 :   0.268867614555E+00
     Eigenvalue      3 :   0.280765682496E+00
     Eigenvalue      4 :   0.294870832471E+00
     Eigenvalue      5 :   0.298463259237E+00
@@ -3830,7 +3830,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            5
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246345494418E+00
     Eigenvalue      2 :   0.268790782514E+00
     Eigenvalue      3 :   0.280186453507E+00
@@ -3844,7 +3844,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            6
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246088053087E+00
     Eigenvalue      2 :   0.268780754578E+00
     Eigenvalue      3 :   0.280072133451E+00
@@ -3858,11 +3858,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            7
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246055245484E+00
     Eigenvalue      2 :   0.268780317374E+00
     Eigenvalue      3 :   0.280055663542E+00
-    Eigenvalue      4 :   0.294838311284E+00
+    Eigenvalue      4 :   0.294838311283E+00
     Eigenvalue      5 :   0.298206104219E+00
     Root      1  ||q_k,M||   0.277037E-02
     Root      2  ||q_k,M||   0.561270E-03
@@ -3872,7 +3872,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            8
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051755003E+00
     Eigenvalue      2 :   0.268780080909E+00
     Eigenvalue      3 :   0.280053714277E+00
@@ -3886,7 +3886,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            9
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051340121E+00
     Eigenvalue      2 :   0.268780028610E+00
     Eigenvalue      3 :   0.280053461262E+00
@@ -3900,9 +3900,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           10
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051298596E+00
-    Eigenvalue      2 :   0.268780023220E+00
+    Eigenvalue      2 :   0.268780023219E+00
     Eigenvalue      3 :   0.280053456233E+00
     Eigenvalue      4 :   0.294837995524E+00
     Eigenvalue      5 :   0.298205343475E+00
@@ -3914,7 +3914,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           11
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051293339E+00
     Eigenvalue      2 :   0.268780021002E+00
     Eigenvalue      3 :   0.280053454212E+00
@@ -3928,12 +3928,12 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           12
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051299497E+00
     Eigenvalue      2 :   0.268780021629E+00
     Eigenvalue      3 :   0.280053452720E+00
     Eigenvalue      4 :   0.294837993433E+00
-    Eigenvalue      5 :   0.298205343211E+00
+    Eigenvalue      5 :   0.298205343210E+00
     Root      1  ||q_k,M||   0.849705E-05
     Root      2  ||q_k,M||   0.118144E-05
     Root      3  ||q_k,M||   0.108873E-04
@@ -3942,9 +3942,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           13
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051301546E+00
-    Eigenvalue      2 :   0.268780021929E+00
+    Eigenvalue      2 :   0.268780021928E+00
     Eigenvalue      3 :   0.280053455504E+00
     Eigenvalue      4 :   0.294837993385E+00
     Eigenvalue      5 :   0.298205341933E+00
@@ -3956,9 +3956,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           14
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051302061E+00
-    Eigenvalue      2 :   0.268780021883E+00
+    Eigenvalue      2 :   0.268780021882E+00
     Eigenvalue      3 :   0.280053456390E+00
     Eigenvalue      4 :   0.294837993432E+00
     Eigenvalue      5 :   0.298205341840E+00
@@ -3970,7 +3970,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           15
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051302378E+00
     Eigenvalue      2 :   0.268780021837E+00
     Eigenvalue      3 :   0.280053456154E+00
@@ -3984,7 +3984,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           16
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051302445E+00
     Eigenvalue      2 :   0.268780021834E+00
     Eigenvalue      3 :   0.280053456099E+00
@@ -3998,7 +3998,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           17
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051302442E+00
     Eigenvalue      2 :   0.268780021837E+00
     Eigenvalue      3 :   0.280053456122E+00
@@ -4012,7 +4012,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           18
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051302442E+00
     Eigenvalue      2 :   0.268780021837E+00
     Eigenvalue      3 :   0.280053456123E+00
@@ -4092,12 +4092,12 @@ tot.num. of pos.erg shells:    9    9    9    0
        -0.10004    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B3ub #   5 (   0.108), B1ua #   5 (   0.108)       
 
  Irrep B2g0 State     4    -14.36125206      0.29483799
-       -0.63641    Ag a #   2 (  -0.309) -> B2ga #   1 (   0.011)   
-        0.25739    Ag a #   2 (  -0.309) -> B2ga #   2 (   0.056)   
-        0.12027    Ag a #   2 (  -0.309) -> B2ga #   3 (   0.236)   
-        0.63641    Ag b #   2 (  -0.309) -> B2gb #   1 (   0.011)   
-       -0.25739    Ag b #   2 (  -0.309) -> B2gb #   2 (   0.056)   
-       -0.12027    Ag b #   2 (  -0.309) -> B2gb #   3 (   0.236)   
+        0.63641    Ag a #   2 (  -0.309) -> B2ga #   1 (   0.011)   
+       -0.25739    Ag a #   2 (  -0.309) -> B2ga #   2 (   0.056)   
+       -0.12027    Ag a #   2 (  -0.309) -> B2ga #   3 (   0.236)   
+       -0.63641    Ag b #   2 (  -0.309) -> B2gb #   1 (   0.011)   
+        0.25739    Ag b #   2 (  -0.309) -> B2gb #   2 (   0.056)   
+        0.12027    Ag b #   2 (  -0.309) -> B2gb #   3 (   0.236)   
 
  Irrep B2g0 State     5    -14.35788471      0.29820534
        -0.54424    Ag a #   2 (  -0.309) -> B2ga #   1 (   0.011)   
@@ -4143,7 +4143,7 @@ tot.num. of pos.erg shells:    9    9    9    0
  
  Iteration            1
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.284015126810E+00
     Eigenvalue      2 :   0.288399773554E+00
     Eigenvalue      3 :   0.308651484657E+00
@@ -4157,12 +4157,12 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            2
  
-  Number of OMP threads, procs in use:     1    10
-    Eigenvalue      1 :   0.269598389022E+00
+  Number of OMP threads, procs in use:     1    20
+    Eigenvalue      1 :   0.269598389021E+00
     Eigenvalue      2 :   0.271737300598E+00
-    Eigenvalue      3 :   0.295334163085E+00
+    Eigenvalue      3 :   0.295334163084E+00
     Eigenvalue      4 :   0.296424832691E+00
-    Eigenvalue      5 :   0.358238741648E+00
+    Eigenvalue      5 :   0.358238741647E+00
     Root      1  ||q_k,M||   0.586970E-01
     Root      2  ||q_k,M||   0.648172E-01
     Root      3  ||q_k,M||   0.452673E-01
@@ -4171,7 +4171,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            3
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.261436901192E+00
     Eigenvalue      2 :   0.269320076853E+00
     Eigenvalue      3 :   0.290567831552E+00
@@ -4185,9 +4185,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            4
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.247701862033E+00
-    Eigenvalue      2 :   0.268867614556E+00
+    Eigenvalue      2 :   0.268867614555E+00
     Eigenvalue      3 :   0.280765682496E+00
     Eigenvalue      4 :   0.294870832471E+00
     Eigenvalue      5 :   0.298463259237E+00
@@ -4199,7 +4199,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            5
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246345494418E+00
     Eigenvalue      2 :   0.268790782514E+00
     Eigenvalue      3 :   0.280186453507E+00
@@ -4213,7 +4213,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            6
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246088053087E+00
     Eigenvalue      2 :   0.268780754578E+00
     Eigenvalue      3 :   0.280072133451E+00
@@ -4227,11 +4227,11 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            7
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246055245484E+00
     Eigenvalue      2 :   0.268780317374E+00
     Eigenvalue      3 :   0.280055663542E+00
-    Eigenvalue      4 :   0.294838311284E+00
+    Eigenvalue      4 :   0.294838311283E+00
     Eigenvalue      5 :   0.298206104219E+00
     Root      1  ||q_k,M||   0.277037E-02
     Root      2  ||q_k,M||   0.561270E-03
@@ -4241,7 +4241,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            8
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051755003E+00
     Eigenvalue      2 :   0.268780080909E+00
     Eigenvalue      3 :   0.280053714277E+00
@@ -4255,7 +4255,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration            9
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051340121E+00
     Eigenvalue      2 :   0.268780028610E+00
     Eigenvalue      3 :   0.280053461262E+00
@@ -4269,9 +4269,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           10
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051298596E+00
-    Eigenvalue      2 :   0.268780023220E+00
+    Eigenvalue      2 :   0.268780023219E+00
     Eigenvalue      3 :   0.280053456233E+00
     Eigenvalue      4 :   0.294837995524E+00
     Eigenvalue      5 :   0.298205343475E+00
@@ -4283,7 +4283,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           11
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051293339E+00
     Eigenvalue      2 :   0.268780021002E+00
     Eigenvalue      3 :   0.280053454212E+00
@@ -4297,12 +4297,12 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           12
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051299497E+00
     Eigenvalue      2 :   0.268780021629E+00
     Eigenvalue      3 :   0.280053452720E+00
     Eigenvalue      4 :   0.294837993433E+00
-    Eigenvalue      5 :   0.298205343211E+00
+    Eigenvalue      5 :   0.298205343210E+00
     Root      1  ||q_k,M||   0.849705E-05
     Root      2  ||q_k,M||   0.118144E-05
     Root      3  ||q_k,M||   0.108873E-04
@@ -4311,9 +4311,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           13
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051301546E+00
-    Eigenvalue      2 :   0.268780021929E+00
+    Eigenvalue      2 :   0.268780021928E+00
     Eigenvalue      3 :   0.280053455504E+00
     Eigenvalue      4 :   0.294837993385E+00
     Eigenvalue      5 :   0.298205341933E+00
@@ -4325,9 +4325,9 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           14
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051302061E+00
-    Eigenvalue      2 :   0.268780021883E+00
+    Eigenvalue      2 :   0.268780021882E+00
     Eigenvalue      3 :   0.280053456390E+00
     Eigenvalue      4 :   0.294837993432E+00
     Eigenvalue      5 :   0.298205341840E+00
@@ -4339,7 +4339,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           15
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051302378E+00
     Eigenvalue      2 :   0.268780021837E+00
     Eigenvalue      3 :   0.280053456154E+00
@@ -4353,7 +4353,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           16
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051302445E+00
     Eigenvalue      2 :   0.268780021834E+00
     Eigenvalue      3 :   0.280053456099E+00
@@ -4367,7 +4367,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           17
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051302442E+00
     Eigenvalue      2 :   0.268780021837E+00
     Eigenvalue      3 :   0.280053456122E+00
@@ -4381,7 +4381,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   
  Iteration           18
  
-  Number of OMP threads, procs in use:     1    10
+  Number of OMP threads, procs in use:     1    20
     Eigenvalue      1 :   0.246051302442E+00
     Eigenvalue      2 :   0.268780021837E+00
     Eigenvalue      3 :   0.280053456123E+00
@@ -4439,40 +4439,40 @@ tot.num. of pos.erg shells:    9    9    9    0
        -0.15126    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   5 (   0.108), B1ua #   5 (   0.108)       
 
  Irrep B3g0 State     2    -14.38731003      0.26878002
-        0.28268    Ag a #   2 (  -0.309) -> B3ga #   1 (   0.011)   
-        0.60946    Ag a #   2 (  -0.309) -> B3ga #   2 (   0.056)   
-        0.17793    Ag a #   2 (  -0.309) -> B3ga #   3 (   0.236)   
-       -0.28268    Ag b #   2 (  -0.309) -> B3gb #   1 (   0.011)   
-       -0.60946    Ag b #   2 (  -0.309) -> B3gb #   2 (   0.056)   
-       -0.17793    Ag b #   2 (  -0.309) -> B3gb #   3 (   0.236)   
+       -0.28268    Ag a #   2 (  -0.309) -> B3ga #   1 (   0.011)   
+       -0.60946    Ag a #   2 (  -0.309) -> B3ga #   2 (   0.056)   
+       -0.17793    Ag a #   2 (  -0.309) -> B3ga #   3 (   0.236)   
+        0.28268    Ag b #   2 (  -0.309) -> B3gb #   1 (   0.011)   
+        0.60946    Ag b #   2 (  -0.309) -> B3gb #   2 (   0.056)   
+        0.17793    Ag b #   2 (  -0.309) -> B3gb #   3 (   0.236)   
 
  Irrep B3g0 State     3    -14.37603660      0.28005346
-        0.42886    Ag a #   2 (  -0.309) -> B3ga #   1 (   0.011)   
-        0.45553    Ag a #   2 (  -0.309) -> B3ga #   2 (   0.056)   
-        0.42886    Ag b #   2 (  -0.309) -> B3gb #   1 (   0.011)   
-        0.45553    Ag b #   2 (  -0.309) -> B3gb #   2 (   0.056)   
-       -0.12757    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   4 (   0.046), B2ua #   4 (   0.046)       
-        0.11573    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   5 (   0.108), B2ua #   4 (   0.046)       
-        0.11573    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   4 (   0.046), B2ua #   5 (   0.108)       
-       -0.10004    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   5 (   0.108), B2ua #   5 (   0.108)       
-       -0.12757    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   4 (   0.046), B1ua #   4 (   0.046)       
-        0.11573    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   5 (   0.108), B1ua #   4 (   0.046)       
-        0.11573    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   4 (   0.046), B1ua #   5 (   0.108)       
-       -0.10004    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   5 (   0.108), B1ua #   5 (   0.108)       
+       -0.42886    Ag a #   2 (  -0.309) -> B3ga #   1 (   0.011)   
+       -0.45553    Ag a #   2 (  -0.309) -> B3ga #   2 (   0.056)   
+       -0.42886    Ag b #   2 (  -0.309) -> B3gb #   1 (   0.011)   
+       -0.45553    Ag b #   2 (  -0.309) -> B3gb #   2 (   0.056)   
+        0.12757    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   4 (   0.046), B2ua #   4 (   0.046)       
+       -0.11573    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   5 (   0.108), B2ua #   4 (   0.046)       
+       -0.11573    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   4 (   0.046), B2ua #   5 (   0.108)       
+        0.10004    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B1ub #   5 (   0.108), B2ua #   5 (   0.108)       
+        0.12757    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   4 (   0.046), B1ua #   4 (   0.046)       
+       -0.11573    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   5 (   0.108), B1ua #   4 (   0.046)       
+       -0.11573    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   4 (   0.046), B1ua #   5 (   0.108)       
+        0.10004    Ag b #   2 (  -0.309), Ag a #   2 (  -0.309) -> B2ub #   5 (   0.108), B1ua #   5 (   0.108)       
 
  Irrep B3g0 State     4    -14.36125206      0.29483799
-        0.63641    Ag a #   2 (  -0.309) -> B3ga #   1 (   0.011)   
-       -0.25739    Ag a #   2 (  -0.309) -> B3ga #   2 (   0.056)   
-       -0.12027    Ag a #   2 (  -0.309) -> B3ga #   3 (   0.236)   
-       -0.63641    Ag b #   2 (  -0.309) -> B3gb #   1 (   0.011)   
-        0.25739    Ag b #   2 (  -0.309) -> B3gb #   2 (   0.056)   
-        0.12027    Ag b #   2 (  -0.309) -> B3gb #   3 (   0.236)   
+       -0.63641    Ag a #   2 (  -0.309) -> B3ga #   1 (   0.011)   
+        0.25739    Ag a #   2 (  -0.309) -> B3ga #   2 (   0.056)   
+        0.12027    Ag a #   2 (  -0.309) -> B3ga #   3 (   0.236)   
+        0.63641    Ag b #   2 (  -0.309) -> B3gb #   1 (   0.011)   
+       -0.25739    Ag b #   2 (  -0.309) -> B3gb #   2 (   0.056)   
+       -0.12027    Ag b #   2 (  -0.309) -> B3gb #   3 (   0.236)   
 
  Irrep B3g0 State     5    -14.35788471      0.29820534
-        0.54424    Ag a #   2 (  -0.309) -> B3ga #   1 (   0.011)   
-       -0.40172    Ag a #   2 (  -0.309) -> B3ga #   2 (   0.056)   
-        0.54424    Ag b #   2 (  -0.309) -> B3gb #   1 (   0.011)   
-       -0.40172    Ag b #   2 (  -0.309) -> B3gb #   2 (   0.056)   
+       -0.54424    Ag a #   2 (  -0.309) -> B3ga #   1 (   0.011)   
+        0.40172    Ag a #   2 (  -0.309) -> B3ga #   2 (   0.056)   
+       -0.54424    Ag b #   2 (  -0.309) -> B3gb #   1 (   0.011)   
+        0.40172    Ag b #   2 (  -0.309) -> B3gb #   2 (   0.056)   
 ================================================================================
  
  Configuration variables for matrix-free diagonalizer
@@ -5228,7 +5228,7 @@ tot.num. of pos.erg shells:    9    9    9    0
   Final results for EOM-EE
  
 
- ( 1 au = 27.2113862126 eV  /  219474.631228567 cm-1)
+ ( 1 au = 27.2113862460 eV  /  219474.631363043 cm-1)
 
 
  Energy eigenvalues in atomic units
@@ -5238,8 +5238,8 @@ tot.num. of pos.erg shells:    9    9    9    0
     0     0.0000000000      0.000000000000      -14.656090052358 (   1 * )
     1     0.0832397276      0.083239727620      -14.572850324738 (   3 * )
     2     0.1787893871      0.178789387089      -14.477300665269 (   3 * )
-    3     0.2202727377      0.220272737742      -14.435817314616 (   1 * )
-    4     0.2327731936      0.232773193566      -14.423316858793 (   1 * )
+    3     0.2202727377      0.220272737741      -14.435817314617 (   1 * )
+    4     0.2327731936      0.232773193566      -14.423316858792 (   1 * )
     5     0.2460513024      0.246051302441      -14.410038749917 (   4 * )
     6     0.2523039255      0.252303925499      -14.403786126859 (   3 * )
     7     0.2579847237      0.257984723681      -14.398105328677 (   3 * )
@@ -5260,19 +5260,19 @@ tot.num. of pos.erg shells:    9    9    9    0
  Level  eigenvalue (eV)  Eigenvalue (cm-1)  Ag 0|B3u0|B2u0|B1g0|B1u0|B2g0|B3g0|Au 0|
 
     0        0.000000000          0.000000     1|   0|   0|   0|   0|   0|   0|   0|
-    1        2.265068377      18269.008523     0|   1|   1|   0|   1|   0|   0|   0|
-    2        4.865107063      39239.734799     0|   1|   1|   0|   1|   0|   0|   0|
-    3        5.993926539      48344.277886     1|   0|   0|   0|   0|   0|   0|   0|
-    4        6.334081270      51087.810818     1|   0|   0|   0|   0|   0|   0|   0|
-    5        6.695397019      54002.018867     1|   0|   0|   1|   0|   1|   1|   0|
-    6        6.865539560      55374.311006     0|   1|   1|   0|   1|   0|   0|   0|
-    7        7.020121953      56621.102093     0|   1|   1|   0|   1|   0|   0|   0|
-    8        7.313876980      58990.396175     1|   0|   0|   1|   0|   1|   1|   0|
-    9        7.554201526      60928.744361     1|   0|   0|   0|   0|   0|   0|   0|
-   10        7.620642755      61464.629007     0|   0|   0|   1|   0|   1|   1|   0|
-   11        7.844456361      63269.807486     0|   1|   1|   0|   1|   0|   0|   0|
-   12        8.022950507      64709.459864     0|   0|   0|   1|   0|   1|   1|   0|
-   13        8.114580730      65448.507454     0|   0|   0|   1|   0|   1|   1|   0|
+    1        2.265068379      18269.008534     0|   1|   1|   0|   1|   0|   0|   0|
+    2        4.865107069      39239.734823     0|   1|   1|   0|   1|   0|   0|   0|
+    3        5.993926546      48344.277915     1|   0|   0|   0|   0|   0|   0|   0|
+    4        6.334081278      51087.810849     1|   0|   0|   0|   0|   0|   0|   0|
+    5        6.695397027      54002.018900     1|   0|   0|   1|   0|   1|   1|   0|
+    6        6.865539568      55374.311040     0|   1|   1|   0|   1|   0|   0|   0|
+    7        7.020121962      56621.102127     0|   1|   1|   0|   1|   0|   0|   0|
+    8        7.313876989      58990.396211     1|   0|   0|   1|   0|   1|   1|   0|
+    9        7.554201536      60928.744398     1|   0|   0|   0|   0|   0|   0|   0|
+   10        7.620642764      61464.629045     0|   0|   0|   1|   0|   1|   1|   0|
+   11        7.844456371      63269.807525     0|   1|   1|   0|   1|   0|   0|   0|
+   12        8.022950517      64709.459903     0|   0|   0|   1|   0|   1|   1|   0|
+   13        8.114580740      65448.507494     0|   0|   0|   1|   0|   1|   1|   0|
 
 
  Relative real eigenvalues in other units;
@@ -5281,19 +5281,19 @@ tot.num. of pos.erg shells:    9    9    9    0
  Level  eigenvalue (eV)  Eigenvalue (cm-1)  Ag 4|B3u4|B2u4|B1g4|B1u4|B2g4|B3g4|Au 4|
 
     0        0.000000000          0.000000     0|   0|   0|   0|   0|   0|   0|   0|
-    1        2.265068377      18269.008523     0|   0|   0|   0|   0|   0|   0|   0|
-    2        4.865107063      39239.734799     0|   0|   0|   0|   0|   0|   0|   0|
-    3        5.993926539      48344.277886     0|   0|   0|   0|   0|   0|   0|   0|
-    4        6.334081270      51087.810818     0|   0|   0|   0|   0|   0|   0|   0|
-    5        6.695397019      54002.018867     0|   0|   0|   0|   0|   0|   0|   0|
-    6        6.865539560      55374.311006     0|   0|   0|   0|   0|   0|   0|   0|
-    7        7.020121953      56621.102093     0|   0|   0|   0|   0|   0|   0|   0|
-    8        7.313876980      58990.396175     0|   0|   0|   0|   0|   0|   0|   0|
-    9        7.554201526      60928.744361     0|   0|   0|   0|   0|   0|   0|   0|
-   10        7.620642755      61464.629007     0|   0|   0|   0|   0|   0|   0|   0|
-   11        7.844456361      63269.807486     0|   0|   0|   0|   0|   0|   0|   0|
-   12        8.022950507      64709.459864     0|   0|   0|   0|   0|   0|   0|   0|
-   13        8.114580730      65448.507454     0|   0|   0|   0|   0|   0|   0|   0|
+    1        2.265068379      18269.008534     0|   0|   0|   0|   0|   0|   0|   0|
+    2        4.865107069      39239.734823     0|   0|   0|   0|   0|   0|   0|   0|
+    3        5.993926546      48344.277915     0|   0|   0|   0|   0|   0|   0|   0|
+    4        6.334081278      51087.810849     0|   0|   0|   0|   0|   0|   0|   0|
+    5        6.695397027      54002.018900     0|   0|   0|   0|   0|   0|   0|   0|
+    6        6.865539568      55374.311040     0|   0|   0|   0|   0|   0|   0|   0|
+    7        7.020121962      56621.102127     0|   0|   0|   0|   0|   0|   0|   0|
+    8        7.313876989      58990.396211     0|   0|   0|   0|   0|   0|   0|   0|
+    9        7.554201536      60928.744398     0|   0|   0|   0|   0|   0|   0|   0|
+   10        7.620642764      61464.629045     0|   0|   0|   0|   0|   0|   0|   0|
+   11        7.844456371      63269.807525     0|   0|   0|   0|   0|   0|   0|   0|
+   12        8.022950517      64709.459903     0|   0|   0|   0|   0|   0|   0|   0|
+   13        8.114580740      65448.507494     0|   0|   0|   0|   0|   0|   0|   0|
 
 
  Relative real eigenvalues in other units;
@@ -5302,19 +5302,19 @@ tot.num. of pos.erg shells:    9    9    9    0
  Level  eigenvalue (eV)  Eigenvalue (cm-1)  Ag 2|B3u2|B2u2|B1g2|B1u2|B2g2|B3g2|Au 2|
 
     0        0.000000000          0.000000     0|   0|   0|   0|   0|   0|   0|   0|
-    1        2.265068377      18269.008523     0|   0|   0|   0|   0|   0|   0|   0|
-    2        4.865107063      39239.734799     0|   0|   0|   0|   0|   0|   0|   0|
-    3        5.993926539      48344.277886     0|   0|   0|   0|   0|   0|   0|   0|
-    4        6.334081270      51087.810818     0|   0|   0|   0|   0|   0|   0|   0|
-    5        6.695397019      54002.018867     0|   0|   0|   0|   0|   0|   0|   0|
-    6        6.865539560      55374.311006     0|   0|   0|   0|   0|   0|   0|   0|
-    7        7.020121953      56621.102093     0|   0|   0|   0|   0|   0|   0|   0|
-    8        7.313876980      58990.396175     0|   0|   0|   0|   0|   0|   0|   0|
-    9        7.554201526      60928.744361     0|   0|   0|   0|   0|   0|   0|   0|
-   10        7.620642755      61464.629007     0|   0|   0|   0|   0|   0|   0|   0|
-   11        7.844456361      63269.807486     0|   0|   0|   0|   0|   0|   0|   0|
-   12        8.022950507      64709.459864     0|   0|   0|   0|   0|   0|   0|   0|
-   13        8.114580730      65448.507454     0|   0|   0|   0|   0|   0|   0|   0|
+    1        2.265068379      18269.008534     0|   0|   0|   0|   0|   0|   0|   0|
+    2        4.865107069      39239.734823     0|   0|   0|   0|   0|   0|   0|   0|
+    3        5.993926546      48344.277915     0|   0|   0|   0|   0|   0|   0|   0|
+    4        6.334081278      51087.810849     0|   0|   0|   0|   0|   0|   0|   0|
+    5        6.695397027      54002.018900     0|   0|   0|   0|   0|   0|   0|   0|
+    6        6.865539568      55374.311040     0|   0|   0|   0|   0|   0|   0|   0|
+    7        7.020121962      56621.102127     0|   0|   0|   0|   0|   0|   0|   0|
+    8        7.313876989      58990.396211     0|   0|   0|   0|   0|   0|   0|   0|
+    9        7.554201536      60928.744398     0|   0|   0|   0|   0|   0|   0|   0|
+   10        7.620642764      61464.629045     0|   0|   0|   0|   0|   0|   0|   0|
+   11        7.844456371      63269.807525     0|   0|   0|   0|   0|   0|   0|   0|
+   12        8.022950517      64709.459903     0|   0|   0|   0|   0|   0|   0|   0|
+   13        8.114580740      65448.507494     0|   0|   0|   0|   0|   0|   0|   0|
 
 
  Relative real eigenvalues in other units;
@@ -5323,26 +5323,26 @@ tot.num. of pos.erg shells:    9    9    9    0
  Level  eigenvalue (eV)  Eigenvalue (cm-1)  Ag 2|B3u2|B2u2|B1g2|B1u2|B2g2|B3g2|Au 2|
 
     0        0.000000000          0.000000     0|   0|   0|   0|   0|   0|   0|   0|
-    1        2.265068377      18269.008523     0|   0|   0|   0|   0|   0|   0|   0|
-    2        4.865107063      39239.734799     0|   0|   0|   0|   0|   0|   0|   0|
-    3        5.993926539      48344.277886     0|   0|   0|   0|   0|   0|   0|   0|
-    4        6.334081270      51087.810818     0|   0|   0|   0|   0|   0|   0|   0|
-    5        6.695397019      54002.018867     0|   0|   0|   0|   0|   0|   0|   0|
-    6        6.865539560      55374.311006     0|   0|   0|   0|   0|   0|   0|   0|
-    7        7.020121953      56621.102093     0|   0|   0|   0|   0|   0|   0|   0|
-    8        7.313876980      58990.396175     0|   0|   0|   0|   0|   0|   0|   0|
-    9        7.554201526      60928.744361     0|   0|   0|   0|   0|   0|   0|   0|
-   10        7.620642755      61464.629007     0|   0|   0|   0|   0|   0|   0|   0|
-   11        7.844456361      63269.807486     0|   0|   0|   0|   0|   0|   0|   0|
-   12        8.022950507      64709.459864     0|   0|   0|   0|   0|   0|   0|   0|
-   13        8.114580730      65448.507454     0|   0|   0|   0|   0|   0|   0|   0|
+    1        2.265068379      18269.008534     0|   0|   0|   0|   0|   0|   0|   0|
+    2        4.865107069      39239.734823     0|   0|   0|   0|   0|   0|   0|   0|
+    3        5.993926546      48344.277915     0|   0|   0|   0|   0|   0|   0|   0|
+    4        6.334081278      51087.810849     0|   0|   0|   0|   0|   0|   0|   0|
+    5        6.695397027      54002.018900     0|   0|   0|   0|   0|   0|   0|   0|
+    6        6.865539568      55374.311040     0|   0|   0|   0|   0|   0|   0|   0|
+    7        7.020121962      56621.102127     0|   0|   0|   0|   0|   0|   0|   0|
+    8        7.313876989      58990.396211     0|   0|   0|   0|   0|   0|   0|   0|
+    9        7.554201536      60928.744398     0|   0|   0|   0|   0|   0|   0|   0|
+   10        7.620642764      61464.629045     0|   0|   0|   0|   0|   0|   0|   0|
+   11        7.844456371      63269.807525     0|   0|   0|   0|   0|   0|   0|   0|
+   12        8.022950517      64709.459903     0|   0|   0|   0|   0|   0|   0|   0|
+   13        8.114580740      65448.507494     0|   0|   0|   0|   0|   0|   0|   0|
 
 
 --------------------------------------------------------------------------------
 
 
- Today is :     4 Feb 25
- The time is :  12:52:24
+ Today is :     6 Mar 25
+ The time is :  10:27:02
 
  Status of the calculations
  Integral sort # 1 :                   Completed, restartable        
@@ -5354,68 +5354,68 @@ tot.num. of pos.erg shells:    9    9    9    0
  CCSD(T) energy calculation :          Never asked for               
 
  Overview of calculated energies
-@ SCF energy :                               -14.572543219938233
+@ SCF energy :                               -14.572543219938247
 @ MP2 correlation energy :                    -0.062853962118611
 @ CCSD correlation energy :                   -0.083546832420074
-@ Total MP2 energy :                         -14.635397182056844
-@ Total CCSD energy :                        -14.656090052358307
+@ Total MP2 energy :                         -14.635397182056858
+@ Total CCSD energy :                        -14.656090052358321
 
 
 --------------------------------------------------------------------------------
 
 ------ Timing report (in CPU seconds) of module  RELCCSD                      
 
- Time in Sorting of integrals                 0.331 seconds
- Time in CCSD equations                       0.068 seconds
- Time in - T1 equations                       0.009 seconds
+ Time in Sorting of integrals                 0.424 seconds
+ Time in CCSD equations                       0.102 seconds
+ Time in - T1 equations                       0.010 seconds
  Time in --- T1EQNS T*[HOV - F]*T             0.000 seconds
  Time in --- T1EQNS HOV*T2(A,C,I,K            0.000 seconds
  Time in --- T1EQNS   HV*T / T*HO             0.000 seconds
- Time in --- T1EQNS VOOO*TAU                  0.001 seconds
- Time in --- T1EQNS VOVV contribution         0.004 seconds
+ Time in --- T1EQNS VOOO*TAU                  0.002 seconds
+ Time in --- T1EQNS VOVV contribution         0.003 seconds
  Time in --- T1EQNS VOVO * T(C,K)             0.001 seconds
  Time in -- GOINTM                            0.000 seconds
- Time in -- GVINTM                            0.009 seconds
+ Time in -- GVINTM                            0.016 seconds
  Time in -- AINTM                             0.000 seconds
- Time in -- HINTM                             0.006 seconds
- Time in --- HINTM: VOVV*T                    0.004 seconds
+ Time in -- HINTM                             0.008 seconds
+ Time in --- HINTM: VOVV*T                    0.005 seconds
  Time in --- HINTM: VVOO contribution         0.001 seconds
- Time in -- T2 EQNS                           0.040 seconds
+ Time in -- T2 EQNS                           0.063 seconds
  Time in --- T2EQNS: TAU*AINTM contract       0.000 seconds
  Time in --- T2EQNS: VOVV*T1                  0.003 seconds
- Time in --- T2EQNS: HINTM*T2                 0.001 seconds
- Time in -- BINTM                             0.033 seconds
+ Time in --- T2EQNS: HINTM*T2                 0.002 seconds
+ Time in -- BINTM                             0.054 seconds
  Time in - adding partial T1/T2 amplitu       0.000 seconds
  Time in - DIIS extrapolation                 0.003 seconds
  Time in - synchronizing T1 & T2 amplit       0.000 seconds
 
 
  Timing of main modules :         Wallclock (s)       CPU on master (s)
- Before CC driver :            1355669.62                    12.08
- Initialization :                    0.05                     0.05
- Integral sorting :                  0.41                     0.33
- Energy calculation :                0.12                     0.09
+ Before CC driver :               7347.68                    13.25
+ Initialization :                    0.10                     0.10
+ Integral sorting :                  0.42                     0.42
+ Energy calculation :                0.13                     0.13
  First order properties :            0.00                     0.00
  Second order properties :           0.00                     0.00
  Fock space energies :               0.00                     0.00
- EOMCC energies :                    0.00                     3.42
- Untimed parts :                     3.46                     0.00
- Total time in CC driver :             4.                     3.89
+ EOMCC energies :                    0.00                     3.94
+ Untimed parts :                     3.95                     0.00
+ Total time in CC driver :             5.                     4.60
 
  Statistics for the word-addressable I/O
  Number of write calls                                3201.
  Number of read calls                                 6579.
  Megabytes written                                   37.660
  Megabytes read                                    2167.183
- Seconds spent in reads                               0.040
- Seconds spent in writes                              0.282
- average I/O speed for write (Mb/s)                 941.492
- average I/O speed for read  (Mb/s)                7685.045
+ Seconds spent in reads                               0.056
+ Seconds spent in writes                              0.293
+ average I/O speed for write (Mb/s)                 672.495
+ average I/O speed for read  (Mb/s)                7396.528
 
 
- CPU time (seconds) used in RELCCSD:                     3.8859
- CPU time (seconds) used before RELCCSD:                12.0789
- CPU time (seconds) used in total sofar:                15.9648
+ CPU time (seconds) used in RELCCSD:                     4.6012
+ CPU time (seconds) used before RELCCSD:                13.2484
+ CPU time (seconds) used in total sofar:                17.8496
 
   --- Normal end of RELCCSD Run ---
 
@@ -5432,11 +5432,11 @@ tot.num. of pos.erg shells:    9    9    9    0
 
 
  
-     Date and time (Mac OSX): Tue Feb  4 12:52:24 2025
-     Host name              : utonium                                 
+     Date and time (Linux)  : Thu Mar  6 10:27:02 2025
+     Host name              : aucaria                                 
 
->>>> Node 0, utime: 14, stime: 1, minflt: 41941, majflt: 22, nvcsw: 104, nivcsw: 2172, maxrss: 675217408
->>>> Total WALL time used in DIRAC: 30s
+>>>> Node 0, utime: 16, stime: 0, minflt: 162245, majflt: 0, nvcsw: 0, nivcsw: 136, maxrss: 169664
+>>>> Total WALL time used in DIRAC: 18s
   
   Dynamical Memory Usage Summary for Master
   
@@ -5444,23 +5444,23 @@ tot.num. of pos.erg shells:    9    9    9    0
   
   Largest          10  allocations
   
-      839.23 Mb at subroutine pamtra_                                    for WORK in PAMTRA                            
-      839.23 Mb at subroutine psiscf_                                    for WORK in PSISCF                            
-      839.23 Mb at subroutine pamset_                                    for WORK in PAMSET - 2                        
-      839.23 Mb at subroutine gmotra_                                    for WORK in GMOTRA                            
-      839.23 Mb at subroutine pamset_                                    for WORK in PAMSET - 1                        
-      839.23 Mb at subroutine MAIN__                                     for test allocation of work array in DIRAC mai
-       17.92 Mb at subroutine ccseti_                                    for vta                                       
-       17.92 Mb at subroutine ccseti_                                    for vt                                        
-       17.92 Mb at subroutine ccseti_                                    for vta                                       
-       17.92 Mb at subroutine ccseti_                                    for vt                                        
+      839.23 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMTRA                            
+      839.23 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PSISCF                            
+      839.23 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
+      839.23 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
+      839.23 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
+      839.23 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
+       17.92 Mb at subroutine __allocator_track_if_MOD_allocator_registe for vta                                       
+       17.92 Mb at subroutine __allocator_track_if_MOD_allocator_registe for vt                                        
+       17.92 Mb at subroutine __allocator_track_if_MOD_allocator_registe for vta                                       
+       17.92 Mb at subroutine __allocator_track_if_MOD_allocator_registe for vt                                        
   
   Peak memory usage:       839.27 MB
   Peak memory usage:        0.820 GB
-       reached at subroutine : butobs_no_work_                           
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
               for variable   : buf in butobs                             
   
  MEMGET high-water mark:    0.00 MB
 
 *****************************************************
-DIRAC pam run in /Users/andre/Desktop/Dirac-Hackathon-2025/dirac-public_add-peom/build_master_gcc14_serial_openblas_arm64/test/p_eomcc
+DIRAC pam run in /home/agustin/dirac/build/test/p_eomcc

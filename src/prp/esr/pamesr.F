@@ -427,7 +427,6 @@ C***********************************************************************
 #include "codata.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "consts.h"
 C     for PRQMAT print of complex matrices:
       integer, parameter ::NZCMPLX = 2, IQINDX(2) = (/ 1,2 /)
       integer, parameter ::max_MULTIPESR = 9 ! corresponding to max S_eff = 4
@@ -441,17 +440,14 @@ C
       REAL*8    PHASE_FAC(MULTIPESR,2) ! automatic array
 C
 C Used from common blocks:
-C  dcbgen.h : LUCOEF
 C  dcbesr.h : MULTIPESR, ...
 C
-#include "dcbgen.h"
 #include "dcbxpr.h"
 #include "dcbesr.h"
 #include "dcbprp.h"
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbdhf.h"
 #include "dgroup.h"
 #include "dcbopt.h"
 C
@@ -928,20 +924,14 @@ C
       INTEGER   IPCMO(2)
 C
 C Used from common blocks:
-C  dcbgen : LU1INT,?
 C  dcbopt : KZCONF,NZCONF
 C  dgroup : NZ,NZ_in_CI
 C  dcbesr : ...,STATE_ESR,...
 C
-#include "dcbgen.h"
 #include "dcbopt.h"
 #include "dgroup.h"
-#include "dcborb.h"
-#include "dcbbas.h"
 #include "dcbesr.h"
 #include "dcbxpr.h"
-#include "dcbprp.h"
-#include "dcbdhf.h"
 C
       CALL QENTER('ESRPHASE')
       KFRSAV = KFREE
@@ -1358,16 +1348,9 @@ C  dcbgen : LU1INT,?
 C  dcbopt : KZCONF,NZCONF
 C
 #include "dgroup.h"
-
-#include "dcbgen.h"
 #include "dcbopt.h"
-#include "dcborb.h"
-#include "dcbbas.h"
 #include "dcbesr.h"
 #include "dcbxpr.h"
-
-#include "dcbprp.h"
-#include "dcbdhf.h"
 C
       KFRSAV = KFREE
       call memchk('prpesr1 1',work,1)
@@ -1596,8 +1579,6 @@ C
 #include "dcbbas.h"
 #include "dcbesr.h"
 #include "dcbxpr.h"
-#include "dcbprp.h"
-#include "dcbdhf.h"
 C
       CALL QENTER('ESRTRANS')
       KFRSAV = KFREE
@@ -1868,8 +1849,6 @@ C***********************************************************************
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
 C
 C dgroup.h : NZ, NZ_in_CI
 #include "dcbesr.h"
@@ -1940,8 +1919,6 @@ C***********************************************************************
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
 C
 C dgroup.h : NZ, NZ_in_CI
 #include "dcbesr.h"
@@ -2070,7 +2047,6 @@ C     Written by A.Noerager APR 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 C
 #include "dcbesr.h"
@@ -2127,9 +2103,7 @@ C  dcbprp: ABUND,?
 C
 #include "dcbprp.h"
 #include "dcbxpr.h"
-#include "dcbprl.h"
 #include "dcbesr.h"
-#include "dcborb.h"
 C
       LOGICAL   SWITCH_XY,TEST,DOATOM(NUCIND)
       REAL*8    ESRVAL(MULTIPESR,MULTIPESR,2,*),
@@ -2364,7 +2338,6 @@ C
       REAL*8    TMAT(3,3), AVETOT, RATINF(3,*)
       INTEGER   IATINF(3), IPRINT
       CHARACTER NAME*6, NAMEX(3)*6
-#include "chrxyz.h"
       REAL*8    TMATNY(3,3), TMATX(3,3), HFC_PVAL(3), HFC_PVEC(3,3)
 C
 C     factor = 1/c^2 * \mu_N = 1/c^2 * 1/(2 m_p)

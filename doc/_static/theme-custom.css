@@ -33,3 +33,8 @@ table.docutils.citation td.label {
     position: absolute;
     z-index: 2000;
 }
+
+.wy-nav-content {
+    max-width: 1200px;
+    width: auto;
+}

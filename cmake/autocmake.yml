@@ -1,6 +1,6 @@
 name: DIRAC
 
-min_cmake_version: "3.20"
+min_cmake_version: "3.23"
 
 default_build_type: release
 
@@ -63,16 +63,11 @@ modules:
     - 'custom/static.cmake'
     - 'custom/definitions.cmake'
     - 'custom/matlab.cmake'
-    - 'custom/qdiag.cmake'
     - 'custom/work_array.cmake'
     - 'custom/workarounds.cmake'
     - 'custom/external.cmake'
     - 'custom/exatensor.cmake'
     - 'custom/pcm.cmake'
-    - 'custom/gen1int.cmake'
-    - 'custom/pelib.cmake'
-- subdirectories:
-  - source: '%(url_root)modules/src.cmake'
 - custom:
   - source:
     - 'custom/benchmarks.cmake'

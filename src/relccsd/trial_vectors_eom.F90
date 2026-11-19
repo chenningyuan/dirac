@@ -12,7 +12,6 @@ module trial_vectors_eom
 
    subroutine trial_vectors_ee (r1,Fbar_mi,Fbar_ae,W_mbej)
 #include "symm.inc"
-#include "complex.inc"
 #include "inpt.inc"
 !---------------Description--------------------------------------------
 !     generating R1 trial vectors by diagonalizing HBar_SS matrix.
@@ -97,7 +96,6 @@ module trial_vectors_eom
 
    subroutine trial_vectors_ip (r1,Fbar_mi)
 #include "symm.inc"
-#include "complex.inc"
 #include "inpt.inc"
 !---------------Description--------------------------------------------
 !     generating R1 trial vectors by diagonalizing HBar_SS matrix.
@@ -164,7 +162,6 @@ module trial_vectors_eom
 
    subroutine trial_vectors_EA (r1,Fbar_ae)
 #include "symm.inc"
-#include "complex.inc"
 #include "inpt.inc"
 
 !---------------Description--------------------------------------------

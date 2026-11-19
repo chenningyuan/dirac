@@ -181,7 +181,7 @@ C
       REWIND lunit_grid
       NPNTS = 0
   100 CONTINUE
-      READ(lunit_grid) NPOINT
+      READ(lunit_grid,*) NPOINT
       IF (NPOINT.GT.0) THEN
          NPNTS = NPNTS + NPOINT
          call alloc(kx, npoint)
@@ -518,7 +518,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h" 
 #include "priunit.h"
       DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
-      READ(LUQUAD) X,Y,Z,WT
+      READ(LUQUAD,*) X,Y,Z,WT
       
       RETURN
       END

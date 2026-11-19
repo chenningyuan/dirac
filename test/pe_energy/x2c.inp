@@ -7,8 +7,8 @@ Polarizable embedding with Dirac-Coulomb Hamiltonian
 .UNCONTRACT
 **HAMILTONIAN
 .X2C
-.PEQM
-*PEQM
+.PELIB
+*PELIB
 .POTENT
 peqm.pot
 **WAVE FUNCTION

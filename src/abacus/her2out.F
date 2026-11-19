@@ -31,7 +31,6 @@ C     all duplicates by testing  880601 TUH
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "iratdef.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -243,7 +242,6 @@ C  /* Deck un2wrt */
 #include "iratdef.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "ibtpar.h"
       DIMENSION BUF(LBUF), IBUF(LBUF,NIBUF)
 #include "twosta.h"
 #include "hrunit.h"
@@ -358,12 +356,10 @@ C       - extended to include all Fock matrices
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
       LOGICAL IPNTLG(3,*)
       DIMENSION SO(*),IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
@@ -371,13 +367,15 @@ C
      &          WORK(LWORK),DNSBUF(*),IFCTYP(NDMAT),
      &          IREPDM(NDMAT)
 #include "twocom.h"
-#include "symmet.h"
       CALL QENTER('FCKOUT')
 #include "memint.h"
 C
       CALL MEMGET('INTE',KIBUF,4*NOABCD,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSBUF,NOABCD,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KICDBF,2*NORBC*NORBD,WORK,KFREE,LFREE)
 C
-      CALL FCKOU1(FMAT,DMAT,NDMAT,SO,WORK(KIBUF),
+      CALL FCKOU1(FMAT,DMAT,NDMAT,SO,WORK(KSBUF),WORK(KIBUF),
+     &            WORK(KICDBF),
      &            IPNTNO,IPNTRP,IPNTLG,NINDAB,NINDCD,
      &            DMRSO,DNSBUF,DINTSKP,HFXFAC,IFCTYP,IREPDM,IPRINT)
       CALL MEMREL('FCKOUT',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -386,8 +384,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck fckou1 */
-      SUBROUTINE FCKOU1(FMAT,DMAT,NDMAT,SO,IBUF,IPNTNO,IPNTRP,
-     &                  IPNTLG,NINDAB,NINDCD,DMRSO,DNSBUF,
+      SUBROUTINE FCKOU1(FMAT,DMAT,NDMAT,SO,SBUF,IBUF,ICDBUF,IPNTNO,
+     &                  IPNTRP,IPNTLG,NINDAB,NINDCD,DMRSO,DNSBUF,
      &                  DINTSKP,HFXFAC,IFCTYP,IREPDM,IPRINT)
 C*****************************************************************************
 C
@@ -404,6 +402,7 @@ C     Rewritten to allow for triangular looping and to eliminate
 C     all duplicates by testing  880601 TUH
 C
 C*****************************************************************************
+      USE AOINT_ZERO
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (DP5 = 0.5D0,DMP25 = -0.25D00,DMP5=-0.5D0,D1 = 1.0D0,
@@ -416,14 +415,14 @@ C
       INTEGER A,B,C,D
       LOGICAL DCMPAB, DCMPCD, DCMPAC, DRALTB, DRCLTD, 
      &        DRABAB, DCABAB, IAEQIC, IALTIC, IPNTLG(3,*), NOTEST,
-     &        LBIT,DOE,DOC,TST2IN
-      DIMENSION SO(NOABCD,NINTS), IBUF(4,NOABCD), 
+     &        LBIT,DOE,DOC,TST2IN,DIRECT
+      DIMENSION SO(NOABCD,*), SBUF(NOABCD), IBUF(4,NOABCD),
+     &          ICDBUF(2,NORBC*NORBD),
      &          IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          FMAT(NBASIS,NBASIS,*), DMAT(NBASIS,NBASIS,*),
      &          DNSBUF(2,NDMAT),DMRSO(MAXSHL,MAXSHL,NDMAT),
      &          IFCTYP(NDMAT),DINTSKP(2,4),IREPDM(NDMAT)
-#include "twosta.h"
 #include "twocom.h"
 #include "symmet.h"
 #include "nuclei.h"
@@ -478,7 +477,37 @@ C Largest exchange contribution
         FCKTOL = 1.00D-15
       ENDIF
       NOTEST = .NOT.(SHAEQB .OR. SHCEQD .OR. SHABAB)
+C     Contract directly from SO without packing when no permutational
+C     tests are needed and there is a single Fock matrix, with
+C     permutational symmetry (with several matrices packing once is
+C     cheaper than scanning the SO block for each matrix)
+      NFMAT = 0
+      DO K = 1, NDMAT
+        IF (IFCTYP(K) .NE. 0) THEN
+          NFMAT = NFMAT + 1
+          IX    = IFCTYP(K)/10
+        END IF
+      END DO
+      DIRECT = NOTEST .AND. IPRINT .LT. 6 .AND. NFMAT .EQ. 1 .AND.
+     &         IX .GE. 1 .AND. IX .LE. 3
       DO I = 1, NINTS
+C       SO block zero by symmetry (not stored, see SYM2)
+        IF (SOZ_OK) THEN
+          IF (SO_ZERO(I)) THEN
+            DINTSKP(1,2) = DINTSKP(1,2) + NORBAB*NORBCD
+            DINTSKP(2,2) = DINTSKP(2,2) + NORBAB*NORBCD
+            CYCLE
+          END IF
+        END IF
+C       SO block I is FACI times column ISO of SO (the AO integrals
+C       when SYM2 skipped the copy, see SOAO_OK); packed into SBUF
+        IF (SOAO_OK) THEN
+          ISO  = SO_IAO(I)
+          FACI = SO_FAC(I)
+        ELSE
+          ISO  = I
+          FACI = D1
+        END IF
         NBUF   = 0
         NTOT   = 0
         NSTRNA = IPNTNO(1,I)
@@ -492,7 +521,23 @@ C Largest exchange contribution
         IREPD  = IEOR(IREPAB,IREPC)
         IREPAC = IEOR(IREPA,IREPC)
         IREPAD = IEOR(IREPA,IREPD)
-        IF(NOTEST) THEN
+C       SO indices of the C and D orbitals of this block
+        DO ICD = 1, NORBCD
+          IC = KHKTC*(NINDCD(ICD,1) - 1)
+          ID = KHKTD*(NINDCD(ICD,2) - 1)
+          ICDBUF(1,ICD) = IPTSYM(NSTRNC + IC,IREPC)
+          ICDBUF(2,ICD) = IPTSYM(NSTRND + ID,IREPD)
+        ENDDO
+        IF(DIRECT) THEN
+C         SOMAX equals the maximum over the kept integrals if NBUF > 0
+          NTOT  = NORBAB*NORBCD
+          SOMAX = D0
+          DO INT = 1, NTOT
+            SOINT = ABS(FACI*SO(INT,ISO))
+            SOMAX = MAX(SOMAX,SOINT)
+            NBUF  = NBUF + MERGE(1,0,SOINT .GT. FCKTOL)
+          ENDDO
+        ELSE IF(NOTEST) THEN
           INT = 0
           SOMAX = D0
           DO IAB = 1, NORBAB
@@ -502,23 +547,19 @@ C Largest exchange contribution
             INDB = IPTSYM(NSTRNB + IB,IREPB)
             DO ICD = 1, NORBCD
               INT = INT + 1
-              SOINT = SO(INT,I)
-              NTOT = NTOT + 1
+              SOINT = FACI*SO(INT,ISO)
               IF (ABS(SOINT) .GT. FCKTOL) THEN
-                IC = KHKTC*(NINDCD(ICD,1) - 1)
-                ID = KHKTD*(NINDCD(ICD,2) - 1)
-                INDC = IPTSYM(NSTRNC + IC,IREPC)
-                INDD = IPTSYM(NSTRND + ID,IREPD)
                 NBUF = NBUF + 1
                 SOMAX = MAX(SOMAX,ABS(SOINT))
-                SO(NBUF,I)   = SOINT
+                SBUF(NBUF)   = SOINT
                 IBUF(1,NBUF) = INDA
                 IBUF(2,NBUF) = INDB
-                IBUF(3,NBUF) = INDC
-                IBUF(4,NBUF) = INDD
+                IBUF(3,NBUF) = ICDBUF(1,ICD)
+                IBUF(4,NBUF) = ICDBUF(2,ICD)
               ENDIF
             ENDDO
           ENDDO
+          NTOT = NORBAB*NORBCD
         ELSE
 C***      DCMPAB = SHAEQB.AND.ICOMPA.EQ.ICOMPB
           DCMPAB = IPNTLG(1,I)
@@ -550,8 +591,8 @@ C***      DCABAB = .NOT.SQ12EL.AND.SHABAB.AND.ICOMPA.EQ.ICOMPC.AND.ICOMPB.EQ.ICO
                 FABCD = FAB
                 IC    = KHKTC*(NINDCD(ICD,1) - 1)
                 ID    = KHKTD*(NINDCD(ICD,2) - 1)
-                INDC  = IPTSYM(NSTRNC + IC,IREPC)
-                INDD  = IPTSYM(NSTRND + ID,IREPD)
+                INDC  = ICDBUF(1,ICD)
+                INDD  = ICDBUF(2,ICD)
                 IF (IA.LT.IC.OR.(IA.EQ.IC.AND.IB.LT.ID)) GOTO 310
                 IF (INDA.EQ.INDC.AND.INDB.EQ.INDD) FABCD = DP5*FABCD
                 IF(DCMPCD) THEN
@@ -560,11 +601,11 @@ C***      DCABAB = .NOT.SQ12EL.AND.SHABAB.AND.ICOMPA.EQ.ICOMPC.AND.ICOMPB.EQ.ICO
                   IF(INDD.EQ.INDC) FABCD = DP5*FABCD
                 ENDIF
                 NTOT  = NTOT + 1
-                SOINT = SO(INT,I)
+                SOINT = FACI*SO(INT,ISO)
                 IF (ABS(SOINT) .GT. FCKTOL) THEN
                   NBUF         = NBUF + 1
                   SOMAX        = MAX(SOMAX,ABS(SOINT))
-                  SO(NBUF,I)   = FABCD*SOINT
+                  SBUF(NBUF)   = FABCD*SOINT
                   IBUF(1,NBUF) = INDA
                   IBUF(2,NBUF) = INDB
                   IBUF(3,NBUF) = INDC
@@ -577,18 +618,18 @@ C***      DCABAB = .NOT.SQ12EL.AND.SHABAB.AND.ICOMPA.EQ.ICOMPC.AND.ICOMPB.EQ.ICO
                 FABCD = FAB
                 IC    = KHKTC*(NINDCD(ICD,1) - 1)
                 ID    = KHKTD*(NINDCD(ICD,2) - 1)
-                INDC  = IPTSYM(NSTRNC + IC,IREPC)
-                INDD  = IPTSYM(NSTRND + ID,IREPD)
+                INDC  = ICDBUF(1,ICD)
+                INDD  = ICDBUF(2,ICD)
                 IF(DCMPCD) THEN
                   IF (ID.GT.IC) GO TO 320
                   IF (DRCLTD .AND. ID.EQ.IC) GO TO 320
                   IF(INDD.EQ.INDC) FABCD = DP5*FABCD
                 ENDIF
                 NTOT = NTOT + 1
-                SOINT = SO(INT,I)
+                SOINT = FACI*SO(INT,ISO)
                 IF (ABS(SOINT) .GT. FCKTOL) THEN
                   NBUF         = NBUF + 1
-                  SO(NBUF,I)   = FABCD*SOINT
+                  SBUF(NBUF)   = FABCD*SOINT
                   SOMAX        = MAX(SOMAX,ABS(SOINT))
                   IBUF(1,NBUF) = INDA
                   IBUF(2,NBUF) = INDB
@@ -604,6 +645,7 @@ C***      DCABAB = .NOT.SQ12EL.AND.SHABAB.AND.ICOMPA.EQ.ICOMPC.AND.ICOMPB.EQ.ICO
         DINTSKP(2,2) = DINTSKP(2,2) + NDEL
         DINTSKP(1,3) = DINTSKP(1,3) + NCM*NBUF
         DINTSKP(1,4) = DINTSKP(1,4) + NEM*NBUF
+        IF (NBUF .EQ. 0) CYCLE
 C
 C       Print integrals
 C       ===============
@@ -611,7 +653,7 @@ C
         IF(IPRINT.GE.6) THEN
           WRITE(LUPRI,'(A,I5)') '* FCKOU1: Integrals in NINTS =',I
           IF(NBUF.GT.0) WRITE(LUPRI,'(4I5,3X,F12.6)')
-     &     (IBUF(1,J),IBUF(2,J),IBUF(3,J),IBUF(4,J),SO(J,I),J=1,NBUF)
+     &     (IBUF(1,J),IBUF(2,J),IBUF(3,J),IBUF(4,J),SBUF(J),J=1,NBUF)
         ENDIF
 C
 C       **********************************
@@ -688,7 +730,12 @@ C         Screening on exchange contributions
           ENDIF
           IY = IE + IC
           IF (IY.EQ.0) GOTO 400
-          IF (IX.EQ.1.OR.IX.EQ.2.OR.IX.EQ.3) THEN
+          IF (DIRECT) THEN
+            EXCFAC = DMP25*HFXFAC
+            CALL FCKDIR(FMAT(1,1,K),DMAT(1,1,K),SO(1,ISO),FACI,EXCFAC,
+     &                  FCKTOL,IY,ICDBUF,NINDAB,NSTRNA,NSTRNB,IREPA,
+     &                  IREPB)
+          ELSE IF (IX.EQ.1.OR.IX.EQ.2.OR.IX.EQ.3) THEN
             DIRFAC = D1
             EXCFAC = DMP25*HFXFAC
 C
@@ -702,8 +749,8 @@ C
                 B = IBUF(2,INT)
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
-                DINT = DIRFAC*SO(INT,I)
-                EINT = EXCFAC*SO(INT,I)
+                DINT = DIRFAC*SBUF(INT)
+                EINT = EXCFAC*SBUF(INT)
 C...............Direct contributions
                 FMAT(A,B,K) = FMAT(A,B,K) + DINT*DMAT(C,D,K)
                 FMAT(C,D,K) = FMAT(C,D,K) + DINT*DMAT(A,B,K)
@@ -727,7 +774,7 @@ C
                 B = IBUF(2,INT)
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
-                EINT = EXCFAC*SO(INT,I)
+                EINT = EXCFAC*SBUF(INT)
 C...............Exchange (LL or SS for Gaunt)
                 FMAT(C,A,K) = FMAT(C,A,K) + EINT*DMAT(D,B,K)
                 FMAT(D,B,K) = FMAT(D,B,K) + EINT*DMAT(C,A,K)
@@ -746,7 +793,7 @@ C
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
 C...............Direct contributions
-                DINT = DIRFAC*SO(INT,I)
+                DINT = DIRFAC*SBUF(INT)
                 FMAT(A,B,K) = FMAT(A,B,K) + DINT*DMAT(C,D,K)
                 FMAT(C,D,K) = FMAT(C,D,K) + DINT*DMAT(A,B,K)
               ENDDO
@@ -773,7 +820,7 @@ C
                 B = IBUF(2,INT)
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
-                DINT = DIRFAC*SO(INT,I)
+                DINT = DIRFAC*SBUF(INT)
 C...............Direct contributions
                 GCD  = DINT*(DMAT(C,D,K) + DMAT(D,C,K))
                 FMAT(A,B,K) = FMAT(A,B,K) + GCD
@@ -781,7 +828,7 @@ C...............Direct contributions
                 GAB  = DINT*(DMAT(A,B,K) + DMAT(B,A,K))
                 FMAT(C,D,K) = FMAT(C,D,K) + GAB
                 FMAT(D,C,K) = FMAT(D,C,K) + GAB
-                EINT = EXCFAC*SO(INT,I)
+                EINT = EXCFAC*SBUF(INT)
 C...............Exchange (LL or SS for Gaunt)
                 FMAT(C,A,K) = FMAT(C,A,K) + EINT*DMAT(D,B,K)
                 FMAT(A,C,K) = FMAT(A,C,K) + EINT*DMAT(B,D,K)
@@ -804,7 +851,7 @@ C
                 B = IBUF(2,INT)
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
-                EINT = EXCFAC*SO(INT,I)
+                EINT = EXCFAC*SBUF(INT)
 C...............Exchange (LL or SS for Gaunt)
                 FMAT(C,A,K) = FMAT(C,A,K) + EINT*DMAT(D,B,K)
                 FMAT(A,C,K) = FMAT(A,C,K) + EINT*DMAT(B,D,K)
@@ -827,7 +874,7 @@ C
                 B = IBUF(2,INT)
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
-                DINT = DIRFAC*SO(INT,I)
+                DINT = DIRFAC*SBUF(INT)
 C...............Direct contributions
                 GCD  = DINT*(DMAT(C,D,K) + DMAT(D,C,K))
                 FMAT(A,B,K) = FMAT(A,B,K) + GCD
@@ -857,6 +904,86 @@ C...............Direct contributions
 C
       RETURN
       END
+C  /* Deck fckdir */
+      SUBROUTINE FCKDIR(FMAT,DMAT,SO,FACI,EXCFAC,FCKTOL,IY,ICDBUF,
+     &                  NINDAB,NSTRNA,NSTRNB,IREPA,IREPB)
+C*****************************************************************************
+C
+C     Contract one SO integral block (ab|cd) without permutational
+C     tests directly into a Fock matrix with permutational symmetry
+C     (IFCTYP X = 1,2,3), skipping integrals below FCKTOL. Same result
+C     as packing in FCKOU1 followed by its contraction loops, but the
+C     direct contribution to F(a,b) is summed over cd in a scalar.
+C
+C       IY = 1 direct, 2 exchange, 3 direct + exchange
+C
+C*****************************************************************************
+#include "implicit.h"
+      PARAMETER (D0 = 0.0D0)
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+      INTEGER A,B,C,D
+      DIMENSION FMAT(NBASIS,NBASIS), DMAT(NBASIS,NBASIS),
+     &          SO(NORBCD,NORBAB), ICDBUF(2,*), NINDAB(NORBA*NORBB,2)
+#include "twocom.h"
+#include "symmet.h"
+#include "nuclei.h"
+C
+      DO IAB = 1, NORBAB
+        IA = KHKTA*(NINDAB(IAB,1) - 1)
+        IB = KHKTB*(NINDAB(IAB,2) - 1)
+        A  = IPTSYM(NSTRNA + IA,IREPA)
+        B  = IPTSYM(NSTRNB + IB,IREPB)
+        IF (IY .EQ. 3) THEN
+          DAB = DMAT(A,B)
+          FAB = D0
+          DO ICD = 1, NORBCD
+            DINT = FACI*SO(ICD,IAB)
+            IF (ABS(DINT) .GT. FCKTOL) THEN
+              C = ICDBUF(1,ICD)
+              D = ICDBUF(2,ICD)
+              EINT = EXCFAC*DINT
+              FAB       = FAB       + DINT*DMAT(C,D)
+              FMAT(C,D) = FMAT(C,D) + DINT*DAB
+              FMAT(C,A) = FMAT(C,A) + EINT*DMAT(D,B)
+              FMAT(D,B) = FMAT(D,B) + EINT*DMAT(C,A)
+              FMAT(D,A) = FMAT(D,A) + EINT*DMAT(C,B)
+              FMAT(C,B) = FMAT(C,B) + EINT*DMAT(D,A)
+            END IF
+          END DO
+          FMAT(A,B) = FMAT(A,B) + FAB
+        ELSE IF (IY .EQ. 2) THEN
+          DO ICD = 1, NORBCD
+            SOINT = FACI*SO(ICD,IAB)
+            IF (ABS(SOINT) .GT. FCKTOL) THEN
+              C = ICDBUF(1,ICD)
+              D = ICDBUF(2,ICD)
+              EINT = EXCFAC*SOINT
+              FMAT(C,A) = FMAT(C,A) + EINT*DMAT(D,B)
+              FMAT(D,B) = FMAT(D,B) + EINT*DMAT(C,A)
+              FMAT(D,A) = FMAT(D,A) + EINT*DMAT(C,B)
+              FMAT(C,B) = FMAT(C,B) + EINT*DMAT(D,A)
+            END IF
+          END DO
+        ELSE
+          DAB = DMAT(A,B)
+          FAB = D0
+          DO ICD = 1, NORBCD
+            DINT = FACI*SO(ICD,IAB)
+            IF (ABS(DINT) .GT. FCKTOL) THEN
+              C = ICDBUF(1,ICD)
+              D = ICDBUF(2,ICD)
+              FAB       = FAB       + DINT*DMAT(C,D)
+              FMAT(C,D) = FMAT(C,D) + DINT*DAB
+            END IF
+          END DO
+          FMAT(A,B) = FMAT(A,B) + FAB
+        END IF
+      END DO
+      RETURN
+      END
 C  /* Deck dr2out */
       SUBROUTINE DR2OUT(SO,IATOM,MULE,FIRST,LAST,SPNORB,SQ12EL,THRESH,
      &                  IPNTNO,IPNTRP,IPNTLG,NINDAB,NINDCD,IPRINT)
@@ -864,11 +991,9 @@ C
 C     tuh Sep 92
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, SPNORB, SQ12EL, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*),
@@ -1032,12 +1157,10 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
       PARAMETER (TEN14 = 1.1D14, LU2DER = 50)
-#include "hrunit.h"
       LOGICAL SPNORB
       DIMENSION BUF(600), IBUF(600)
 #include "nodint.h"
 #include "symmet.h"
-#include "chrxyz.h"
       SAVE NBUF, NFLAGS, IRPOLD, ICROLD, ICTOLD, NBFOLD
 C
 C     Initialization
@@ -1180,20 +1303,16 @@ C
 C     tuh Sep 92
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, SPNORB, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
       DIMENSION SO(*), BUF(600), IBUF(600)
 #include "twocom.h"
-#include "dorps.h"
 #include "symmet.h"
-#include "doxyz.h"
       SAVE BUF, IBUF, ICOUNT, NBUFCL
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine MG2OUT',-1)
@@ -1346,8 +1465,6 @@ C  /* Deck ds2out */
      &                  THRESH,NINDAB,NINDCD,IPRINT)
 C
 #include "implicit.h"
-#include "priunit.h"
-#include "iratdef.h"
       LOGICAL FIRST, LAST, IPNTLG(*)
       DIMENSION SO(*), WRKBUF(*), IPNTNO(*), IPNTRP(*), NINDAB(*),
      &          NINDCD(*)
@@ -1372,11 +1489,9 @@ C     Write out blocks of symmetry integrals, eliminating duplicates
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "iratdef.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
       LOGICAL DCMPCD, DRCLTD, FIRST, LAST, IPNTLG(3,*), NOTEST,
      &        DOINDX
       DIMENSION SO(*), BUF(LBUF,NDIST), IBUF(LBUF,2,NDIST),
@@ -1603,17 +1718,12 @@ C     Two options : we write directly to gmat if npass = 1
 C                   we write to a direct access file if npass > 1
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "aovec.h"
-#include "twosta.h"
 C
-#include "nuclei.h"
 #include "twocom.h"
-#include "blocks.h"
-#include "symmet.h"
 #include "comdis.h"
       LOGICAL FIRST, LAST, IPNTLG(3,*)
       LOGICAL DRALTB,DCMPAB,NOTEST
@@ -1670,7 +1780,6 @@ C*****************************************************************************
      &          IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          INDX(3,*),INDXAB(NINSHA,NINSHB,5)
-#include "nuclei.h"
 #include "twocom.h"
 #include "blocks.h"
 #include "symmet.h"
@@ -1841,7 +1950,6 @@ C*****************************************************************************
      &          INDX(3,*),INDXAB(NINSHA,NINSHB,5)
       DIMENSION LGREC(NPASS),LGBUF(NPASS)
       DIMENSION RGBUF(NGBFSZ,NPASS),IGBUF(NGBFSZ,NPASS)
-#include "nuclei.h"
 #include "twocom.h"
 #include "blocks.h"
 #include "symmet.h"
@@ -2056,7 +2164,6 @@ C     Written by T.Saue June 1997
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       GO TO ( 1,2,3,4,5,6,7,8,9,10),INTCLS
       STOP 'Error in TST2IN'
  1    CONTINUE

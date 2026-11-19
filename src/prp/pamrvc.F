@@ -21,7 +21,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrssvc */
       SUBROUTINE XRSSVC(BCVEC,BEVEC,BPVEC,
      &                  SCVEC,SEVEC,SPVEC,IBTYP,
-     &                  IBCVC,IBEVC,IBPVC,NPOS,
+     &                  IBCVC,IBEVC,IBPVC,
      &                  GPCI,GPOE,GPOP,
      &                  WORK,KFREE,LFREE)
 C***********************************************************************
@@ -47,7 +47,7 @@ C
       DIMENSION BCVEC(*),BEVEC(*),BPVEC(*)
       DIMENSION SCVEC(*),SEVEC(*),SPVEC(*)
       DIMENSION IBCVC(*),IBEVC(*),IBPVC(*)
-      DIMENSION IBTYP(2,*),NPOS(*),WORK(*)
+      DIMENSION IBTYP(2,*),WORK(*)
       DIMENSION GPCI(*), GPOE(*), GPOP(*)
 C
 C Used from common blocks:
@@ -73,7 +73,7 @@ C
          CALL XRSSEP(BCVEC,BEVEC,BPVEC,
      &        SCVEC,SEVEC,SPVEC,
      &        IBCVC,IBEVC,IBPVC,
-     &        IBTYP,GPOE,GPOP,NPOS,WORK,KFREE,LFREE)
+     &        IBTYP,GPOE,GPOP,WORK,KFREE,LFREE)
       END IF
 C
 C     Construct configurational part of sigma vectors
@@ -111,7 +111,7 @@ C     Written by J. Thyssen - Nov 23 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       DIMENSION BCVEC(*),SCVEC(*),WORK(*),IBCVC(*)
 C
 C
@@ -181,9 +181,7 @@ C     Written by J. Thyssen - Nov 23 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "consts.h"
+#include "priunit.h" ! LUPRI
 C
       DIMENSION BCVEC(NZCONFQ,*),SCVEC(NZCONFQ,*)
       DIMENSION FCAC(*),H2AC(*),WORK(*)
@@ -276,7 +274,7 @@ C     Written by J. Thyssen - Nov 23 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
       PARAMETER ( THREPS = 1.0D-12 )
 #include "consts.h"
@@ -353,7 +351,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrssep */
       SUBROUTINE XRSSEP(BCVEC,BEVEC,BPVEC,SCVEC,SEVEC,SPVEC,
      &     IBCVC,IBEVC,IBPVC,
-     &     IBTYP,GPOE,GPOP,NPOS,WORK,KFREE,LFREE)
+     &     IBTYP,GPOE,GPOP,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Construct orbital part of sigma vectors
@@ -455,11 +453,10 @@ C***********************************************************************
       use orbital_rotation_indices
 
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
       DIMENSION BCVEC(*),BEVEC(*),BPVEC(*),
      &          SCVEC(*),SEVEC(*),SPVEC(*),
-     &          IBCVC(*),IBEVC(*),IBPVC(*),IBTYP(2,*),NPOS(*),
+     &          IBCVC(*),IBEVC(*),IBPVC(*),IBTYP(2,*),
      &          WORK(*)
       DIMENSION GPOE(*),GPOP(*)
 C
@@ -535,7 +532,7 @@ C
 C
       IF (LSVCFG(1)) THEN
         CALL GMOLITX(WORK(KF),WORK(KDVT),WORK(KDV),
-     &     BEVEC,BPVEC,IBCVC,IBEVC,IBPVC,IBTYP,NPOS,WORK,KFREE,LFREE)
+     &     BEVEC,BPVEC,IBCVC,IBEVC,IBPVC,IBTYP,WORK,KFREE,LFREE)
       ELSE
         CALL DZERO(WORK(KF),N2BBASXQ*NDIM)
       ENDIF
@@ -684,7 +681,7 @@ C
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D0 = 0.0D0, DP5 = 0.5D00)
 C
 #include "dcborb.h"
@@ -850,7 +847,6 @@ C     Written by T.Saue Sep 17 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -902,7 +898,7 @@ C***********************************************************************
       use orbital_rotation_indices
 
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "dcbxrs.h"
 #include "dcborb.h"
@@ -1188,7 +1184,7 @@ C
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0,DM1 = -1.0D0)
 C
 #include "dcborb.h"
@@ -1269,7 +1265,6 @@ C     Written by T.Saue Sep 18 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
 #include "dcborb.h"
@@ -1384,7 +1379,6 @@ C***********************************************************************
        use dft_cfg
 
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
 #include "dgroup.h"
@@ -1538,7 +1532,7 @@ C     Last revision Oct 15 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       DIMENSION BCVEC(*),TCVEC(*),TEVEC(*), TPVEC(*),WORK(*)
 C
 C Used from common blocks:
@@ -1599,7 +1593,7 @@ C***********************************************************************
       use orbital_rotation_indices
 
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D1 = 1.0D0, DM1 = -1.0D00)
       DIMENSION BEVEC(NZXOPEQ,*),IBEVC(*),
      &          BPVEC(NZXOPPQ,*),IBPVC(*),
@@ -1789,7 +1783,6 @@ C     Written by T.Saue and H.J.Aa.Jensen Oct 16 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
 #include "dcbibn.h"
@@ -1839,7 +1832,7 @@ C     Written by T.Saue Oct 16 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "dcbxrs.h"
 #include "dcbibn.h"
@@ -1955,7 +1948,6 @@ c     Updated Dec10 - Jan11 S.Villaume & T.Saue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
 #include "dcbxrs.h"
@@ -2068,7 +2060,6 @@ C     Written by T.Saue Oct 17 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
 #include "dcbibn.h"
@@ -2110,7 +2101,7 @@ C     Written by T.Saue Oct 16 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
       PARAMETER(D0=0.0D0)
 #include "dcbxrs.h"
@@ -2184,7 +2175,6 @@ C     Last revision Oct 17 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 
       DIMENSION XVEC(NDIM,*),XNRM(*)
@@ -2210,7 +2200,7 @@ C     Written by T.Saue Oct 18 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D0=0.0D0)
 C
 #include "dcbxrs.h"
@@ -2908,7 +2898,6 @@ C     Written by T.Saue Oct 17 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
 #include "dcbxrs.h"
 C
@@ -2973,7 +2962,7 @@ C***********************************************************************
       use dirac_cfg
 
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D5=5.0D0)
 C
 #include "dcbxrs.h"
@@ -3345,7 +3334,6 @@ C     Written by T.saue Dec 1 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "thrzer.h"
 #include "dcbibn.h"
 C
@@ -3562,7 +3550,6 @@ C     Written by S.Villaume Jan 2011
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
 #include "dgroup.h"
@@ -3675,7 +3662,7 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "dgroup.h"
 #include "dcbxrs.h"
@@ -3742,7 +3729,7 @@ C
 C***********************************************************************
       use mcscf_routines
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
       PARAMETER (D1 = 1.0D00, D0 = 0.0D00)
 C
@@ -3835,7 +3822,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gmolitx */
       SUBROUTINE GMOLITX(FMO,DVT,DV,
      &                   BEVEC,BPVEC,IBCVC,IBEVC,IBPVC,IBTYP,
-     &                   NPOS,WORK,KFREE,LFREE)
+     &                   WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Driver routine.
@@ -3848,7 +3835,6 @@ C        DV     : wf. density matrix
 C        BEVEC  : electronic trial vectors
 C        BPVEC  : positronic trial vectors
 C        IBCVC, IBEVC, IBPVC: index stuff
-C        NPOS   : something needed for the call to TWOFCK
 C
 C     Output:
 C        FMO    : Fock matrices in MO basis: FMO(N2ORBXQ,NDSIM)
@@ -3860,7 +3846,7 @@ C     Replaces GMOLI by T.Saue Sep 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "aovec.h"
 #include "maxorb.h"
 C
@@ -3873,7 +3859,7 @@ C
 C
       DIMENSION FMO(*), DV(*), DVT(*)
       DIMENSION BEVEC(*), BPVEC(*)
-      DIMENSION IBCVC(*), IBEVC(*), IBPVC(*), IBTYP(*), NPOS(*)
+      DIMENSION IBCVC(*), IBEVC(*), IBPVC(*), IBTYP(*)
       DIMENSION WORK(*)
 C
       LOGICAL TOBE
@@ -3943,7 +3929,7 @@ C     ---------------------------------
 C
       CALL GMOLITX1(FMO,DVT,DV,
      &     WORK(KCMO),WORK(KBEIG),BEVEC,BPVEC,IBCVC,IBEVC,IBPVC,IBTYP,
-     &     NPOS,WORK(KFAO),WORK(KSYM),WORK(KHRM),WORK(KFCK),
+     &     WORK(KFAO),WORK(KSYM),WORK(KHRM),WORK(KFCK),
      &     WORK,KFREE,LFREE)
 C
       CALL MEMREL('GMOLITX',WORK,1,KFRSAV,KFREE,LFREE)
@@ -3955,7 +3941,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gmolitx1 */
       SUBROUTINE GMOLITX1(FMO,DVT,DV,
      &     CMO,IBEIG,BEVEC,BPVEC,IBCVC,IBEVC,IBPVC,IBTYP,
-     &     NPOS,FAO,ISYMOP,IHRMOP,IFCKOP,WORK,KFREE,LFREE)
+     &     FAO,ISYMOP,IHRMOP,IFCKOP,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Calculate myriads of Fock matrices, called by GMOLITX.
@@ -3966,7 +3952,6 @@ C        DV     : wf. density matrix
 C        BEVEC  : electronic trial vectors
 C        BPVEC  : positronic trial vectors
 C        IBCVC, IBEVC, IBPVC: index stuff
-C        NPOS   : something needed for the call to TWOFCK
 C
 C        FAO    : scratch used for AO Fock matrices.
 C
@@ -3991,14 +3976,15 @@ C***********************************************************************
 #endif
 
 #ifdef HAS_PELIB
-        use polarizable_embedding, only: pe_master
-        use pe_variables, only: peqm, pe_gspol
+        use pelib, only: pelib_master
+        use pelib_dirac_interface, only: use_pelib, pelib_ifc_gspol,
+     &                                   pelib_ifc_response
 #endif
         use orbital_rotation_indices
 
 
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "aovec.h"
 #include "maxorb.h"
 C
@@ -4010,9 +3996,10 @@ C
 #include "dcbham.h"
 #include "dcbgen.h"
 C
+!gosia testing #include "dcbxlr.h"
       DIMENSION FMO(N2ORBXQ,*), DV(*), DVT(*), CMO(*),IBEIG(*)
       DIMENSION BEVEC(*), BPVEC(*), FAO(N2BBASXQ,*)
-      DIMENSION IBCVC(*), IBEVC(*), IBPVC(*), IBTYP(*), NPOS(*)
+      DIMENSION IBCVC(*), IBEVC(*), IBPVC(*), IBTYP(*)
       DIMENSION ISYMOP(*), IHRMOP(*), IFCKOP(*)
       DIMENSION WORK(*)
       type(fde_import) :: itmp
@@ -4041,6 +4028,11 @@ C     Note: reuse memory and save in FMO:
 C        DVT(1..NCSIM), [DCX, DVX](1..NESIM), [DCX, DVX](1..NPSIM)
 C     Only the necessary matrices are saved.
 C
+!gosia testing
+!      if (XLR_RSPIMP) then
+!        call import_rsp_info_from_helper(bpvec,nzxoppq,6)
+!      end if
+
       CALL DMOLITX(FMO,BEVEC,BPVEC,CMO,DVT,DV,IHRMOP,NDMAT,
      &     WORK,KFREE,LFREE)
 C
@@ -4055,7 +4047,7 @@ C
 C
 C     Calculate AO Fock matrices
 C     --------------------------
-      CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FAO,FMO,NDMAT,NPOS,INTFLG,
+      CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FAO,FMO,NDMAT,INTFLG,
      &     IPRTWO,WORK(KFREE),LFREE)
 
 !       construct kohn-sham contribution
@@ -4169,7 +4161,7 @@ C
         endif 
 #endif      
 #ifdef HAS_PELIB
-        if (peqm .and. .not. pe_gspol) then
+        if (use_pelib() .and. .not. pelib_ifc_gspol()) then
            if (IPRXRS .gt. 3) then
               write(lupri,'(/A)') ' Polarizable embedding'//
      &        ' contributions included in linear response.'
@@ -4322,7 +4314,6 @@ C     Replaces DKMOLI by T.Saue Aug 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
 #include "dcborb.h"
@@ -4364,7 +4355,7 @@ C***********************************************************************
       use orbital_rotation_indices
 
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "consts.h"
 C
@@ -4772,7 +4763,6 @@ C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "dcborb.h"
@@ -4820,7 +4810,6 @@ C     Written by J. Thyssen - Nov 27 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "consts.h"
 C
@@ -4935,7 +4924,7 @@ C     Written by J. Thyssen - Nov 28 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "consts.h"
 C
@@ -5051,7 +5040,7 @@ C     Written by J. Thyssen - Nov 29 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "consts.h"
 C
@@ -5230,7 +5219,6 @@ C     Written by J. Thyssen - Nov 30 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
 #include "dcborb.h"
@@ -5292,7 +5280,7 @@ C     Written by J. Thyssen - Nov 30 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "consts.h"
 C
@@ -5495,7 +5483,7 @@ C     Written by J. Thyssen - Dec 5 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       DIMENSION SCVEC(*)
       DIMENSION FX(*),H2ACX(*)
       DIMENSION IBCVC(*)
@@ -5553,7 +5541,7 @@ C     Written by J. Thyssen - Dec 05 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "consts.h"
 #include "thrzer.h"
@@ -5661,7 +5649,7 @@ C
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0,DM1 = -1.0D0)
 C
 #include "dcborb.h"
@@ -5809,14 +5797,13 @@ C     Written by T. Saue 2009
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D0=0.0D0)    
 C
 #include "dgroup.h"
       DIMENSION BVEC(NXOP,NZ),JXOP(2,NXOP),IBEIG(*)
       LOGICAL JJ_JZ_SET
 C
-#include "ibtfun.h"
       JZ  = 0
       TMP = D0
       JJ_JZ_SET = .FALSE.
@@ -5837,7 +5824,7 @@ C
       ENDIF
       I1 = JXOP(1,JJ)
       I2 = JXOP(2,JJ)
-      JREP = IBTXOR(IBEIG(I1),IBEIG(I2))
+      JREP = IEOR(IBEIG(I1),IBEIG(I2))
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -5851,7 +5838,7 @@ C     Written by J. Thyssen - Feb 18 2001
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "consts.h"
 C
@@ -5905,7 +5892,6 @@ C     T. Saue and S. Villaume Dec 2010
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0,DM1=-1.0D0)
 C
 #include "dcbxrs.h"
@@ -5931,4 +5917,3 @@ C  Take care of Real or Imaginary case
 C
       RETURN
       END
-

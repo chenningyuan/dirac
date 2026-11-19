@@ -1,0 +1,343 @@
+%% ****** Start of file apstemplate.tex ****** %
+%%
+%%
+%%   This file is part of the APS files in the REVTeX 4 distribution.
+%%   Version 4.1r of REVTeX, August 2010
+%%
+%%
+%%   Copyright (c) 2001, 2009, 2010 The American Physical Society.
+%%
+%%   See the REVTeX 4 README file for restrictions and more information.
+%%
+%
+% This is a template for producing manuscripts for use with REVTEX 4.0
+% Copy this file to another name and then work on that file.
+% That way, you always have this originald template file to use.
+%
+% Group addresses by affiliation; use superscriptaddress for long
+% author lists, or if there are many overlapping affiliations.
+% For Phys. Rev. appearance, change preprint to twocolumn.
+% Choose pra, prb, prc, prd, pre, prl, prstab, prstper, or rmp for journal
+%  Add 'draft' option to mark overfull boxes with black boxes
+%  Add 'showpacs' option to make PACS codes appear
+%  Add 'showkeys' option to make keywords appear
+
+\documentclass[preprint]{revtex4-1}
+\usepackage{gnuplottex}
+\usepackage{mathtools}
+%\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{float}
+\usepackage{array}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage[table]{xcolor}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, linkcolor=blue, citecolor=dred]{hyperref}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{bbold}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{bbm}
+\usepackage{tabularx, booktabs}
+\usepackage{xspace}
+\usepackage{listings}
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
+
+\newcommand{\ket}[1]{\ensuremath{|#1\rangle}\xspace}
+\newcommand{\bra}[1]{\ensuremath{\langle #1|}\xspace}
+\newcommand{\psh}[2]{\ensuremath{\langle #1|#2\rangle}\xspace}
+\newcommand{\etal}{{\it et al.}}
+\newcommand\bbone{\ensuremath{\mathbbm{1}}}
+\newcommand{\subsupi}[3]{#1_{\rm #2}^{\rm #3}}
+\newcommand{\bfn}{\mathbf{n}}
+\newcommand{\bfr}{\mathbf{r}}
+\newcommand{\bfx}{\mathbf{x}}
+\newcommand{\bfv}{\mathbf{v}}
+\newcommand{\rmi}{{\rm i}}
+\newcommand{\Hxc}{{\rm Hxc}}
+\newcommand{\rmc}{{\rm c}}
+\newcommand{\ddroit}{{\rm d}}
+\newcommand{\undern}{\underline{n}}
+\definecolor{dgreen}{rgb}{0,.5,0}
+\definecolor{dblue}{rgb}{0,0,.5}
+\definecolor{dred}{rgb}{0.5,0,.5}
+
+\newcommand{\bruno}[1]{{\textcolor{blue}{Bruno: #1 }} }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\title{Manual to generate intrinsic fragment and bonding orbitals within ROSE
+}
+
+\author{Bruno Senjean}
+\email{bsenjean@gmail.com}
+\author{Souloke Sen}
+\author{Michal Repisky}
+\author{Gerald Knizia}
+\author{Lucas Visscher}
+
+%%%%% Abstract %%%%%
+
+\begin{abstract}
+ROSE (Reduction of Orbital Space Extent) aims at constructing intrinsic fragment (IFOs)
+and localized molecular orbitals (ILMOs).
+It is mainly based on the construction of intrinsic atomic orbitals
+(IAOs) and bonding orbitals (IBOs) from Ref.~\cite{knizia2013intrinsic}, but generalized to molecular fragments
+and complex and quaternion algebra used in relativistic quantum chemistry as documented in Ref.~\cite{ROSE1}.
+The idea is to define an intrinsic minimal basis set
+of polarized orbitals which span the occupied space
+exactly. The aforementioned orbitals are obtained by operating projections
+between the molecular orbitals of the full molecule
+and a minimal basis set of molecular orbitals obtained from
+fragment (atomic or molecular) calculations.
+A new feature introduced in 2023 and documented in  Ref.~\cite{ROSE2} is to apply the same procedure
+also to localize additional "hard" virtuals. These will resemble a set of reference virtuals defined on the fragments,
+in mathematically exactly the same way as the localized occupied orbitals resemble the occupied reference fragment orbitals.
+\end{abstract}
+
+\maketitle
+
+\tableofcontents
+
+\section{How to install}
+
+\subsection{Dependencies}
+
+ROSE is a standalone module 
+interfaced with several quantum chemistry code.
+For the moment, interfaces with 
+Psi4~\cite{psi4}, PySCF~\cite{pyscf}, Gaussian~\cite{Gaussian09} (through formatted checkpoint files) and ADF~\cite{AMS19}
+are implemented. An interface with ReSpect~\cite{respect}
+is also on-going.
+
+\subsection{Install ROSE}
+
+Install ROSE with the commands specified in the README document at the top level directory of ROSE.
+Note that the test folder and \verb|pip| installation is only useful if you want to try out the
+python scripts/packages, which allow to run
+all SCF calculations (for the full molecule and all fragments)
+and ROSE in a single script for different interfaces.
+
+\section{How to run}
+
+ROSE can be run through python scripts, which is really convenient as
+it performs everything for you in one single step: generation of the molecular and fragment
+inputs (by running your favorite program...), generation of intrinsic fragments orbitals (IFOs) and intrinsic localized molecule orbitals (ILMOs) by executing ROSE,
+and restart SCF calculations to check if the latters are indeed correct.
+But obviously, if you already have all the inputs, no need to re-do the SCF calculations again !
+You can just set all your input files in a given folder, write an \verb|INPUT_GENIBO| file
+and execute ROSE to get the resulting IFOs and ILMOs.
+The format for the input files are detailed in the following.
+Note that the provided scripts are sufficient for standard applications of ROSE, but not if one wants to have more flexibility.
+{\bf Therefore, we strongly advise the user to first look and test the
+different examples provided in the ROSE directory. If one is willing to have more flexibility, then reading this manual will be useful.}
+
+\subsection{Warnings}
+
+All calculations have to be performed without symmetry (symmetry \verb|c1|) and
+with uncontracted basis sets and
+cartesian functions.
+
+\subsection{Guide through the code}
+
+ROSE is a FORTRAN program. Its main program is \verb|generate_ibo.F90| and
+it uses several modules, all in the \verb|src| folder:
+\begin{itemize}
+\item \verb|linear_algebra.F90| to do linear algebra operations for real, complex and quaternion matrices.
+\item \verb|rose_ao.F90| and \verb|rose_mo.F90| to define the atomic and molecular orbital data types. They define all the necessary information to manipulate molecular orbitals.
+\item \verb|utils.F90| contains normalization factors for different interfaces as well as different useful functions.
+\item \verb|import_fragment.F90| define atomic or molecular fragments orbitals (number of core and valence orbitals) and contains several functions useful functions.
+\item \verb|dirac_interface.F90|, \verb|hdf5_interface.F90|,
+\verb|fchk_interface.F90| and \verb|ADF_interface.F90| handle the reading and writing of basis set and orbital informations within the different interfaces. The default is to use
+the hdf5 interface, for which we have python scripts to populate it with the information needed by pyscf or psi4. At the moment of writing, the DIRAC hdf5 interface does still
+have some minor differences compared to these non-relativistic codes, but this is planned to be unified soon. 
+\item \verb|make_iao.F90| and \verb|make_ibo.F90| are subroutines to compute intrinsic fragment orbitals (IFOs) and intrinsic localized molecular orbitals (ILMOs), respectively. Also contains routines for re-canonicalization.
+\item \verb|properties.F90| is a module to compute properties like the percentage of delocalization and partial charges.
+\item \verb|check.F90| check the orthonormalization of the resulting IFOs and ILMOs basis.
+\item \verb|rose_input_data.F90| Module to hold the input parameters of ROSE. These can be set by the user from input.
+\end{itemize}
+
+Several input files are needed before executing \verb|genibo.x| (the 
+executable of \verb|generate_ibo.F90|). The only input file that is common to any
+interface is \verb|INPUT_GENIBO| and contains the following keywords that can be given in any order inside the input block starting with \verb|**ROSE| and ending
+with \verb|*END OF INPUT|. Keywords themselves always start with a period and may be followed by a line in which a numerical value (real or integer) is given.
+
+\begin{itemize}
+\item{Keywords defining the molecule to be fragmented and the reference orbitals (core, valence, virtual).}
+\begin{lstlisting}[language=bash]
+.CHARGE
+.NFRAGMENTS
+.FILE_FORMAT
+.FRAG_FORMAT
+.UNRESTRICTED
+.SPINORS
+.FRAG_VALENCE
+.FRAG_CORE
+.ADDITIONAL_VIRTUALS_CUTOFF
+.FRAG_THRESHOLD
+\end{lstlisting}
+\item{Keywords defining the algorithm to be used.}
+\begin{lstlisting}[language=bash]
+.VERSION
+.EXPONENT
+.INCLUDE_CORE
+.FRAG_BIAS
+\end{lstlisting}
+\item{Keywords controlling optional additional procedures.}
+\begin{lstlisting}[language=bash]
+.AVAS_THRESHOLD
+.FRAG_AVAS
+.TEST
+\end{lstlisting}
+where 
+\begin{itemize}
+\item \verb|CHARGE| specifies the charge of the whole molecule. Default is 0
+\item \verb|NFRAGMENTS| specifies number of molecular fragments. For atomic fragments set to 0. Default is 0
+\item \verb|FILE_FORMAT| can be \verb|DIRAC|, \verb|hdf5|, or \verb|adf| depending on the format of the MO coefficient 
+file of the full molecule (basis $\mathcal{B}_1$).
+\item \verb|FRAG_FORMAT| can be \verb|DIRAC|, \verb|hdf5|, or \verb|adf| 
+with as default format for the fragment (basis $\mathcal{B}_2$) the same format as for the full molecule.
+\item \verb|UNRESTRICTED| specifies unrestricted type calculation, default is restricted.
+\item \verb|SPINORS| specifies to use spinors for 
+relativistic calculations. Default is  to use spatial orbitals (alpha and beta spinors share the same spatial orbital)
+\item \verb|FRAG_VALENCE| specifies the number of valence orbitals for each fragment. If not specified, by default the code generates the valence space for each fragment as the sum of valence orbitals of individual atoms within each fragment. Note that this block needs to be repeated for every fragment the user wishes to specify. The structure of the block is as follows: \\
+\verb|FRAG_VALENCE| \\
+\textit{fragment \#}\\
+\textit{\# of valence orbitals}\\
+\item \verb|FRAG_CORE| specifies the number of core orbitals for each fragment. If not specified, by default the code generates the core space for each fragment as the sum of core orbitals of individual atoms within each fragment. It has the same block structure as \verb|FRAG_VALENCE|.
+\item \verb|ADDITIONAL_VIRTUALS_CUTOFF| specifies the energy threshold (in hartrees) to determine the number of additional hard virtuals to localize for the supermolecule. Default value of this cutoff value is 2.0 hartrees.
+\item \verb|FRAG_THRESHOLD| specifies energy threshold (in hartrees) to determine number of reference hard virtuals to use for the fragments (needed to localize the additional hard virtuals). The total number of reference virtuals should be larger 
+than the number of virtual MOs to localize (similar to having more reference valence orbitals than occupied valence orbitals to localize), so it is advisable to use a relatively high value for this parameter.  Default is 10.0 hartrees.
+
+\item \verb|VERSION| specifies version of the IAO generation. can be either \verb|Stndrd_2013|, \verb|Simple_2013| or
+\verb|Simple_2014| and corresponds to the version of the transformation to go from the
+RFOs to the IFOs.
+Those versions were designed by Knizia in his original Python program and may lead to small differences in the functions that are generated. More information
+about the precise procedures can be found in the SI of our first ROSE paper\cite{ROSE1}.
+\item \verb|EXPONENT| is the value of the exponent (for the default Pipek-Mezey type of localization, the exponent is equal to 2. A higher value of 3 or 4 is sometimes useful.).
+\item \verb|INCLUDE_CORE| specifies to include core orbitals in the generation of IAOs and localization of the occupied orbitals. Default is false, which means the first IAOs are actually the (delocalized) core orbitals of the full molecule, same of IBOs.
+Note that this option is overwritten by \verb|FRAG_CORE| and \verb|FRAG_VALENCE|
+\item \verb|FRAG_BIAS| specifies the bias applied to each fragment when assigning the localized orbitals to a particular fragment. This allows to identify target fragments to which covalent bonds that connect two or more fragments should be preferably assigned.
+A default bias of 0.1 is applied to fragment 1 which is sufficient to assign non-polar covalent bonds to this fragment. Follows the same structure as \verb|FRAG_VALENCE|.
+
+\item \verb|FRAG_AVAS| specifies the fragments and orbitals to be used for projecting and definition of the automated valence active space ~\cite{sayfutyarova2017automated}. Default is an empty list.
+If you want to project on orbitals 8 through 10 of fragment 2, the input is first a line with a \verb|2|, followed by a \verb|3| (the number of orbitals), followed by the numbers \verb|8|, \verb|9|, and \verb|10| in free format.
+This keyword can be repeated to allow projection on more than one set of fragment orbitals. The sets are concatenated so that only one active space will be produced.
+\item \verb|TEST| specifies to perform some tests on the correctness of the localized occupied orbitals: orthonormalization of matrices and deviation in the number of electrons are checked, etc. 
+Default is false.
+\end{itemize}
+Note while all keywords with a specified default value are optional,  specification of the file format is mandatory.
+{\it Example}. You are generating the IFOs of the water molecule using psi4 and atomic fragments. A minimal input file is given below:
+\begin{lstlisting}[language=bash]
+**ROSE
+.FILE_FORMAT
+hdf5
+*END OF INPUT
+\end{lstlisting}
+
+Once all the input files are all in the same folder, the only remaining step is
+to execute ROSE:
+\begin{lstlisting}[language=bash]
+/path_to_rose/bin/genibo.x
+\end{lstlisting}
+
+Thie code will print information on the localization procedure, and will generate
+IFO and IBO files (with appropriate extension defined in the input).
+It is of course convenient to have a simple way of plotting the orbitals. This can be done in \verb|AVOGADRO| 
+for instance with FCHK files. ROSE will provides a python notebook to convert from hdf5 to fchk format (work in progress). 
+Note that it only works for real spatial orbitals as visualization of complex spinors is non-trivial.
+In the following, we show in more details what are the required input files, and how they can be generated by a simple python interface.
+
+\subsection{Generating the input files}
+For the provided scripts, several input files are required:
+\begin{itemize}
+\item geometry files with extension \verb|.xyz| (in cartesian coordinates)
+\begin{enumerate}
+\item MOLECULE.XYZ (the geometry file of the full molecule)
+\item If \verb|NFRAGMENTS=0|, one file for each different type of atom, all centered 
+at position (0,0,0). The files are named as \verb|"{:03d}.xyz".format(Z)| where \verb|Z|
+is the atomic number of the atom. For instance, hydrogen will be \verb|001.xyz| while
+carbon is \verb|006.xyz|.
+\item  If \verb|NFRAGMENTS != 0|, one file for each different fragments, with the
+same geometry as in the full molecule. The files are named as 
+\verb|"frag{:d}.xyz".format(i)| where \verb|i|
+is the label of the fragment. For instance, for the case of water-ammonia, one can define two 
+molecular fragments (water and ammonia) called \verb|frag0.xyz| and \verb|frag1.xyz|.
+\end{enumerate}
+\item MO coefficient files
+\begin{enumerate}
+\item In DIRAC, those are \verb|h5| files corresponding to DIRAC23 and later. The DFCOEF files have to be renamed in the same way as 
+geometry files, like \verb|MOLECULE.h5|, \verb|001.h5| or \verb|frag0.h5|.
+\item For formatted checkpoint files with extension \verb|.fchk|,
+it might
+be necessary to first truncate it to keep only the necessary informations to be read in ROSE.
+This can be done thanks to the python script in \verb|/rose/python_scripts/|, called
+\verb|python_transform_fchk.py|.
+\item A python package can interface Psi4 with ROSE by creating a \verb|.h5| extension which looks like the \verb|.h5| one of DIRAC. The resulting localized orbitals are also written in this format and can easily be
+fed back into via a Python script. A similar interface has been implemented for the \verb|.pyscf| extension.
+\item in ADF, the rkf  (extension \verb|.rkf|) files are used.
+\end{enumerate}
+\item Finally, the \verb|INPUT_GENIBO| file which has already been described.
+\end{itemize}
+
+The ADF interface is quite different from the other ones.
+This is caused by the use of Slater-type Orbitals (STOs)
+instead of Gaussian-type Orbitals (GTOs) by ADF.
+Thus, the InteRest library~\cite{interest} of ROSE to compute overlap matrices in the AO basis
+cannot be used.
+Instead, one can directly extract all the overlap matrices ($\mathbf{S}_{11}$,
+$\mathbf{S}_{22}$ and $\mathbf{S}_{12}$) in the AO basis of ADF,
+as well as all the MO coefficients (for the molecule and the fragments) from the respective rkf files.Hence, one can compute the overlap matrices in the MO basis,
+and then generates the IFOs and ILMOs as expected.
+Before executing
+\begin{lstlisting}[language=bash]
+/path_to_adf/executable/plams AMS.py
+\end{lstlisting}
+one has to create the \verb|INPUT_ADF| file as follows
+\begin{lstlisting}[language=bash]
+/path_to_the_workdir/directory/
+RESTRICTED
+OPENSHELL
+BASIS1
+BASIS2
+CHARGE
+MULTIPLICITY
+NUMBER_OF_FRAGMENTS
+/path_to_frag0.xyz nMO CHARGE MULT
+/path_to_frag1.xyz nMO CHARGE MULT
+RESTART
+\end{lstlisting}
+\end{itemize}
+where
+\begin{itemize}
+\item \verb|/path_to_the_workdir_directory/| contains \verb|MOLECULE.xyz| (note the lower 
+case for \verb|xyz| here)
+\item \verb|RESTRICTED| is either True or False
+\item \verb|OPENSHELL| is either True or False
+\item \verb|BASIS1| is the string name of the basis of the full molecule, like \verb|SZ| or 
+\verb|DZP| (see ADF documentation)
+\item \verb|BASIS2| is the string name of the basis of the fragments
+\item \verb|CHARGE| is the charge of the full molecule
+\item \verb|MULT| is the spin multiplicity of the full molecule
+\item \verb|NUMBER_OF_FRAGMENTS| is the number of fragments
+\item And then one line for each fragment, containing the path to its \verb|.xyz| file, 
+the number of MOs \verb|nMO| (minimal truncated set which will sum up to the final number of IFOs),
+the charge and the spin multiplicity, separated by a space.
+\end{itemize}
+
+If everything is set up correctly and if the required \verb|xyz| files are in the proper folder,
+running \verb|plams AMS.py| will perform all the SCF calculations to generate the necessary rkf files which are then used by ROSE to extract the necessary information.
+Examples of python scripts for running the entire workflow starting from the SCF calculations, generation of the  \verb|INPUT_GENIBO|, execution of  \verb|genibo.x| to the post-SCF calculations can be found in the \verb|examples| directory for each of the interfaces with DIRAC,ADF,PSI4 and PYSCF.
+
+\section{Contact}
+
+If you experience any trouble, please contact one of the authors \verb|bsenjean@gmail.com| or \verb|l.visscher@vu.nl|
+
+\bibliographystyle{apsrev4-1}
+\bibliography{biblio}
+
+\end{document}

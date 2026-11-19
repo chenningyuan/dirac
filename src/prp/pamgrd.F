@@ -19,7 +19,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamgrd */
       SUBROUTINE PAMGRD(INDXPR,GPCI,GPOE,GPOP,
-     &                  JOPSY,JXOPE,JXOPP,NCONF,NXOPE,NXOPP,
+     &                  JOPSY,JXOPE,JXOPP,NZCONF,NXOPE,NXOPP,
      &                  WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
@@ -55,7 +55,8 @@ C
 C     Configurational part
 C     ====================
 C
-      IF(NCONF.GT.0) THEN
+      IF(NZCONF.GT.0) THEN
+         CALL QUIT('PAMGRD ERROR: CI property gradient not implemented')
 C        CALL GRDCI(INDXPR,GPC,WORK,KFREE,LFREE,IPRINT)
       ENDIF      
 C
@@ -117,10 +118,7 @@ C     Last revision: Jul 10 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
-#include "dgroup.h"
-#include "dcbxpr.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbham.h"
@@ -209,7 +207,6 @@ C
 #include "dcbxpr.h"
 #include "dcbham.h"
 #include "mxcent.h"
-#include "dcbprp.h"
 #include "dcbpsi.h"
 C
       DIMENSION GPOE(*),GPOP(*),JXOPE(*),JXOPP(*),
@@ -345,7 +342,6 @@ C     Last revision Aug 2 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ)
 C
@@ -370,7 +366,6 @@ C     Last revision Aug 2 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ)
 C
@@ -472,14 +467,11 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
-#include "dcbprl.h"
-#include "dummy.h"
 C
       LOGICAL QBTR,TOBE,FIRST(NZ),ONFILE
       DIMENSION PRPMO(N2PMOX,NZ),CMO(*),IBEIG(*),IPCMO(2),NPMO(2),
@@ -676,7 +668,6 @@ C***********************************************************************
 C
 #include "dgroup.h"
 #include "dcbxpr.h"
-#include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbibn.h"
        LOGICAL ONFILE
@@ -766,15 +757,12 @@ C
 C     MI/2003,2004- add dH/dB prop.gradient accumulation when using LAO
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
 C
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbgen.h"
 #include "dcbxpr.h"
 #include "mxcent.h"
-#include "dcbprp.h"
 C
       LOGICAL ONFILE
       DIMENSION GPO(*),PRPMO(NORBT,NORBT,NZ),CMO(*),
@@ -846,7 +834,6 @@ C     Last revision
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
       PARAMETER ( D2 = 2.0D00, D1 = 1.0D00, DM1 = -1.0D00 )

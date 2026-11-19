@@ -1,0 +1,81 @@
+#!/usr/bin/env python
+
+import os
+import sys
+from pathlib import Path
+
+try:
+    import h5py
+    h5py_available = True
+except:
+    h5py_available = False
+
+if not h5py_available:
+    sys.stderr.write('ERROR: VISUAL tests require h5py\n')
+    sys.exit(-1)
+
+#
+# prepare environment, define functions
+#
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+from runtest_rs import CompareHDF5
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'Final grid function values (id=',\
+      num_lines = 2,
+      ignore_sign = True,
+      abs_tolerance = 1.0e-5)
+
+
+#
+# run tests
+#
+
+test.run(['Exc.inp'], ['Mg.xyz'], args='--outcmo --get="RESPONSE.h5"')
+test.run(['dens.inp'], ['Mg.xyz'], f, args='--incmo --put="RESPONSE.h5" --get="dens*.h5 dens*.csv"')
+test.run(['length.inp'], ['Mg.xyz'], f, args='--incmo --put="RESPONSE.h5" --get="length*.h5 length*.csv"')
+test.run(['velocity.inp'], ['Mg.xyz'], f, args='--incmo --put="RESPONSE.h5" --get="velocity*.h5 velocity*.csv"')
+
+#
+# compare generated data with reference
+#
+
+rs = CompareHDF5(test.work_dir)
+
+testset = ['dens_radial.h5']
+for t in testset:
+
+    rs.verify(ftest=t,\
+              fref='result/'+t,\
+              typ='array',\
+              gf_label='/result/grid_function/ed/visualization/values/',
+              gf_test_key='t0_icomp_1')
+
+
+testset = ['length_radial_rspvec3.h5', 'length_radial_rspvec9.h5']
+for t in testset:
+
+    rs.verify(ftest=t,\
+              fref='result/'+t,\
+              typ='array',\
+              ignore_sign=True,\
+              gf_label='/result/grid_function/edip/visualization/values/',
+              gf_test_key='t1_icomp_1')
+
+
+
+testset = ['velocity_radial_rspvec6.h5', 'velocity_radial_rspvec12.h5']
+for t in testset:
+
+    rs.verify(ftest=t,\
+              fref='result/'+t,\
+              typ='array',\
+              ignore_sign=True,\
+              gf_label='/result/grid_function/j/visualization/values/',
+              gf_test_key='t1_icomp_1')
+
+
+sys.exit(test.return_code)

@@ -7,7 +7,7 @@ module exacorr_gradient
   use exatensor
   use exacorr_ao_to_mo,  only : print_tensornorm2
   use exacorr_datatypes
-  use exacorr_utils,     only : print_date
+  use exacorr_cfg,only: exacc_input
   use, intrinsic:: ISO_C_BINDING
 
   implicit none
@@ -23,7 +23,7 @@ module exacorr_gradient
 
     subroutine exacorr_dm_driver(exa_input,dims,t2_tensor,l2_tensor,t1_tensor,l1_tensor)
 
-      use talsh_gradient
+      use eti_gradient
 
 !     Routine for obtaining the density matrices in the MO basis
 
@@ -427,14 +427,17 @@ module exacorr_gradient
 
     subroutine store_dm_mo(exa_input,gamma_dens)
 
+      use exacorr_tensor_interface, only: tensor_t, tensor_t_to_talsh, talsh_to_tensor_t
+      use eti_gradient
       use talsh
-      use talsh_gradient
 
 !     input variables
       type(exacc_input),    intent(in   ) :: exa_input
       type(exatns_dm_tens_t), intent(inout) :: gamma_dens
-!     talsh type to get local copy
-      type(talsh_dm_tens_t)          :: talsh_gamma_dens
+!     eti type to get local copy
+      type(eti_dm_tens_t)          :: eti_gamma_dens
+      type(talsh_tens_t)           :: tens_talsh ! we need a talsh tensor because direct conversion from exatns to eti is not implemented
+
 !     error code
       integer :: ierr
 !     variables for talsh, density matrix needs to be smaller than buffer size 
@@ -444,25 +447,33 @@ module exacorr_gradient
       character(len=4)                :: wavefun
       wavefun = "CCSD"
 
-      ! Convert to TALSH format and call the TALSH writer
+      ! Convert to ETI format and call the ETI writer. As we need TALSH as intermediate also start this library.
       buf_size=exa_input%talsh_buff*buf_size
       ierr=talsh_init(buf_size,host_arg_max)
-      call talsh_dm_initialize_dmtens(exa_input,talsh_gamma_dens)
+      call eti_dm_initialize_dmtens(exa_input,eti_gamma_dens)
 
 !     oo + vv
-      ierr=exatns_tensor_get_slice(gamma_dens%symm_oo,talsh_gamma_dens%symm_oo)
-      ierr=exatns_tensor_get_slice(gamma_dens%symm_vv,talsh_gamma_dens%symm_vv)
+      ierr=tensor_t_to_talsh(eti_gamma_dens%symm_oo, tens_talsh)
+      ierr=exatns_tensor_get_slice(gamma_dens%symm_oo,tens_talsh)
+      ierr=talsh_to_tensor_t(tens_talsh, eti_gamma_dens%symm_oo)
+      ierr=tensor_t_to_talsh(eti_gamma_dens%symm_vv, tens_talsh)
+      ierr=exatns_tensor_get_slice(gamma_dens%symm_vv,tens_talsh)
+      ierr=talsh_to_tensor_t(tens_talsh, eti_gamma_dens%symm_vv)
 !     vo + ov
       if (.not.exa_input%CCD) then
-         ierr=exatns_tensor_get_slice(gamma_dens%symm_vo,talsh_gamma_dens%symm_vo)
-         ierr=exatns_tensor_get_slice(gamma_dens%symm_ov,talsh_gamma_dens%symm_ov)
+         ierr=tensor_t_to_talsh(eti_gamma_dens%symm_vo, tens_talsh)
+         ierr=exatns_tensor_get_slice(gamma_dens%symm_vo,tens_talsh)
+         ierr=talsh_to_tensor_t(tens_talsh, eti_gamma_dens%symm_vo)
+         ierr=tensor_t_to_talsh(eti_gamma_dens%symm_ov, tens_talsh)
+         ierr=exatns_tensor_get_slice(gamma_dens%symm_ov,tens_talsh)
+         ierr=talsh_to_tensor_t(tens_talsh, eti_gamma_dens%symm_ov)
       end if
 
-      call talsh_dm_store_mo (exa_input,talsh_gamma_dens,wavefun)
-      call talsh_kudm_store_mo(exa_input,talsh_gamma_dens,wavefun)
+      call eti_dm_store_mo (exa_input,eti_gamma_dens,wavefun)
+      call eti_kudm_store_mo(exa_input,eti_gamma_dens,wavefun)
 
-      ! Clean up and switch off talsh
-      call talsh_dm_cleanup_dmtens(exa_input,talsh_gamma_dens)
+      ! Clean up 
+      call eti_dm_cleanup_dmtens(exa_input,eti_gamma_dens)
       ierr = talsh_shutdown()
 
     end subroutine store_dm_mo

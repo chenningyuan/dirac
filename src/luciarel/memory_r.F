@@ -361,8 +361,9 @@ C
             WRITE(LUWRT,*) '  Sorry to say it , but memory is CORRUPTED'
           END IF
           WRITE(LUWRT,*) '  Memory map : '
-          WRITE(LUWRT,*) '  Identifier   Offset    Pad1 okay Pad2 okay '
-          WRITE(LUWRT,*) '  ========== ==========  ========= ========= '
+          WRITE(LUWRT,'(/A/A)')
+     &      '  Identifier           Offset    Pad1 okay Pad2 okay ',
+     &      '  ==========         ==========  ========= ========= '
           DO 200 IL = 1, NSNLI
             JBASE = IBASE(IL)
             IF(IL.NE.NSNLI) THEN
@@ -384,9 +385,6 @@ C
             ELSE IF(L1OK.EQ.1.AND.L2OK.EQ.0) THEN
                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
      &         IIDENT(IL),IBASE(IL),'    OKAY       -  '
-            ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-               WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
-     &         IIDENT(IL),IBASE(IL),'     -       OKAY '
             ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
      &         IIDENT(IL),IBASE(IL),'     -       OKAY '

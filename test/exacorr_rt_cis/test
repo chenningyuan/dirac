@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f1 = Filter()
+f1.add(from_string = 'Print Transition matrix between CIS and HF for 3th operator',
+      num_lines   = 17,
+      rel_tolerance   = 1.0e-6)
+
+
+f2 = Filter()
+f2.add(from_string = 'Print Transition matrix between CIS and HF for 3th operator',
+      num_lines   = 17,
+      rel_tolerance   = 1.0e-6)
+
+
+test.run(['rt_ll_0.0005_0.01.inp'], ['lih.xyz'], f1)
+test.run(['rt_x2c_0.0005_0.01.inp'], ['lih.xyz'], f2)
+sys.exit(test.return_code)

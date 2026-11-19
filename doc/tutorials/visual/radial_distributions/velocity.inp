@@ -8,17 +8,22 @@
 .CLOSED SHELL
 6 6
 **VISUAL
-.DSCALE
--0.358852917641
-.JX
- PAMXVC 6
-.JX
- PAMXVC 12
+.GRIDS
+2
+id=1 input=radial
+id=2 input=dft
 .RADIAL
-0.0D0 0.0D0 0.0D0
+0.0,  0.0,   0.0
 10.0
 500
-.3D_INT
+.GRIDFUNCTIONS
+6
+name=j id_grid=1 dscale=0.358852917641 rspvec_file=RESPONSE.h5 rspvec_id=6 purpose=integration
+name=j id_grid=1 dscale=0.358852917641 rspvec_file=RESPONSE.h5 rspvec_id=12 purpose=integration
+name=j id_grid=1 dscale=0.358852917641 rspvec_file=RESPONSE.h5 rspvec_id=6 purpose=visualization export=csv file_out=velocity_radial_rspvec6.csv
+name=j id_grid=1 dscale=0.358852917641 rspvec_file=RESPONSE.h5 rspvec_id=12 purpose=visualization export=csv file_out=velocity_radial_rspvec12.csv
+name=j id_grid=2 dscale=0.358852917641 rspvec_file=RESPONSE.h5 rspvec_id=6 purpose=integration
+name=j id_grid=2 dscale=0.358852917641 rspvec_file=RESPONSE.h5 rspvec_id=12 purpose=integration
 **MOLECULE
 *BASIS
 .DEFAULT

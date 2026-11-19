@@ -29,6 +29,8 @@ X2C Hamiltonian. CCSDTQ energies, small test.
 #6..10
 .CCiQ
 .AUTOKERNEL
+.AUTOSCHEME
+1
 .EXATENSOR
 .PRINT
 2

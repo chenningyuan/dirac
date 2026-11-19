@@ -130,10 +130,17 @@ contains
 
 !        path 1: directly picture-change transform the MO-coefficients
 !        -------------------------------------------------------------
-!        this branch has been deleted after 
-!        commit 866d6b5728b7eda3afa270465a67b4c58f03437f 
-!        as there seemed to be a problem with the implementation scheme. stefan - jan 2013
-           call quit('path for direct picture-change transformation of the MO-coefficients has been deleted')
+         call x2c_pctrafo_mo_coefficients(naosh_all,     &
+                                                naosh_L,       &
+                                                naosh_ls,      &
+                                                norb_dim,      &
+                                                nesh_dim,      &
+                                                nfsym,         &
+                                                nz,            &
+                                                nr_cmo_q,      &
+                                                ipq_off_in,    &
+                                                x2c_file_glb,  &
+                                                print_lvl)
 
          case(2) 
 
@@ -177,6 +184,243 @@ contains
        deallocate(scratch1)
 
   end subroutine x2c_pctrafo_mo_coefficients_driver
+!**********************************************************************
+
+  subroutine x2c_pctrafo_mo_coefficients(naosh_all,      &
+                                               naosh_L,        &
+                                               naosh_ls,       &
+                                               norb_dim,       &
+                                               nesh_dim,       &
+                                               nfsym,          &
+                                               nz,             &
+                                               nr_cmo_q,       &
+                                               ipq_off_in,     &
+                                               x2c_file_glb,   &
+                                               print_lvl)
+!**********************************************************************
+!
+!    purpose: use the stored AO-side product for the coefficient-side
+!             X2Cmmf transformation:
+!
+!             U_Coef = U_onao+ * S_4c
+!
+!             The transformed 2c coefficients are formed from the final
+!             4c SCF coefficients stored on CHECKPOINT.
+!
+!----------------------------------------------------------------------
+     use checkpoint
+     integer, intent(in)            :: nfsym
+     integer, intent(in)            :: nz
+     integer, intent(in)            :: naosh_ls
+     integer, intent(in)            :: naosh_all(nfsym)
+     integer, intent(in)            :: naosh_L(nfsym)
+     integer, intent(in)            :: norb_dim(nfsym)
+     integer, intent(in)            :: nesh_dim(nfsym)
+     integer, intent(in)            :: nr_cmo_q
+     integer, intent(in)            :: ipq_off_in(4,0:7)
+     integer, intent(in)            :: x2c_file_glb
+     integer, intent(in)            :: print_lvl
+!----------------------------------------------------------------------
+     real(8), allocatable           :: cmo_2c_ao(:)
+     real(8), allocatable           :: cmo_4c_ao(:)
+     real(8), allocatable           :: cmo_4c_elec(:)
+     real(8), allocatable           :: eigen_values(:)
+     real(8), allocatable           :: sao_4c(:)
+     real(8), allocatable           :: ucoef(:)
+     real(8), allocatable           :: u_onao(:)
+     integer, allocatable           :: supersymmetry(:)
+     integer                        :: i
+     integer                        :: ioff_cmo
+     integer                        :: ioff_eig
+     integer                        :: ioff_sao
+     integer                        :: ioff_dst
+     integer                        :: ioff_src
+     integer                        :: iz
+     integer                        :: j
+     integer                        :: k
+     integer                        :: max_ao
+     integer                        :: max_esh
+     integer                        :: max_large
+     integer                        :: n1esh_f
+     integer                        :: nbas1_f
+     integer                        :: nbasL_f
+     integer                        :: norb_tot
+     integer                        :: norb1_f
+     character (len=12)             :: flabel
+     character (len=74)             :: info_text
+     logical                        :: fndlab12
+!**********************************************************************
+
+     max_ao  = 0
+     max_esh = 0
+     max_large = 0
+     norb_tot = 0
+     do i = 1, nfsym
+       max_ao  = max(max_ao,naosh_all(i))
+       max_esh = max(max_esh,nesh_dim(i))
+       max_large = max(max_large,naosh_L(i))
+       norb_tot = norb_tot + norb_dim(i)
+     end do
+
+     allocate(cmo_2c_ao(max_large*max_esh*nz))
+     allocate(cmo_4c_ao(nr_cmo_q))
+     allocate(cmo_4c_elec(max_ao*max_esh*nz))
+     allocate(eigen_values(norb_tot))
+     allocate(sao_4c(naosh_ls*naosh_ls))
+     allocate(supersymmetry(norb_tot))
+     allocate(ucoef(max_large*max_ao*nz))
+     allocate(u_onao(max_ao*max_large*nz))
+
+     cmo_2c_ao = val_d0
+     cmo_4c_ao = val_d0
+     cmo_4c_elec = val_d0
+     eigen_values = val_d0
+     sao_4c  = val_d0
+     supersymmetry = 0
+     ucoef   = val_d0
+     u_onao  = val_d0
+
+     call checkpoint_read('/result/wavefunctions/scf/mobasis/orbitals', &
+    &                     rdata=cmo_4c_ao)
+     call checkpoint_read('/result/wavefunctions/scf/mobasis/eigenvalues', &
+    &                     rdata=eigen_values)
+     call checkpoint_read('/result/wavefunctions/scf/mobasis/symmetry', &
+    &                     idata=supersymmetry)
+     call gtovlt(sao_4c,1.0d0,0)
+
+     ioff_cmo = 1
+     ioff_eig = 1
+     ioff_sao = 1
+     do i = 1, nfsym
+
+       nbas1_f = naosh_all(i)
+       nbasL_f = naosh_L(i)
+       norb1_f = norb_dim(i)
+       n1esh_f = nesh_dim(i)
+
+       if(nbas1_f > 0 .and. n1esh_f > 0)then
+
+         ! Right multiply the transpose of the X2C transformation matrix with the overlap
+         ! This produces the 4C->2C transformation suitable for MO coefficients
+         write(flabel,'(a6,i4,i1)') 'U_onao',1,i
+         call x2c_read(flabel,u_onao,nbas1_f*nbasL_f*nz,       &
+    &                  x2c_file_glb)
+
+         ucoef = val_d0
+         call qgemm(nbasL_f,                                  &
+    &               nbas1_f,                                  &
+    &               nbas1_f,                                  &
+    &               val_d1,                                   &
+    &               'H','N',                                  &
+    &               ipq_off_in,                               &
+    &               u_onao,                                   &
+    &               nbas1_f,                                  &
+    &               nbasL_f,                                  &
+    &               nz,                                       &
+    &               'N','N',                                  &
+    &               ipq_off_in,                               &
+    &               sao_4c(ioff_sao),                         &
+    &               nbas1_f,                                  &
+    &               nbas1_f,                                  &
+    &               1,                                        &
+    &               val_d0,                                   &
+    &               ipq_off_in,                               &
+    &               ucoef,                                    &
+    &               nbasL_f,                                  &
+    &               nbas1_f,                                  &
+    &               nz)
+
+         ! create a close-packed electronic-only coefficient array
+         cmo_2c_ao = val_d0
+         cmo_4c_elec = val_d0
+         do iz = 1, nz
+           do j = 1, n1esh_f
+             do k = 1, nbas1_f
+               ioff_src = ioff_cmo - 1                         &
+    &                   + (iz-1)*nbas1_f*norb1_f                &
+    &                   + (norb1_f-n1esh_f+j-1)*nbas1_f         &
+    &                   + k
+               ioff_dst = (iz-1)*nbas1_f*n1esh_f                &
+    &                   + (j-1)*nbas1_f                         &
+    &                   + k
+               cmo_4c_elec(ioff_dst) = cmo_4c_ao(ioff_src)
+             end do
+           end do
+         end do
+
+         ! Because everything is close-packed the final transformation can be done
+         ! by a single qgemm call.
+         call qgemm(nbasL_f,                                  &
+    &               n1esh_f,                                  &
+    &               nbas1_f,                                  &
+    &               val_d1,                                   &
+    &               'N','N',                                  &
+    &               ipq_off_in,                               &
+    &               ucoef,                                    &
+    &               nbasL_f,                                  &
+    &               nbas1_f,                                  &
+    &               nz,                                       &
+    &               'N','N',                                  &
+    &               ipq_off_in,                               &
+    &               cmo_4c_elec,                               &
+    &               nbas1_f,                                  &
+    &               n1esh_f,                                  &
+    &               nz,                                       &
+    &               val_d0,                                   &
+    &               ipq_off_in,                               &
+    &               cmo_2c_ao,                                &
+    &               nbasL_f,                                  &
+    &               n1esh_f,                                  &
+    &               nz)
+
+         write(flabel,'(a7,i4,i1)') 'eig-val',1,i
+         call x2c_write(flabel,eigen_values(ioff_eig           &
+    &                    +norb1_f-n1esh_f),n1esh_f,x2c_file_glb)
+
+         rewind x2c_file_glb
+         write(flabel,'(a7,i4,i1)') 'bos-irr',1,i
+         if(fndlab12('EOFLABEL-x2c',x2c_file_glb))then
+           backspace(x2c_file_glb)
+           call newlab12(flabel,x2c_file_glb,6)
+           call writi(x2c_file_glb,n1esh_f,                    &
+    &                 supersymmetry(ioff_eig+norb1_f-n1esh_f))
+           call newlab12('EOFLABEL-x2c',x2c_file_glb,6)
+         end if
+
+         write(flabel,'(a7,i4,i1)') 'cmo-2cA',1,i
+         call x2c_write(flabel,cmo_2c_ao,nbasL_f*n1esh_f*nz,   &
+    &                   x2c_file_glb)
+
+         if(print_lvl > 2)then
+           write(info_text,'(a27,i1)') 'x2c - U_onao      - fsym =',i
+           call print_x2cmat(u_onao,nbas1_f,nbasL_f,nz,        &
+    &                        ipq_off_in,info_text,6)
+           write(info_text,'(a27,i1)') 'x2c - coef U_AO   - fsym =',i
+           call print_x2cmat(ucoef,nbasL_f,nbas1_f,nz,         &
+    &                        ipq_off_in,info_text,6)
+           write(info_text,'(a27,i1)') 'x2c - 2c-cmo-AO   - fsym =',i
+           call print_x2cmat(cmo_2c_ao,nbasL_f,n1esh_f,nz,     &
+    &                        ipq_off_in,info_text,6)
+         end if
+
+       end if
+
+       ioff_cmo = ioff_cmo + nbas1_f*norb1_f*nz
+       ioff_eig = ioff_eig + norb1_f
+       ioff_sao = ioff_sao + nbas1_f*nbas1_f
+
+     end do
+
+     deallocate(u_onao)
+     deallocate(ucoef)
+     deallocate(supersymmetry)
+     deallocate(sao_4c)
+     deallocate(eigen_values)
+     deallocate(cmo_4c_elec)
+     deallocate(cmo_4c_ao)
+     deallocate(cmo_2c_ao)
+
+  end subroutine x2c_pctrafo_mo_coefficients
 !**********************************************************************
 
   subroutine x2c_diagonalize_2c_fock_operator_onmo(xmat,                     &
@@ -476,22 +720,28 @@ contains
      integer                     :: ndim_2c_bj
      integer                     :: offset_1
      integer                     :: offset_2
+     integer                     :: offset_3
      integer                     :: fh = 99
      character (len=12)          :: flabel
      character (len=50)          :: info_text
+     character (len=*), parameter :: mobasis_group = '/result/wavefunctions/scf/x2c_mobasis/mobasis'
      logical                     :: fndlab12
+     logical                     :: cmo_in_ao
      integer, allocatable        :: supersymmetry(:)
      integer, allocatable        :: ibeig(:,:)
      integer                     :: n_mo(2), n_po(2), n_basis(2)
 !----------------------------------------------------------------------
 
        allocate(supersymmetry(nesh_dim_total))
+       supersymmetry = 0
 
 !      read eigenvalues, boson irreps and new MO coefficients in orthonormal basis from file X2CMAT
        open(fh,file='X2CMAT',status='old',form='unformatted',access='sequential',action='read',position='rewind')
 
        offset_1 = 1
        offset_2 = 1
+       offset_3 = 1
+       cmo_in_ao = .false.
        n_basis =  0 ! initialization
        n_mo    =  0 ! initialization
        n_po    =  0 ! initialization
@@ -510,14 +760,30 @@ contains
              call readi(fh,nesh_dim(i),supersymmetry(offset_1))
            end if
 
-!          c. 2c-MO coefficients in MO reference basis
-           write(flabel,'(a7,i4,i1)') 'cmo-2cM',1,i
-           call x2c_read(flabel,xmat(offset_2),nesh_dim(i)*nesh_dim(i)*nz,fh)
+!          c. 2c-MO coefficients in AO or MO reference basis
+           rewind fh
+           write(flabel,'(a7,i4,i1)') 'cmo-2cA',1,i
+           if(fndlab12(flabel,fh))then
+             cmo_in_ao = .true.
+             call x2c_read(flabel,mo_coeff_2c_ao(offset_3),    &
+    &                      naosh_L(i)*nesh_dim(i)*nz,fh)
+           else
+             write(flabel,'(a7,i4,i1)') 'cmo-2cM',1,i
+             call x2c_read(flabel,xmat(offset_2),              &
+    &                      nesh_dim(i)*nesh_dim(i)*nz,fh)
+           end if
 
 !          debug print
            if(print_lvl > 2)then
-             write(info_text,'(a27,i1)') 'x2c - 2c-cmo-onMO r- fsym =',i
-             call print_x2cmat(xmat(offset_2),nesh_dim(i),nesh_dim(i),nz,ipq_off_in,info_text,6)
+             if(cmo_in_ao)then
+               write(info_text,'(a27,i1)') 'x2c - 2c-cmo-AO r- fsym =',i
+               call print_x2cmat(mo_coeff_2c_ao(offset_3),naosh_L(i), &
+    &                            nesh_dim(i),nz,ipq_off_in,info_text,6)
+             else
+               write(info_text,'(a27,i1)') 'x2c - 2c-cmo-onMO r- fsym =',i
+               call print_x2cmat(xmat(offset_2),nesh_dim(i),          &
+    &                            nesh_dim(i),nz,ipq_off_in,info_text,6)
+             end if
            end if
 
          end if ! nesh_dim(i) > 0
@@ -525,6 +791,7 @@ contains
 !        keep track of proper offsets
          offset_1            = offset_1 + nesh_dim(i)
          offset_2            = offset_2 + nesh_dim(i) * nesh_dim(i) * nz
+         offset_3            = offset_3 + naosh_L(i) * nesh_dim(i) * nz
 
 !        dimension info for the 2C coefficients
          n_po(i) = 0
@@ -542,41 +809,48 @@ contains
 !      backtransform the 2c-MO coefficients from the reference MO basis to AO basis
        ndim_2c_mo_ao = 0
        offset_2      = 1
-       do i = 1, nfsym
-         call bcktr1(mo_coeff_2c_ao(offset_2),               &
-                     naosh_L(i),                             &
-                     nesh_dim(i),                            &
-                     xmat(i2tmot(i)+1),                      &
-                     ntmo(i),                                &
-                     ntmo(i),                                &
-                     ntmo(i),                                &
-                     nz,                                     &
-                     nesh_dim(i),                            &
-                     1,                                      &
-                     naosh_L(i),                             &
-                     transformation_matrix_mo2ao(i2tmt(i)+1),&
-                     nfbas(i,0),                             &
-                     ntmo(i),                                &
-                     nzt,                                    &
-                     print_lvl)
+       if(cmo_in_ao)then
+         ndim_2c_mo_ao = offset_3 - 1
+       else
+         do i = 1, nfsym
+           call bcktr1(mo_coeff_2c_ao(offset_2),               &
+                       naosh_L(i),                             &
+                       nesh_dim(i),                            &
+                       xmat(i2tmot(i)+1),                      &
+                       ntmo(i),                                &
+                       ntmo(i),                                &
+                       ntmo(i),                                &
+                       nz,                                     &
+                       nesh_dim(i),                            &
+                       1,                                      &
+                       naosh_L(i),                             &
+                       transformation_matrix_mo2ao(i2tmt(i)+1),&
+                       nfbas(i,0),                             &
+                       ntmo(i),                                &
+                       nzt,                                    &
+                       print_lvl)
 
-!        debug print
-         if(print_lvl > 2)then
-           call print_x2cmat(mo_coeff_2c_ao(offset_2),naosh_L(i),nesh_dim(i),nz,ipq_off_in,'x2c - 2c MO coeff',6)
-         end if
+!          debug print
+           if(print_lvl > 2)then
+             call print_x2cmat(mo_coeff_2c_ao(offset_2),naosh_L(i),nesh_dim(i),nz,ipq_off_in,'x2c - 2c MO coeff',6)
+           end if
 
-         offset_2      = offset_2 + naosh_L(i)*nesh_dim(i)*nz
-         ndim_2c_mo_ao = ndim_2c_mo_ao + naosh_L(i) * nesh_dim(i) * nz
-       end do
+           offset_2      = offset_2 + naosh_L(i)*nesh_dim(i)*nz
+           ndim_2c_mo_ao = ndim_2c_mo_ao + naosh_L(i) * nesh_dim(i) * nz
+         end do
+       end if
 
 !      write the new information
-       info_text(1:50)  = ' X2Cmod - molecular-mean field 2c MOs              '
-       call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_basis',idata=n_basis)
-       call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_mo',idata=n_mo)
-       call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_po',idata=n_po)
-       call checkpoint_write ('/result/wavefunctions/scf/mobasis/eigenvalues',rdata=eigen_values(1:nesh_dim_total))
-       call checkpoint_write ('/result/wavefunctions/scf/mobasis/symmetry',idata=supersymmetry)
-       call checkpoint_write ('/result/wavefunctions/scf/mobasis/orbitals',rdata=mo_coeff_2c_ao(1:ndim_2c_mo_ao))
+       call checkpoint_write (mobasis_group//'/mobasis_id',idata=2)
+       call checkpoint_write (mobasis_group//'/nz',idata=nz)
+       call checkpoint_write (mobasis_group//'/n_fsym',idata=nfsym)
+       call checkpoint_write (mobasis_group//'/n_basis',idata=n_basis)
+       call checkpoint_write (mobasis_group//'/n_mo',idata=n_mo)
+       call checkpoint_write (mobasis_group//'/n_po',idata=n_po)
+       call checkpoint_write (mobasis_group//'/eigenvalues',rdata=eigen_values(1:nesh_dim_total))
+       call checkpoint_write (mobasis_group//'/symmetry',idata=supersymmetry)
+       call checkpoint_write (mobasis_group//'/orbitals',rdata=mo_coeff_2c_ao(1:ndim_2c_mo_ao))
+       call write_occupations_fromcommon(mobasis_group,.false.)
 
        deallocate(supersymmetry)
 

@@ -196,6 +196,10 @@ Number of electrons in the *ungerade* irreps of the Abelian symmetry group.
 keyword(PRINT)
 
 Print level.
+- Level 0 (default): computed energies and achieved convergence of wave function parameters
+- Level 1: additional information on the progress of the calculation, useful in case you encounter a problem
+- Level 2: detailed  information on the wave function, useful for analysis but can give very large output files
+- Level 3 and higher: do not use
 
 *Default:*
 

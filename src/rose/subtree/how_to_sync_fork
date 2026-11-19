@@ -1,0 +1,68 @@
+Following this: https://www.freecodecamp.org/news/how-to-sync-your-fork-with-the-original-git-repository/
+
+First create a fork to quantum_rose/rose called yourusername/rose
+
+1) Cloned this fork locally.
+
+2) Moved to quantum_rose/rose and do the desired modification.
+
+3) Create the remote called "upstream", where "upstream" is an alias to https://gitlab.com/quantum_rose/rose.git
+
+$> git remote add upstream https://gitlab.com/quantum_rose/rose.git
+
+You can look at the remote with the command line:
+
+$> git remote -v
+
+4) Fetch the upstream to get the branch of it:
+
+$> git fetch upstream
+
+resulting in:
+From https://gitlab.com/quantum_rose/rose 
+* [new branch]      master     -> upstream/master
+
+Check the branches if you want:
+
+$> git branch -avv
+
+resulting in:
+* master                  482bbd6 [origin/master] Merge branch 'add_tests' into 'master'  
+remotes/origin/HEAD     -> origin/master  
+remotes/origin/master   482bbd6 Merge branch 'add_tests' into 'master'  
+remotes/upstream/master 482bbd6 Merge branch 'add_tests' into 'master'
+
+5) Move to origin/master (where origin is the alias to https://gitlab.com/bsenjean/rose.git):
+
+$> git checkout master
+
+6) Merge the upstream/master to your local branch (which is origin/master):
+
+$> git merge upstream/master
+
+Resulting in:
+Updating 482bbd6..dda57fd
+Fast-forward README.md | 2 +- 1 file changed, 1 insertion(+), 1 deletion(-)
+
+So you have modified your private fork repo with the updated public version.
+
+For the patches, once you are updated with the upstream, you can do:
+
+$> git diff from_commit to-commit > patch.diff
+
+on your private fork branch where you have the changes.
+
+And then go to the public version quantum_rose/rose. Just for more safety, create a new temporary branch and copy paste the patch, and do:
+
+$> git apply patch.diff
+
+or
+
+$> git apply --3way patch.diff
+
+and fix the conflicts yourself.
+
+Definition --3way: When the patch does not apply cleanly, fall back on 3-way merge if the patch records the identity of blobs it is supposed to apply to, and we have those blobs available locally, possibly leaving the conflict markers in the files in the working tree for the user to resolve. This option implies the --index option, and is incompatible with the --reject and the --cached options.
+
+Finally, ask for a merge request of this branch on gitlab.
+That's all :)

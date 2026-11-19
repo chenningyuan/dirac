@@ -45,7 +45,7 @@ The first step (SCF+decoupling) simply requires the .X2Cmmf keyword under the \*
     **HAMILTONIAN
     .X2Cmmf
 
-Save the files DFCOEF, AOMOMAT and X2CMAT, for example using the *pam* script::
+Save the files CHECKPOINT.h5, AOMOMAT and X2CMAT, for example using the *pam* script::
 
     ./pam ... --outcmo --get="AOMOMAT X2CMAT"
 
@@ -74,5 +74,5 @@ or the new RELCCSD deck input::
     *CCSORT
     .NORECMP
 
-Dirac will automatically read the two-component coefficients from the file DFCOEF and proceed in two-component mode for
+Dirac will automatically read the two-component coefficients from CHECKPOINT.h5 and proceed in two-component mode for
 any wave function analysis or post-HF step required for a (MR)CC calculation.

@@ -7,8 +7,8 @@
 1              # non-rel. results (e.g. with DALTON)
 **HAMILTONIAN   
 .LEVY-LEBLOND
-.PEQM
-*PEQM
+.PELIB
+*PELIB
 .POTENT
 peqm.pot
 **WAVE FUNCTION

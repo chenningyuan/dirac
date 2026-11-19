@@ -19,16 +19,10 @@ C
 C  /* Deck sochk2 */
       SUBROUTINE SOCHK2(WORK,LWORK,IPRINT)
 #include "implicit.h"
-#include "priunit.h"
-#include "iratdef.h"
-#include "mxcent.h"
 #include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 C
       DIMENSION WORK(LWORK)
-C
-#include "sotabs.h"
 C
 #include "cotabs.h"
 C
@@ -76,10 +70,6 @@ C
 #include "aovec.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "shells.h"
-#include "nuclei.h"
-#include "primit.h"
-#include "sotabs.h"
 #include "cotabs.h"
 C
       DIMENSION SOINT(ISODIM,ISODIM,3), ONEINT(IONDIM,IONDIM),
@@ -197,11 +187,7 @@ C
       CHARACTER COOR(3)
       DATA COOR/'x','y','z'/
 C
-#include "sotabs.h"
-#include "cotabs.h"
 #include "shells.h"
-#include "primit.h"
-#include "xyzpow.h"
 C
 C
       DIMENSION ICOOR1(3),ICOOR2(3)
@@ -212,8 +198,6 @@ C
 C
       LOGICAL FIRST,LAST,DIFFER
       DIMENSION RENR1(2), RENR2(2), RENS1(2), RENS2(2)
-C
-#include "ibtfun.h"
 C
       DIFMAX   = 0D0
       RENR1(1) = 1D0
@@ -353,10 +337,6 @@ C
 #include "maxaqn.h"
 #include "mxcent.h"
 C
-#include "shells.h"
-#include "nuclei.h"
-#include "primit.h"
-#include "sotabs.h"
 #include "cotabs.h"
 C
       DIMENSION SOINT(JCOMID,JCOMID,3), ERINT(KCOMAX),
@@ -395,14 +375,11 @@ C index and a component index and vice versa
 C
 #include "implicit.h"
 C
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
 C
-#include "aovec.h"
 #include "shells.h"
-#include "nuclei.h"
 #include "sotabs.h"
 #include "cotabs.h"
 C
@@ -500,7 +477,6 @@ C
       DIMENSION BUF(600)
       DIMENSION IBUF(600)
 C
-#include "hrunit.h"
 #include "ibtfun.h"
       REWIND LUINP
       CALL MOLLAB(KEY,LUINP,LUPRI)
@@ -563,11 +539,7 @@ C
       CHARACTER COOR(3)
       DATA COOR/'x','y','z'/
 C
-#include "sotabs.h"
-#include "cotabs.h"
 #include "shells.h"
-#include "primit.h"
-#include "xyzpow.h"
 C
 C
       DIMENSION ICOOR1(3),ICOOR2(3)
@@ -578,8 +550,6 @@ C
 C
       LOGICAL FIRST,LAST,DIFFER
       DIMENSION RENR1(2), RENR2(2), RENS1(2), RENS2(2)
-C
-#include "ibtfun.h"
 C
       DIFMAX   = 0D0
       RENR1(1) = 1D0
@@ -760,11 +730,7 @@ C  /* Deck mg1tst */
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "maxaqn.h"
 #include "nuclei.h"
-#include "inforb.h"
 C
       DIMENSION WORK(LWORK), ORIGIN(3)
       CHARACTER*8 LABEL, LABELT(3)

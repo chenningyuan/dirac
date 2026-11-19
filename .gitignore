@@ -13,4 +13,4 @@ test/*/*DFCOEF*
 test/*/aoo*
 test/aonev*
 src/*/*.swp
-
+*.xyz

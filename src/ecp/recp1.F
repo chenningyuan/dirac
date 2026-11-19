@@ -73,30 +73,98 @@
      & mconsu,mru,mcru,msfu,msfru,ngcs,nu,lxyzir,inam,nnam,mdum
       common /ntgr/
      & mconsu,mru,mcru,msfu,msfru,ngcs,nu,   
-     & lxyzir(3),inam(5),nnam,mdum(32)
-      integer
-     & ica(mcup,msup,mgup),icb(4,24,mccup),icxst(2,mnsfup),
-     & iprst(mnsfup),lmnp1(mconsp),mcons(msfup),nc(msup),
-     & ncon(mconsp),nf(msup),nfct(mccup),ngw(mccup),npair(2,mnsfup),
-     & nprir(2,mstup,mnsfup),nrcr(mconsp),nt(msfup),ntl(msfup),
-     & ntu(msfup)
-      real*8
-     & zet(mconup,mconsp), eta(mrcrup,mconup,mconsp),
-     & x(mcup,msup), y(mcup,msup), z(mcup,msup)
+     &     lxyzir(3),inam(5),nnam,mdum(32)
+      integer, allocatable :: ica(:,:,:)
+      integer, allocatable :: icb(:,:,:)
+      integer, allocatable :: icxst(:,:)
+      integer, allocatable :: iprst(:)
+      integer, allocatable :: lmnp1(:)
+      integer, allocatable :: mcons(:)
+      integer, allocatable :: nc(:)
+      integer, allocatable :: ncon(:)
+      integer, allocatable :: nf(:)
+      integer, allocatable :: nfct(:)
+      integer, allocatable :: ngw(:)
+      integer, allocatable :: npair(:,:)
+      integer, allocatable :: nprir(:,:,:)
+      integer, allocatable :: nrcr(:)
+      integer, allocatable :: nt(:)
+      integer, allocatable :: ntl(:)
+      integer, allocatable :: ntu(:)    
+      real(kind=8), allocatable :: zet(:,:)
+      real(kind=8), allocatable :: eta(:,:,:)
+      real(kind=8), allocatable :: x(:,:), y(:,:), z(:,:)
 !     # local:
-      integer
-     & lcr(msup),       lls(msup),      nkcrl(6,msup), nkcru(6,msup),
-     & nklsl(4,msup),   nklsu(4,msup),  mcrs(msup),    nir(kaordp),
-     & maords(mgcsup),  nd(mstup),     nso(mstup),
-     & nsopr(mstup),    nblpr(mstup),   nopir(mstup),  ilxyz(3,mstup),
-     & la(mrup,kaordp), ncr(mcrup),     nct(msfup),    mgcs(msfup),
-     & lb(msfrup),      ms(msfrup),     mnl(msfrup),   mau(mnrup),
-     & icxast(mnsfup),
-     & idp(mstup,mstup,mstup),lmn1u,ncru,lproju,ndfac,lmax
+      integer, allocatable :: lcr(:), lls(:)
+      integer, allocatable :: nkcrl(:,:), nkcru(:,:)
+      integer, allocatable :: nklsl(:,:), nklsu(:,:)
+      integer, allocatable :: mcrs(:), nir(:)
+      integer, allocatable :: maords(:)
+      integer, allocatable :: nd(:), nso(:)
+      integer, allocatable :: nsopr(:), nblpr(:), nopir(:)
+      integer, allocatable :: ilxyz(:,:)
+      integer, allocatable :: la(:,:)
+      integer, allocatable :: ncr(:), nct(:), mgcs(:)
+      integer, allocatable :: lb(:), ms(:), mnl(:)
+      integer, allocatable :: mau(:)
+      integer, allocatable :: icxast(:)
+      integer, allocatable :: idp(:,:,:)
+
+      integer lmn1u,ncru,lproju,ndfac,lmax
       integer mgcsu,MAXCX,i,n,INT_AREP
       real*8 chg(msup), zcr(mcrup), ccr(mcrup), eps
       character*3 ityp(mstup), mtype(msup)
-
+!
+!     Dynamic allocations
+!
+      allocate( ica(mcup, msup, mgup) )
+      allocate( icb(4, 24, mccup) )
+      allocate( icxst(2, mnsfup) )
+      allocate( iprst(mnsfup) )
+      allocate( lmnp1(mconsp) )
+      allocate( mcons(msfup) )
+      allocate( nc(msup) )
+      allocate( ncon(mconsp) )
+      allocate( nf(msup) )
+      allocate( nfct(mccup) )
+      allocate( ngw(mccup) )
+      allocate( npair(2, mnsfup) )
+      allocate( nprir(2, mstup, mnsfup) )
+      allocate( nrcr(mconsp) )
+      allocate( nt(msfup) )
+      allocate( ntl(msfup) )
+      allocate( ntu(msfup) )
+      allocate( zet(mconup, mconsp) )
+      allocate( eta(mrcrup, mconup, mconsp) )
+      allocate( x(mcup, msup) )
+      allocate( y(mcup, msup) )
+      allocate( z(mcup, msup) )
+      allocate( lcr(msup) )
+      allocate( lls(msup) )
+      allocate( nkcrl(6, msup) )
+      allocate( nkcru(6, msup) )
+      allocate( nklsl(4, msup) )
+      allocate( nklsu(4, msup) )
+      allocate( mcrs(msup) )
+      allocate( nir(kaordp) )
+      allocate( maords(mgcsup) )
+      allocate( nd(mstup) )
+      allocate( nso(mstup) )
+      allocate( nsopr(mstup) )
+      allocate( nblpr(mstup) )
+      allocate( nopir(mstup) )
+      allocate( ilxyz(3, mstup) )
+      allocate( la(mrup, kaordp) )
+      allocate( ncr(mcrup) )
+      allocate( nct(msfup) )
+      allocate( mgcs(msfup) )
+      allocate( lb(msfrup) )
+      allocate( ms(msfrup) )
+      allocate( mnl(msfrup) )
+      allocate( mau(mnrup) )
+      allocate( icxast(mnsfup) )
+      allocate( idp(mstup, mstup, mstup) )
+      
       CALL RECP_SETPARM
       mgcsu  = mgcsup
 
@@ -139,6 +207,54 @@
       ENDDO
 
 !     Deallocate variables
+      deallocate( ica )
+      deallocate( icb )
+      deallocate( icxst )
+      deallocate( iprst )
+      deallocate( lmnp1 )
+      deallocate( mcons )
+      deallocate( nc )
+      deallocate( ncon )
+      deallocate( nf )
+      deallocate( nfct )
+      deallocate( ngw )
+      deallocate( npair )
+      deallocate( nprir )
+      deallocate( nrcr )
+      deallocate( nt )
+      deallocate( ntl )
+      deallocate( ntu )
+      deallocate( zet )
+      deallocate( eta )
+      deallocate( x )
+      deallocate( y )
+      deallocate( z )
+      deallocate( lcr )
+      deallocate( lls )
+      deallocate( nkcrl )
+      deallocate( nkcru )
+      deallocate( nklsl )
+      deallocate( nklsu )
+      deallocate( mcrs )
+      deallocate( nir )
+      deallocate( maords )
+      deallocate( nd )
+      deallocate( nso )
+      deallocate( nsopr )
+      deallocate( nblpr )
+      deallocate( nopir )
+      deallocate( ilxyz )
+      deallocate( la )
+      deallocate( ncr )
+      deallocate( nct )
+      deallocate( mgcs )
+      deallocate( lb )
+      deallocate( ms )
+      deallocate( mnl )
+      deallocate( mau )
+      deallocate( icxast )
+      deallocate( idp )
+      
       DEALLOCATE (IPT_CX)
       CALL RECP_IPTD_CORTAB
       DEALLOCATE(IPT_IL)

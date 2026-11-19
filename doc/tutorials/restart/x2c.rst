@@ -44,11 +44,11 @@ Dyall's augmented TZ basis dyall.av3z in uncontracted form.
 Prior to the HF calculation, the Hamiltonian transformation from 4- to
 2-components will be performed and for restart purposes one should therefore
 save the files ``X2CMAT`` and ``AOMOMAT`` containing the Hamiltonian
-information and the file ``DFCOEF`` containing the (converged) MO-coefficients.
+information and the checkpoint file ``CHECKPOINT.h5`` containing the (converged) MO-coefficients.
 
 We run the initial SCF step using::
 
-  pam --inp=scf_x2c.inp --mol=br2.xyz --get="X2CMAT AOMOMAT DFCOEF"
+  pam --inp=scf_x2c.inp --mol=br2.xyz --outcmo --get="X2CMAT AOMOMAT"
 
 The output will be written to the file ``scf_x2c_br2.out``, which can be
 monitored during the calculation.
@@ -83,7 +83,7 @@ Restarting from the (converged) MO-coefficients and reading the transformed X2C
 Hamiltonian from file is done automatically once the files are present. We
 therefore restart the calculation using::
 
-  pam --inp=property_x2c.inp --mol=br2.xyz --put="X2CMAT AOMOMAT DFCOEF"
+  pam --inp=property_x2c.inp --mol=br2.xyz --incmo --put="X2CMAT AOMOMAT"
 
 
 Restart files
@@ -102,7 +102,7 @@ quantities are independent of the current solution in an SCF iteration.
 
 Shen X2C is restarted with just::
 
-  pam --put="DFCOEF"
+  pam --incmo
 
 (i.e. not putting AOMOMAT and X2CMAT), the X2C code will recompute AOMOMAT and
 X2CMAT automatically, which takes just a few extra seconds. The subsequent SCF

@@ -5,7 +5,7 @@
 *
 * Jeppe Olsen, November 2001
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 *. Input

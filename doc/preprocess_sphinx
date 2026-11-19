@@ -23,7 +23,7 @@ import shutil
 
 def expand_sections(source_dir, build_dir, build_type):
 
-    KEYWORD_REGEX  = r'keyword\(([a-zA-Z !0-9_+-]+)\)'
+    KEYWORD_REGEX  = r'keyword\(([a-zA-Z !0-9\(\)_+-]+)\)'
     STARSTAR_REGEX = r'starstar\(([a-zA-Z 0-9_]+)\)'
     STAR_REGEX     = r'star\(([a-zA-Z 0-9_]+)\)'
 
@@ -54,7 +54,7 @@ def expand_sections(source_dir, build_dir, build_type):
                 if section_found != []:
                     section = '%s_' % section_found[0].replace(' ', '_')
                 print(re.sub(KEYWORD_REGEX,
-                            (r".. index:: .\g<1>\n.. _%s.\g<1>:\n\n.\g<1>\n"+str("-"*(line.find(")")-line.find("(")))) % section,line[0:len(line)-1]))
+                            (r".. index:: .\g<1>\n.. _%s.\g<1>:\n\n.\g<1>\n"+str("-"*(line.rfind(")")-line.find("(")))) % section,line[0:len(line)-1]))
 
             ##replace:
             # starstar(RABOOF)

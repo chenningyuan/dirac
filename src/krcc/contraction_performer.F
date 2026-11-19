@@ -60,7 +60,7 @@ C    &           IHOP,IHM)
 *-----------------------------------------
 * With precomputed contractions to eliminate overhead
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -331,7 +331,7 @@ C last of this possible contraction
 *
 * Jeppe Olsen, April 2003
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -501,7 +501,7 @@ C           ICOUNT = ICOUNT + IHCAAB(I)
 *
 * Jeppe Olsen, July 16, 2001
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input
       INTEGER IREO(*)
 *. Input and otput
@@ -596,7 +596,7 @@ C            WRT_CNTR(ICONT,NCONT,LDIM)
 *  ( I understand why somebody asks higher powers for signs,
 *    they are difficult to get yourself ...)
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 *. Input
@@ -731,7 +731,7 @@ C IPERM_PARITY(IPERM,NELMNT)
 *
 * This routine is redundant and should be eliminated
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "crun.inc"
@@ -791,7 +791,7 @@ C
 * Jeppe Olsen, May 2000, Finished March 2003 ( Well it became July 2003)
 *                        and even November 2004
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -1199,7 +1199,7 @@ C            ID1234SM   = IDBGMULT(ID1SM,ID234SM)
 * Output : IORD : New operator I is original operator IORD(I)
 
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input : Contraction operators 
       DIMENSION ID1(2*NRANK,3),ID2(2*NRANK,3)
       DIMENSION ID3(2*NRANK,3),ID4(2*NRANK,3)
@@ -1307,7 +1307,7 @@ C  WRT_CNTR(ICONT,NCONT,LDIM)
 * Jeppe Olsen, July 14, 2001, completed and debugged July 2003
 *                             (Well it became Nov. 2004)
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Number of strings per symmetry
       INTEGER NK(8,4),NL(8,4),NI(8,4),ND(8,4),NLK(8,4)
 *. Maps 
@@ -1456,7 +1456,7 @@ C?        WRITE(6,*) ' SIGNLK before call to TI_TO_TOKBN(2) ', SIGNLK
 *
 * Jeppe Olsen, Oct. 2000
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input
       INTEGER IPERM(NELMNT)
 *. Local scratch 
@@ -1529,7 +1529,7 @@ C?      CALL IWRTMA(ISCR,1,NELMNT,1,NELMNT)
 * ILR = 1 : Find IOCC_L
 * ILR = 2 : Find IOCC_R
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input or output
       INTEGER IOCC_L(NGAS,4),IOC_OP(NGAS,4)
       INTEGER IOCC_R(NGAS,4)
@@ -1612,7 +1612,7 @@ C?      CALL IWRTMA(ISCR,1,NELMNT,1,NELMNT)
 *  Construct array IVEC(ICLASS) giving first element of
 *  class ICLASS in full adressing
 *
-#include "implicit.inc"
+#include "implicit.h"
       DIMENSION NVEC(*),IVEC(*)
 *
       IVEC(1) = 1
@@ -1639,7 +1639,7 @@ C?      CALL IWRTMA(ISCR,1,NELMNT,1,NELMNT)
 * Jeppe Olsen, May of 2000
 * Changed from NSMST**3 to NSMST**2 procedure, July 2002
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "multd2h.inc"
 #include "symm.inc"
@@ -1687,7 +1687,7 @@ C        ISM_A = IDBGMULT(ISM_C,ITSYM)
 * Jeppe Olsen, Summer of 99
 *
 * Compared to Z_TCC_OFF : Total length added to argument list
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "multd2h.inc"
 #include "symm.inc"
@@ -1741,7 +1741,7 @@ C        ISM_A = IDBGMULT(ISM_C,ITSYM)
 *
 * Jeppe Olsen, Oct 2000     
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "multd2h.inc"
@@ -1931,7 +1931,7 @@ C
 *
 * Jeppe Olsen, May 2000
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -2215,7 +2215,7 @@ C          print*,'ISM(JGRP)',ISM(JGRP)
 *
 * Jeppe Olsen, May of 2001  
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "multd2h.inc"
@@ -2376,7 +2376,7 @@ C          print*,'ISM(JGRP)',ISM(JGRP)
 * of contraction operator ICONT having NCONT operators 
 *
 *. General input
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "orbinp.inc"
 *. Specific input
@@ -2456,7 +2456,7 @@ C          print*,'ISM(JGRP)',ISM(JGRP)
 *              June 2001    TOKBN (Turbo version)
 *
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "multd2h.inc"
 #include "symm.inc"
@@ -2916,7 +2916,7 @@ C      print*,'TI,TOPK',TI(1),TOPK(1)
 * New version reducing number of calls to GET_STR2_TOTSM..
 * a rainy day at HNIE, July 2002
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -3082,7 +3082,7 @@ C      print*,'TI,TOPK',TI(1),TOPK(1)
 *
 * Change of phase of annihilations strings, Oct2000
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input
       INTEGER ICR(NCR),IAN(NAN)
       INTEGER ISTR_IN(NEL_IN)
@@ -3199,7 +3199,7 @@ C       print*,'IPLACE,ICR_ORB',IPLACE,ICR_ORB
 *
 * Lasse 2011
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "ctcc.inc"
@@ -3394,7 +3394,7 @@ C             print*,'IOFF',IOFF
 *
 * Lasse 2012
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       DIMENSION INTEGRALS(*)
 *. Output
@@ -3422,7 +3422,7 @@ C             print*,'IOFF',IOFF
 *
 * Jeppe Olsen, May 2000 is running out
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input
       INTEGER INUM_CAAB(4),ISYM_CAAB(4)
       INTEGER NOP_CAAB(4)
@@ -3471,7 +3471,7 @@ C             print*,'IOFF',IOFF
 * Conjugate ICAAB_IN to obtain ICAAB_OUT
 * 
 *. Jeppe Olsen, Oct 2000
-#include "implicit.inc"
+#include "implicit.h"
 *.Input 
       INTEGER ICAAB_IN(NGAS,4)
 *. Output
@@ -3528,7 +3528,7 @@ C             print*,'IOFF',IOFF
 *
 * Jeppe Olsen, Summer of 99
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input/Output
       INTEGER IOPGAS(NGAS),IOP(NOP)
 *
@@ -3573,7 +3573,7 @@ C             print*,'IOFF',IOFF
 *
 * Jeppe Olsen, Still May 2000
 *
-#include "implicit.inc"
+#include "implicit.h"
 *.Input
       INTEGER LIST(NOP,*),IB(*)
 *. Output 
@@ -3598,7 +3598,7 @@ C?    IF(NOP.GT.0) WRITE(6,*) ' INUM_ABS = ', INUM_ABS
 *
 * Write contraction operator ICONT in the form used in VNEWCCV
 *
-#include "implicit.inc"
+#include "implicit.h"
       INTEGER ICONT(LDIM,3)
 *
       WRITE(6,*)
@@ -3616,7 +3616,7 @@ C?    IF(NOP.GT.0) WRITE(6,*) ' INUM_ABS = ', INUM_ABS
 *
 * Write array containing three symmetry labels 
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       INTEGER ISYM(MXPSYM,MXPSYM,MXPSYM)
 *
@@ -3638,7 +3638,7 @@ C?    IF(NOP.GT.0) WRITE(6,*) ' INUM_ABS = ', INUM_ABS
      &                                         MX_ST_TSOSO_BLK_MX,
      &                                         WORK,KFREE,LFREE)
 * This is just to allocate a scratch (so not pretty)
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -3693,7 +3693,7 @@ C?    IF(NOP.GT.0) WRITE(6,*) ' INUM_ABS = ', INUM_ABS
 *
 * Lasse 2011 
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -4005,7 +4005,7 @@ C              T(IT) = T(IT) + XOUT
 *
       SUBROUTINE ABS_DIFF(A,B,NDIM)
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       DIMENSION A(NDIM),B(NDIM)
 *
@@ -4020,7 +4020,7 @@ C              T(IT) = T(IT) + XOUT
       END
       SUBROUTINE ABS_DIFF2(A,B,NDIM)
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       DIMENSION A(NDIM),B(NDIM)
 *

@@ -44,10 +44,11 @@
 ! Number of operator types in DIRAC is now in NOPTYP
 ! These are:
 ! 1. P, 2. i[alpha_x]P, 3. i[alpha_y]P,... 19. [beta]P,
-! 20. i[Sigma.P], 21. [betagamma5]P, 22. i[betagamma5]P
+! 20. i[Sigma.P], 21. [betagamma5]P, 22. i[beta alpha.P]
+! 23. i[betagamma5]P
 ! ==================================================================
       INTEGER NOPTYP,NMATTYP
-      PARAMETER (NOPTYP = 22, NMATTYP = 17)
+      PARAMETER (NOPTYP = 23, NMATTYP = 17)
 
 ! *** 4-component operators : Matrix part ***
 !

@@ -63,7 +63,7 @@
 *     determine whether CPU is active or not
 *
 ***********************************************************************
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 
       DIMENSION NPARBLOCK(NDIM)
 *
@@ -129,7 +129,7 @@ C     IFAC = IFAC * IFLOC
 * If LU1.NE.LU2, both the real and imaginary parts are
 * calculated. This requires rewinding of LU1 and LU2
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       DIMENSION VEC1(*),VEC2(*)
       REAL*8 INPRDD
 *
@@ -210,7 +210,7 @@ C
 C     written by S. Knecht - Oct 2008
 C
 C***********************************************************************     
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       DIMENSION VEC1(*),VEC2(*)
       REAL*8 INPRDD
       integer LU1, LU2, I1, I2, IREW, LBLK, MZ
@@ -290,7 +290,7 @@ C
 C     Last revision :
 C
 C**********************************************************************
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #endif
@@ -353,7 +353,7 @@ C
 C     Last revision :
 C
 C**********************************************************************
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #endif
@@ -415,7 +415,6 @@ C
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #endif
-#include "parluci.h"
 #include "files_r.inc"
       integer*8 NINTS_I8
       dimension IN(4,NINTS_I8)
@@ -448,7 +447,7 @@ C***********************************************************************
       use mospinor_info
       use symmetry_setup_krci
       use interface_to_mpi
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 * =====
 *.Input
@@ -611,7 +610,7 @@ C
 C***********************************************************************
       use symmetry_setup_krci
       use interface_to_mpi
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
 #if defined (VAR_MPI2)
 #include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -628,13 +627,7 @@ C***********************************************************************
 #endif
 #include "parluci.h"
 #include "mxpdim.inc"
-#include "glbbas.inc"
-#include "clunit.inc"
-#include "oper.inc"
 #include "ctcc.inc"
-#include "integrals_off.inc"
-*
-#include "dgroup.h"
       CHARACTER*6 CIRUN
       DIMENSION   T_BUFF(*), T(*), F1(*), ibeig(*)
 #if defined (VAR_MPI2)
@@ -861,7 +854,7 @@ C
 C
 C***********************************************************************
       use interface_to_mpi
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
 #if defined (VAR_MPI2)
 #include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -881,7 +874,6 @@ C***********************************************************************
 #endif
 #include "mxpdim.inc"
 #include "parluci.h"
-#include "integrals_off.inc"
 #include "typesz_mpi2.h"
 #include "ipoist8.inc"
 #include "ctcc.inc"
@@ -1055,7 +1047,7 @@ C
 C***********************************************************************
       use mospinor_info
       use interface_to_mpi
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
 #if defined (VAR_MPI2)
 #include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -1075,7 +1067,6 @@ C***********************************************************************
 #include "mxpdim.inc"
 #include "ipoist8.inc"
 #include "ctcc.inc"
-#include "integrals_off.inc"
 #include "typesz_mpi2.h"
       DIMENSION T_BUFF(*),T(NALLINT),MDIASV(*),IT_TTPL(*)
       DIMENSION T_BUFF_D(*)
@@ -1270,7 +1261,7 @@ C
 C     Last revision :
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
 #include "parluci.h"
       DIMENSION ICHECK_VEC(*)
 C
@@ -1299,8 +1290,7 @@ C     Last revision :
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
       use interface_to_mpi
-      IMPLICIT REAL*8 (A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C information for property run
@@ -1394,8 +1384,7 @@ C
 C     Last revision :
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
-      IMPLICIT REAL*8 (A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
 #include "parluci.h"
       INTEGER   RCCTOS(NUM_BLOCKS2)
       DIMENSION ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S),IT_TTPL(LEN_TTPL)
@@ -1454,8 +1443,7 @@ C
 C     Last revision :
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
-      IMPLICIT REAL*8 (A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
 #include "parluci.h"
       INTEGER   RCCTOS(NUM_BLOCKS2)
       DIMENSION ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S),IT_TTPL(LEN_TTPL)

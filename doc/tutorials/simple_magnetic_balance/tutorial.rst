@@ -102,7 +102,7 @@ The menu file ``scf.inp`` reads:
 
 .. literalinclude:: scf.inp
 
-and we make sure to recover the coefficient file ``DFCOEF`` when running the calculation:
+and we make sure to save the checkpoint file ``CHECKPOINT.h5`` when running the calculation:
 
 .. literalinclude:: scf.run
 

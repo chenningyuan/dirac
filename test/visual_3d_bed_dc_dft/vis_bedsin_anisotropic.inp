@@ -1,0 +1,36 @@
+**DIRAC
+**GRID
+.ULTRAFINE
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**MOLECULE
+*BASIS
+.DEFAULT
+dyall.ae2z
+**WAVE FUNCTION
+.SCF
+*SCF
+.CLOSED SHELL
+6 6
+**VISUAL
+.GRIDS
+2
+id=1 input=radial
+id=2 input=dft
+.RADIAL
+0.0 0.0 0.0
+10.0
+100
+.GRIDFUNCTIONS
+4
+name=bedsin id_grid=2 purpose=integration outpri=yes rspvec_file=RESPONSE.h5 rspvec_id=1
+name=bedsin id_grid=2 purpose=integration outpri=yes rspvec_file=RESPONSE.h5 rspvec_id=7
+name=bedsin id_grid=2 purpose=integration outpri=yes rspvec_file=RESPONSE.h5 rspvec_id=13
+name=bedsin id_grid=2 purpose=integration outpri=yes rspvec_file=RESPONSE.h5 rspvec_id=19
+.BEDFIX
+0.0, 0.0, 1.0, 48.967604
+0.0, 0.0, 1.0, 48.967604
+0.0, 0.0, 1.0, 48.967604
+0.0, 0.0, 1.0, 48.967604
+*END OF

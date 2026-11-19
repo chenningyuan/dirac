@@ -1,0 +1,9 @@
+INTGRL
+H2 molecule
+3-21G basis
+C   1    0
+       1.     2
+H1    0.0000    0.0000    0.5000
+H2    0.0000    0.0000    0.0000
+LARGE BASIS 3-21G
+FINISH

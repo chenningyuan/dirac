@@ -14,9 +14,10 @@
 .PRINT
 2
 **VISUAL
-.ESPERHO
- DFCOEF
-.3D_INTEGRATE
-.SCALE
--0.25
+.GRIDS 
+1
+id=1 input=dft
+.GRIDFUNCTIONS
+1
+name=esperho id_grid=1 purpose=integration uscale=-0.25 outpri=yes
 *END OF

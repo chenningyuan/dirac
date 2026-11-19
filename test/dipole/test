@@ -13,9 +13,9 @@ f.add(from_string = 'Electronic energy',
       num_lines   = 8,
       rel_tolerance   = 1.0e-9)
 f.add(from_string = 'Operator Dipole length: Z',
-      to_string   = '1 a.u =   2.54177000 Debye',
+      to_string   = '1 a.u. =   2.54',
       rel_tolerance   = 1.0e-2)
 
-test.run(['dipole.inp'],           ['BrH.mol'], f, '--mw=140 --aw=160          --outcmo')
+test.run(['dipole.inp'], ['BrH.mol'], f, '--mw=140 --aw=160 --outcmo')
 
 sys.exit(test.return_code)

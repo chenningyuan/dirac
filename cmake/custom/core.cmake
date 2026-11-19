@@ -55,7 +55,6 @@ option(ENABLE_UTILITIES "Enable utilities" ON)
 if(ENABLE_UTILITIES)
     compile_standalone(dirac_mointegral_export.x utils/dirac_mointegral_export.F90   "${_list_of_executables}")
     compile_standalone(rspread.x                 utils/rspread.F90                   "${_list_of_executables}")
-    compile_standalone(labread.x                 utils/labread.F90                   "${_list_of_executables}")
     compile_standalone(twofit.x                  utils/twofit.F90                    "${_list_of_executables}")
     compile_standalone(cfread.x                  utils/cfread.F90                    "${_list_of_executables}")
     compile_standalone(cf_addlabels.x            utils/cf_addlabels.F90              "${_list_of_executables}")
@@ -70,15 +69,9 @@ if(ENABLE_UTILITIES)
     	compile_standalone(h5towfx.x             utils/h5towfx.cpp                   "${_list_of_executables}")
     	set_property(TARGET h5towfx.x PROPERTY LINKER_LANGUAGE CXX)
     endif()
-endif()
-
-if(ENABLE_GEN1INT)
-    add_dependencies(dirac gen1int)
-endif()
-
-if(ENABLE_PELIB)
-    add_dependencies(pelib gen1int_interface)
-    add_dependencies(dirac pelib)
+    if (ENABLE_EXATENSOR)
+        compile_standalone(test_sigma_eti.x          utils/test_sigma_eti.F90            "${_list_of_executables}")
+    endif()
 endif()
 
 if(ENABLE_RELCCSD_STANDALONE)
@@ -86,17 +79,6 @@ if(ENABLE_RELCCSD_STANDALONE)
         set_source_files_properties(src/relccsd/ccmain.F PROPERTIES COMPILE_FLAGS "-qfixed")
     endif()
     compile_standalone(relccsd.x                 src/relccsd/ccmain.F                "${_list_of_executables}")
-endif()
-
-option(ENABLE_HSCC "Enable compilation of the standalone hsmrcc.x" OFF)
-if(ENABLE_HSCC) # note: this functionality depends on the pam flag
-    compile_standalone(hsmrcc.x src/cc_external/hsmrcc/hsmrmain.c "${_list_of_executables}")
-    set_property(TARGET hsmrcc.x PROPERTY LINKER_LANGUAGE C)
-endif()
-
-option(ENABLE_HSFS "Enable compilation of the standalone hsfscc.x" OFF)
-if(ENABLE_HSFS) # note: this functionality depends on the pam flag
-    compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${_list_of_executables}")
 endif()
 
 foreach(
@@ -114,6 +96,10 @@ foreach(
     # laplace and qcorr libraries must be after diracobj and laplace-minimax must be after laplace
     # (because search in libraries is not recursive, the order matters). /hjaaj Feb 2025
 
+		if(ENABLE_EXATENSOR)
+      target_link_libraries(${_executable} tapp)
+    endif()
+
     if(HDF5_FOUND)
         target_link_libraries(${_executable} HDF5::HDF5)
     endif()
@@ -130,6 +116,18 @@ foreach(
     if(CMAKE_Fortran_COMPILER_ID MATCHES GNU AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
     # add -lC linking flag for each ${_executable} to satisfy missing objects - sqrtf,logf,cosf,powf 
         target_link_libraries(${_executable} -lC)
+    endif()
+
+    if (APPLE)
+        # src/gp/gpc.c finds the thread control functions of the BLAS/OpenMP library through weak symbols.
+        # On ELF an unresolved weak symbol is NULL, but the macOS linker (Mach-O) reports it as undefined,
+        # so allow these symbols to be undefined, as they then stay NULL at run time.
+        foreach(_sym MKL_Get_Max_Threads MKL_Set_Num_Threads
+                     openblas_get_num_threads openblas_get_parallel openblas_set_num_threads
+                     omp_get_max_threads omp_set_num_threads)
+            target_link_libraries(${_executable} -Wl,-U,_${_sym})
+        endforeach()
+        unset(_sym)
     endif()
 
 endforeach()

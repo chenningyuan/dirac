@@ -27,6 +27,8 @@
 !        19. [beta]P         * beta times scalar operator
 !        20. i[Sigma.P]      * dot-product of Sigma and vector operator
 !        21. [betagamma5]P   * beta gamma5 times scalar operator
+!        22. i[beta alpha.P] * dot-product of beta alpha and vector operator
+!        23. i[betagamma5]P  * i.beta gamma5 times scalar operator
 !
 !       IPRPLBL - pointers to property labels
 !       IPRPSYM - boson symmetry of operator  (1 - 8)

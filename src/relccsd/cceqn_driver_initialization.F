@@ -25,10 +25,7 @@ C---------------Common Blocks--------------------------------------
 #include "symm.inc"
 #include "eqns.inc"
 #include "inpt.inc"
-#include "ihm.inc"
 #include "results.inc"
-#include "complex.inc"
-#include "ccpar.inc"
 !#if defined (VAR_MPI)
 !      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 !#endif

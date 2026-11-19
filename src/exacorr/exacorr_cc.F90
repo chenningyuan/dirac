@@ -9,8 +9,11 @@ module exacorr_cc
 
         use exatensor
         use exacorr_datatypes
+        use exacorr_cfg,only: exacc_input
         use exacorr_utils
-        use intermediates
+        use exacorr_printout
+        use intermediates_cc
+        use intermediates_lambda
 
         implicit none
 
@@ -410,10 +413,10 @@ module exacorr_cc
                call t3_energy_split(pert_energy,comm_t,int_t,occ_space,denom,exa_input)
                call print_date('-End- Triples')
                call print_exaoutput(exa_input%talsh, exa_input%iterative_scheme, exa_input%perturbative_scheme, &
-                                   scf_energy, mp2_energy, cc_energy, t1diag=t1diag, pert_energy=pert_energy) 
+                                   scf_energy, mp2_energy, cc_energy, t1diag, pert_energy) 
             else
                call print_exaoutput(exa_input%talsh, exa_input%iterative_scheme, exa_input%perturbative_scheme,&
-                                    scf_energy, mp2_energy, cc_energy, t1diag=t1diag)
+                                    scf_energy, mp2_energy, cc_energy, t1diag)
             end if
 
 !           Destroy tensors 
@@ -546,6 +549,7 @@ module exacorr_cc
          use interface_to_mpi
          use exacorr_global
          use exacorr_ao_to_mo
+         use exacorr_ao
 
          implicit none
 
@@ -1976,6 +1980,7 @@ module exacorr_cc
 
          use exacorr_ao_to_mo, only : print_tensornorm2
          use exacorr_tensor_methods
+         use intermediates_cc2
 
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
          type(exatns_comm_tens_t), intent(inout) :: comm_t
@@ -3560,7 +3565,7 @@ module exacorr_cc
         subroutine update_eps(comm_t, f_delta, denom, orb_set, oo_root, vv_root, oo_id, vv_id, level_shift, print_level)
           
           use exacorr_tensor_methods
-          use exacorr_utils, only : print_orbital_energy, shift_orbital_energy
+          use exacorr_utils, only : shift_orbital_energy
 
           implicit none
 
@@ -5250,7 +5255,7 @@ module exacorr_cc
        contains
 
         subroutine exacorr_cc_driver (exa_input)
-         use exacorr_datatypes
+         use exacorr_cfg, only: exacc_input
          implicit none
          type(exacc_input), intent(in) :: exa_input
          write(*,*) 'called exatensor version of cc_driver in a serial version'

@@ -33,7 +33,7 @@
 *
 * Jeppe Olsen, summer of 99
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "multd2h.inc"
 #include "symm.inc"
@@ -76,7 +76,7 @@ C             print*,'LENGTH',LENGTH
 *
 * Print vector of CC amplitudes, type is governed by CCTYPE
 *     
-#include "implicit.inc"
+#include "implicit.h"
 *. General input 
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -118,7 +118,7 @@ C     END IF
 * Jeppe Olsen, Summer of 98
 * Timo Fleig, Winter of 2010
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "orbinp.inc"
 #include "cgas.inc"
@@ -175,7 +175,7 @@ C                   I_SX_CCACT(IGAS,JGAS)
 * Jeppe Olsen, summer of 98
 * Timo Fleig, Winter of 2010
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "orbinp.inc"
 #include "cgas.inc"
@@ -274,7 +274,7 @@ C     WRITE(6,*)
 * Write the NBLOCK blocks of VEC
 *  Offset 1 for skipping Fermi vacuum state
 *
-#include "implicit.inc"
+#include "implicit.h"
       DIMENSION VEC(*)
       DIMENSION LBLOCK(NBLOCK)
 *     
@@ -297,7 +297,7 @@ C     WRITE(6,*)
 *
       SUBROUTINE IWRT_VEC(IVEC,NDIM)
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       INTEGER IVEC(NDIM)
 *

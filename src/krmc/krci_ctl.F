@@ -69,19 +69,14 @@ C
       DIMENSION WORK(LWORK)
       INTEGER IKWSET(NTABLE)
 C
-#include "maxorb.h"
 #include "mxcent.h"
 #include "dcbgen.h"
 #include "dcbopt.h"
-#include "dcbprp.h"
-#include "dcbxpr.h"
 #include "nuclei.h"
 #include "krciprop.h"
 #include "dcborb.h"
 #include "dcbkrci.h"
-#include "dcbpsi.h"
 #include "dcbham.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "pgroup.h"
 C
@@ -1172,7 +1167,7 @@ C     ... next symmetry
            end if
            WRITE(LUPRI,'(a,i3,a,a4,a2)')
      &        '    ** ',nkrci_ciroots(ikrci_symmetry),' eigenstate(s)'//
-     &        ' for MJ-value (doubled): ',
+     &        ' for MJ-value : ',
      &          adjustr(xrepeig(ikrci_symmetry)),ferm_lab
          else
 
@@ -1349,10 +1344,10 @@ C       subgroup notation
      &     ' one-electron operators: '
         if(dooscillst.or.dodipmom_krci)call def_oscill(0)
         if(dojzexp)                    call def_omegaquant(0)
-        if(doeedm_krci)                call def_eedm(iprkrci,work,lwork)
-        if(domhyp_krci)                call def_mhyp(iprkrci,work,lwork)
-        if(doensps_krci)              call def_ensps(iprkrci,work,lwork)
-        if(donmqm_krci)                call def_nmqm(iprkrci,work,lwork) !MKN
+        if(doeedm_krci)                call def_eedm(iprkrci)
+        if(domhyp_krci)                call def_mhyp(iprkrci)
+        if(doensps_krci)               call def_ensps(iprkrci)
+        if(donmqm_krci)                call def_nmqm(iprkrci) !MKN
         DO I = 1, NPROP_KRCI
 C         ... initialize operator symmetry array
           ISYMOPPRP_KRCI(I) = 0
@@ -1460,14 +1455,11 @@ C***********************************************************************
 
 #include "implicit.h"
 #include "priunit.h"
-#include "maxash.h"
       PARAMETER(D0=0.0D0)
 C
       CHARACTER WFTYP*(*)
       LOGICAL   WFCONV
 C
-#include "maxorb.h"
-#include "dcbidx.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1567,7 +1559,8 @@ C
         ! JOPT_SYMMETRY as do loop variable, because IOPT_SYMMETRY may be modified in RSETCI, called by RSETWOP
         IOPT_SYMMETRY = JOPT_SYMMETRY
         NCIROOT = NKRCI_CIROOTS(IOPT_SYMMETRY)
-        IF (NCIROOT .LE. 0) GO TO 100
+      IF (NCIROOT .LE. 0) GO TO 100
+
         WRITE (LUPRI,'(//80A1/2A/A,I0/2A/80A1/)')
      &  ('&',I=1,80),
      &  '&&& KRCI calculation for symmetry ',XREPEIG(IOPT_SYMMETRY),
@@ -1583,9 +1576,11 @@ C       ***************************************************
 C
         CALL RSETWOP(WFTYP,WORK,KFREE,LFREE)
         CALL FLSHFO(LUPRI)
-        IF (NZCONF .LE. 0) THEN
+        IF (NZCONF .LT. 0) THEN
+           ! signals that number of determinants has not been calculated
+        ELSE IF (NZCONF .EQ. 0) THEN
            WRITE(LUPRI,'(/A)')
-     &      'INFO: CI skipped because no determinants in this symmetry'
+     &     'INFO: KRCI skipped because no determinants in this symmetry'
            GO TO 100
         ELSE IF (NZCONF .LT. NCIROOT) THEN
            WRITE(LUPRI,'(/A,I0,A/A,I0)')
@@ -1668,7 +1663,7 @@ C
       IF (LUKRM5.GT.0) CLOSE(LUKRM5,STATUS='KEEP')
 C
 C     Save orbitals on file KRMCSCF if it does not exist.
-C     Other DIRAC modules may expect to find it, e.g., MULLPOP.
+C     Other DIRAC modules may expect to find it, e.g., MULPOP.
 C
       LUNI = -1
       INQUIRE(FILE='KRMCSCF',EXIST=EX,OPENED=FILEOPEN,NUMBER=LUNI)
@@ -1709,7 +1704,7 @@ C***********************************************************************
 C
 C     Get CI wave function.
 C
-C     Based on PSIOP1.
+C     Based on PSIOPT_1.
 C
 C     Written by S. Knecht and H. J. Aa. Jensen - Aug 2008
 C     Last revision :
@@ -1719,16 +1714,8 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "consts.h"
-#include "thrzer.h"
 C
-#include "maxorb.h"
-#include "dcbpsi.h"
-#include "dcbkrmc_itinfo.h"
-#include "dcbgen.h"
 #include "dcbopt.h"
-#include "dcborb.h"
-#include "frame.h"
-#include "krciprop.h"
 C
       LOGICAL   WFCONV, DO4INDEX, TOBE
       DIMENSION WORK(*), CMO(*), CVECS(*), IBEIG(*)
@@ -1826,9 +1813,6 @@ C***********************************************************************
 #include "maxash.h"
 C
 #include "maxorb.h"
-#include "dcbidx.h"
-#include "dcborb.h"
-#include "dcbopt.h"
 C
       CALL TITLER('KR-CI calculation ','*',199)
 C
@@ -1968,7 +1952,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dcbopt.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcborb.h"

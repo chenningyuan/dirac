@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Radovan Bast <radovan.bast@uit.no>
+#
+# SPDX-License-Identifier: MPL-2.0
+
 from sys import float_info
 
 
@@ -53,6 +57,10 @@ def tuple_matches(
 def test_tuple_matches():
     assert tuple_matches((13, 13)) == (True, None)
     assert tuple_matches((13, 13), tolerance=1.0e-10, error_definition="absolute") == (
+        True,
+        None,
+    )
+    assert tuple_matches((3.45, 3.46), tolerance=0.01, error_definition="absolute") == (
         True,
         None,
     )

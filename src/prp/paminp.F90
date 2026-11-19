@@ -46,7 +46,7 @@
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 11, NTABLE = 44)
+      PARAMETER (NDIR = 11, NTABLE = 45)
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
@@ -94,7 +94,9 @@
 !                    37        38        39        40
      &             '.BZLAO ','.EFFDEN','.EFFDE2','.SHIEL2',             &
 !                    41        42        43        44
-     &             '.RDCCDM','.PVCSR ','.HDF5IO','xXXXXXX' /
+     &             '.RDCCDM','.PVCSR ','.HDF5IO','.PVCEFG',             &
+!                    45
+     &             'xXXXXXX' /
 !
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -127,6 +129,7 @@
       PVC_SHIELD   = .FALSE.
       PVC_SPINSPIN = .FALSE.
       PVC_SPINRO   = .FALSE.
+      PVC_EFG      = .FALSE.
       SPNSPN       = .FALSE.
       EFG          = .FALSE.
       EFN          = .FALSE.
@@ -379,6 +382,8 @@
 !&&&& ROTG - Molecular rotational g-tensor according to Aucar et al
             ROTG  = .TRUE.
             DOXLR = .TRUE.
+            IF (GAUNT) & 
+             CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GO TO 100
   127    CONTINUE
 !&&&& MSTDIA - diamagnetic contribution to the magnetizabilities
@@ -425,6 +430,8 @@
             DOEXP = .TRUE.
             DOXLR = .TRUE.
             SPINRO = .TRUE.
+            IF (GAUNT) & 
+             CALL QUIT('NSR including Gaunt not implemented yet')
             GO TO 100
   135    CONTINUE
 !&&&& BXLAO
@@ -481,12 +488,20 @@
             DOXLR      = .TRUE.
             PVC_SPINRO = .TRUE.
             IF(NBSYM .GT. 1) CALL QUIT('.PVCSR only for C1 symmetry')
+            IF (GAUNT) & 
+             CALL QUIT('PV-NSR including Gaunt not implemented yet')
             GOTO 100
   143    CONTINUE
 !&&&& .HDF5IO
             HDF5IO = .TRUE.
             GOTO 100
   144    CONTINUE
+!&&&& PV contribution to EFG
+            DOXLR      = .TRUE.
+            PVC_EFG = .TRUE.
+            IF(NBSYM .GT. 1) CALL QUIT('.PVCEFG only for C1 symmetry')
+            GOTO 100
+  145    CONTINUE
 !&&&& xXXXXXX
             GOTO 100
 !
@@ -698,14 +713,12 @@
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 8, DM1 = -1.0D00, D0 = 0.0D00)
 !
 #include "dcbprp.h"
 #include "dcbexp.h"
-#include "dcborb.h"
 #include "dgroup.h"
 #include "dcbxpr.h"
 !
@@ -921,70 +934,73 @@
 !  XPRINP recognizes the following different kinds of operators:
 !
 !    1. DIAGONAL
-!       P              * diagonal times scalar operator
+!       P               * diagonal times scalar operator
 !
 !    2. XALPHA
-!       i[alpha_x]P    * x-component of alpha times scalar operator
+!       i[alpha_x]P     * x-component of alpha times scalar operator
 !
 !    3. YALPHA
-!       i[alpha_y]P    * y-component of alpha times scalar operator
+!       i[alpha_y]P     * y-component of alpha times scalar operator
 !
 !    4. ZALPHA
-!       i[alpha_z]P    * z-component of alpha times scalar operator
+!       i[alpha_z]P     * z-component of alpha times scalar operator
 !
 !    5. XAVECTOR
-!       i[alpha x P]_x * vector product of alpha and vector operator,
-!                        x-component
+!       i[alpha x P]_x  * vector product of alpha and vector operator,
+!                         x-component
 !    6. YAVECTOR
-!       i[alpha x P]_y * vector product of alpha and vector operator,
-!                        y-component
+!       i[alpha x P]_y  * vector product of alpha and vector operator,
+!                         y-component
 !    7. ZAVECTOR
-!       i[alpha x P]_z * vector product of alpha and vector operator,
-!                        z-component
+!       i[alpha x P]_z  * vector product of alpha and vector operator,
+!                         z-component
 !    8. ALPHADOT
-!       i[A.P]         * dot-product of alpha and vector operator
+!       i[A.P]          * dot-product of alpha and vector operator
 !
 !    9. GAMMA5
-!       gamma5 P       * gamma5 times scalar operator
+!       gamma5 P        * gamma5 times scalar operator
 !
 !   10. XSIGMA
-!       i[sigma_x]P    * x-component of Sigma times scalar operator
+!       i[sigma_x]P     * x-component of Sigma times scalar operator
 !
 !   11. YSIGMA
-!       i[sigma_y]P    * y-component of Sigma times scalar operator
+!       i[sigma_y]P     * y-component of Sigma times scalar operator
 !
 !   12. ZSIGMA
-!       i[sigma_z]P    * z-component of Sigma times scalar operator
+!       i[sigma_z]P     * z-component of Sigma times scalar operator
 !
 !   13. XBETASIG
-!       i[betasig_x]P  * x-component of beta Sigma times scalar operator
+!       i[betasig_x]P   * x-component of beta Sigma times scalar operator
 !
 !   14. YBETASIG
-!       i[betasig_y]P  * Y-component of beta Sigma times scalar operator
+!       i[betasig_y]P   * y-component of beta Sigma times scalar operator
 !
 !   15. ZBETASIG
-!       i[betasig_z]P  * z-component of beta Sigma times scalar operator
+!       i[betasig_z]P   * z-component of beta Sigma times scalar operator
 !
 !   16. XBETAAL
-!       i[betaalp_x]P  * x-component of beta alpha times scalar operator
+!       i[betaalp_x]P   * x-component of beta alpha times scalar operator
 !
 !   17. YBETAAL
-!       i[betaalp_y]P  * y-component of beta alpha times scalar operator
+!       i[betaalp_y]P   * y-component of beta alpha times scalar operator
 !
 !   18. ZBETAAL
-!       i[betaalp_z]P  * z-component of beta alpha times scalar operator
+!       i[betaalp_z]P   * z-component of beta alpha times scalar operator
 !
 !   19. BETA
-!       [beta]P        * beta times scalar operator
+!       [beta]P         * beta times scalar operator
 !
 !   20. SIGMADOT
-!       i[Sigma.P]     * dot-product of Sigma and vector operator
+!       i[Sigma.P]      * dot-product of Sigma and vector operator
 !
 !   21. BETAGAMMA5
-!       [betagamma5]P  * beta gamma5 times scalar operator
+!       [betagamma5]P   * beta gamma5 times scalar operator
 !
-!   22. iBETAGAMMA5
-!       i[betagamma5]P * i.beta gamma5 times scalar operator
+!   22. BEALDOT
+!       i[beta alpha.P] * dot-product of beta alpha and vector operator
+!
+!   23. iBETAGAMMA5
+!       i[betagamma5]P  * i.beta gamma5 times scalar operator
 !
 !
 !  Operator types 5, 6 and 7 form the components of a vector product
@@ -1011,7 +1027,7 @@
 #include "dcbgen.h"
       CHARACTER*7 WORD
 !
-      PARAMETER (NTABKW = 28)
+      PARAMETER (NTABKW = 32)
       CHARACTER*8 TABKW(NTABKW)
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
       DIMENSION PFAC(3)
@@ -1027,7 +1043,8 @@
      &           'ALPHADOT', 'GAMMA5  ', 'XSIGMA  ', 'YSIGMA  ',        &
      &           'ZSIGMA  ', 'XBETASIG', 'YBETASIG', 'ZBETASIG',        &
      &           'XBETAALP', 'YBETAALP', 'ZBETAALP', 'BETA    ',        &
-     &           'SIGMADOT', 'BETAGAMM', 'iBETAGAM', 'XXXXXXXX'/
+     &           'SIGMADOT', 'BETAGAMM', 'BEALDOT ', 'iBETAGAM',        &
+     &           'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX'/
 !
       CALL QENTER('XPRINP')
 !
@@ -1180,6 +1197,7 @@
      &            1, &   ! BETA
      &            3, &   ! SIGMADOT
      &            1, &   ! BETAGAMM
+     &            3, &   ! BEALDOT
      &            1), I  ! iBETAGAM
          END IF
          END DO
@@ -1200,7 +1218,7 @@
 !          note that the minus in the second component
 !          is introduced later
          GO TO 300
-!&&&&    Three components: ALPHADOT, SIGMADOT
+!&&&&    Three components: ALPHADOT, SIGMADOT, BEALDOT
     3    CONTINUE
            NPCOMP = 3
          GO TO 300
@@ -1410,8 +1428,10 @@
 !***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+      INTEGER   IPTYP, NPCOMP, INDXPR, ISYXPR, ITRXPR, IPRINT
       CHARACTER PNAME*16, PLABEL(NPCOMP)*8
-      DIMENSION PFAC(NPCOMP)
+      REAL*8    PFAC(NPCOMP)
+      INTEGER :: I, J, K
 !
 ! Used from common blocks:
 !  XCBPRP: everything
@@ -1565,7 +1585,7 @@
 !          ... for FOCKMAT
            PCOMB = 'xxxx'
            GOTO 200
-         ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.22) THEN
+         ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.23) THEN
            WRITE(LUPRI,*)  'IPTYP out of the range, IPTYP=',IPTYP
            CALL QUIT('XPRADD: Illegal IPTYP (not 1-22)!')
          ENDIF
@@ -1591,6 +1611,7 @@
                 3, &       ! BETA
                 5, &       ! SIGMADOT
                 4, &       ! BETAGAMM
+                4, &       ! BEALDOT
                 4), IPTYP  ! iBETAGAM
 !
 !        Operator types: DIAGONAL
@@ -1617,7 +1638,7 @@
          IF (LEVYLE) PCOMB = '+000'
          GO TO 100
 !
-!        Operator types: BETAALPHA, BETAGAMMA5, iBETAGAMMA5
+!        Operator types: BETAALPHA, BETAGAMMA5, iBETAGAMMA5, BEALDOT
 !
     4    PCOMB = '0-+0'
          GO TO 100
@@ -1633,14 +1654,16 @@
 !MI  ... for the Levy-Leblond mode cancel the SS block!
 !MI ... check first if PLABEL(1) is not operator from
 !MI ... pilot Dirac bare nucleus (from subroutine OP1INI)
-        IF (LEVYLE.AND.PLABEL(1).NE.'OVERLAP '                          &
-     &       .AND.PLABEL(1).NE.'MOLFIELD'.AND.                          &
-     &       PLABEL(1).NE.'BETAMAT '                                    &
+        IF (LEVYLE                                                      &
+     &       .AND.PLABEL(1).NE.'OVERLAP '                               &
+     &       .AND.PLABEL(1).NE.'MOLFIELD'                               &
+     &       .AND.PLABEL(1).NE.'BETAMAT '                               &
      &       .and.PLABEL(1).NE.'FDEVEMB ' ) PCOMB(4:4) = '0'
 !LV ... same thing for ZORA!
-        IF ((ZORA.AND..NOT.ZORA4).AND.PLABEL(1).NE.'OVERLAP '           &
-     &       .AND.PLABEL(1).NE.'MOLFIELD'.AND.                          &
-     &       PLABEL(1).NE.'BETAMAT '                                    &
+        IF ((ZORA.AND..NOT.ZORA4)                                       &
+     &       .AND.PLABEL(1).NE.'OVERLAP '                               &
+     &       .AND.PLABEL(1).NE.'MOLFIELD'                               &
+     &       .AND.PLABEL(1).NE.'BETAMAT '                               &
      &       .and.PLABEL(1).NE.'FDEVEMB ' ) PCOMB(4:4) = '0'
       END IF
 
@@ -1667,8 +1690,8 @@
       IF (PNAME(1:5).EQ.'e_EDM') THEN
          !todo: hard assign 000+ structure
          IF (PCOMB.NE.'+00+') THEN
-           PCOMB = '+00+' ! assig as for SIGMA type of operator
-           WRITE(LUPRI,*) 'reassigned PCOMB=',PCOMB
+           WRITE(LUPRI,*) 'reassigned PCOMB=',PCOMB,' to +00+'
+           PCOMB = '+00+' ! assign as for SIGMA type of operator
          ENDIF
          PCOMB_SAVE = PCOMB
          PCOMB(1:1)='0'
@@ -1929,6 +1952,18 @@
 !
       ELSE IF(LABINT(1:2).EQ.'FC') THEN
         CLASLB = 'FERMI C'
+
+! gradient of Fermi contact (or dirac delta) integrals
+      ELSE IF(LABINT(2:3).EQ.'GF') THEN
+        CLASLB = 'GRAD FC'
+!
+!KG SCHIFF
+! gradient of Nuclear density distribution
+!
+      ELSE IF(LABINT(1:4).EQ.'DRHO') THEN
+        CLASLB = 'GRADRHO'
+!KG SCHIFF
+!
 !
 !     Paramagnetic spin-orbit integrals
 !
@@ -2287,7 +2322,7 @@
         NOPTYP    = 3
         LABINT(1) = 'XSEFGMG '
         LABINT(2) = 'YSEFGMG '
-        LABINT(3) = 'ZSEFGMG '        
+        LABINT(3) = 'ZSEFGMG '
         INTREP(1) = ISYMAX(1,1)
         INTREP(2) = ISYMAX(2,1)
         INTREP(3) = ISYMAX(3,1)
@@ -2455,13 +2490,11 @@
 !
 #include "dcbprl.h"
 #include "dcbxpr.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "pgroup.h"
 !
       LOGICAL DIFSYM,DIFTIM, SKIP_JM4
       DIMENSION ICREP(3),ICTIM(3)
-#include "ibtfun.h"
 
       CALL QENTER('PRPSYM')
 !
@@ -2482,7 +2515,7 @@
 !     Scalar operator, IPRLREP (IPRPLBL(1,INDXPR))
       IBREP    = IPRLREP(IBIND)
 !     Total point group symmetry of the operator, first component..
-      ICREP(1) = IBTXOR(IAREP,IBREP)
+      ICREP(1) = IEOR(IAREP,IBREP)
 !
 !     Time-reversal symmetry
 !     ======================
@@ -2517,7 +2550,7 @@
         IBIND       = IPRPLBL(ILBL,INDXPR)
         IAREP       = JM4REP(IAIND)
         IBREP       = IPRLREP(IBIND)
-        ICREP(ILBL) = IBTXOR(IAREP,IBREP)
+        ICREP(ILBL) = IEOR(IAREP,IBREP)
         DIFSYM      = DIFSYM.AND.(ICREP(ILBL).NE.ICREP(1))
         IATIM       = JM4TIM(IAIND)
         IBTIM       = IPRLTYP(IBIND)
@@ -2654,8 +2687,8 @@
      &      'Factor     : ',FACPRP(1,INDXPR)
       GOTO 30
       ENDIF
-      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,                                &
-     &       13,14,15,16,17,18,19,20,21,22), ITYP
+      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,                             &
+     &       14,15,16,17,18,19,20,21,22,23), ITYP
         WRITE(LUPRI,'(6X,A,I5)')                                        &
      &  'Program error: unknown operator type:',ITYP
         CALL QUIT('WRIXPR: unknown operator type')
@@ -2745,6 +2778,10 @@
       GOTO 200
    22 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
+     &   'BEALDOT  : i[beta alpha.P]'
+      GOTO 200
+   23 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
      &   'iBETAGAM : i[beta gamma5]P'
       GOTO 200
 !
@@ -2754,6 +2791,7 @@
 !     ==================
 !
       NLBL   = MCMP(ITYP)
+!      print *,'ITYP=',ITYP,'...NLBL=MCMP(ITYP)=',NLBL
       DO I = 1,NLBL
         FMT = MXFORM(ABS(FACPRP(I,INDXPR)),16)
         KLBL = IPRPLBL(I,INDXPR)
@@ -2844,7 +2882,6 @@
 !
 !***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 !
       CHARACTER OP1KEY*(*) ! MI fix for gfortran4.9, instead of  OP1KEY*6
       DIMENSION IPOP1U(*),IPOP1S(*),NOP1(8,2),JOP1(8,2),WORK(LWORK)
@@ -2925,8 +2962,6 @@
 #include "dcbgen.h"
 #include "dcbham.h"
 !
-#include "ibtfun.h"
-!
 !     Initialize /CBIGRD/
 !     ===================
 !
@@ -2937,7 +2972,7 @@
       RELGRD = .FALSE.
       DONGRD = .FALSE.
       IGRD_INTFLG = INTGEN
-      IF (LEVYLE) IGRD_INTFLG = IBTAND ( 1, IGRD_INTFLG )
+      IF (LEVYLE) IGRD_INTFLG = IAND ( 1, IGRD_INTFLG )
       DOTRCK    = .FALSE.
       SCRGRD    = -1.0D0
 !
@@ -2957,7 +2992,6 @@
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0=0.0D0)
-#include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 5)
@@ -3170,18 +3204,20 @@
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INTEGER FUNCTION ISCALAROP_TSYM(PRPLBL)
+!
+! return ITIM parameter for given square operator PRPLBL
+!
       CHARACTER*8 PRPLBL
       INTEGER ITIM
       IF(PRPLBL(4:7).EQ.'RNST'.OR.                                      &
      &   PRPLBL(3:7).EQ.'RM2H3'.OR.                                     &
+     &   PRPLBL(2:3).EQ.'GF'.OR.                                        &
      &   PRPLBL(3:7).EQ.'RDSUL'.OR.                                     &
      &   PRPLBL(3:7).EQ.'RDSUS'.OR.                                     &
      &   PRPLBL(1:7).EQ.'d|S>_dB') THEN
          ITIM = -1
-      ELSEIF(PRPLBL(2:6).EQ.'RM1H3'.OR.                                 &
-     &   PRPLBL(4:7).EQ.'NSNL'.OR.                                      &
-     &   PRPLBL(2:6).EQ.'1SOPP'.OR.                                     &
-     &   PRPLBL(3:8).EQ.'DSUSNL'.OR.                                    &
+      ELSEIF(PRPLBL(2:6).EQ.'RM1H3'.OR.PRPLBL(4:7).EQ.'NSNL'.OR.        &
+     &   PRPLBL(2:6).EQ.'1SOPP'.OR.PRPLBL(3:8).EQ.'DSUSNL'.OR.          &
      &   PRPLBL(2:6).EQ.'RM1RN') THEN
          ITIM = +1
       ELSE

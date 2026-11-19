@@ -1189,7 +1189,7 @@ contains
 
       TYPE(PTR2ARRAY), ALLOCATABLE :: KVEC(:,:)
       integer :: kvec_offset(2) 
-      ! LV, introduced to be able to call standard selown and remove code duplication
+      ! LV, introduced to be able to call standard reafrag and remove code duplication
       type(file_info_t) :: reffile
 
   !------------------------------------------------------------------------------!
@@ -1253,10 +1253,10 @@ contains
           reffile%type = 2
           reffile%name = REFFIL(I)
           reffile%status = -1
-          CALL SELOWN(2,CMO,DDUMARR,IDUMARR,                 &
+          CALL REAFRAG(2,CMO,DDUMARR,IDUMARR,                &
                I,1,VAR%LUCOEF,reffile,RCOEF,DDUMARR,IDUMARR, &
                NVECS(1,1),IOFF,kvec_offset,                  &
-               NSTR(1,0,I),VAR%C1READ,KVEC(IFRP,I)%P)
+               NSTR(1,0,I),VAR%C1READ,VAR%OWNBAS,KVEC(IFRP,I)%P)
           IF(PM%IPRLOC.GE.5)THEN
             WRITE(LUPRI,'(A,A6)') '* Selected coefficients for reference ',REFFIL(I)
             NQ = NB*IOFF(IFRP)+1

@@ -13,7 +13,7 @@ The MEP at a point :math:`\mathbf{r}` in space is:
    \varphi(\mathbf{r}) = \sum_{A=1}^{N_\mathrm{atoms}} \frac{Z_A}{|\mathbf{R}_A - \mathbf{r}|} - \int\mathrm{d}\mathbf{r}^\prime\frac{\rho(\mathbf{r}^\prime)}{|\mathbf{r}-\mathbf{r}^\prime|}
 
 As suggested in the main visualization tutorial, we first need to run an SCF calculation and save
-the DFCOEF file. The cube files with the density and the MEP are then obtained.
+the CHECKPOINT.h5 file. The cube files with the density and the MEP are then obtained.
 From these files various plots can be obtained, using your favourite visualization tool.
 
 SCF calculation and density cube file
@@ -50,7 +50,7 @@ benzaldehyde.mol::
 
 By running::
  
-  pam --scratch=/tmp --mol=benzaldehyde.mol --inp=dc_dens.inp --get "DFCOEF" --get "plot.3d.cube=dc_dens.cube"
+  pam --scratch=/tmp --mol=benzaldehyde.mol --inp=dc_dens.inp --get "CHECKPOINT.h5" --get "dc_dens.cube"
   
 where the dc-dens.inp file contains::
 
@@ -62,35 +62,25 @@ where the dc-dens.inp file contains::
   *READIN
   .UNCONTRACT
   **VISUAL
-  .DENSITY
-   DFCOEF
-  .3D
-   80 80 80
-  .3D_INTEGRATE
+  .GRIDS
+  2
+  id=1 input=dft
+  id=2 input=create typ=1 npoints=[80,80,80] margin=6.0
+  .GRIDFUNCTIONS
+  2
+  name=ed id_grid=1 purpose=visualization export=cube file_out=dc_dens.cube
+  name=ed id_grid=2 purpose=integration
   *END OF
 
 we run an SCF calculation using the Dirac-Coulomb Hamiltonian.
-The DFCOEF file is then used to obtain the cube file with the density.
+The CHECKPOINT.h5 file is then used to obtain the cube file with the density.
 Both files are eventually retrieved by the pam script. 
 
-The same is done when using the Levy-Leblond Hamiltonian, as in the ll-dens.inp file::
+The same is done when using the Levy-Leblond Hamiltonian::
 
-  **DIRAC
-  .WAVE FUNCTION
+  ...
   **HAMILTONIAN
   .LEVY-LEBLOND
-  **WAVE FUNCTION
-  .SCF
-  **INTEGRALS
-  *READIN
-  .UNCONTRACT
-  **VISUAL
-  .DENSITY
-   DFCOEF
-  .3D
-   80 80 80
-  .3D_INTEGRATE
-  *END OF
 
 you will just need to change the relevant pam command above.
 
@@ -100,42 +90,35 @@ MEP cube file
 Obtaining the MEP cube files requires an input similar to that for the density cube files.
 By runnning::
  
-  pam --scratch=/tmp --mol=benzaldehyde.mol --inp=dc_mep.inp --put="DFCOEF" --get="plot.3d.cube=dc_mep.cube"
+  pam --scratch=/tmp --mol=benzaldehyde.mol --inp=dc_mep.inp --put="CHECKPOINT.h5" --get="dc_mep.cube"
 
 where dc-mep.inp contains::
    
   **DIRAC
+  .WAVE FUNCTION
   **WAVE FUNCTION
   .SCF
   **INTEGRALS
   *READIN
   .UNCONTRACT
   **VISUAL
-  .ESP
-   DFCOEF
-  .3DFAST
-   80 80 80
+  .GRIDS
+  2
+  id=1 input=dft
+  id=2 input=create typ=1 npoints=[80,80,80] margin=6.0
+  .GRIDFUNCTIONS
+  2
+  name=esp id_grid=1 purpose=visualization export=cube file_out=dc_mep.cube
+  name=esp id_grid=2 purpose=integration
   *END OF
 
-Notice that no `.WAVE FUNCTION` directive is present, since we are restarting from a DFCOEF file.
-Furthermore, the :ref:`VISUAL_.3DFAST` directive is used in the :ref:`**VISUAL` section.
-To run using the Levy-Leblond Hamiltonian, just add the right keyword to the :ref:`**HAMILTONIAN` section,
-as in ll-mep.inp::
+
+Notice that no `.WAVE FUNCTION` directive is present, since we are restarting from a CHECKPOINT.h5 file.
+To run using the Levy-Leblond Hamiltonian, just add the right keyword to the :ref:`**HAMILTONIAN` section::
    
-  **DIRAC
+  ...
   **HAMILTONIAN
   .LEVY-LEBLOND
-  **WAVE FUNCTION
-  .SCF
-  **INTEGRALS
-  *READIN
-  .UNCONTRACT
-  **VISUAL
-  .ESP
-   DFCOEF
-  .3DFAST
-   80 80 80
-  *END OF
 
 Obtaining the plots
 -------------------
