@@ -37,7 +37,7 @@ CPi      REAL*8 T1(*),T2(*)
 CPi      REAL*8 S1(*)
       REAL*8 S1(NDIMT1*RCW)
 CPi      REAL*8 HO(*),HV(*),HOV(*)
-      REAL*8 HV(NFVV*RCW), HO(NFVV*RCW), HOV(NFVO*RCW)
+      REAL*8 HV(NFVV*RCW), HO(NFOO*RCW), HOV(NFVO*RCW)
       REAL*8 BUF1(NBUF2*RCW),BUF2(NBUF2*RCW),BUF3(NBUF3*RCW)
 C
 C---------------Common Blocks--------------------------------------

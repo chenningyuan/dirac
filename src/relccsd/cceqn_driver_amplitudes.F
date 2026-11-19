@@ -134,7 +134,7 @@ C  INTERMEDIATES FORMED --- START T2 EQUATIONS
 C
       CALL XTIME(5,1,'-- T2 EQNS                     ')
       CALL amplitude_equation_T2 (T1,T2,GO,GV,HOV,H,AZ,
-     &        BUF1,BUF2,BUF3,NBUF3,S2)
+     &        BUF1,BUF2,BUF3,NBUF2,NBUF3,S2)
       CALL XTIME(5,2,'-- T2 EQNS                     ')
 C
  100  CONTINUE
@@ -207,10 +207,6 @@ C
 C
       CALL T1DIAG (DIAG,T1,BUF1)
       IF (IPRNT.GE.1) WRITE(IW,6001) NIT,ECCSD,RMS,DIAG
-CPi
-      WRITE(*,*) 'Here am I'
-      WRITE(*,*) 'IW', IW
-CPi-end
       CALL FLSHFO(IW)
 C
       IF(RMS.LT.CONV) exit

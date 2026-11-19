@@ -1,5 +1,5 @@
       SUBROUTINE amplitude_equation_T2 (T1,T2,
-     &          GO,GV,HOV,H,AZ,BUF1,BUF2,BUF3,NBUF3,S2)
+     &          GO,GV,HOV,H,AZ,BUF1,BUF2,BUF3,NBUF2,NBUF3,S2)
 C
 CPi use contraction module to include tensor contraction routiones
       use contraction
@@ -273,7 +273,6 @@ CPi-begin use 2 x new contr. routine
       call contraction_424 ((/"p1","o3","p3","o1"/),(/"p3","o2"/),
      &   (/"p1","o3","o1","o2"/),BUF3,1.0d0,1.0d0,nrep,LeftTensor=BUF1,
      &    RightTensor=T1)
-      write(*,*) (BUF3(i), i=1,10)
       call contraction_424 ((/"p1","o3","o1","o2"/),(/"p2","o3"/),
      &    (/"p1","p2","o1","o2"/),S2,1.0d0,1.0d0,nrep,LeftTensor=BUF3,
      &    RightTensor=T1)
