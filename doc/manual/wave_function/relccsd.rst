@@ -11,6 +11,7 @@ See :cite:`Visscher1996` for the initial CCSD(T) implementation. The Fock-space 
 implementation is described in :cite:`Visscher2001`. The ground-state expectation 
 value implementations are described in :cite:`vanStralen2005` for MP2 and :cite:`Shee2016` for CCSD.
 The base EOM CC implementation is described in :cite:`Shee2018`.
+For developers, :ref:`relccsd_developer` relates the equations of these papers to the source code.
 
 starstar(RELCC)
 
@@ -128,6 +129,8 @@ CCSD wavefunctions, by solving for the left-hand eigenvectors of the correspondi
 similarity-transformed Hamiltonian. It should be specified along with  :ref:`RELCC_.EOMCC` 
 as it requires the right-hand eigenvectors and, as such, the same type of calculation 
 (EOM-EE/IP/EA) will be performed. See :ref:`*EOMPROP` for further details.
+Only EOM-EE and EOM-IP are supported: left-hand eigenvectors, and hence properties,
+are not implemented for EOM-EA.
 
 *Default:*
 
