@@ -77,7 +77,14 @@ if(ENABLE_EXATENSOR)
      GIT_TAG        55e5b1e
    )
 
+   # TAPP's CMakeLists.txt FORCEs CMAKE_VERBOSE_MAKEFILE=ON into the shared cache, which would make
+   # the whole DIRAC build verbose. Save DIRAC's value and restore it after TAPP has been added.
+   # NOTE: TAPP also FORCEs CMAKE_INSTALL_PREFIX to <builddir>/_deps/tapp-build/install. That cannot be
+   # undone here: TBLIS (fetched by TAPP) exports paths under that prefix, and generation fails if
+   # the prefix is restored. Consequently "./setup --prefix" is overridden when ExaTensor is enabled.
+   set(_dirac_verbose_makefile ${CMAKE_VERBOSE_MAKEFILE})
    FetchContent_MakeAvailable(tapp)
+   set(CMAKE_VERBOSE_MAKEFILE ${_dirac_verbose_makefile} CACHE BOOL "Enable verbose output from Makefile builds" FORCE)
 
 
 
