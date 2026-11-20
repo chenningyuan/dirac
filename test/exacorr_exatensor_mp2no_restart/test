@@ -25,7 +25,7 @@ f = Filter()
 
 f.add(from_string = '    -     Final results from EXACORR     -    ',
       num_lines   = 8,
-      rel_tolerance   = 1.0e-8)
+      abs_tolerance   = 1.0e-8)
 f.add(from_string = '* Dipole moment:',
       num_lines   = 9,
       rel_tolerance   = 1.0e-5)
