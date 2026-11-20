@@ -48,7 +48,7 @@ module atomic_occupations
     atomic_occupation_t( 26, 0, 'Fe', [ 8,12], 1, [6,0], reshape([10,0,0,0], [2,2])), &
     atomic_occupation_t( 27, 0, 'Co', [ 8,12], 1, [7,0], reshape([10,0,0,0], [2,2])), &
     atomic_occupation_t( 28, 0, 'Ni', [ 8,12], 1, [8,0], reshape([10,0,0,0], [2,2])), &
-    atomic_occupation_t( 29, 0, 'Cu', [ 8,12], 1, [9,0], reshape([10,0,0,0], [2,2])), &
+    atomic_occupation_t( 29, 0, 'Cu', [16,12], 1, [1,0], reshape([2,0,0,0], [2,2])), &
     atomic_occupation_t( 30, 0, 'Zn', [18,12], 0), &
     atomic_occupation_t( 31, 0, 'Ga', [18,12], 1, [1,0], reshape([0,6,0,0], [2,2])), &
     atomic_occupation_t( 32, 0, 'Ge', [18,12], 1, [2,0], reshape([0,6,0,0], [2,2])), &
@@ -62,7 +62,7 @@ module atomic_occupations
     atomic_occupation_t( 40, 0, 'Zr', [20,18], 1, [2,0], reshape([10,0,0,0], [2,2])), &
     atomic_occupation_t( 41, 0, 'Nb', [18,18], 2, [4,1], reshape([10,0,2,0], [2,2])), &
     atomic_occupation_t( 42, 0, 'Mo', [18,18], 2, [5,1], reshape([10,0,2,0], [2,2])), &
-    atomic_occupation_t( 43, 0, 'Tc', [18,18], 2, [6,1], reshape([10,0,2,0], [2,2])), &
+    atomic_occupation_t( 43, 0, 'Tc', [20,18], 1, [5,0], reshape([10,0,0,0], [2,2])), &
     atomic_occupation_t( 44, 0, 'Ru', [18,18], 2, [7,1], reshape([10,0,2,0], [2,2])), &
     atomic_occupation_t( 45, 0, 'Rh', [18,18], 2, [8,1], reshape([10,0,2,0], [2,2])), &
     atomic_occupation_t( 46, 0, 'Pd', [28,18], 0), &
@@ -83,7 +83,7 @@ module atomic_occupations
     atomic_occupation_t( 61, 0, 'Pm', [32,24], 1, [5,0], reshape([0,14,0,0], [2,2])), &
     atomic_occupation_t( 62, 0, 'Sm', [32,24], 1, [6,0], reshape([0,14,0,0], [2,2])), &
     atomic_occupation_t( 63, 0, 'Eu', [32,24], 1, [7,0], reshape([0,14,0,0], [2,2])), &
-    atomic_occupation_t( 64, 0, 'Gd', [32,24], 1, [8,0], reshape([0,14,0,0], [2,2])), &
+    atomic_occupation_t( 64, 0, 'Gd', [32,24], 2, [7,1], reshape([0,14,10,0], [2,2])), &
     atomic_occupation_t( 65, 0, 'Tb', [32,24], 1, [9,0], reshape([0,14,0,0], [2,2])), &
     atomic_occupation_t( 66, 0, 'Dy', [32,24], 1, [10,0], reshape([0,14,0,0], [2,2])), &
     atomic_occupation_t( 67, 0, 'Ho', [32,24], 1, [11,0], reshape([0,14,0,0], [2,2])), &
@@ -97,8 +97,8 @@ module atomic_occupations
     atomic_occupation_t( 75, 0, 'Re', [32,38], 1, [5,0], reshape([10,0,0,0], [2,2])), &
     atomic_occupation_t( 76, 0, 'Os', [32,38], 1, [6,0], reshape([10,0,0,0], [2,2])), &
     atomic_occupation_t( 77, 0, 'Ir', [32,38], 1, [7,0], reshape([10,0,0,0], [2,2])), &
-    atomic_occupation_t( 78, 0, 'Pt', [32,38], 1, [8,0], reshape([10,0,0,0], [2,2])), &
-    atomic_occupation_t( 79, 0, 'Au', [32,38], 1, [9,0], reshape([10,0,0,0], [2,2])), &
+    atomic_occupation_t( 78, 0, 'Pt', [30,38], 2, [9,1], reshape([10,0,2,0], [2,2])), &
+    atomic_occupation_t( 79, 0, 'Au', [40,38], 1, [1,0], reshape([2,0,0,0], [2,2])), &
     atomic_occupation_t( 80, 0, 'Hg', [42,38], 0), &
     atomic_occupation_t( 81, 0, 'Tl', [42,38], 1, [1,0], reshape([0,6,0,0], [2,2])), &
     atomic_occupation_t( 82, 0, 'Pb', [42,38], 1, [2,0], reshape([0,6,0,0], [2,2])), &
@@ -115,14 +115,14 @@ module atomic_occupations
     atomic_occupation_t( 93, 0, 'Np', [44,44], 2, [4,1], reshape([0,14,10,0], [2,2])), &
     atomic_occupation_t( 94, 0, 'Pu', [44,44], 1, [6,0], reshape([0,14,0,0], [2,2])), &
     atomic_occupation_t( 95, 0, 'Am', [44,44], 1, [7,0], reshape([0,14,0,0], [2,2])), &
-    atomic_occupation_t( 96, 0, 'Cm', [44,44], 1, [8,0], reshape([0,14,0,0], [2,2])), &
+    atomic_occupation_t( 96, 0, 'Cm', [44,44], 2, [7,1], reshape([0,14,10,0], [2,2])), &
     atomic_occupation_t( 97, 0, 'Bk', [44,44], 1, [9,0], reshape([0,14,0,0], [2,2])), &
     atomic_occupation_t( 98, 0, 'Cf', [44,44], 1, [10,0], reshape([0,14,0,0], [2,2])), &
     atomic_occupation_t( 99, 0, 'Es', [44,44], 1, [11,0], reshape([0,14,0,0], [2,2])), &
     atomic_occupation_t(100, 0, 'Fm', [44,44], 1, [12,0], reshape([0,14,0,0], [2,2])), &
     atomic_occupation_t(101, 0, 'Md', [44,44], 1, [13,0], reshape([0,14,0,0], [2,2])), &
     atomic_occupation_t(102, 0, 'No', [44,58], 0), &
-    atomic_occupation_t(103, 0, 'Lr', [44,58], 1, [1,0], reshape([10,0,0,0], [2,2])), &
+    atomic_occupation_t(103, 0, 'Lr', [44,58], 1, [1,0], reshape([0,6,0,0], [2,2])), &
     atomic_occupation_t(104, 0, 'Rf', [44,58], 1, [2,0], reshape([10,0,0,0], [2,2])), &
     atomic_occupation_t(105, 0, 'Db', [44,58], 1, [3,0], reshape([10,0,0,0], [2,2])), &
     atomic_occupation_t(106, 0, 'Sg', [44,58], 1, [4,0], reshape([10,0,0,0], [2,2])), &
