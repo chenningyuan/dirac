@@ -375,7 +375,7 @@ C  20-Jul-1992 hjaaj  Changed C1,C2 to THRZER
 C  30-oct-1992 hjaaj  zero f(ab) to avoid round-off errors
 C                     absolute conv.threshold SD=C1
 C
-!      use thrzer_mod, only: THRZER
+      use thrzer_mod, only: THRZER
 #include "implicit.h"
       INTEGER :: I, II, J, K
       DIMENSION F(*),V(*)
@@ -383,7 +383,6 @@ C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, ROOT2 = 0.707106781186548D0)
       PARAMETER(DP5 = 0.5D0, D1P5 = 1.5D0, D1P375 = 1.375D0,
      *          D3P875 = 3.875D0, DP25 = 0.25D0)
-#include "thrzer.h"
       DATA C1,C2,C3,C4,C5,C6/THRZER,THRZER,1.D-20,1.D-14,1.D-9,1.D-5/
 Cwas: DATA C1,C2,C3,C4,C5,C6/1.D-12,1.D-12,1.D-20,1.D-14,1.D-9,1.D-5/
       IF (NB.LE.1 .OR. NMAX.LE.0) RETURN

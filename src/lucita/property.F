@@ -99,6 +99,7 @@
 ***********************************************************************
       SUBROUTINE CI_RESPONS(LU1,LU2,LU3,LU4,LU5,LU6,LU7,LUC,LUDIA,
      &                      VEC1,VEC2,ENOT,CCALC)
+      use cands_lucita_mod, only: ICSM
       use luci_wrkspc
 *
 * Master routine for LUCIA calculation of properties
@@ -111,7 +112,6 @@
 #include "multd2h.inc"
 #include "crun.inc"
 #include "cprnt.inc"
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
       REAL*8 INPROD
       DIMENSION VEC1(*),VEC2(*)
 *. Local scratch
@@ -638,6 +638,7 @@ C       CALL TRIPAK(WORK(KLFEXP),WORK(KFOCK-1+IBASE2P),2,N,N,SIGNTP)
 * /CANDS/ and /OPER( is used to communicate to these routines
 *
 *
+      use cands_lucita_mod, only: ICSM, ISSM
       IMPLICIT REAL*8(A-H,O-Z)
       REAL * 8 INPRDD
       DIMENSION V(*),VEC1(*),VEC2(*)
@@ -658,7 +659,6 @@ C       CALL TRIPAK(WORK(KLFEXP),WORK(KFOCK-1+IBASE2P),2,N,N,SIGNTP)
       DIMENSION  AVINT(LAVINT,N_AVE_OP),IAVE_SYM(N_AVE_OP)
 C    &           N_AVE_OP,AVE_OP,AVINT,LAVINT,IAVE_SYM)
 *  V ** n W ** m !ref> : Symmetry is  ISMVW(MOD(n,2)+1,MOD(m,2)+1)
-      COMMON/CANDS/ICSM,ISSM,ICPSC,ISSPC
 *. Local scratch
       DIMENSION SCR(10*MAXORD)
 #include "oper.inc"
@@ -2341,6 +2341,7 @@ COLD &                WORK(KLDNS+(I-0)*LSYMBLK),LSYMBLK)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE LTRAPRP
+      use cands_lucita_mod, only: ICSM, ICSPC, ISSM, ISSPC
       use luci_wrkspc
 *
 * Calculate one-electron transition properties
@@ -2364,7 +2365,6 @@ COLD &                WORK(KLDNS+(I-0)*LSYMBLK),LSYMBLK)
       CHARACTER*6 LABEL2
       DATA XYZ/'X','Y','Z'/
 *. Common block for communicating with sigma
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 *
       IDUM = 1
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'TRAPRP')

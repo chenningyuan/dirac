@@ -2084,6 +2084,7 @@ C            WRT_CC_VEC(CC,LU)
       RETURN
       END
       SUBROUTINE LUCIA_CC(ISM,ISPC,IPRNT,ECC,II_RESTRT_CC,I_TRANS_WF)
+      use cands_lucita_mod, only: ICSM, ICSPC, ISSM, ISSPC
       use cecore_lucita_mod, only: ECORE
       use cc_exc_mod, only: ICC_EXC
       use luci_wrkspc
@@ -2097,7 +2098,6 @@ C            WRT_CC_VEC(CC,LU)
 #include "mxpdim.inc"
 #include "crun.inc"
 #include "glbbas.inc"
-#include "cands.inc"
 #include "clunit.inc"
 *
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'LUC_CC')

@@ -598,6 +598,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCMAIN (IUNIN,IUNUT,CA,INTFCE)
 c
+      use eqns_mod, only: EQNS
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
       use interface_to_mpi
@@ -625,7 +626,6 @@ C
 #include "files.inc"
 #include "inpt.inc"
 #include "symm.inc"
-#include "eqns.inc"
 #include "complex.inc"
 #include "ccpar.inc"
 C
@@ -2144,6 +2144,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCSETI (ICALC,MXCORR,EPS,NSP,IREPSP,IREPSPI)
 C
+      use eqns_mod, only: EQNS
       use waio_mod, only: NWORDS_ON_RECORD
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
@@ -2174,7 +2175,6 @@ C
 #include "files.inc"
 #include "inpt.inc"
 #include "symm.inc"
-#include "eqns.inc"
 #include "complex.inc"
 C
 C---------------Calling variables--------------------------------------
@@ -2332,6 +2332,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCENER (ICALC,MXCORR,EPS)
+      use eqns_mod, only: EQNS
       use results_mod, only: ECCSD, EMP2, ESCF, ET1, ET2, ET3, IMSTAT
       use diis_mod, only: MAXDIM, MAXIT
       use memory_allocator
@@ -2366,7 +2367,6 @@ C
 #include "files.inc"
 #include "inpt.inc"
 #include "symm.inc"
-#include "eqns.inc"
 #include "complex.inc"
 ! ccpar.inc not needed, because there is no parallelization in this subroutine
 ! include "ccpar.inc"
@@ -2737,6 +2737,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     CCFOPR - CC First Order PRoperties, aka gradients
 C
+      use eqns_mod, only: EQNS
       use mp1stpr_mod, only: NTMATR1, NTMATR2
       use diis_mod, only: MAXDIM, MAXIT
       use dgroup_mod, only: NZ
@@ -2776,7 +2777,6 @@ C
 #include "param.inc"
 #include "files.inc"
 #include "inpt.inc"
-#include "eqns.inc"
 #include "symm.inc"
 #include "complex.inc"
 #include "ccpar.inc"
@@ -3645,6 +3645,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCFSPC (ICALC,MXCORR,EPS1,EPS,NSP,IREPSP,IREPSPI)
 C
+      use eqns_mod, only: EQNS, ICURFSS
       use results_mod, only: IMSTAT
       use ihm_mod, only: DOIH, ER_IH
       use diis_mod, only: MAXDIM, MAXIT
@@ -3678,7 +3679,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "eqns.inc"
 #include "inpt.inc"
 #include "symm.inc"
 #include "complex.inc"

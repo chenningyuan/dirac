@@ -139,6 +139,7 @@ C         ECORE = ECORE_ORIG + ECCP
      &             S11,S01,RES0,E2,
      &             NOCCLS,IOCCLS,NACTI,IACTI,
      &             NACTO,IACTO,LUSCR,LUSCR2,LEVEL,LU1)
+      use cands_lucita_mod, only: ICSM, ICSPC, ISSM, ISSPC
       use luci_wrkspc
 *
 * Part 1 of double direct CI approach
@@ -174,7 +175,6 @@ C         ECORE = ECORE_ORIG + ECCP
 #include "strinp.inc"
 #include "cprnt.inc"
 *. Common block for communicating with sigma
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 #include "oper.inc"
 C     COMMON/OPER/I12,IPERTOP,IAPR,MNRS1E,MXRS3E,IPART
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
@@ -1627,6 +1627,7 @@ C     Call Abend2( 'before call to SBLOCK' )
 *
 *     XB : Contains blocks of first order correction
 *     SOUT : Overlap between |2> as above  and |0>
+      use cands_lucita_mod, only: ICSPC, ISSPC
       IMPLICIT REAL*8(A-H,O-Z)
 *
       DIMENSION NSASO(NSMST,*),NSBSO(NSMST,*)
@@ -1643,7 +1644,6 @@ C     Call Abend2( 'before call to SBLOCK' )
 *
       DIMENSION SB(*),CB(*),XB(*)
 * For communcating with MV7
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 #include "oper.inc"
 C     COMMON/OPER/I12,IPERTOP,IAPR,MNRS1E,MXRS3E,IPART
 
@@ -1845,6 +1845,7 @@ C?    WRITE(6,*) ' GET_SEC : FACTOR ', FACTOR
       SUBROUTINE SBATCH2_FROM_CBATCH(NLBLOCK,ILOFF,NRBLOCK,IROFF,
      &                               ILBLOCK,IRBLOCK,
      &                               CB,HCB,IRESTRICT)
+      use cands_lucita_mod, only: ICSM, ICSPC, ISSPC
       use luci_wrkspc
 *
 * Generate the parts of H times right batch that is in a given
@@ -1870,7 +1871,6 @@ C?    WRITE(6,*) ' GET_SEC : FACTOR ', FACTOR
 * =====
 *
 *.Definition of c and sigma spaces
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 *. Sigma blocks require
       INTEGER ILBLOCK(8,*)
 *. C blocks included

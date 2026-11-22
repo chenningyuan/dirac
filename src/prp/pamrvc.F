@@ -3391,13 +3391,12 @@ C
 C     Written by T.saue Dec 1 1996
 C
 C***********************************************************************
-!      use thrzer_mod, only: THRZER
 !      use dcbibn_mod, only: JBCNDX
 !      use dcbxrs_mod, only: DAMPFREQ, DIAGHE, FKRMC, IMFREQ, IMX, IPX, NDAMP, STATIC
+      use thrzer_mod, only: THRZER
       use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "thrzer.h"
 #include "dcbibn.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0
@@ -5646,14 +5645,13 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use consts_mod, only: D2
-!      use thrzer_mod, only: THRZER
+      use thrzer_mod, only: THRZER
 !      use dcbxrs_mod, only: IPRXRS, JSYMOP, JTIMOP, KZCONF, NCSIM, NOSIM, NZCONF, NZCONFQ, XRS_CIPROGRAM
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NNASHX
       use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I
 C
-#include "thrzer.h"
 C
       DIMENSION CREF(NZCONF,*), SCVEC(NZCONFQ,*)
       DIMENSION FX(N2ORBXQ,*), H2ACX(NASHT*NASHT*NNASHX*3*NZ,*)

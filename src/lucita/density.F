@@ -374,6 +374,7 @@ C       IF(IACTIVE.EQ.1.AND.IJOFF.GE.KLOFF) THEN
 *                                                                     *
 ***********************************************************************
       SUBROUTINE DENSI2(I12,RHO1,RHO2,L,R,LUL,LUR,EXPS2)
+      use cands_lucita_mod, only: ICSM, ISSM, ISSPC
       use luci_wrkspc
 *
 * Density matrices between L and R
@@ -408,7 +409,6 @@ C       IF(IACTIVE.EQ.1.AND.IJOFF.GE.KLOFF) THEN
 *
 *.Definition of L and R is picked up from CANDS
 * with L being S and  R being C
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 *
 #include "mxpdim.inc"
 #include "orbinp.inc"
@@ -2562,6 +2562,7 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TRADEN(I12,RHO1,RHO2,NL,NR,LUL,LUR)
+      use cands_lucita_mod, only: ICSM, ICSPC, ISSM, ISSPC
       use luci_wrkspc
 *
 * Transition density matrices between the NL states stored on LUL
@@ -2582,7 +2583,6 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 *
 *.Definition of L and R is picked up from CANDS
 * with L being S and  R being C
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 *
 #include "mxpdim.inc"
 #include "orbinp.inc"

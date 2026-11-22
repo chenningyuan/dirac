@@ -426,7 +426,6 @@ C     call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
-#include "thrzer.h"
 C
 #include "ipoist8.inc"
 !hope we don't need it

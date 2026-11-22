@@ -20,7 +20,8 @@ C***********************************************************************
 !      use dcbxrs_mod, only: JSYMOP, JTIMOP, LUBOE, LUBOP, NESIM, NEXCNV, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcbxpp_mod, only: BEDCHK, BEDECD, DOBED, IPRXPP, KEXCNV, MAXEXC, UPOL, UWAVE
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
-!      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
+      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL,
+     &  PDOINT, PRPLBL
 !      use dcbibn_mod, only: JBENDX, JBPNDX
       use dcbwav_mod, only: WAVEVEC
       use orbital_rotation_indices
@@ -32,7 +33,6 @@ C
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "dcbxpr.h"
-#include "dcbprl.h"            
 #include "dcbibn.h"
       LOGICAL DOINT(2,2)
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
@@ -464,7 +464,8 @@ C***********************************************************************
 !      use dcbxrs_mod, only: JSYMOP, JTIMOP, LUBOE, LUBOP, NESIM, NEXCNV, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcbxpp_mod, only: IPRXPP, KEXCNV, MAXEXC
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
-!      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
+      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL,
+     &  PDOINT, PRPLBL
 !      use dcbibn_mod, only: JBENDX, JBPNDX
       use orbital_rotation_indices
 C     
@@ -476,7 +477,6 @@ C
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "dcbxpr.h"
-#include "dcbprl.h"            
 #include "dcbibn.h"
       LOGICAL DOINT(2,2)
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
@@ -714,7 +714,8 @@ C***********************************************************************
 !      use dcbxrs_mod, only: JSYMOP, JTIMOP, LUBOE, LUBOP, NESIM, NEXCNV, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcbxpp_mod, only: IPRXPP, KEXCNV, MAXEXC
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
-!      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
+      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL,
+     &  PDOINT, PRPLBL
 !      use dcbibn_mod, only: JBENDX, JBPNDX
       use orbital_rotation_indices
 C     
@@ -726,7 +727,6 @@ C
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "dcbxpr.h"
-#include "dcbprl.h"            
 #include "dcbibn.h"
       LOGICAL DOINT(2,2)
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
@@ -985,7 +985,8 @@ C***********************************************************************
 !      use dcbxrs_mod, only: JSYMOP, JTIMOP, LUBOE, LUBOP, NESIM, NEXCNV, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcbxpp_mod, only: ANGPLOT, BEDCHK, BEDECD, DOBED, IPRXPP, KEXCNV, MAXEXC, NROTAV
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
-!      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
+      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL,
+     &  PDOINT, PRPLBL
 !      use dcbibn_mod, only: JBENDX, JBPNDX
       use dcbwav_mod, only: WAVEVEC
 #if defined (VAR_MPI)
@@ -1006,7 +1007,6 @@ C
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "dcbxpr.h"
-#include "dcbprl.h"            
 #include "dcbibn.h"
 !#include "dcbidx.h"
 #if defined (VAR_MPI)
@@ -1731,7 +1731,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dcbxrs_mod, only: INDSTR, JOPSY, NEXCNV, NREDM, NZHOPE, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, SKIPEE, SKIPEP
 !      use dcbxpp_mod, only: ANGPLOT, BEDECD, DOBED, MAXEXC
 !      use dcbxpr_mod, only: IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
-!      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
+      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL,
+     &  PDOINT, PRPLBL
       use dgroup_mod, only: NFSYM
       use dcbbas_mod, only: I2BAST, I2BASX, IBBAS, MXFBAS, N2BBASX,
      &  N2BBASXQ, NBBAS, NFBAS, NNBBASX, NTBAS
@@ -1754,7 +1755,6 @@ C
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "dcbxpr.h"
-#include "dcbprl.h"            
 #include "dcbidx.h"
 #include "mpif.h"
       integer MASTER, NMPROC, MYPROC

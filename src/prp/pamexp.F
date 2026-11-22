@@ -60,7 +60,7 @@ C***********************************************************************
 !      use dcborb_mod, only: NESH
 !      use dcbexp_mod, only: LEXPP, NEXPP
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
-!      use dcbprl_mod, only: IPRLTYP
+      use dcbprl_mod, only: IPRLTYP
       use dcbham_mod, only: NONREL, X2C
       use dcbgen_mod, only: KCHARG, LUX2C
       use labeled_storage
@@ -73,7 +73,6 @@ C
 #include "dcborb.h"
 #include "dcbexp.h"
 #include "dcbxpr.h"
-#include "dcbprl.h"
       DIMENSION EXPVAL(*)
       CHARACTER MXFORM*6,FMT*6
       CHARACTER WF*4

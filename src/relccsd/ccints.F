@@ -24,11 +24,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 !      use param_mod, only: A0, A1, D0
 !      use symm_mod, only: IOOOOTT, IVOOOT, IVOVO, IVOVVT, IVVOOTT, IVVVVTT, NE, NOOT, NV1, NV2, NV3, NV4, NV5, NV6, NVO, NVVT, SPFR
-!      use eqns_mod, only: EQNS
 !      use complex_mod, only: CARITH, IRW, RCW
 !      use files_mod, only: ITAPT, IW, MDINT
 !      use ccpar_mod, only: IDIST, MASTER, MYPROC, NMPROC, NV5PAR, NV6PAR
 !      use inpt_mod, only: NORECMP, USEOE
+      use eqns_mod, only: EQNS
       use results_mod, only: ECORE, ESCF, ETOT, IMSTAT
       use waio_mod, only: NWORDS_ON_RECORD, NWORDS_ON_RECORD8
       use dcbgen_mod, only: LUCOEF
@@ -52,7 +52,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
 #include "symm.inc"
-#include "eqns.inc"
 #include "complex.inc"
 #include "files.inc"
 #include "ccpar.inc"
@@ -961,10 +960,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                     NONZR,NZE,CBUF,IBUF,MREADER,PERMSYM)
 C
 !      use complex_mod, only: CARITH, RCW
-!      use eqns_mod, only: EQNS
 !      use inpt_mod, only: INTERFACE
 !      use ccpar_mod, only: MYPROC, NMPROC
 !      use symm_mod, only: NE, SPFR
+      use eqns_mod, only: EQNS
       use dgroup_mod, only: NZ
       use interface_to_mpi
       use spinor_indexing
@@ -994,7 +993,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "complex.inc"
-#include "eqns.inc"
 #include "inpt.inc"
 #include "ccpar.inc"
 #include "symm.inc"
@@ -1414,10 +1412,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 !      use param_mod, only: A0, LTR
 !      use symm_mod, only: NFOO, NFVO, NFVV
-!      use eqns_mod, only: EQNS
 !      use inpt_mod, only: ADD_FINITE_FIELD, NORECMP, USEOE
 !      use complex_mod, only: RCW
 !      use ccpar_mod, only: MASTER, MYPROC, NMPROC
+      use eqns_mod, only: EQNS
       use interface_to_mpi
       implicit none
 C
@@ -1443,7 +1441,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
 #include "symm.inc"
-#include "eqns.inc"
 #include "inpt.inc"
 #include "complex.inc"
 #include "ccpar.inc"
@@ -1524,10 +1521,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE WRITE_FM_OUTPUT (E0,E1,EPS,FOO,FVV)
 C
 !      use symm_mod, only: NAO, NAV, NIO, NIV, NO, NREP, NV, REPNA
-!      use eqns_mod, only: EQNS
 !      use inpt_mod, only: IPRNT, USEOE
 !      use complex_mod, only: RCW
 !      use files_mod, only: IW
+      use eqns_mod, only: EQNS
       use ihm_mod, only: DOIH, ER_IH, IPIORB
       implicit none
 C
@@ -1549,7 +1546,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "symm.inc"
-#include "eqns.inc"
 #include "inpt.inc"
 #include "complex.inc"
 #include "files.inc"

@@ -36,6 +36,9 @@
      &           LU7LIST,LUCLIST
 #endif
      &           )
+#if defined (VAR_MPI2)
+      use cands_lucita_mod, only: ISSM, ISSPC
+#endif
       use luci_wrkspc
 
 *
@@ -57,7 +60,6 @@ C
 #include "files.inc"
 #include "mxpdim.inc"
 C     Definition of c and sigma
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 C        /ORBINP/ : NACOB used
 #include "orbinp.inc"
 #include "cicisp.inc"
@@ -2430,6 +2432,7 @@ C     END IF
 ***********************************************************************
       SUBROUTINE HINTV(LURHS,LUX,SHIFT,SHIFT_DIA,VECIN,VECOUT,
      &                LBLK,LUPROJ,LUPROJ2)
+      use cands_lucita_mod, only: ISSM, ISSPC
       use luci_wrkspc
 *
 * Solve  (H+Shift)X = RHS
@@ -2447,7 +2450,6 @@ C     END IF
       IMPLICIT REAL*8(A-H,O-Z)
       REAL*8 INPROD , INPRDD
       LOGICAL CONVER
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 #include "mxpdim.inc"
 #include "glbbas.inc"
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
@@ -5372,6 +5374,7 @@ C              NDIM_1EL_MAT(IHSM,NRPSM,NCPSM,IPACK)
 ***********************************************************************
 *
       SUBROUTINE PERTCTL(ISM,ISPC,EREF)
+      use cands_lucita_mod, only: ICSM, ICSPC, ISSM, ISSPC
       use cecore_lucita_mod, only: ECORE, ECORE_H, ECORE_HEX
       use luci_wrkspc
 *
@@ -5403,7 +5406,6 @@ C              NDIM_1EL_MAT(IHSM,NRPSM,NCPSM,IPACK)
       COMMON/CSFBAS/KDFTP,KCFTP,KDTOC,KICONF(MXCNSM),KTPFCN(MXCNSM),
      &              KICTS(MXCNSM),KSCTS(MXCNSM),KCNFCN(MXCNSM)
 *. Common block for communicating with sigma
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
       COMMON/SPINFO/MULTSP,MS2P,
      &              MINOP,MAXOP,NTYP,NDPCNT(MXPCTP),NCPCNT(MXPCTP),
      &              NCNATS(MXPCTP,MXPCSM),NDTASM(MXPCSM),NCSASM(MXPCSM),

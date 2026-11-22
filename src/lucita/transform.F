@@ -496,6 +496,7 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
+      use cands_lucita_mod, only: ICSM, ICSPC, ISSM, ISSPC
       use luci_wrkspc
 *
 * A rotation matrix X is defining expansion from
@@ -525,7 +526,6 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 #include "lucinp.inc"
 #include "clunit.inc"
 *. Common block for communicating with sigma
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 *
       DIMENSION X(*)
 *
@@ -577,6 +577,7 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TRACI_CTL
+      use cands_lucita_mod, only: ISSM, ISSPC
       use luci_wrkspc
 *
 * Master routine for transforming CI vectors to new orbital basis
@@ -595,7 +596,6 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 #include "glbbas.inc"
 #include "orbinp.inc"
 *
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 *
       NTEST = 0
       IDUM = 0
@@ -673,6 +673,7 @@ C            TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
 ***********************************************************************
       SUBROUTINE TRACID(T,LUCIN,LUCOUT,LUSC1,LUSC2,LUSC3,
      &           VEC1,VEC2)
+      use cands_lucita_mod, only: ISSM, ISSPC
       use intform_mod, only: IH1FORM
       use luci_wrkspc
 *
@@ -694,7 +695,6 @@ C            TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
 #include "oper.inc"
 #include "lucinp.inc"
 #include "orbinp.inc"
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
       REAL*8 INPRDD
 *. Input
       DIMENSION T(*)

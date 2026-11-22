@@ -2241,14 +2241,13 @@ C  /* Deck vibv3 */
       use codata_mod, only: AUTK, XFAMU
       use cbivib_mod, only: IPRINT
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-!      use thrzer_mod, only: THRZER
+      use thrzer_mod, only: THRZER
       use nuctap_mod, only: LUWLK
       use gnrinf_mod, only: NMWALK
       use dummy_mod, only: IDUMMY
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "thrzer.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0,
      &                 D3 = 3.0D0, D4 = 4.0D0, D24 = 24.0D0,
      &                 D36 = 36.0D0
@@ -3141,6 +3140,7 @@ C     This subroutine calculates vibrationally averaged molecular
 C     properties assuming that the calculation is performed at the effective
 C     geometry. K.Ruud, San Diego, March 1999
 C
+      use thrzer_mod, only: THRZER
       use cbilnr_mod, only: ALFA, FRVAL, MXFR, NFRVAL
       use codata_mod, only: ALPHA2, AUTK, PMASS, XFAMU, XFMOL, XTANG,
      &  XTHZ, XTKAYS, XTNM
@@ -3155,7 +3155,6 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 include "implicit.h"
-#include "thrzer.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4= 4.0D0, THRESH = 1.0D-5)
       DIMENSION EVAL(NUMMOD), DIPM0(3), DIPMF(3,NUMMOD), SUSTO0(3,3),

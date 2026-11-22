@@ -897,11 +897,10 @@ C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use thrzer_mod, only: THRZER
+      use thrzer_mod, only: THRZER
       use kinds_mod, only: dp
 #include "implicit.h"
 C
-#include "thrzer.h"
 C
       REAL(dp), PARAMETER :: D1 = 1.00 D00, D0 = 0.00 D00, DM1 = -D1
       PARAMETER (DTHRS = 1.0D-8, DSIXTH = D1/6.00D00, DP5 = 0.50D00)
@@ -1506,13 +1505,12 @@ C
 C     Last revision: HJAaJ - Aug 2008 
 C
 C***********************************************************************
-!      use thrzer_mod, only: THRZER
+      use thrzer_mod, only: THRZER
       use consts_mod, only: D0, D1
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
 C
-#include "thrzer.h"
       REAL(dp), PARAMETER :: THRRND = 0.9D0, THNORM = 1.0D-6
 C
       DIMENSION S(NBASI,NBASI), VC(NBASI,NORBI,NZ)

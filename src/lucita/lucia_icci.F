@@ -225,6 +225,7 @@ C       IJKL_REL = MAX(IJ,KL)*(MAX(IJ,KL)-1)/2 + MIN(IJ,KL)
       RETURN
       END
       SUBROUTINE CASPT2_FOCK(CC_AMP,VEC1,VEC2)
+      use cands_lucita_mod, only: ICSM, ICSPC
       use luci_wrkspc
 *
 * Setup CASPT2 Fock matrix
@@ -236,7 +237,6 @@ C       IJKL_REL = MAX(IJ,KL)*(MAX(IJ,KL)-1)/2 + MIN(IJ,KL)
 #include "mxpdim.inc"
 #include "oper.inc"
 #include "clunit.inc"
-#include "cands.inc"
 C     COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 *. Input : Vector used to communicate with CI codes (KCC1 vector )
       DIMENSION CC_AMP(*)
@@ -448,6 +448,7 @@ C     END IF
       END
 *
       SUBROUTINE LUCIA_ICCI(ISM,ISPC,CALC)
+      use cands_lucita_mod, only: ICSM, ICSPC, ISSM, ISSPC
       use cc_exc_mod, only: ICC_EXC
       use luci_wrkspc
 *
@@ -459,7 +460,6 @@ C     END IF
       IMPLICIT REAL*8(A-H,O-Z)
       CHARACTER*6 CALC
 #include "mxpdim.inc"
-#include "cands.inc"
 #include "oper.inc"
 #include "glbbas.inc"
 #include "clunit.inc"

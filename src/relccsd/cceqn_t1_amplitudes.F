@@ -42,7 +42,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
 #include "symm.inc"
-!#include "eqns.inc"
 #include "complex.inc"
 #include "ccpar.inc"
 C

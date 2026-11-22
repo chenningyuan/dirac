@@ -1440,7 +1440,7 @@
 !***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, NPRPS, PRPNAM
-!      use dcbprl_mod, only: PRPLBL
+      use dcbprl_mod, only: PRPLBL
 #include "implicit.h"
       INTEGER   IPTYP, NPCOMP, INDXPR, ISYXPR, ITRXPR, IPRINT
       CHARACTER PNAME*16, PLABEL(NPCOMP)*8
@@ -1453,7 +1453,6 @@
 !  XCBPRI: LUPRI,NINFO
 !
 #include "dcbxpr.h"
-#include "dcbprl.h"
 !
 !     CALL QENTER('XPRIND')
       INDXPR = -1
@@ -1541,7 +1540,7 @@
 !***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
-!      use dcbprl_mod, only: NPRPLBL, PDOINT, PRPLBL
+      use dcbprl_mod, only: NPRPLBL, PDOINT, PRPLBL
       use dcbham_mod, only: BSS, LEVYLE, RDSUSLLMOD, ZORA, ZORA4
       use dcbgen_mod, only: CVAL
 #include "implicit.h"
@@ -1554,7 +1553,6 @@
 !  XCBPRI: LUPRI,NINFO
 !
 #include "dcbxpr.h"
-#include "dcbprl.h"
 !MI ... needs CVAL
 
       CHARACTER*4 PCOMB, PCOMB_SAVE
@@ -1794,7 +1792,7 @@
 !     Last revision: May 15 1996 - tsaue
 !***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbprl_mod, only: NPRPLBL, PDOINT, PRPLBL
+      use dcbprl_mod, only: NPRPLBL, PDOINT, PRPLBL
       use dcbcls_mod, only: CLSCAL, CLSCMB, CLSINT, IORDCL, MAXCLS, NPRPCLS
 #include "implicit.h"
       INTEGER :: I
@@ -1803,7 +1801,6 @@
 ! Used from common blocks:
 !   XCBPRL : PRPFILE
 !
-#include "dcbprl.h"
 !
       CALL QENTER('INDXPL')
 !
@@ -2277,13 +2274,12 @@
       use mxcent_mod, only: MXCENT
       use nuclei_mod, only: NUCIND
       use symmet_mod, only: ISYMAX, MAXREP
-!      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
+      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
       use cbiher_mod, only: TRIANG
       use memory_allocator
 #include "implicit.h"
       INTEGER :: I
 !
-#include "dcbprl.h"
       CHARACTER PLABEL*8,CLASLB*7,PCOMB*4
       LOGICAL ANTI, TRASPH, SOLVNT, SQUARE, LABERR
       integer, allocatable :: INTREP(:)
@@ -2501,14 +2497,13 @@
 !
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
-!      use dcbprl_mod, only: IPRLREP, IPRLTYP, PDOINT, PRPLBL
+      use dcbprl_mod, only: IPRLREP, IPRLTYP, PDOINT, PRPLBL
 !      use dcbxpr_mod, only: IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP
       use dgroup_mod, only: JM4, JM4REP, JM4TIM, MCMP, NOPTYP
       use pgroup_mod, only: REP
 #include "implicit.h"
 !
 !
-#include "dcbprl.h"
 #include "dcbxpr.h"
 !
       LOGICAL DIFSYM,DIFTIM, SKIP_JM4
@@ -2668,7 +2663,7 @@
 !***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, PRPNAM
-!      use dcbprl_mod, only: IPRLTYP, PDOINT, PRPLBL
+      use dcbprl_mod, only: IPRLTYP, PDOINT, PRPLBL
       use pgroup_mod, only: REP
       use dgroup_mod, only: MCMP
       use kinds_mod, only: dp
@@ -2677,7 +2672,6 @@
       REAL(dp), PARAMETER :: D0 = 0.0D0
 !
 #include "dcbxpr.h"
-#include "dcbprl.h"
       CHARACTER MXFORM*6,FMT*6,OPTYPE*12,TTYP(-1:1)*2
       SAVE TTYP
       DATA TTYP /'T-','T0','T+'/

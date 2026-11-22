@@ -10,12 +10,11 @@
       use dcbham_mod, only: LEVYLE, SSMTRC, X2C
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use nuclei_mod, only: NUCDEP
-!      use thrzer_mod, only: THRZER
+      use thrzer_mod, only: THRZER
       use dcbprj_mod, only: C1READ, IPRPRJ, MAXREF, NREFS, OWNBAS, PROTHR, REFFIL, VECREF
   implicit none
 
 #include "dcborb.h"
-#include "thrzer.h"
 
   ! Internal variables
   integer :: i, ier, iunit, ifrp

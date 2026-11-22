@@ -4339,14 +4339,13 @@ C     Last revision : July 2002/Sep 2003 hjaaj
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use thrzer_mod, only: THRZER
+      use thrzer_mod, only: THRZER
       use dcbgascip_mod, only: IMK2, IPTA2O, IPTB2O, MAXASH_GASCIP,
      &  MAXMK2, MINMK2, NMK2
 !      use dcborb_mod, only: NAELEC, NASHT
       use dgroup_mod, only: NZ, NZ_IN_CI
 #include "implicit.h"
       INTEGER :: I, II, J, K
-#include "thrzer.h"
 C
 C Used from include files:
 C

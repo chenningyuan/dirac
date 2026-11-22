@@ -3071,7 +3071,6 @@ C***********************************************************************
 C
 #include "dcbprp.h"
 !#include "dcbxpr.h"
-!#include "dcbprl.h"
 !#include "dcbexp.h"
 #include "dcbxlr.h"
       LOGICAL TEST,DOATOM(NUCIND)
@@ -3770,7 +3769,7 @@ C***********************************************************************
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: ABUND, IPDSO, IPRPRP, NDSOIN
 !      use dcbxpr_mod, only: IPRPLBL
-!      use dcbprl_mod, only: PRPLBL
+      use dcbprl_mod, only: PRPLBL
 !      use dcbexp_mod, only: LEXPP
       use nuclei_mod, only: IZATOM, NAMDEP, NAMN, NUCDEG, NUCDEP, NUCIND
       use dgroup_mod, only: IPQTOQ
@@ -3783,7 +3782,6 @@ C***********************************************************************
 C
 #include "dcbprp.h"
 #include "dcbxpr.h"
-#include "dcbprl.h"
 #include "dcbexp.h"
       LOGICAL TEST,DOATOM(NUCIND)
       DIMENSION EXPVAL(*),
@@ -7003,9 +7001,9 @@ C***********************************************************************
 !      use dcbprp_mod, only: IPNSTDIA, IPRNST, IPRPRP, IPSHIELD, LONDON, NNSTIN, NOORTH, NSTDIA, SEPTEP
 !      use dcborb_mod, only: N2ORBXQ
 !      use dcbxpr_mod, only: IPRPLBL, PRPNAM
-!      use dcbprl_mod, only: PRPLBL
 !      use dcbexp_mod, only: LEXPP
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEE, XLR_SKIPEP
+      use dcbprl_mod, only: PRPLBL
       use dcbnmr_mod, only: EPREORTH
 #ifdef MOD_LAO_REARRANGED
       use london_helper
@@ -7020,7 +7018,6 @@ C***********************************************************************
 #include "dcbprp.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
-#include "dcbprl.h"
 #include "dcbexp.h"
 #include "dcbxlr.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0, D2I = 0.50D0)
@@ -8057,7 +8054,6 @@ C-----------------------------------------------------------------------
 !#include "dcbexp.h"
 #include "dcbxlr.h"
 !#include "dcbxpr.h"
-!#include "dcbprl.h"
 C
       LOGICAL   DOATOM(NUCDEP)
       DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
@@ -8985,7 +8981,6 @@ C
 !#include "dcborb.h"
 #include "dcbprp.h"
 !#include "dcbxpr.h"
-!#include "dcbprl.h"
 #include "dcbxlr.h"
 C
       integer, allocatable :: NAT(:),ISOT(:)
@@ -9543,7 +9538,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !#include "dcbexp.h"
 #include "dcbxpr.h"
 !#include "dcbprp.h"
-!#include "dcbprl.h"
 C
       DIMENSION WORK(LWORK),VMAT(*)
       LOGICAL IS_PCTRA

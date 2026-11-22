@@ -2578,7 +2578,6 @@ C
 #include "files.inc"
 #include "complex.inc"
 #include "param.inc"
-#include "eqns.inc"
 C
 C---------------Local variables--------------------------------------
 C

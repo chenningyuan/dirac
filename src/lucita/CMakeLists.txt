@@ -37,6 +37,7 @@ set(FIXED_LUCITA_FORTRAN_SOURCES_noruntimecheck
 )
 
 set(FREE_LUCITA_FORTRAN_SOURCES
+    cands_lucita.F90
     cecore_lucita.F90
     cc_exc.F90
     irat_lucita.F90

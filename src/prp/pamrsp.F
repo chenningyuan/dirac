@@ -1708,14 +1708,13 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use consts_mod, only: D0, DM1
-!      use thrzer_mod, only: THRZER
+      use thrzer_mod, only: THRZER
 !      use dcbxrs_mod, only: E2CHEK, ICRED, IERED, IPRED, IPRXRS, IPX, IZRED, LINEQ, NCSIM, NESIM, NPSIM, NREDM, NTSIM, NZCONF, NZCONFQ, NZRED, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, STATIC, XRS_CIPROGRAM
       use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I, J
 c#include "ibndxdef.h"
 C
-#include "thrzer.h"
 C
 #include "dcbxrs.h"
       DIMENSION REDGP(NREDM),REDE(NREDM,NREDM),REDS(NREDM,NREDM),

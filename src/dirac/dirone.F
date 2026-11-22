@@ -2976,7 +2976,7 @@ C*****************************************************************************
      &  N1OPER, SMLV1C
       use dummy_mod, only: DUMMY
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPTYP
-!      use dcbprl_mod, only: WRITI
+      use dcbprl_mod, only: PRPLBL
       use dgroup_mod, only: NZ
       use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBASX
       use priunit_mod, only: LUPRI
@@ -2991,7 +2991,6 @@ C*****************************************************************************
 C
 !#include "dcbdhf.h"
 #include "dcbxpr.h"
-#include "dcbprl.h"
 C
       type(fde_import) :: itmp
       real(8), allocatable :: ftri(:,:),op1int(:)
@@ -3185,7 +3184,7 @@ C*****************************************************************************
       use dcbbas_mod, only: NTBAS
       use dgroup_mod, only: IPQTOQ, IQTOPQ, JCOM, JM4, JM4POS, JQBAS,
      &  MCMP, NBSYM, NZ
-!      use dcbprl_mod, only: IPRLREP, IPRLTYP, NPRPLBL, PDOINT, PRPLBL
+      use dcbprl_mod, only: IPRLREP, IPRLTYP, NPRPLBL, PDOINT, PRPLBL
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3193,7 +3192,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D1 = 1.0D0, PTOL = 1.0D-12
 C
 #include "dcbxpr.h"
-#include "dcbprl.h"
 C
 !      IPRINT=16 !sunaga      
       CHARACTER MXFORM*6, FMT*6, RTNLBL(2)*8,JCHR*1
@@ -3467,7 +3465,7 @@ C*****************************************************************************
       use dcbham_mod, only: BSS, IPRHAM, X2C
       use dcbbas_mod, only: N2BBASX, N2BBASXQ, NFBAS, NNBBASX, NTBAS
       use mxcent_mod, only: MXCOOR
-!      use dcbprl_mod, only: WRITI
+      use dcbprl_mod, only: IPRLTYP, PRPLBL
       use dgroup_mod, only: NFSYM, NZ
 !      use dcbprp_mod, only: DOPCT, IPRPRP, NOPCT
       use quaternion_algebra
@@ -3477,7 +3475,6 @@ C*****************************************************************************
 C
 #include "dcbprp.h"
 #include "dcbxpr.h"
-#include "dcbprl.h"
 C
       LOGICAL TRIANGULAR,TOBE,YESPCTRA, MAKEPCTRA,FIRST(NZ),ONFILE
       DIMENSION PRPAO(N2BBASX,NZ),PRPINT(*),WORK(LWORK)
@@ -10695,10 +10692,9 @@ C     Zero SS-block of potentials
 C
 C***********************************************************************
 !      use dcbxpr_mod, only: IPRPLBL
-!      use dcbprl_mod, only: PDOINT
+      use dcbprl_mod, only: PDOINT
       use dcbham_mod, only: IPMOLFLD, IPVEMB0
 #include "dcbxpr.h"      
-#include "dcbprl.h"
 C.....Nuclear attraction integrals
       IF(IPMOLFLD.GT.0) THEN
          ILBL  = IPRPLBL(1,IPMOLFLD)

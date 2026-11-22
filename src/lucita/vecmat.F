@@ -111,6 +111,7 @@ C       NELMNT = IBLOCK(8,IBLKA(JBLK)-1+IOFF)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE BVEC(B,IBSM,LUC,LUB,VEC1,VEC2)
+      use cands_lucita_mod, only: ICSM, ISSM
       use luci_wrkspc
 *
 * Construct B defined as
@@ -131,7 +132,6 @@ C       NELMNT = IBLOCK(8,IBLKA(JBLK)-1+IOFF)
 #include "multd2h.inc"
 #include "oper.inc"
 #include "orbinp.inc"
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 *. Ensure that symmetries are consistent
       ISSMP = MULTD2H(IBSM,ICSM)
       IF(ISSMP .NE. ISSM ) THEN

@@ -1829,7 +1829,7 @@ C
 !      use symm_mod, only: IO, IV, MULTB, NAO, NAV, NDIMT2, NE, NIO, NIV, NREP
 !      use files_mod, only: IW
 !      use complex_mod, only: CARITH
-!      use eqns_mod, only: EQNS
+      use eqns_mod, only: EQNS
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1855,7 +1855,6 @@ C
 #include "symm.inc"
 #include "files.inc"
 #include "complex.inc"
-#include "eqns.inc"
 C
 C---------------Local variables--------------------------------------
 C

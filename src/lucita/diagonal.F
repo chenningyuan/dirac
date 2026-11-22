@@ -21,6 +21,7 @@
 ***********************************************************************
       SUBROUTINE DIA0TRM_GAS(ITASK,LUIN,LUOUT,VEC,VEC2,
      &                       FACTOR)
+      use cands_lucita_mod, only: ISSM, ISSPC
       use luci_wrkspc
 *
 * Obtain VEC = (DIAGONAL + FACTOR) ** -1 VEC (ITASK = 2)
@@ -49,7 +50,6 @@
 #include "glbbas.inc"
 *
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 
 *
       DIMENSION VEC(*)
@@ -211,6 +211,7 @@ C     WRITE(6,*) ' NBLOCKT = ', NBLOCKT
 *                                                                     *
 ***********************************************************************
       SUBROUTINE DIABLK(IASM,IATP,IBSM,IBTP,IFULL,DIAG)
+      use cands_lucita_mod, only: ICSM, ICSPC
       use luci_wrkspc
 *
 * Obtain diagonal block of determinant block
@@ -240,7 +241,6 @@ C     WRITE(6,*) ' NBLOCKT = ', NBLOCKT
 #include "crun.inc"
 #include "oper.inc"
 *
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 C     COMMON/OPER/I12,IPERTOP
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
 *

@@ -23,6 +23,7 @@
 ***********************************************************************
       SUBROUTINE FIND_IMAT_SC(IBLINF,SCALFAC,ICCTOS,ICWEIGHT,IBTOTW,
      &                        ICWEIGHTF,NBLOCK,IABSOLUTE_WEIGHT)
+      use cands_lucita_mod, only: ICSM, ICSPC, ISSM, ISSPC
       use luci_wrkspc
 *
 * Compute the connection matrix ICCTOS between the sigma and c vector 
@@ -36,7 +37,6 @@
       DIMENSION IBLINF(NBLOCK),SCALFAC(NBLOCK),ICCTOS(NBLOCK,NBLOCK)
       DIMENSION ICWEIGHT(NBLOCK),ICWEIGHTF(NBLOCK)
 *.Definition of c and sigma
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
       INTEGER*8 IST8NULL
 *
 #include "mxpdim.inc"

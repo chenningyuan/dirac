@@ -1322,11 +1322,10 @@ C
 C
       SUBROUTINE CHKNZ3R2(A,I,J,K,L,DA,DB)
       use priunit_mod, only: LUPRI
-!      use thrzer_mod, only: THRZER
+      use thrzer_mod, only: THRZER
       use consts_mod, only: D0
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "thrzer.h"
 C
       CHARACTER A*(*)
 C
@@ -1357,14 +1356,13 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use thrzer_mod, only: THRZER
+      use thrzer_mod, only: THRZER
       use consts_mod, only: DP5
 !      use dcborb_mod, only: NASHT, NNASHX
       use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I
 C
-#include "thrzer.h"
 C
 #include "dcborb.h"
 C

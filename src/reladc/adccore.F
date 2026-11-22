@@ -123,6 +123,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADCMAIN_NEW (IN123,IW123,CA,INTFCE)
 !
+      use eqns_mod, only: EQNS
       use adcinpt_mod
       use dcbham_mod, only: X2CMMF
       use memory_allocator
@@ -156,7 +157,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "../relccsd/files.inc"
 #include "../relccsd/inpt.inc"
 #include "../relccsd/symm.inc"
-#include "../relccsd/eqns.inc"
 #include "../relccsd/complex.inc"
 #include "../relccsd/ccpar.inc"
 !

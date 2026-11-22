@@ -256,6 +256,7 @@ C
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE POLPRP_MAIN (IN123,IW123,CA,INTFCE)
 
+      use eqns_mod, only: EQNS
       use dcbham_mod, only: X2CMMF
       use memory_allocator
       use interface_to_mpi
@@ -278,7 +279,6 @@ C
 #include "../relccsd/files.inc"
 #include "../relccsd/inpt.inc"
 #include "../relccsd/symm.inc"
-#include "../relccsd/eqns.inc"
 #include "../relccsd/complex.inc"
 #include "../relccsd/ccpar.inc"
 !

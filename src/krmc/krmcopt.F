@@ -324,7 +324,7 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use thrzer_mod, only: THRZER
+      use thrzer_mod, only: THRZER
       use dcbnrt_mod, only: LNOROT, NOROT
       use dcbkrmc_itinfo_mod, only: DINFO, IINFO, LDINFO, LIINFO
       use dcbgen_mod, only: LUITFO, LUKRMC
@@ -337,7 +337,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "thrzer.h"
 C
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -4246,7 +4245,7 @@ C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use thrzer_mod, only: THRZER
+      use thrzer_mod, only: THRZER
 !      use dcbopt_mod, only: IPROPT, NZCONF, NZCONFQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPT, NZXOPTQ, OPT_CIPROGRAM, THRPCI
 !      use dcborb_mod, only: ICMOQ, N2ORBXQ, NCMOTQ, NOCC, NORB, NORBT
       use dcbbas_mod, only: NFBAS
@@ -4259,7 +4258,6 @@ C***********************************************************************
       INTEGER :: I
 C
       REAL(dp), PARAMETER :: THRTT = 1.0D-4
-#include "thrzer.h"
 C
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -5056,13 +5054,12 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use thrzer_mod, only: THRZER
+      use thrzer_mod, only: THRZER
 !      use dcbopt_mod, only: NZCONF, NZCONFQ, OPT_CIPROGRAM
       use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
 C
-#include "thrzer.h"
       REAL(dp), PARAMETER :: THRTT = 1.0D-4
 C
 #include "dcbopt.h"
@@ -6331,7 +6328,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
-!      use thrzer_mod, only: THRZER
+      use thrzer_mod, only: THRZER
 !      use dcborb_mod, only: NASHT, NISHT, NPSHT, NSSHT
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXG2I, IDXG2S, IDXG2U, IDXP2G, IDXS2G, IOBTYP, JTINAC, JTSEC
@@ -6340,7 +6337,6 @@ C***********************************************************************
       INTEGER :: I, II, K, KK
 #include "maxash.h"
 C
-#include "thrzer.h"
 C
 #include "dcborb.h"
 #include "dcbidx.h"

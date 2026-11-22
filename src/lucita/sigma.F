@@ -1044,6 +1044,7 @@ C!    Call Abend2( ' ENFORCED STOP AT END OF DIHDJ ' )
      &                IGROUPLIST,IPROCLIST
 #endif
      &            )
+      use cands_lucita_mod, only: ISSM, ISSPC
       use luci_wrkspc
 *
 * Outer routine for sigma vector generation
@@ -1065,7 +1066,6 @@ C!    Call Abend2( ' ENFORCED STOP AT END OF DIHDJ ' )
 * =====
 *
 *.Definition of c and sigma
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 *
 *./ORBINP/ : NACOB used
 #include "orbinp.inc"
@@ -5143,6 +5143,7 @@ C?     WRITE(6,*) ' DIATERM2_GAS will be called '
      &                 ,LUCLIST,NPARBLOCK,IBLOCKL
 #endif
      &                  )
+      use cands_lucita_mod, only: ICSM, ICSPC, ISSPC
       use luci_wrkspc
 *
 * Generate a set of sigma blocks,
@@ -5175,7 +5176,6 @@ C?     WRITE(6,*) ' DIATERM2_GAS will be called '
 * =====
 *
 *.Definition of c and sigma spaces
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 *. Sigma blocks require
       INTEGER IBLOCK(8,*)
 *

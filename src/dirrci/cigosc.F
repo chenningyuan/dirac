@@ -2138,7 +2138,7 @@ C
 !     Called by:   COSCI_GENTRDM
 !***********************************************************************
 !      use goscom_mod, only: D, NDETMX, NSPACT
-!      use thrzer_mod, only: THRZER
+      use thrzer_mod, only: THRZER
 #include "implicit.h"
       INTEGER :: I
 #include "goscom.h"
@@ -2151,7 +2151,6 @@ C
 !.q
       LOGICAL DOIMAG
 !
-#include "thrzer.h"
 !----------------------------------------------------------------------
       DO I = 1, NSPACT
         IF( IAND(ID, ISHFT (1, I - 1)) .EQ. 0) CYCLE
@@ -2201,7 +2200,7 @@ C
 !     Called by:   COSCI_GENTRDM
 !***********************************************************************
 !      use goscom_mod, only: D, NDETMX, NSPACT
-!      use thrzer_mod, only: THRZER
+      use thrzer_mod, only: THRZER
 #include "implicit.h"
       INTEGER :: I, K
 #include "goscom.h"
@@ -2214,7 +2213,6 @@ C
 !.q
       LOGICAL DOIMAG
 !
-#include "thrzer.h"
 !----------------------------------------------------------------------
       IA = IAND(IDV, ID)
       IB = IAND(IDV, JD)

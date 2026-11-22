@@ -194,7 +194,7 @@ C
 !      use symm_mod, only: MXREP, NE, NO, NREP, NSO, NSV, NV
 !      use complex_mod, only: RCW
 !      use param_mod, only: A0
-!      use eqns_mod, only: EQNS
+      use eqns_mod, only: EQNS
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -236,7 +236,6 @@ C
 #include "symm.inc"
 #include "complex.inc"
 #include "param.inc"
-#include "eqns.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -317,7 +316,7 @@ C
 !      use symm_mod, only: MULTB, MXREP, NE, NO, NREP, NSO, NSV, NV
 !      use param_mod, only: A0
 !      use complex_mod, only: RCW
-!      use eqns_mod, only: EQNS
+      use eqns_mod, only: EQNS
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -360,7 +359,6 @@ C
 #include "symm.inc"
 #include "param.inc"
 #include "complex.inc"
-#include "eqns.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1151,8 +1149,8 @@ C
 C
 !      use param_mod, only: A1
 !      use symm_mod, only: NDIMT1, NDIMT2, NE
-!      use eqns_mod, only: EQNS
 !      use ccpar_mod, only: MASTER, MYPROC
+      use eqns_mod, only: EQNS
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1174,7 +1172,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
 #include "symm.inc"
-#include "eqns.inc"
 #include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------

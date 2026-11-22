@@ -60,7 +60,7 @@ contains
       use ccom_mod, only: DOSPHE
 !      use dcbprp_mod, only: NOPCT
 !      use dcbxpr_mod, only: IPRPLBL, IPRPSYM, IPRPTIM, NPRPS, PRPNAM
-!      use dcbprl_mod, only: IPRLTYP
+      use dcbprl_mod, only: IPRLTYP
 !      use dcbdhf_mod, only: DF, MXDIIS, MXOPEN, NFMAT, NITER
       use quaternion_algebra
       use memory_allocator
@@ -68,7 +68,6 @@ contains
 #include "dcborb.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
-#include "dcbprl.h"
 #include "dcbdhf.h"
 
 !   ----------------------------------------------------------------------------

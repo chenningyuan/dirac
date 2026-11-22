@@ -51,6 +51,7 @@ set(MODULE_SOURCES
     dcbnmr.F90
     dcbnrt.F90
     dcbprj.F90
+    dcbprl.F90
     dcbsusc.F90
     dcbwav.F90
     dcbwt1.F90
@@ -65,6 +66,7 @@ set(MODULE_SOURCES
     dummy.F90
     efield.F90
     energy.F90
+    eqns.F90
     exeinf.F90
     expcom.F90
     frame.F90
@@ -126,6 +128,7 @@ set(MODULE_SOURCES
     symmet.F90
     taymol.F90
     taysol.F90
+    thrzer.F90
     trkoor.F90
     twoao.F90
     twocom.F90

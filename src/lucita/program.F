@@ -23,6 +23,7 @@
 *
       SUBROUTINE GASCI(ISM,ISPC,IPRNT,EREF,LUWRTOUT,IPROCLIST,
      &                 IGROUPLIST)
+      use cands_lucita_mod, only: ICSM, ICSPC, ISSM, ISSPC
       use cecore_lucita_mod, only: ECORE, ECORE_ORIG
       use cc_exc_mod, only: ICC_EXC
       use comjep_mod, only: MXAADST, MXACIJ, MXACJ
@@ -65,7 +66,6 @@ C     COMMON/CSFBAS/KDFTP,KCFTP,KDTOC,KICONF(MXCNSM),KTPFCN(MXCNSM),
 C    &              KICTS(MXCNSM),KSCTS(MXCNSM),KCNFCN(MXCNSM)
 *
 *. Common block for communicating with sigma
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 *
       COMMON/SPINFO/MULTSP,MS2P,
      &              MINOP,MAXOP,NTYP,NDPCNT(MXPCTP),NCPCNT(MXPCTP),

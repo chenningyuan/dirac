@@ -5246,7 +5246,7 @@ C***********************************************************************
       use dcbgen_mod
       use cbirea_mod, only: CNTMAT
       use maxorb_mod, only: MXSHEL
-!      use dcbprl_mod, only: NPRPLBL
+      use dcbprl_mod, only: NPRPLBL
       use siripc_mod, only: INPPRC, NEWGEO
       use consts_mod, only: D0
 !      use dcbxpr_mod, only: NPRPS
@@ -5255,7 +5255,6 @@ C***********************************************************************
 #include "implicit.h"
 C
 #include "dcbxpr.h"
-#include "dcbprl.h"
 C
 C     Initialize temporary variables
 C     ==============================

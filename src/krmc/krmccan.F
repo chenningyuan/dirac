@@ -21,7 +21,7 @@ C  /* Deck rgetno */
      &                  IPRINT,WORK,KFREE,LFREE)
       use priunit_mod, only: LUPRI
       use consts_mod, only: D0, D1, D2
-!      use thrzer_mod, only: THRZER
+      use thrzer_mod, only: THRZER
 !      use dcborb_mod, only: IASH, ICMOQ, IOCC, IORB, N2ASHX, N2ASHXQ, NASH, NASHT, NCMOTQ, NESH, NESHT, NGAS_DC, NISH, NOCC, NORB, NORBT, NPSH
 !      use dcbopt_mod, only: IDENSLR_STATE, ISVRONO, NATOLCR, NZCONFQ, SAVE_REORDERED_NOS, SPINFR_KRMC
       use dcbbas_mod, only: NFBAS
@@ -50,7 +50,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, J, JJ
 C
-#include "thrzer.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -627,7 +626,6 @@ C***********************************************************************
       INTEGER :: I
 #include "maxash.h"
 C
-!#include "thrzer.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -1612,7 +1610,6 @@ C
 !#include "dcbopt.h"
 #include "krciprop.h"
 #include "dcbxpr.h"
-!#include "dcbprl.h"
       DOUBLE COMPLEX XMOM
       REAL*8 OSCL, OSCLABS
       DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,

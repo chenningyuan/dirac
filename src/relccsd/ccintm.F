@@ -228,8 +228,8 @@ C
 !      use param_mod, only: A0, A1, AP5, D0, LFA, LTR
 !      use complex_mod, only: CARITH, RCW
 !      use symm_mod, only: IIVO, IVO, IVOVO, J2VOVO, JJVO, JVOVO, LLOVO, LOOVO, LVOVO, MULTB, MVO, NDIMT1, NDIMT2, NO, NOOT, NOVO, NREP, NV, NV3, NV4, NVO
-!      use eqns_mod, only: EQNS
 !      use ccpar_mod, only: IDIST, MASTER, MYPROC, NMPROC
+      use eqns_mod, only: EQNS
       use interface_to_mpi
       implicit none
 C
@@ -254,7 +254,6 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "eqns.inc"
 #include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
@@ -693,8 +692,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 !      use param_mod, only: A0, A1, D0, LFA, LTR
 !      use symm_mod, only: IIOV, IVOOOT, LLVOOT, LOVOOT, LVVOOT, MULTB, NDIMT2, NO, NOOT, NREP, NV, NV2, NVO, NVOOT, NVVT
-!      use eqns_mod, only: EQNS
 !      use complex_mod, only: RCW
+      use eqns_mod, only: EQNS
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -718,7 +717,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
 #include "symm.inc"
-#include "eqns.inc"
 #include "complex.inc"
 C
 C---------------Local variables--------------------------------------

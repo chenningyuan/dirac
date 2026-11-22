@@ -837,6 +837,7 @@ CTF   print*,'MOMO transformation saved in WORK(KMOMO)'
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GET_3BLKS(KVEC1,KVEC2,KC2)
+      use cands_lucita_mod, only: ISSM, ISSPC
       use luci_wrkspc
 *
 * Allocate the three blocks VEC1, VEC2, C2 used in sigma, densi etc
@@ -863,7 +864,6 @@ CTF   print*,'MOMO transformation saved in WORK(KMOMO)'
 #include "cgas.inc"
 #include "lucinp.inc"
 *. Common block for communicating with sigma
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 *
       IDUM = 1
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'GET_3B')
