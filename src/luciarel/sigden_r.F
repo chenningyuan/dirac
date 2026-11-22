@@ -3623,7 +3623,6 @@ C
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
-#include "cintfo.inc"
 #include "parluci.h"
 #if defined (CRAY_COMPILER)
       call quit('unsupported compiler')

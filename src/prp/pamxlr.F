@@ -140,7 +140,7 @@ C***********************************************************************
 !      use dcbxpr_mod, only: IPRPTIM, PRPNAM
 !      use dcbxrs_mod, only: GPTNRM, JOPSY, JSYMOP, JTIMOP, LUXVC, NCRED, NDAMP, NERED, NFREQ, NPRED, NREDM, NZCONF, NZCONFQ, NZRED, NZVAR, NZVARQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZXOPT, NZXOPTQ, RSPLAB
 !      use dcbprp_mod, only: LONDON, REGRAD
-!      use dcbnmr_mod, only: NOONEI, NOTWOL
+      use dcbnmr_mod, only: NOONEI, NOTWOL
       use dcbham_mod, only: NOSPIN
       use dgroup_mod, only: JFSYM, NBSYM, NFSYM
       use london_direct_hb
@@ -170,7 +170,6 @@ C
 #include "dcbxpr.h"
 #include "dcbxrs.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
 
 C
       LOGICAL   LBUF

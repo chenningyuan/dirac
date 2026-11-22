@@ -10650,14 +10650,13 @@ C***********************************************************************
 !      use dcbxlr_mod, only: INTXLR
 !      use dcbxrs_mod, only: INTBUF, INTDEF, INTFLG, INTXRS
 !      use mxgas_mod, only: MXGAS
-!      use dcbnmr_mod, only: INTNMR
+      use dcbnmr_mod, only: INTNMR
       use dcbkrmc_mod, only: IKRMC_INTBUF, IKRMC_INTDEF, IKRMC_INTFLG
       implicit none
       integer, intent(in) :: new_intflg
 #include "mxgas.h"
 #include "dcbxrs.h"
 #include "dcbxlr.h"
-#include "dcbnmr.h"
       INTXRS       = new_intflg
       INTDEF       = new_intflg
       INTFLG       = new_intflg

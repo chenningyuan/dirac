@@ -277,6 +277,7 @@ C***********************************************************************
 C***********************************************************************
 *
 !      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXPWRD, MXROOT
+      use cintfo_luciarel_mod, only: ISM2D, NL2D
       use dcbbos_mod, only: IBOSYM
       use dgroup_mod, only: NZ
 !      use ipoist8_mod, only: KDUM, KGROUPLIST, KPCBLTP, KPCI1BT, KPCIBT, KPCLBT, KPCLEBT, KPROCLENGTH, KPROCLIST, KPROCLIST2, KVEC1, K_OFFSET
@@ -311,7 +312,6 @@ C***********************************************************************
 !#include "../luciarel/oper.inc"
 #include "../luciarel/cgas.inc"
 !#include "../luciarel/glbbas.inc"
-#include "../luciarel/cintfo.inc"
 !#include "../luciarel/ctcc.inc"
 C information for property run
 !#include "krciprop.h"

@@ -245,6 +245,7 @@ C
 !***********************************************************************
 
       SUBROUTINE GET_XPROP_REOD_KRCI(LUF1MAT,WRK,LWRK,CIRUN)
+      use cintfo_luciarel_mod, only: ISM2D, IUB2D, NL2D
       use priunit_mod, only: LUPRI
       use dcbbos_mod, only: IBOSYM
 !      use dcborb_mod, only: N2ASHX
@@ -288,7 +289,6 @@ C print flags
 C required common blocks
 #include "mxpdim.inc"
 #include "crun.inc"
-#include "cintfo.inc"
 #include "ctcc.inc"
 #include "glbbas.inc"
 C information for property run

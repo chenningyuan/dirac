@@ -36,7 +36,6 @@
 #include "ctccp.inc"
 #include "cands.inc"
 #include "cstate.inc"
-#include "cintfo.inc"
 #include "cgas.inc"
 C added
 #include "cicisp.inc"

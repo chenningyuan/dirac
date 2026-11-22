@@ -18,6 +18,7 @@
 
 module london_direct_hb
 
+      use dcbnmr_mod, only: INTNMR, LUTWOL
       use dgroup_mod, only: IPQTOQ, IQTOPQ, IRQMAT, JBTOF, JQBAS, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
       use dcbgen_mod, only: PARCAL, RELCAL
@@ -59,7 +60,6 @@ module london_direct_hb
    integer :: irepdm(nr_mat*max_nr_xyz_comp)
 
 #include "dcborb.h"
-#include "dcbnmr.h"
 #include "dcbprp.h"
 #include "dcbdhf.h"
 

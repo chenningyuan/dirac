@@ -20,6 +20,7 @@ set(MODULE_SOURCES
     chrnos.F90
     chrsgn.F90
     chrxyz.F90
+    cintfo_luciarel.F90
     codata.F90
     comdis.F90
     consts.F90
@@ -42,6 +43,7 @@ set(MODULE_SOURCES
     dcbloc.F90
     dcbmp2.F90
     dcbmp2no.F90
+    dcbnmr.F90
     dcbnrt.F90
     dcbsusc.F90
     dcbwav.F90
@@ -124,7 +126,6 @@ set(MODULE_SOURCES
     xyzpow.F90
     # drafts, not migrated yet
     #dcbesr.F90
-    #dcbnmr.F90
 )
 
 # Create TARGET

@@ -37,6 +37,9 @@
 !      use cintfo_mod, only: ISM2D, NL2D
 !      use cands_mod, only: ICSM, ICSPC, ISSM, ISSPC
 !      use integrals_off_mod, only: NTERMS
+#if defined (VAR_MPI)
+      use cintfo_luciarel_mod, only: ISM2D, NL2D
+#endif
       use noccn_inf_mod, only: IDENSI_STATE, NOOCCN_DENS_RUN
       use dgroup_mod, only: ITERSEOUT, NZ
 #if defined (VAR_MPI)
@@ -86,7 +89,6 @@
 !#include "gasstr.inc"
 #include "cgas.inc"
 #include "ctcc.inc"
-#include "cintfo.inc"
 *
 *. Common block for communicating with sigma
 #include "cands.inc"

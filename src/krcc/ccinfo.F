@@ -1819,6 +1819,8 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
 *
 *. Last modifications : Jan 98, relativistic integrals added
 *
+      use cintfo_krcc_mod, only: I1234S, I12S, I34S, ISM2D, IUB1D,
+     &  IUB2D, L1D, L2D, NBINT1, NBINT2, NINT1, NINT2, NL1D, NL2D
       IMPLICIT REAL*8(A-H,O-Z)
 *
 * =====
@@ -1844,7 +1846,6 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
 *. Output
 * =======
 *. Atmost 10 double group integral lists
-#include "cintfo.inc"
 *
       NTEST = 0
 *

@@ -26,7 +26,6 @@ C will probably have to delete most of these again
 #include "cgas.inc"
 #include "glbbas.inc"
 C added by lasse
-#include "cintfo.inc"
 C
       real(8), allocatable :: WORK(:)
 
@@ -155,7 +154,6 @@ C
 #include "csm.inc"
 #include "ctcc.inc"
 #include "ctccp.inc"
-#include "cintfo.inc"
 *
 * for real or complex groups
       COMMON/CMXCJ/MXCJ

@@ -31,8 +31,8 @@ C     Added: MI & HJAaJ, 2002/2003
 C
 C*****************************************************************************
 !      use dcbprp_mod, only: EXPPED, FULMAT, IPRDEF, LONDON, MSUSCP, NOORTH, OPTROT, REGRAD, SEPTEP, SHIELD, SYMCON
-!      use dcbnmr_mod, only: EPREORTH, INTNMR, NOONEI, NOTWOL
 !      use dcbxlr_mod, only: XLR_SKIPEP
+      use dcbnmr_mod, only: EPREORTH, INTNMR, NOONEI, NOTWOL
       use dcbham_mod, only: BSS, LEVYLE, RDSUSLLMOD, X2C
       use dirac_cfg
 #ifdef MOD_LAO_REARRANGED
@@ -48,7 +48,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I
 #include "dcbprp.h"
-#include "dcbnmr.h"
 #include "dcbxlr.h"
 C
 
@@ -875,7 +874,7 @@ C  Written by Miro Ilias (based on TEC's routine TECTRA), august 2003, Odense.
 C
 C*****************************************************************************
 !      use dcborb_mod, only: IORB, NESH, NORB, NORBT, NPSH
-!      use dcbnmr_mod, only: EPREORTH
+      use dcbnmr_mod, only: EPREORTH
       use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 #ifdef MOD_LAO_REARRANGED
       use london_helper
@@ -885,7 +884,6 @@ C*****************************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0
 #include "dcborb.h"
-#include "dcbnmr.h"
 C
       DIMENSION  TMAT(NORBT,NORBT,NZ), 
      &           HMAT(NORBT,NORBT,NZ),
@@ -1213,7 +1211,7 @@ C    august 2003, Odense.
 C
 C*****************************************************************************
 !      use dcborb_mod, only: ICMOQ, IORB, NESH, NOCC, NORB, NORBT, NPSH
-!      use dcbnmr_mod, only: EPREORTH
+      use dcbnmr_mod, only: EPREORTH
       use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NFSYM, NZ
 #ifdef MOD_LAO_REARRANGED
       use london_helper
@@ -1225,7 +1223,6 @@ C*****************************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0
 #include "dcborb.h"
-#include "dcbnmr.h"
       DIMENSION DMAT(N2BBASX,NZ),CMO(*),IBEIG(*),
      &          TMAT(NORBT,NORBT,NZ),IQSYM(4),WORK(*)
 
@@ -1927,7 +1924,7 @@ C*****************************************************************************
 #if defined (VAR_MPI)
       use dcbgen_mod, only: PARCAL
 #endif
-!      use dcbnmr_mod, only: INTNMR
+      use dcbnmr_mod, only: INTNMR
 !      use dcbprp_mod, only: IPRPRP, LONDON
       use dcbsusc_mod, only: SUS2EL
       use quaternion_algebra
@@ -1947,7 +1944,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I, J
 C
-#include "dcbnmr.h"
 #include "dcbprp.h"
 C
 C
@@ -3556,8 +3552,8 @@ C
 C*****************************************************************************
 !      use dcborb_mod, only: N2ORBXQ, NORBT
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
-!      use dcbnmr_mod, only: LUFCKL, LUTWOL, NOONEI, NOTWOL
 !      use dcbprp_mod, only: BXLAO, BYLAO, BZLAO
+      use dcbnmr_mod, only: LUFCKL, LUTWOL, NOONEI, NOTWOL
       use dgroup_mod, only: IPQTOQ, NZ
 #ifdef MOD_LAO_REARRANGED
       use london_helper
@@ -3571,7 +3567,6 @@ C
 #include "dcborb.h"
 #include "dcbxpr.h"
 C
-#include "dcbnmr.h"
 C
 !gosia, i need bxlao, bylao, bzlao
 #include "dcbprp.h"

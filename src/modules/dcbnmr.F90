@@ -1,28 +1,18 @@
 !-----------------------------------------
 ! Module with variables previously defined
-! at dcbnmr.h include file
+! at src/include/dcbnmr.h include file (COMMON /CBLNMR/, /CBINMR/)
 !-----------------------------------------
+! ******************************************
+! ***            NMR module              ***
+! ***
+!  NOTWOL - do not include two-electron London contribution
+!  NOOONEI - do not include reorthonormalization contributions
+!  INTNMR - what kind of integrals for LAO 2-el.contribution
+! ******************************************
    module dcbnmr_mod
-!  ******************************************
-!  ***            NMR module              ***
-!  ***
-!  ***   LUTWOL - file number for two-ele.contrib. of LAO
-!  ***   LUFCKL - file number  of LAO Fock matrix
-! 
-!   NOTWOL - do not include two-electron London contribution
-!   NOONEI - do not include reorthonormalization contributions
-!   INTNMR - what kind of integrals for LAO 2-el.contribution
-! 
-!  ******************************************
-!   implicit none
-!
-   !PARAMETERS
-!   INTEGER, PARAMETER :: LUTWOL = 69
-!   INTEGER, PARAMETER :: LUFCKL = 70
-!
-   !VARIABLES
-!   INTEGER :: INTNMR
-!   LOGICAL :: NOTWOL, NOONEI, EPREORTH
-!
-#include"../include/dcbnmr.h"
+   implicit none
+   integer, parameter :: LUTWOL = 69
+   integer, parameter :: LUFCKL = 70
+   integer :: INTNMR
+   logical :: NOTWOL, NOONEI, EPREORTH
    end module dcbnmr_mod

@@ -4048,7 +4048,6 @@ C***********************************************************************
 #include "dcbesr.h"
 #include "dcbxlr.h"
 #include "dcbexp.h"
-!#include "dcbnmr.h"
 
       logical, allocatable :: DOATOM(:)
       CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4
@@ -5169,7 +5168,6 @@ C-----------------------------------------------------------------------
 !#include "dcbesr.h"
 #include "dcbxlr.h"
 !#include "dcbexp.h"
-!#include "dcbnmr.h"
 C
       LOGICAL   DOATOM(NUCIND)
       CHARACTER PNAME*16,
@@ -7011,7 +7009,7 @@ C***********************************************************************
 !      use dcbprl_mod, only: PRPLBL
 !      use dcbexp_mod, only: LEXPP
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEE, XLR_SKIPEP
-!      use dcbnmr_mod, only: EPREORTH
+      use dcbnmr_mod, only: EPREORTH
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
@@ -7028,7 +7026,6 @@ C***********************************************************************
 #include "dcbprl.h"
 #include "dcbexp.h"
 #include "dcbxlr.h"
-#include "dcbnmr.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0, D2I = 0.50D0)
       LOGICAL TEST,DOATOM(NUCIND), ee, ep,occ
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
@@ -9661,7 +9658,6 @@ C
 #include "dcbprp.h"
 #include "dcbxlr.h"
 !#include "dcbexp.h"
-!#include "dcbnmr.h"
       CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4
       REAL*8    PFAC(3)
       INTEGER   IOP(3)
@@ -9874,7 +9870,6 @@ C
 !#include "dcbesr.h"
 !#include "dcbxlr.h"
 !#include "dcbexp.h"
-!#include "dcbnmr.h"
       CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4,chcomp*1
       DIMENSION WORK(LWORK)
 !#include "dcbxpr.h"

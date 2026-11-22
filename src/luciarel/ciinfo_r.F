@@ -1342,6 +1342,8 @@ C?    WRITE(6,*) (ICMBSPC(II,ICISPC),II=1, LCMBSPC(ICISPC))
 *
 !      use crun_mod, only: IDENSI, ISPINFREE
 !      use cintfo_mod, only: ISM2D, IUB1D, IUB2D, L1D, L2D, LMAXE2LST, NINT2, NL1D, NL2D
+      use cintfo_luciarel_mod, only: ISM2D, IUB1D, IUB2D, L1D, L2D,
+     &  LMAXE2LST, NINT2, NL1D, NL2D
       use symmetry_setup_krci
       use mospinor_info
 #include "implicit.h"
@@ -1363,7 +1365,6 @@ C?    WRITE(6,*) (ICMBSPC(II,ICISPC),II=1, LCMBSPC(ICISPC))
 C     COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,
 C    &              NL1D,IUB1D(2,10),L1D(10),
 C    &              NL2D,IUB2D(4,10),ISM2D(3,10),L2D(10)
-#include "cintfo.inc"
 
 
       NTESTL = 0

@@ -15,7 +15,6 @@
 #include "mxpdim.inc"
 #include "glbbas.inc"
 #include "clunit.inc"
-#include "cintfo.inc"
 #include "orbinp.inc"
 *Added by Lasse
 #include "strinp.inc"

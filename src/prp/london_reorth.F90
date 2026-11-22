@@ -18,6 +18,7 @@
 
 module london_reorth_hb
 
+      use dcbnmr_mod, only: EPREORTH, INTNMR, LUFCKL
       use dcbham_mod, only: NOSPIN, SPINFR
       use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
   use memory_allocator 
@@ -53,7 +54,6 @@ module london_reorth_hb
   private
 
 #include "dcborb.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dcbprp.h"
 #include "dcbdhf.h"
