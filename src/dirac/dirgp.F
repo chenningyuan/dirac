@@ -347,7 +347,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use dcbbas_mod, only: NTBAS
       use aovec_mod, only: MXCONT
       use primit_mod, only: PRICCF, PRIEXP
-      use maxorb_mod, only: MXPRIM, MXSHEL
       use checkpoint
 
 !      L. Visscher, October 2018
@@ -1561,12 +1560,8 @@ C
 C     Written by T.Saue March 12 2001
 C
 C***********************************************************************
-      use aovec_mod, only: MXCONT
       use priunit_mod, only: LUPRI
       use ccom_mod, only: NHTYP
-      use maxaqn_mod, only: MXQN
-      use maxorb_mod, only: MXPRIM, MXSHEL
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use primit_mod, only: PRIEXP
       use shells_mod, only: JSTRT, KMAX, LCLASS, NCENT, NHKT, NUCO
       use dummy_mod, only: DUMMY
@@ -2662,7 +2657,6 @@ C       DONRM - normalize column by column
 C       
 C
 C***********************************************************************
-      use maxaqn_mod, only: MXQN
       use ccom_mod, only: NHTYP
 #include "implicit.h"
 C
@@ -2701,10 +2695,7 @@ C       IC   - L(1),S(2) component
 C       
 C
 C***********************************************************************
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB, MXSHEL
       use symmet_mod, only: ICOS
       use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH, NSTRT
       use pgroup_mod, only: REP
@@ -2819,11 +2810,8 @@ C
 C***********************************************************************
       use symmet_mod, only: ISYMAO
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use nuclei_mod, only: ISTBNU
       use ccom_mod, only: NHKOFF
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use sphtrm_mod, only: CSP, ISPADR
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2927,7 +2915,6 @@ C     Output:
 C       SPHM - transformation matrix
 C       
 C***********************************************************************
-      use maxaqn_mod, only: MXQN
       use ccom_mod, only: NHTYP
 #include "implicit.h"
 C
@@ -2976,18 +2963,13 @@ C
 CMI:  IPRINT is IPRHAM (from GMOTRA)
 C
 C***********************************************************************
-      use mxcent_mod, only: MXCENT
       use xyzpow_mod, only: MVAL, NVAL
-      use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use priunit_mod, only: LUPRI
       use ccom_mod, only: NHKOFF
       use symmet_mod, only: ICOS, IPTSYM
       use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NSTRT,
      &  NUCO
       use primit_mod, only: NPSHEL
-      use maxmom_mod, only: MXAQNM
-      use aovec_mod, only: MXCONT
-      use maxaqn_mod, only: MXAQN, MXQN
       use pgroup_mod, only: REP
       use sphtrm_mod, only: CSP, ISPADR
       use kinds_mod, only: dp
@@ -3445,11 +3427,8 @@ C
 C     Written by T. Saue Mar 4 2008
 C
 C***********************************************************************
-      use mxcent_mod, only: MXCENT
       use dgroup_mod, only: IQMAP, JBTOF, JQBAS, NZ
       use symmet_mod, only: ICOS, ISYMAX, MAXREP
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use dcbham_mod, only: MC
       use dcbbas_mod, only: NBBAS
@@ -3636,9 +3615,6 @@ C***********************************************************************
       use dcbham_mod, only: MC
       use dgroup_mod, only: IPQTOQ, IQMAP, JFSYM, NZ
       use symmet_mod, only: ICOS, ISYMAX
-      use mxcent_mod, only: MXCENT
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS
       use quaternion_algebra
       use kinds_mod, only: dp
@@ -3964,9 +3940,6 @@ C
 C*****************************************************************************
       use symmet_mod, only: ISYMAX, MAXOPR, MULT, PT
       use nuclei_mod, only: CORD, ISTBNU, NUCIND
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0
@@ -4290,7 +4263,6 @@ C     Find correct ordering of nuclei.
 C     Written by Trond Saue
 C
 C***********************************************************************C
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dcbham_mod, only: MC
       use dcbbas_mod, only: NTBAS
       use nuclei_mod, only: NUCDEP
@@ -4608,8 +4580,6 @@ C***********************************************************************
 !      and return this (after some clean-up) as a basis_set_info_t
 
       use dcbbas_mod, only: NTBAS
-      use aovec_mod, only: MXCONT
-      use maxorb_mod, only: MXPRIM, MXSHEL
       use shells_mod, only: CENT, JSTRT, NCENT, NHKT, NLRGSH, NSMLSH,
      &  NUCO, NUMCF
       use primit_mod, only: PRICCF, PRIEXP
@@ -4663,7 +4633,6 @@ C***********************************************************************
 !      could be improved by storing symmetry info in a data_type 
 
       use nuclei_mod, only: NUCDEP
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
        use basis_set_datatypes
        implicit none
 
@@ -4744,10 +4713,7 @@ C***********************************************************************
 !      could be improved by storing symmetry info in a data_type 
 
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use nuclei_mod, only: CORD, ISTBNU, NUCIND
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
        implicit none
 
        integer, intent(out) :: iunique_to_all(2,*) 

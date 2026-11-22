@@ -962,7 +962,7 @@ C   Johann Pototschnig, Fall 2019
 
 C---------------Common Blocks--------------------------------------
 C
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: DOEXP, HDF5IO, MXPRP_WF, NPRP_WF, PRP_WF
 #include "implicit.h"
       INTEGER :: I

@@ -34,7 +34,7 @@ C***********************************************************************
       use exacorr_cfg, only: exa_input
 #endif
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 #include "implicit.h"
       INTEGER :: I
 C
@@ -494,7 +494,7 @@ C                    July 2006 - M.Ilias, Prievidza
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: IPEPOLAR, IPRPRP
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
       use kinds_mod, only: dp
@@ -586,7 +586,6 @@ C
 C     Written by T.Saue Feb 26 2003
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCIND
 #include "implicit.h"
 C
@@ -613,9 +612,7 @@ C     Written by T. Saue Feb 26 2003
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
       use symmet_mod, only: IPTCNT, MAXREP
       use pgroup_mod, only: REP
       use chrnos_mod, only: CHRNOS
@@ -686,7 +683,6 @@ C     Written by T.Saue Feb 19 1997
 C     Last revision: J. Thyssen - Oct 13 1998
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCIND
 #include "implicit.h"
 C
@@ -713,9 +709,7 @@ C     Last revision: J. Thyssen - Oct 13 1998
 
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
 !      use dcbxpr_mod, only: PRPNAM
 !      use dcbexp_mod, only: IPEFG, LEXPP, MAXEXP, NEXPP
       use nuclei_mod, only: ISTBNU, NUCIND
@@ -784,7 +778,6 @@ C
 C     Written by J. Thyssen - Oct 7 1999
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCIND
 #include "implicit.h"
 C
@@ -811,9 +804,7 @@ C     Written by J. Thyssen - Oct 7 1999
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
       use codata_mod, only: GFAC
       use pi_mod, only: PI
 !      use dcbxpr_mod, only: PRPNAM
@@ -892,7 +883,6 @@ C
 C     Written by: J. Thyssen - Sept 30 1999
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCIND
 #include "implicit.h"
 C
@@ -924,9 +914,7 @@ C     Written by: J. Thyssen - Sept 30 1999
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
 !      use dcbxpr_mod, only: PRPNAM
 !      use dcbexp_mod, only: IPEFT, IPEFTNTL, LEXPP, MAXEXP, NEXPP
       use nuclei_mod, only: ISTBNU, NUCIND
@@ -1028,7 +1016,6 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCIND
 #include "implicit.h"
 C
@@ -1055,9 +1042,7 @@ C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use nuclei_mod, only: NAMN, NUCDEG, NUCDEP, NUCIND
       use pgroup_mod, only: REP
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
@@ -1700,7 +1685,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use codata_mod, only: DEBYE
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
       use dipole_mod, only: DIPME, DIPMN
 !      use dcbexp_mod, only: IPDIPOLE
 #include "implicit.h"
@@ -1762,7 +1747,7 @@ C     Written by J. Thyssen - Oct 13 1998
 C     Last revision by Joost van Stralen - June 11 2002
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
       use nuclei_mod, only: NUCIND
 #include "implicit.h"
 C
@@ -1798,7 +1783,7 @@ C      Last revision by Joost van Stralen - June 11 2002
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: EFG, NQCCCART
       use nuclei_mod, only: IZATOM, NAMDEP, NUCDEG, NUCIND
       use nqcc_mod, only: EFGEL, EFGNUC, EFGTOT
@@ -1944,9 +1929,7 @@ C     Last revision
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
 !      use dcbexp_mod, only: IPEFG
       use nuclei_mod, only: ISTBNU, NAMDEP, NUCDEG, NUCIND
       use symmet_mod, only: ISYMAX, MAXREP, PT
@@ -2015,7 +1998,7 @@ C     Written by J. Thyssen - Oct 13 1998
 C     Last revision by Joost van Stralen - June 11 2002
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: IPRPRP
       use nuclei_mod, only: NUCIND
 #include "implicit.h"
@@ -2056,7 +2039,7 @@ C     Last revision by Joost van Stralen - June 11 2002
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
 !      use dcbexp_mod, only: IPREXP
       use nuclei_mod, only: NAMDEP, NUCDEG, NUCIND
       use nqcc_mod, only: EFGEL, EFGNUC, EFGTOT, EFG_METHOD
@@ -2186,8 +2169,7 @@ C  *********************************************************************
 C
       use codata_mod, only: XTANG
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT, MXCOOR
-      use consts_mod, only: D0
+      use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: DOVDW, IPEPOLAR
 !      use dcbxlr_mod, only: BFREQ, MAXFLR, NBFREQ, NLRAPT, NLRBPT, THCLR, XLR_SKIPEP, XLR_UNCOUP
 #include "implicit.h"
@@ -2349,7 +2331,6 @@ C     Written by J. Thyssen - Oct 13 1998
 C     Last revision: Joost van Stralen - June 7 2002
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP, NUCIND
 #include "implicit.h"
 C
@@ -2398,9 +2379,7 @@ C     Last revision: Joost van Stralen - June 7 2002
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
 !      use dcbexp_mod, only: IPEFT, IPEFTNTL
       use nuclei_mod, only: ISTBNU, NAMDEP, NUCDEG, NUCDEP, NUCIND
       use chrxyz_mod, only: CHRXYZ
@@ -2702,9 +2681,7 @@ C     Written by J. Thyssen - Nov 15 1999
 C     Nuclear contribution to electric field third-derivatives.
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEP, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
 #include "implicit.h"
@@ -2885,7 +2862,7 @@ C
 C     Written by J. Thyssen - Oct 12 1999
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: IPRPRP
       use nuclei_mod, only: NUCDEP, NUCIND
 #include "implicit.h"
@@ -2926,7 +2903,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use consts_mod, only: D0, D1, D2, D4
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
 !      use dcbexp_mod, only: IPPVC
       use nuclei_mod, only: ISOTOP, IZATOM, NAMDEP, NUCDEG, NUCDEP,
      &  NUCIND
@@ -3026,7 +3003,6 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbxlr_mod, only: NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEP
       use nuclei_mod, only: NUCDEP, NUCIND
 #include "implicit.h"
@@ -3082,7 +3058,7 @@ C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: ABUND, IPRPRP, IPSPNSPN
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT, TRIAB
       use nuclei_mod, only: IZATOM, NAMDEP, NAMN, NUCDEG, NUCDEP, NUCIND
@@ -3431,7 +3407,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck spiana */
       SUBROUTINE SPIANA(PRIBAS,SPNPAR,IATOM1,IATOM2,
      &                  WORK,KFREE,LFREE)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP
 #include "implicit.h"
       INTEGER :: I, J
@@ -3490,7 +3465,6 @@ C     Less memory intensive version Feb 1997 - tsaue
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NATOMS, NUCDEP
 #include "implicit.h"
 C
@@ -3531,9 +3505,6 @@ C     Less memory intensive version Feb 1997 - tsaue
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
       use nuclei_mod, only: NAMEX
       use symmet_mod, only: IPTCOR, MAXREP, NCRREP
       use kinds_mod, only: dp
@@ -3627,7 +3598,6 @@ C     Define diamagnetic spin-orbit operator
 C     Written by T.Saue - Feb 21 1997
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCIND
 #include "implicit.h"
 C
@@ -3655,9 +3625,7 @@ C
 C***********************************************************************
       use cbiher_mod, only: NPQUAD, TRIANG
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
       use nuclei_mod, only: NAMN, NUCIND
       use symmet_mod, only: IPTCNT, MAXREP
 !      use dcbprp_mod, only: IPDSO, NDSOIN, NPQUAD, TRIANG
@@ -3754,7 +3722,6 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP, NUCIND
 #include "implicit.h"
 C
@@ -3801,7 +3768,7 @@ C     Last revised Jan 19 1998 - tsaue
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: ABUND, IPDSO, IPRPRP, NDSOIN
 !      use dcbxpr_mod, only: IPRPLBL
 !      use dcbprl_mod, only: PRPLBL
@@ -4067,11 +4034,8 @@ C***********************************************************************
       use london_helper
 #endif
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
-      use consts_mod, only: D0
       use chrxyz_mod, only: CHRXYZ
       use chrnos_mod, only: CHRNOS
       use nuclei_mod, only: NAMN, NUCDEP, NUCIND
@@ -4446,7 +4410,7 @@ C
 C     Written by S. Knecht Sep 2008
 C
 C***********************************************************************
-      use consts_mod, only: D0, D1
+      use consts_mod, only: D1
 !      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
 #include "implicit.h"
       INTEGER :: II
@@ -4573,7 +4537,6 @@ C     Written by T. Fleig, May 2012
 C     and Malaya K. Nayak, Dec 2019
 C
 C***********************************************************************
-      use consts_mod, only: D0
       use dcbgen_mod, only: CVAL
 !      use dcbxpr_mod, only: PRPNAM
 !      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
@@ -4622,12 +4585,8 @@ C     Written by Malaya K. Nayak August 30 2013
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use consts_mod, only: D0
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbxpr_mod, only: PRPNAM
 !      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
-      use maxaqn_mod, only: MXAQN, MXQN
       use nuclei_mod, only: NUCIND
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
       use chrxyz_mod, only: CHRXYZ
@@ -4736,9 +4695,6 @@ C
 C     Written by Malaya K. Nayak Feb 26 2014
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use codata_mod, only: GFAC
       use pi_mod, only: PI
       use consts_mod, only: D1, D3, D4
@@ -4815,9 +4771,6 @@ C
 C     Written by Malaya K. Nayak - March 20 2015
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
 !      use dcbxpr_mod, only: PRPNAM
       use nuclei_mod, only: ISTBNU, NUCIND
       use symmet_mod, only: ISYMAX, MAXREP
@@ -4898,9 +4851,6 @@ C
 C     Written by Malaya K. Nayak July 19 2018
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
 !      use dcbxpr_mod, only: PRPNAM
       use nuclei_mod, only: ISTBNU, NUCIND
       use symmet_mod, only: ISYMAX, MAXREP
@@ -4974,10 +4924,8 @@ C     Agustin Aucar                        Last revision: november  2022
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-      use consts_mod, only: D0, D3, D4
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use consts_mod, only: D3, D4
+      use mxcent_mod, only: MXCOOR
       use codata_mod, only: GFAC
       use pi_mod, only: PI
       use nuclei_mod, only: GAUNUC, ISTBNU, NAMDEP, NUCDEP, NUCIND,
@@ -5177,7 +5125,6 @@ C     PV contribution to spin-spin coupling
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCIND
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
@@ -5203,9 +5150,7 @@ C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use codata_mod, only: GFAC
       use pi_mod, only: PI
       use nuclei_mod, only: GAUNUC, ISTBNU, NAMDEP, NAMN, NUCDEP,
@@ -5368,9 +5313,7 @@ C     Written by Juan J. Aucar - March 2025
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCOOR
       use nuclei_mod, only: GAUNUC, ISTBNU, NAMDEP, NUCIND, NUCPRE
       use symmet_mod, only: IPTCNT, IPTNUC, ISYMAX, MAXREP
       use chrxyz_mod, only: CHRXYZ
@@ -5558,7 +5501,6 @@ C      Aucar et al., JCP 110 (1999) 6208) )
 !     updates by MI&HJJ 2003,2004
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCIND
 #include "implicit.h"
 C
@@ -5589,9 +5531,7 @@ C
 C***********************************************************************
       use cbiher_mod, only: TRIANG
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
       use nuclei_mod, only: NAMN, NUCIND
       use symmet_mod, only: IPTCNT, MAXREP
 !      use dcbprp_mod, only: IPNSTDIA, LONDON, NNSTIN, TRIANG
@@ -6444,8 +6384,6 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
 !      use dcbprp_mod, only: IMAGOUT, IPLONDON, IPMSUSC, IPRPRP, LONDON, MSUSCDIA
 !      use dcbexp_mod, only: IPDSUSC, LEXPP, NEXPP
 !      use dcbxlr_mod, only: BFREQ, LLRAPU, LLRBPU, NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEP
@@ -7005,7 +6943,6 @@ C
 C     Written by T.Enevoldsen Nov. 7 1997
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbxlr_mod, only: NBFREQ, NLRAPT, NLRBPT
       use nuclei_mod, only: NUCDEP, NUCIND
 #include "implicit.h"
@@ -7080,9 +7017,7 @@ C***********************************************************************
 #endif
       use memory_allocator
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
       use symmet_mod, only: IPTAX, MAXOPR
       use nuclei_mod, only: ISTBNU, NAMDEP, NAMDPX, NUCDEP, NUCIND
 #include "implicit.h"
@@ -7515,7 +7450,7 @@ C
 CMI/Dec '04  DMATLO is reserved for future use
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: LONDON, NSTDIA, SEPTEP
 !      use dcbxlr_mod, only: THCLR, XLR_SKIPEP
       use codata_mod, only: ALPHA2
@@ -7741,12 +7676,10 @@ C     Agustin Aucar                        Last revision: november  2022
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: IPRPRP, IP_PVC_SHIELD
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEE, XLR_SKIPEP
       use nuclei_mod, only: NATOMS, NFLOAT, NUCDEP, NUCIND
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use symmet_mod, only: IPTAX
       use consts_mod, only: D0
       use memory_allocator
@@ -7920,15 +7853,12 @@ C     Agustin Aucar - November 2022
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
       use nuclei_mod, only: CHARGE, ISOTOP, ISTBNU, IZATOM, NAMDEP,
      &  NUCDEP, NUCIND
       use symmet_mod, only: MAXOPR
       use spinro_mod, only: GTRANT
       use codata_mod, only: CVEL, GFERMI, S2THETAW, XFMP
-      use consts_mod, only: D0, D1, D2, D4, D6
+      use consts_mod, only: D0, D1, D2, D4
       implicit none
 C
       integer I,J
@@ -8092,7 +8022,6 @@ C     PV contribution to spin-spin coupling
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCIND
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
@@ -8121,7 +8050,7 @@ C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: IP_PVC_SPINSPIN
 !      use dcbxlr_mod, only: NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEP
       use nuclei_mod, only: IZATOM, NAMDEP, NUCDEP
@@ -8229,7 +8158,7 @@ C     doi Ref.: https://doi.org/10.1039/D4CP04840G
 C=======================================================================
       use priunit_mod, only: LUPRI
       use consts_mod, only: D0, D1, D2, D4
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: ABUND, IPRPRP, IP_PVC_EFG
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEE, XLR_SKIPEP
       use nuclei_mod, only: GAUNUC, ISOTOP, IZATOM, NAMDEP, NAMN,
@@ -8567,7 +8496,7 @@ C
 C     Written by T. Saue Feb 26 2003
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: IPRPRP
       use nuclei_mod, only: NUCDEP, NUCIND
 #include "implicit.h"
@@ -8607,7 +8536,7 @@ C     Written by T.Saue - Feb 26 2003
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
 !      use dcbexp_mod, only: IPREXP
       use nuclei_mod, only: NAMDEP, NUCDEG, NUCDEP, NUCIND
 #include "implicit.h"
@@ -8667,9 +8596,7 @@ C     Written by T.Saue Feb 26 3004
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
 !      use dcbexp_mod, only: IPEFN
       use nuclei_mod, only: ISTBNU, NAMDEP, NUCDEG, NUCDEP, NUCIND
       use symmet_mod, only: ISYMAX, MAXREP, PT
@@ -8734,7 +8661,6 @@ C
 C     Written by T.Saue May 8 2004
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCIND
 #include "implicit.h"
 C
@@ -8760,9 +8686,7 @@ C
 C***********************************************************************
       use pi_mod, only: PI
       use codata_mod, only: GFAC
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
       use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND, NUCPRE
       use symmet_mod, only: IPTNUC, MAXREP
       use chrnos_mod, only: CHRNOS
@@ -8820,7 +8744,7 @@ C                    Agustin Aucar, November 2019
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use dcbgen_mod, only: CVAL
 !      use dcbprp_mod, only: IPROTG
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
@@ -9049,7 +8973,7 @@ C              Agustin Aucar, November 2019
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use orgcom_mod, only: CMXYZ, GAGORG
 !      use dcbprp_mod, only: IPROTG, IPRPRP
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEE, XLR_SKIPEP
@@ -9243,9 +9167,6 @@ C     K.Ruud, June-94
 C
 C***********************************************************************
 C
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use nuclei_mod, only: CHARGE, ISTBNU, NATOMS, NFLOAT, NUCIND
       use symmet_mod, only: MAXOPR
       use rotg_mod, only: GFANUC
@@ -9323,9 +9244,7 @@ C     Agustin Aucar - November 2019
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCOOR
       use nuclei_mod, only: CORD, ISOTOP, ISTBNU, IZATOM, NUCIND
       use symmet_mod, only: IPTAX, ISYMAX, MAXOPR, PT
       use rotg_mod, only: GFANUC
@@ -9619,7 +9538,6 @@ C    Modifications: Miro Ilias, Tel Aviv, Nov. 2007
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXQN
       use dgroup_mod, only: NZ
       use dcbbas_mod, only: NTBAS
       use dcbgen_mod, only: LUBSS
@@ -9730,7 +9648,7 @@ C     Written by T. Saue and K. Ruud Jan 8 2008
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use codata_mod, only: G1FAC
       use dcbgen_mod, only: CVAL
 !      use dcbprp_mod, only: IPEPOLAR, IPSHIELD, LONDON
@@ -9880,7 +9798,7 @@ C     Written by T. Saue in collaboration with K. Ruud Feb 2008
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: IPEPOLAR, IPSHIELD, LONDON
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT
       use codata_mod, only: XFMOL, XTANG, XTKAYS, XTNM
@@ -9946,7 +9864,7 @@ C
       subroutine def_blao(work, lwork, iprint)
 !     ------------------------------------------------------------------
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: BXLAO, BYLAO, BZLAO, DOEXP, IPLONDON, IP_BLAO
 #include "implicit.h"
       INTEGER :: J
@@ -10025,7 +9943,6 @@ C**********************************************************
 C     Define effective density operator
 C     Written by R. van Meer September 2010
 C**********************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCIND
 #include "implicit.h"
 
@@ -10046,9 +9963,7 @@ C**********************************************************
 C     Define effective density operator
 C     Written by R. van Meer September 2010
 C**********************************************************
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
       use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND, NUCPRE
       use symmet_mod, only: IPTNUC, MAXREP
       use chrnos_mod, only: CHRNOS
@@ -10099,7 +10014,6 @@ C
 C     Written by T. Saue July 25 2012
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCIND
 #include "implicit.h"
 C
@@ -10126,9 +10040,7 @@ C     Written by J. Thyssen - Oct 7 1999
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
 !      use dcbxpr_mod, only: PRPNAM
 !      use dcbexp_mod, only: IPEFFDEN, LEXPP, MAXEXP, NEXPP
       use nuclei_mod, only: GAUNUC, ISTBNU, NAMDEP, NUCIND, NUCPRE
@@ -10589,9 +10501,7 @@ C     Last revision by W.A. de Jong - April 1999
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMDEP, NUCDEG, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use nqcc_mod, only: EFGNUC
@@ -10685,10 +10595,6 @@ C     Written by T.Saue  - Feb 2003
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
-      use consts_mod, only: D0
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMDEP, NUCDEG,
      &  NUCDEP, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
@@ -10912,9 +10818,7 @@ C     Agustin Aucar and Trond Saue - September 2013
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT, MXCOOR
       use nuclei_mod, only: NAMN, NUCDEP, NUCIND
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
       use dgroup_mod, only: LINEAR
@@ -10925,7 +10829,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
       use dcbgen_mod, only: CVAL
       use spinro_mod, only: LINDET
-      use consts_mod, only: D0, D1
+      use consts_mod, only: D1
       use chrnos_mod, only: CHRNOS
       use memory_allocator
 C
@@ -11255,14 +11159,12 @@ C     Agustin Aucar and Trond Saue - September 2013
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: ABUND, IPRPRP, IPSPINRO
 !      use dcbexp_mod, only: IPEFN
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEE, XLR_SKIPEP
       use nuclei_mod, only: IZATOM, NAMN, NATOMS, NFLOAT, NUCDEG,
      &  NUCDEP, NUCIND
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use symmet_mod, only: IPTAX
       use orgcom_mod, only: CMXYZ
       use spinro_mod, only: LINDET, SPRDNL
@@ -11649,9 +11551,6 @@ C
 C***********************************************************************
 C
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use nuclei_mod, only: CHARGE, ISTBNU, NATOMS, NFLOAT, NUCDEP,
      &  NUCIND
       use symmet_mod, only: MAXOPR
@@ -11799,9 +11698,6 @@ C     nuclear spin-rotation constant, K.Ruud - Oct.-95
 C
 C***********************************************************************
 C
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use nuclei_mod, only: CORD, ISTBNU, NUCDEP, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use spinro_mod, only: SPRDNL
@@ -11878,9 +11774,6 @@ C     Last revision: Agustin Aucar - March 2024
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
       use nuclei_mod, only: CHARGE, CORD, ISOTOP, ISTBNU, IZATOM,
      &  NAMDEP, NUCDEP, NUCIND
       use symmet_mod, only: IPTAX, ISYMAX, MAXOPR, PT
@@ -11888,7 +11781,7 @@ C***********************************************************************
       use orgcom_mod, only: CMXYZ
       use dgroup_mod, only: LINEAR
       use codata_mod, only: ALPHA2, PMASS, XFAMU, XTHZ
-      use consts_mod, only: D0, D1, D2, D6
+      use consts_mod, only: D0, D1, D2
       implicit none
 C
       integer I,J
@@ -12342,9 +12235,7 @@ C     Agustin Aucar - November 2022
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCOOR
       use nuclei_mod, only: GAUNUC, NAMDEP, NUCDEP, NUCIND, NUCPRE
       use symmet_mod, only: IPTCNT, IPTNUC, MAXREP
       use dgroup_mod, only: LINEAR
@@ -12352,7 +12243,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
       use dcbgen_mod, only: CVAL
       use spinro_mod, only: LINDET
-      use consts_mod, only: D0, D3, D4
+      use consts_mod, only: D3, D4
       use codata_mod, only: GFAC
       use pi_mod, only: PI
       use chrnos_mod, only: CHRNOS
@@ -12604,13 +12495,11 @@ C     Agustin Aucar - November 2022
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: ABUND, IPRPRP, IP_PVC_SPINRO
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEE, XLR_SKIPEP
       use nuclei_mod, only: IZATOM, NAMN, NATOMS, NFLOAT, NUCDEG,
      &  NUCDEP, NUCIND
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use symmet_mod, only: IPTAX
       use spinro_mod, only: LINDET
       use dgroup_mod, only: LINEAR
@@ -12909,9 +12798,6 @@ C     Last revision: Agustin Aucar - March    2024
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
       use nuclei_mod, only: CHARGE, CORD, ISOTOP, ISTBNU, IZATOM,
      &  NAMDEP, NUCDEP, NUCIND
       use symmet_mod, only: IPTAX, ISYMAX, MAXOPR, PT

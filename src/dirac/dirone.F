@@ -65,7 +65,6 @@ C*****************************************************************************
 ! checking
       use nuclei_mod, only: CHARGE, NUCIND
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use cbihr1_mod, only: IPRONE
       use cbiher_mod, only: ALLATM, IPATOM, NPATOM
       use dcbcls_mod, only: CLSCAL, CLSCMB, CLSINT, IORDCL, NPRPCLS
@@ -239,13 +238,11 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use symmet_mod, only: ISYMAX, MULT, PT
       use dcbbas_mod, only: NNBBASX, NTBAS
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
       use dcbcls_mod, only: CLSINT
       use pi_mod, only: PI
-      use maxorb_mod, only: MXCORB
       use nuclei_mod, only: CHARGE, CORD, GNUEXP, ISTBNU, NAMN, NOORBT,
      &  NUCIND
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use num_grid_cfg
       use interface_ao
@@ -485,7 +482,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use nuclei_mod, only: GAUNUC
       use priunit_mod, only: LUPRI
       use dcbcls_mod, only: CLSINT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h" 
 C
       REAL*8 NUMIR(MXNP), R(MXNP)
@@ -578,15 +574,12 @@ C
 C A. Sunaga Jul. 2019
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB, MXSHEL
       use dcbbas_mod, only: NTBAS
       use symmet_mod, only: ISYMAX
       use dcbham_mod, only: MC
       use nuclei_mod, only: NAMN
       use shells_mod, only: KHKT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use num_grid_cfg
       use interface_ao
       use dirac_ao_eval
@@ -1102,8 +1095,6 @@ C
       use pi_mod, only: PI
       use dcbgen_mod, only: CVAL
       use ccom_mod, only: NHTYP
-      use maxaqn_mod, only: MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCIND
       use num_grid_cfg
       use kinds_mod, only: dp
@@ -2321,7 +2312,6 @@ C
 C A. Sunaga Nov. 2020
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: NAMN, NUCIND
       use nucdata_mod, only: NUCMASS
@@ -2356,7 +2346,7 @@ C
 C Written by Robert van Meer, Sept. 2010, last edited Mar. 2011
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
       use dcbbas_mod, only: NNBBASX
       use nuclei_mod, only: GNUEXP, NUCIND
       use dcbham_mod, only: BSS, IPRHAM, LEVYLE, X2C, ZORA
@@ -2459,7 +2449,6 @@ C Written by Robert van Meer, Sept. 2010 last edited Mar. 2011
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use pi_mod, only: PI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: CHARGE, GNUEXP
 #include "implicit.h"
       REAL*8 GEXPEFFDE2, RADIUS
@@ -2497,14 +2486,12 @@ C     Last revisions:  May 19 1996
 C                  MI(+TEC): minor changes for LAO based RPA, dec.2002
 C
 C*****************************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use dummy_mod, only: DUMMY
       use nuclei_mod, only: NUCDEP, NUCIND
       use cbiher_mod, only: NPQUAD, PROPRI, TRIANG
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: MAXREP
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
 #include "implicit.h"
       INTEGER :: I
 C
@@ -2710,7 +2697,6 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck nucat1 */
       SUBROUTINE NUCAT1(OP1INT,WORK,LWORK,DOINT,OMITVNUC,IPRINT)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dummy_mod, only: DUMMY
       use nuclei_mod, only: NUCDEP
       use dcbbas_mod, only: NNBBAST, NNBBASX, NTBAS
@@ -3480,7 +3466,7 @@ C*****************************************************************************
       use dcbgen_mod, only: LU1INT, LUBSS, LUX2C, TWOCOMP
       use dcbham_mod, only: BSS, IPRHAM, X2C
       use dcbbas_mod, only: N2BBASX, N2BBASXQ, NFBAS, NNBBASX, NTBAS
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbprl_mod, only: WRITI
       use dgroup_mod, only: NFSYM, NZ
 !      use dcbprp_mod, only: DOPCT, IPRPRP, NOPCT
@@ -3770,8 +3756,6 @@ C
 C*****************************************************************************
       use dcbbas_mod, only: MXBBAS, N2BBASX
       use dcbgen_mod, only: ISPHTR, TWOCOMP
-      use maxorb_mod, only: MXPRIM
-      use aovec_mod, only: MXCONT
       use primit_mod, only: NPSHEL
 #include "implicit.h"
 C
@@ -3995,9 +3979,7 @@ C     Written by T.Saue October 1994
 C     Last revision : Nov 15 1994
 C
 C*****************************************************************************
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCOOR
       use nuclei_mod, only: NUCIND
       use symmet_mod, only: MAXREP
 #include "implicit.h"
@@ -4359,7 +4341,6 @@ C*****************************************************************************
 !
       use kinds_mod, only: dp
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: CHARGE, NUCDEP, NUCIND
       use siripc_mod, only: NEWGEO
       use cbihr1_mod, only: IPRONE
@@ -5715,13 +5696,10 @@ C
 CMI/Sept2005 The SMAT must be allocated at least to the N2BAST size !
 C
 C*****************************************************************************
-      use maxorb_mod, only: MXCORB
       use symmet_mod, only: ICOS
       use dgroup_mod, only: IPQTOQ, JFSYM, NFSYM, NZ
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT
       use cbihr1_mod, only: IPRONE
-      use maxaqn_mod, only: MXAQN, MXQN
       use dcbbas_mod, only: IBAS, IBBAS, N2BAS, N2BAST, N2BBASX, NBBAS,
      &  NFBAS, NNBBASX, NTBAS
       use dcbgen_mod, only: LU1INT, TWOCOMP
@@ -6300,7 +6278,6 @@ C*****************************************************************************
       use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
       use nuclei_mod, only: CHARGE, GNUEXP, NUCIND
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dgroup_mod, only: IPQTOQ
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -6404,7 +6381,6 @@ C*****************************************************************************
       use cbihr1_mod, only: IPRONE
       use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBASX, NTBAS
       use nuclei_mod, only: CHARGE, NAMN, NOORBT, NUCDEP, NUCIND
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -7143,7 +7119,6 @@ C
 C        Written by L.Visscher
 C        Last revision: Aug 16 2001 - lv
 C*****************************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dcbgen_mod, only: LUPMAT
       use nuclei_mod, only: NUCDEP
       use dcbbas_mod, only: N2BBASX, NTBAS
@@ -7223,7 +7198,6 @@ C        Last revision: Aug 16 2001 - lv
 C*****************************************************************************
       use nuclei_mod, only: NUCDEP
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dcbbas_mod, only: NTBAS
       use dcbgen_mod, only: STOL
       use kinds_mod, only: dp
@@ -7737,7 +7711,6 @@ C*****************************************************************************
       use dcbham_mod, only: IPRHAM, SPINFR, SUB_BL, URKBAL, ZORA
       use nuclei_mod, only: CHARGE, NOORBT, NUCIND
       use dgroup_mod, only: ATOMIC, LINEAR
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       DIMENSION WORK(LWORK),TMAT(*),VMAT(*), TBUF(*), EIG(*)
       CALL QENTER('GATMSM')
@@ -10628,7 +10601,6 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
       SUBROUTINE SET_INTFLG(new_intflg)
 C***********************************************************************      
-      use mxcent_mod, only: MXCOOR
       use dcbgrd_mod, only: IGRD_INTBUF, IGRD_INTFLG
       use dcbkrci_mod, only: IKRCI_INTBUF, IKRCI_INTDEF, IKRCI_INTFLG
 !      use mxgas_mod, only: MXGAS
@@ -10797,14 +10769,11 @@ C                  RH1DIAG/../krmc/krmcopt.F
 C
 C
 C*****************************************************************************
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use dummy_mod, only: DUMMY
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
       use dcbham_mod, only: BSS, MDIRAC, NOSMLV, X2C
-      use maxaqn_mod, only: MXAQN, MXQN
       use cbihr1_mod, only: IPRONE
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NOORBT, NUCDEP, NUCIND
       use kinds_mod, only: dp
@@ -11072,7 +11041,6 @@ C***********************************************************************
      &  JBTOF, JQBAS, LINEAR, NFSYM, NZ
       use dcbgen_mod, only: LU1INT, LUX2C, NEWPRP, RDINPC, TWOCOMP
       use ccom_mod, only: DOSPHE
-      use maxaqn_mod, only: MXQN
       use dcbbas_mod, only: I2BASX, NFBAS, NTBAS
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: NPRPS
@@ -11295,7 +11263,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #endif
       use dcbbas_mod, only: NTBAS
       use nuclei_mod, only: CHARGE
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dircmo      
       use dirac_cfg, only: dirac_cfg_dft_calculation
       use x2c_utils, only:

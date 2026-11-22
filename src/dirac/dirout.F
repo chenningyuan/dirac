@@ -336,10 +336,8 @@ C***********************************************************************
       use symmet_mod, only: ICOS
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NTBAS
 !      use dcborb_mod, only: NESH, NPSH
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use dgroup_mod, only: JFSYM, NZ
-      use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DM10 = 1.0D-10, DM1 = -1.0D0
@@ -1648,7 +1646,6 @@ C***********************************************************************
       use dgroup_mod, only: NFSYM, NZ
       use dcbbas_mod, only: NFBAS
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NAMN
        use dircmo
        use labeled_storage

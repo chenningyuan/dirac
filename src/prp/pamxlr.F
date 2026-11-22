@@ -159,7 +159,7 @@ C***********************************************************************
 
       use kinds_mod, only: dp
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use pgroup_mod, only: REP
       use dcbbas_mod, only: NTBAS
 #include "implicit.h"
@@ -422,7 +422,7 @@ C***********************************************************************
       use dirac_cfg
       use kinds_mod, only: dp
       use priunit_mod, only: LUCMD, LUPRI
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use dummy_mod, only: DUMMY
       use codata_mod, only: XTNM
       use dcbgen_mod, only: INTGEN

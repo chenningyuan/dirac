@@ -24,7 +24,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE STEX_INPUT(WORD,RESET,WORK,LWORK)
       use codata_mod, only: XTEV
       use priunit_mod, only: LUCMD, LUPRI
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: DOSTEX
       use dgroup_mod, only: NFSYM
 !      use dcbstex_mod, only: STEX_BATCHSIZE, STEX_COFACTOR, STEX_CUTOFF, STEX_DIAG, STEX_HOLES, STEX_IFSYM, STEX_MAX_HOLES, STEX_NCUBE, STEX_NHOLES, STEX_NO2E, STEX_NOCOUPLING, STEX_NR_OP, STEX_OP_IND, STEX_OP_SYM, STEX_OP_TIM, STEX_PRINT, STEX_SCRFCK
@@ -1571,7 +1571,6 @@ C     Output:
 C     REFGSOVL - overlap between CMO1 and CMO2
 C     XPRPGRAD - the property gradient
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCOOR
 !      use dcborb_mod, only: ICMOQ, N2ORBXQ, NCMOTQ, NISH, NOCCT, NORB, NORBT, NPSH
       use dgroup_mod, only: NZ
       use dipole_mod, only: DIPMN

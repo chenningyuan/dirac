@@ -458,7 +458,6 @@ C
 C                                                                      
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use pgroup_mod, only: REP
       use dgroup_mod, only: MCMP, NZ
       use nuclei_mod, only: NUCIND
@@ -708,7 +707,6 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: CVAL
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use chrxyz_mod, only: CHRXYZ
       use pgroup_mod, only: REP
       use dgroup_mod, only: JM4, JM4REP, NZ

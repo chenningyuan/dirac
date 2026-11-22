@@ -8425,7 +8425,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: BNCRON, LUBSS
       use ccom_mod, only: DOSPHE
-      use maxaqn_mod, only: MXQN
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: THRNULL=1.0D-7, D0=0.00D00
@@ -8699,9 +8698,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use nuclei_mod, only: CHARGE, GAUNUC, GNUEXP, IAMFA, NAMFA, NONT,
      &  NONTYP, NUCDEG, NUCDEP, NUCIND
       use dummy_mod, only: IDUMMY
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXSHEL
       use chrnos_mod, only: CHRNOS
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -9725,7 +9722,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
       use dgroup_mod, only: IPQTOQ, IQDEF, IQTOPQ, IRQMAT, JBTOF,
      &  JM4POS, JQBAS, NZ
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use quaternion_algebra
 #include "implicit.h"
 C
@@ -10072,7 +10068,6 @@ C                       S. Knecht, Duesseldorf, Jan 2009
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use amfi_if_mod, only: IPR_AMFI, IPR_RELSCF, MXXTRP_INP, ONRELSCF
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUCMD, LUPRI
       use nuclei_mod, only: CHARGE, IAMFA, NAMFA, NUCDEG, NUCDEP, NUCIND
       use dcbham_mod, only: ALLAMFA, IMFCH, ISORDER_AMFI_X2C, X2C

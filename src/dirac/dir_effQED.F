@@ -33,7 +33,6 @@ C***********************************************************************
       use dcb_effqed_mod, only: REFFIL
       use dgroup_mod, only: NZC1
       use dcbgen_mod, only: LUCOEF
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NONT, NONTYP, NUCDEG
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: NTBAS

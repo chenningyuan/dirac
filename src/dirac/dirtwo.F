@@ -644,12 +644,9 @@ C         which are defined in statement function statements
 C
 C
 C************************************************************************
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 !      use dcbind_mod, only: IBIT1, NBITS, NIBUF
-      use maxaqn_mod, only: MXAQN, MXQN
       use pgroup_mod, only: REP
-      use mxcent_mod, only: MXCENT
       use symmet_mod, only: MAXREP
 #include "implicit.h"
       INTEGER :: I,J,K
@@ -805,12 +802,9 @@ C
 C
 C************************************************************************
 !      use dcbind_mod, only: IBIT1, NBITS, NIBUF
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use symmet_mod, only: MAXREP
       use pgroup_mod, only: REP
-      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I,J,K
 C
@@ -993,9 +987,6 @@ C     Written by T.Saue Feb 27 1995
 C     Last revision: Feb 27 1995
 C*****************************************************************************
       use pgroup_mod, only: REP
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbind_mod, only: IBIT1, NBIT1, NBIT2, NBITS, NIBUF
       use priunit_mod, only: LUPRI
       use symmet_mod, only: MAXREP
@@ -1348,11 +1339,8 @@ C
 C************************************************************************
       use symmet_mod, only: MAXREP
       use pgroup_mod, only: REP
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 !      use dcbind_mod, only: IBIT1, NBIT1, NBIT2, NBITS, NIBUF
-      use maxorb_mod, only: MXCORB
 #include "implicit.h"
       INTEGER :: I,J,K
 C
@@ -1535,7 +1523,6 @@ C*****************************************************************************
       use dcbgen_mod, only: IDFLAG, INTGEN, OPTIMI
       use priunit_mod, only: LUPRI
       use cbihr2_mod, only: IPRTWO
-      use maxaqn_mod, only: MXQN
       use hrunit_mod, only: LUINTA
       use dummy_mod, only: IDUMMY
       use ccom_mod, only: THRS
@@ -3215,14 +3202,12 @@ C                           and general operator symmetry IRPOP
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-      use aovec_mod, only: MXAOVC
       use dcbbas_mod, only: N2BBASX, NTBAS
       use blocks_mod, only: NSYMBL
       use cbihr2_mod, only: IPRTWO, SCRFCK
       use dcbham_mod, only: MDIRAC
       use dgroup_mod, only: IQTOPQ, IRQMAT, JBTOF, JQBAS, NBSYM, NZ,
      &  NZC1
-      use maxorb_mod, only: MXCORB, MXSHEL
       use quaternion_algebra
       use kinds_mod, only: dp
       use gab_screening, only: qorb_ok, qorb_igtyp, qorb_use
@@ -3370,17 +3355,13 @@ C
 C*****************************************************************************
       use dcbbas_mod, only: N2BBASX, NTBAS
       use dirac_partask_mod, only: HERFCK_PAR
-      use maxorb_mod, only: MXCORB, MXSHEL
 #if defined (VAR_MPI)
       use infpar_mod, only: TOTWAL
 #endif
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXCENT
       use symmet_mod, only: MAXREP
       use dcbgen_mod, only: IDFLAG, PARCAL
       use priunit_mod, only: LUPRI
       use dgroup_mod, only: NZC1
-      use aovec_mod, only: MXAOVC
       use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
      &  IPRTWO, RTNTWO, SCRFCK, THRFAC, TKTIME
       use blocks_mod, only: NLRGBL, NSMLBL
@@ -3918,9 +3899,7 @@ C     Written by T.Saue August 28 1996
 C*****************************************************************************
       use dcbbas_mod, only: N2BBASX
       use cbihr2_mod, only: SCRFCK
-      use maxorb_mod, only: MXCORB, MXSHEL
       use dgroup_mod, only: NZ
-      use aovec_mod, only: MXAOVC
       use blocks_mod, only: MAXSHL, NSYMBL
       use kinds_mod, only: dp
       use gab_screening, only: qorb_ok, qorb_igtyp, qorb_use
@@ -3995,10 +3974,7 @@ C*****************************************************************************
       use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
      &  IPRTWO, RTNTWO, SCRFCK, THRFAC, TKTIME
       use dirac_partask_mod, only: HERFCK_PAR
-      use aovec_mod, only: MXAOVC
-      use maxorb_mod, only: MXCORB, MXSHEL
       use dcbgen_mod, only: IDFLAG, PARCAL, TWOCOMP, TWOCOMPBSS
-      use maxaqn_mod, only: MXQN
       use ccom_mod, only: THRS
       use priunit_mod, only: LUPRI
       use dcbham_mod, only: HFXMU
@@ -4185,8 +4161,6 @@ C*****************************************************************************
       use dgroup_mod, only: IQTOPQ, IRQMAT, JBTOF, JQBAS, NBSYM, NZ,
      &  NZC1
       use dcbbas_mod, only: N2BBASX, NTBAS
-      use aovec_mod, only: MXAOVC
-      use maxorb_mod, only: MXCORB, MXSHEL
       use blocks_mod, only: NSYMBL
       use quaternion_algebra
 #include "implicit.h"
@@ -4264,7 +4238,6 @@ C     Written by T. Saue, Nov 2004
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXQN
       use ccom_mod, only: THRS
       use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
      &  RTNTWO, THRFAC, TKTIME

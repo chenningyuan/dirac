@@ -148,7 +148,6 @@ C ========================================================================
       SUBROUTINE HUCGETMAT(NSYM,NBASHUC,HUCMAT,HUCOVL,WORK,LWORK)
 C
       use huckel_mod, only: EWMO, IPRHUC
-      use maxorb_mod, only: MXSHEL
       use dummy_mod, only: DUMMY
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXBSETS
@@ -231,7 +230,6 @@ C ========================================================================
      &     NBASHUC,HUCMAT,HUCOVL,EIGVEC,EIGVAL,WORK,LWORK)
 C
       use huckel_mod, only: IPRHUC, NHUCAO
-      use maxorb_mod, only: MXSHEL
       use priunit_mod, only: LUPRI
       use pgroup_mod, only: REP
 #include "implicit.h"
@@ -341,7 +339,6 @@ C
 C ========================================================================
       SUBROUTINE HUCDEN(DENHUC,NBASHUC,NSYM,NOCCUP,EIGVEC)
 C
-      use maxorb_mod, only: MXSHEL
       use huckel_mod, only: IPRHUC, NHUCAO
       use priunit_mod, only: LUPRI
 #include "implicit.h"
@@ -383,7 +380,6 @@ C
       use dcbbas_mod, only: NTBAS
       use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
      &  IPRTWO, RTNTWO, TKTIME
-      use maxorb_mod, only: MXSHEL
       use priunit_mod, only: LUPRI
       use huckel_mod, only: IPRHUC
 #include "implicit.h"

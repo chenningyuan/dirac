@@ -1070,9 +1070,7 @@ C***********************************************************************
        
       use kinds_mod, only: dp
       use priunit_mod, only: LUCMD, LUPRI
-      use maxaqn_mod, only: MXQN
-      use maxorb_mod, only: MXSHEL
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM
       use dummy_mod, only: DUMMY, IDUMMY
       use nuclei_mod, only: IZATOM, NAMN, NATOMS, NFLOAT, NONT, NONTYP,
      &  NUCDEP
@@ -3007,7 +3005,6 @@ C       T.Saue, March 24 1994, University of Odense
 C       Last revision : Nov 14 1994 - tsaue
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: CORD, INCENT, INUNIQ, NUCIND, NUCNET
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
@@ -4750,7 +4747,6 @@ C     Last revision: Apr 26 - 1996
 C
 C***********************************************************************
       use nuclei_mod, only: NAMDEP, NONT, NONTYP, NOORBT, NUCDEG
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUCMD, LUPRI
       use dummy_mod, only: IDUMMY
       use dgroup_mod, only: FREP, NFSYM
@@ -5401,7 +5397,6 @@ C***********************************************************************
 
       use kinds_mod, only: dp
       use priunit_mod, only: LUCMD, LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dummy_mod, only: IDUMMY
       use nuclei_mod, only: NAMDEP, NAMN, NONT, NONTYP, NUCDEP
       use orgcom_mod, only: DIPORG, GAGORG, GAGORG_SET, ORIGIN
@@ -8058,7 +8053,7 @@ C***********************************************************************
       use dcbgen_mod, only: DOLVC, DOPRP, DOTRA, DOTSC, INTGEN, TWOCOMP
       use dcbana_mod, only: DOLOC
 !      use dcbprp_mod, only: LONDON
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
          use dirac_cfg
 #include "implicit.h"
       INTEGER :: I,J
@@ -8662,7 +8657,6 @@ C     Last revision:
 C
 C***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dcbloc_mod, only: HESLOC, IPRLOC, ITRLOC, LGCHCK, LGDIAG,
      &  LGFULL, LGGRAD, PRJLOC, SELMOS, THDIAG, THFULL, THGRAD, THXVEC
       use dummy_mod, only: IDUMMY
@@ -9636,7 +9630,6 @@ C***********************************************************************
 
       use dcblap_mod, only: FNDLAP, INILAP, IPRLAP, MXITER, NLAP,
      &  STEPMX, TOLLAP, TOLPAR, TOLRNG, WGHTS, XPNTS
-      use lapdim_mod, only: MXLAP
       use priunit_mod, only: LUCMD, LUPRI
       IMPLICIT NONE
 

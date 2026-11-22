@@ -26,7 +26,7 @@
 !*****************************************************************************
       use dummy_mod, only: DUMMY
       use priunit_mod, only: LUCMD, LUPRI
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbxqr_mod, only: BQRFR, CNVXQR, CQRFR, INTXQR, IPRXQR, ITRIQR, ITRXQR, LAQROP, LBQROP, LCQROP, LQROP, MAXFQR, MAXLQR, MAXQRM, NAQROP, NBQRFR, NBQROP, NCQRFR, NCQROP, RESXQR, THCQR, XQRDIH, XQRNRM, XQR_ALLCMB, XQR_INDSTR, XQR_LEVICI, XQR_SKIPEE, XQR_SKIPEP
       use dcbgen_mod, only: INTGEN
       use dcbham_mod, only: BSS, FREEPJ, GAUNT, LEVYLE, VEXTPJ, X2C
@@ -1310,7 +1310,7 @@
       use dgroup_mod, only: JBTOF, NZ
 !      use dcborb_mod, only: ICMOQ, N2ORBXQ, NORB
 !      use dcbxqr_mod, only: IEXCOFF, IPRXQR, LQROP, LUQREE, LUQREP, MAXFQR, MAXLQR, MZYEE, MZYEP, NQROP, QRFREQ, XQR_INDSTR, XQR_SKIPEE, XQR_SKIPEP
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: DOEXCPRP, DOTPA
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3555,7 +3555,7 @@
       use priunit_mod, only: LUPRI
 !      use dcbxqr_mod, only: BQRFR, LQRHYP, MAXFQR, MAXLQR, MAXQR, NBQRFR, NQRHYP, QRFRHYP, XQR_LEVICI
 !      use dcbxpr_mod, only: PRPNAM
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: DOVER
       use kinds_mod, only: dp
 #include "implicit.h"

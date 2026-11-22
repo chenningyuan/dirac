@@ -215,12 +215,9 @@ C***********************************************************************
       use symmet_mod, only: MAXREP, NAOS, NCOS
       use dgroup_mod, only: JFSYM, NBSYM, NFSYM, NZ
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT
       use dcbbas_mod
-      use maxorb_mod, only: MXCORB
       use inftap_mod, only: LUINTR
       use dcbham_mod, only: MDIRAC
-      use maxaqn_mod, only: MXAQN, MXQN
       use pgroup_mod, only: REP
       use dcbgen_mod, only: LU1INT, LUCOEF, LUKRMC, LUOVLP, LUPMAT,
      &  LUTMAT
@@ -705,7 +702,6 @@ C
 C***********************************************************************
       use nuclei_mod, only: CHARGE, NOORBT
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -803,7 +799,6 @@ C***********************************************************************
 
       use dcbbas_mod, only: N2BBASX, N2BBASXQ
       use nuclei_mod, only: NUCIND
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use frame_mod, only: CORRLV
 !      use dcbdhf_mod, only: AOC, NOPEN
       use dcbham_mod, only: LEVYLE
@@ -863,9 +858,6 @@ C***********************************************************************
       use nuclei_mod, only: ISTBNU, NAMN, NUCIND
       use priunit_mod, only: LUPRI
       use symmet_mod, only: FMULT
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
       use dcbgen_mod, only: LVNEW
       use dcbham_mod, only: ICTLV1C, INTV1C, LEVYLE, ONECAP, SSMTRC
       use kinds_mod, only: dp
@@ -932,7 +924,6 @@ C***********************************************************************
       use frame_mod, only: CORRLV, POTNUC
       use nuclei_mod, only: CHARGE, NUCIND
       use dcbham_mod, only: INTV1C, ONECAP
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I
 C
@@ -982,8 +973,6 @@ C***********************************************************************
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NFBAS, NTBAS
       use symmet_mod, only: MAXREP
 !      use dcblab_mod, only: IATTR, IPLAB
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I,J
 C
@@ -1045,13 +1034,10 @@ C     (based on SCDENS by O. Fossgaard)
 C     
 C***********************************************************************
       use dcbham_mod, only: SSMTRC
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use symmet_mod, only: FMULT
       use nuclei_mod, only: ISTBNU, NAMN, NUCIND
       use dcbbas_mod, only: NTBAS
-      use maxorb_mod, only: MXCORB
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -1102,9 +1088,7 @@ C***********************************************************************
 !      use dcblab_mod, only: IATTR, IPLAB
       use dgroup_mod, only: JBTOF, NFSYM
       use symmet_mod, only: MAXREP
-      use maxaqn_mod, only: MXAQN, MXQN
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NFBAS, NTBAS
-      use mxcent_mod, only: MXCENT
       use dcbibt_mod, only: JGET
 #include "implicit.h"
       INTEGER :: I
@@ -1167,10 +1151,7 @@ C
 C     Written by Jesper K. Pedersen sep. 2001
 C     
 C***********************************************************************
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dgroup_mod, only: NBSYM
       use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
       use dcbgen_mod, only: LU1INT
@@ -1342,7 +1323,6 @@ C     Written by Jesper K. Pedersen sep. 2001
 C     
 C***********************************************************************
 
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCIND, NUCNUM
       use maxorb_mod, only: MXCORB
 !      use dcblab_mod, only: IATTR, IPLAB
@@ -1388,7 +1368,6 @@ C     Written by Jesper K. Pedersen sep. 2001
 C     
 C***********************************************************************
 
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP
       use dcbbas_mod, only: NTBAS
       use kinds_mod, only: dp
@@ -1611,11 +1590,8 @@ C
       subroutine symm_to_checkpoint
 
       ! write point group symmetry information to checkpoint
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use dgroup_mod, only: NFSYM
       use symmet_mod, only: ISYMAX, MAXOPR
-      use mxcent_mod, only: MXCENT
       use checkpoint
 
 #include "implicit.h"

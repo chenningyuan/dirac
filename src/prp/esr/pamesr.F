@@ -430,7 +430,7 @@ C
 C***********************************************************************
       use codata_mod, only: GFAC, XTKAYS
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbxpr_mod, only: PRPNAM
 !      use dcbesr_mod, only: IPRESR, LESRP, MAX_CIESR_IT, MULTIPESR, NESRP, N_CIESR, STATE_ESR, THR_CIESR
 !      use dcbprp_mod, only: ESRGTENS, ESR_HFCC, IPESR
@@ -2074,7 +2074,6 @@ C
 C     Written by A.Noerager APR 2000
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbesr_mod, only: MULTIPESR
       use nuclei_mod, only: NUCDEP, NUCIND
 #include "implicit.h"
@@ -2122,9 +2121,7 @@ C     Output routine for ESR properties
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: ABUND, IPESR, IPRPRP
 !      use dcbesr_mod, only: MULTIPESR
       use nuclei_mod, only: ISTBNU, IZATOM, NAMDEP, NAMDPX, NAMN,

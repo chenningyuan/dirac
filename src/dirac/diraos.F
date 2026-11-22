@@ -254,9 +254,6 @@ C
       use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX,
      &  NCENT, NHKT, NLRGSH, NUCO, NUMCF, SPHR
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C   
@@ -363,9 +360,7 @@ C
       use onecom_mod, only: JSTA, KCKTA, KHKTA, NHKTA, NUCA, NUMCFA,
      &  SPHRA
       use primit_mod, only: PRICCF, PRIEXP
-      use aovec_mod, only: MXCONT
-      use maxorb_mod, only: MXPRIM
-      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN
 #include "implicit.h"
 C
       DIMENSION GAO(KCKTA), CAO(MXAQN)
@@ -439,9 +434,7 @@ C
       use onecom_mod, only: JSTA, KCKTA, KHKTA, NHKTA, NUCA, NUMCFA,
      &  SPHRA
       use primit_mod, only: PRICCF, PRIEXP
-      use aovec_mod, only: MXCONT
-      use maxorb_mod, only: MXPRIM
-      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN
 #include "implicit.h"
       PARAMETER (D2 = 2.0D0) 
 C
@@ -577,9 +570,7 @@ C
       use onecom_mod, only: JSTA, KCKTA, KHKTA, NHKTA, NUCA, NUMCFA,
      &  SPHRA
       use primit_mod, only: PRICCF, PRIEXP
-      use aovec_mod, only: MXCONT
-      use maxorb_mod, only: MXPRIM
-      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN
 #include "implicit.h"
       LOGICAL FIRST
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0) 

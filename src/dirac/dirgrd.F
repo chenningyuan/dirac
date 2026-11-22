@@ -32,11 +32,8 @@ C*****************************************************************************
 !      use dcbdhf_mod, only: DF, NOPEN
       use priunit_mod, only: LUPRI
       use dcbgrd_mod, only: IGRD_INTBUF, IGRD_INTFLG, IPRGRD, LUMGRD
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use symmet_mod, only: MAXREP
       use dcbham_mod, only: BSS, X2C
-      use mxcent_mod, only: MXCENT, MXCOOR
          use dirac_cfg
 #include "implicit.h"
 C
@@ -193,13 +190,10 @@ C*****************************************************************************
 !      use dcborb_mod, only: I2ORBT, ICMOQ, N2ORBTQ, NASH, NASHT, NCMOTQ, NISH, NISHT, NORB, NPSH
       use dcbgrd_mod, only: GRADXC, LUMGRD
       use dirac_partask_mod, only: XCINT_PAR
-      use maxorb_mod, only: MXCORB
       use dgroup_mod, only: IPQTOQ, IQTOPQ, IRQMAT, JM4POS, JQBAS,
      &  NFSYM, NZ
       use nuclei_mod, only: NUCDEP, NUCIND
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: ISYMAX
       use dcbgen_mod, only: LUCOEF
 #if defined (VAR_MPI)
@@ -834,23 +828,20 @@ C
 C*****************************************************************************
       use dirac_partask_mod, only: HERFCK_PAR
       use symmet_mod, only: MAXREP
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
       use dorps_mod, only: DOPERT
       use chrxyz_mod, only: CHRXYZ
-      use aovec_mod, only: MXAOVC
       use dcbgen_mod, only: DOLVC, NEWBAS, PARCAL, RELCAL
       use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBAST, NNBBASX, NTBAS
       use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
      &  IPRTWO, RTNTWO, TKTIME
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB, MXSHEL
 !      use dcbdhf_mod, only: NFMAT
       use nuclei_mod, only: CHARGE, NUCDEP, NUCIND
       use dcbham_mod, only: INTV1C, LEVYLE, N1OPER, NOSMLV, ONECAP
       use dummy_mod, only: DUMMY, IDUMMY
       use dcbgrd_mod
       use exeinf_mod, only: FTRONV
-      use maxaqn_mod, only: MXAQN, MXQN
       use blocks_mod, only: NLRGBL, NSMLBL, NSYMBL
       use quaternion_algebra
       use kinds_mod, only: dp
@@ -1762,13 +1753,10 @@ C     Last revision: Sep 10 1995 - tsaue
 C
 C*****************************************************************************
       use pincom_mod, only: IPIND
-      use maxorb_mod, only: MXCORB, MXSHEL
       use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS,
      &  PT
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
       use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
-      use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,JJ
@@ -1858,7 +1846,7 @@ C     Last revision: 1997/06/11 jth
 C
 C*****************************************************************************
 
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use nuclei_mod, only: NUCDEP
       use dcbgen_mod, only: DOLVC
       use taymol_mod, only: GRDMOL
@@ -2008,7 +1996,7 @@ C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
       use consts_mod, only: D0
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: CVAL
       use codata_mod, only: CVEL
@@ -2084,7 +2072,7 @@ C
 C*****************************************************************************
       use consts_mod, only: D0
       use optinf_mod, only: GRDTHR
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: NUCDEP
       use dcbgrd_mod, only: GRADER, GRADKN, GRADNN, GRADNU, GRADRO
@@ -2225,12 +2213,9 @@ C
 C*****************************************************************************
       use dcbham_mod, only: INTV1C, ONECAP
       use dorps_mod, only: DOREPS
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEP, NUCIND, NUCNUM
-      use maxorb_mod, only: MXCORB
       use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, PT
       use dcbgrd_mod, only: GRADLV
-      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 C
       INTEGER :: I,J
@@ -2396,12 +2381,10 @@ C     (3) GRAD(2) is LABEL(2) c... etc.
 C     CFIRST is the first character printed on each line
 C
       use nuclei_mod, only: NAMDEP, NAMEX, NUCDEP
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use abainf_mod, only: DOSYM
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
       use symmet_mod, only: IPTCOR, MAXREP, NCRREP
-      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I,J,K
 C
@@ -2512,11 +2495,8 @@ C     Slight modified Feb 17 1998 jth
 C     Copied from abacus/abatro.F (TROINI)
 C     and modified for use in Dirac./jth 1998-02-04
 C
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
       use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND
 #include "implicit.h"
       INTEGER :: I,J
@@ -2629,11 +2609,9 @@ C     Transform molecular gradient and print calculate the norm -
 C     for printing norm of gradient in single-point calculations.
 C
 C*****************************************************************************
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: NAMDEP, NUCDEP
-      use maxorb_mod, only: MXCORB
       use symmet_mod, only: NCRREP
 #include "implicit.h"
       INTEGER :: I,J

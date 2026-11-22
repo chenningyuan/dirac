@@ -87,16 +87,13 @@ C
 C     Written May 27 1998 by T.Saue and K.Mikkelsen
 C
 C***********************************************************************      
-      use maxorb_mod, only: MXCORB
       use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
-      use maxaqn_mod, only: MXAQN, MXQN
       use dummy_mod, only: IDUMMY
       use dgroup_mod, only: NZ
       use orgcom_mod, only: CAVORG, DIPORG
       use dcbham_mod, only: EPSOL, LSOLMX, RSOLAV
       use symmet_mod, only: ISYMAX
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -315,7 +312,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck solvin */
       SUBROUTINE SOLVIN(WORD,WORK,LWORK)
       use priunit_mod, only: LUCMD, LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxmom_mod, only: MXQNM
       use dummy_mod, only: DUMMY
       use nuclei_mod, only: ISOTOP, NATOMS
@@ -555,9 +551,6 @@ C
 C     Written by T.Saue Jun 19 1998
 C
 C***********************************************************************
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use nuclei_mod, only: CORD, ISTBNU, NUCIND
       use kinds_mod, only: dp

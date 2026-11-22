@@ -348,7 +348,7 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUCMD, LUPRI
       use dummy_mod, only: DUMMY
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use dcbgen_mod, only: INTGEN
 !      use dcbprp_mod, only: DOXPP
 !      use dcbxpp_mod, only: ANGPLOT, BEDCHK, BEDECD, CNVXPP, DOBED, DOLENR, DOVELR, GCLEAN, GCLEAN_FAC, GNOISE, GNOISE_FAC, IBDOFF, IEPOFF, IMPOFF, INTXPP, IPRXPP, ITRIPP, ITRXPP, IVPOFF, KEXCNV, KEXSIM, KEXSTV, KVAL_OSC, LPPAPU, MAXEXC, MAXLPP, MAX_KVAL, NBED, NPPAP, NPPAPT, NROTAV, ORBXPP, ORIENTED, RESXPP, THCPP, UPOL, UWAVE, XPPANA, XPPFIL, XPPNRM, XPP_E2CHEK, XPP_INDSTR, XPP_LSFG, XPP_RSPEXP, XPP_SKIPEE, XPP_SKIPEP, XPP_TRIPLET
@@ -1513,9 +1513,6 @@ C
 C*****************************************************************************
       use codata_mod, only: ALPHAC, AUTIME, XTEV
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use dgroup_mod, only: FREP, JFSYM, LINEAR, NBSYM, NFSYM, NZ
       use pgroup_mod, only: REP
       use dcbham_mod, only: SPINFR
@@ -2081,9 +2078,6 @@ C
 C***********************************************************************
       use codata_mod, only: XTEV
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use dgroup_mod, only: JFSYM, LINEAR, NBSYM, NFSYM, NZ
       use pgroup_mod, only: REP
       use dcbham_mod, only: SPINFR

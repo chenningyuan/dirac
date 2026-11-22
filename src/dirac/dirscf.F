@@ -5584,7 +5584,6 @@ C     NPOS - number of electronic solutions
 C     NBAS - number of AO-basis functions
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NAMN, NONT, NONTYP, NUCDEG
       use dcbbas_mod, only: I2BASX, NFBAS, NTBAS
       use priunit_mod, only: LUPRI
@@ -5784,7 +5783,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use dcbbas_mod, only: NFBAS, NTBAS
 !      use dcborb_mod, only: I2ORBT, NISH, NPSH, NSSH
       use dgroup_mod, only: IQDEF, NZC1
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NONT, NONTYP, NUCDEG
       use dircmo
       use labeled_storage

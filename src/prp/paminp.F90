@@ -49,7 +49,7 @@
 
       use kinds_mod, only: dp
       use priunit_mod, only: LUCMD, LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use nuclei_mod, only: NATOMS, NUCDEP
       use cbiher_mod, only: DSO, QUADRU
       use orgcom_mod, only: DIPORG, GAGORG, ORIGIN
@@ -2274,9 +2274,7 @@
 !
 !***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
       use nuclei_mod, only: NUCIND
       use symmet_mod, only: ISYMAX, MAXREP
 !      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
@@ -2981,7 +2979,6 @@
 !     Last revision: jth - 1997/09/01
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      use mxcent_mod, only: MXCOOR
       use dcbgrd_mod, only: DONGRD, DOTRCK, IGRD_INTFLG, IPRGRD, RELGRD, SCRGRD
       use dcbgen_mod, only: INTGEN
       use dcbham_mod, only: LEVYLE
@@ -3017,7 +3014,7 @@
 !
 !***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use dcbham_mod, only: BSS, GAUNT
       use dcbgrd_mod, only: DONGRD, DOTRCK, IGRD_INTFLG, IPRGRD, SCRGRD
 !      use dcbprp_mod, only: IPRPRP, MGRAD

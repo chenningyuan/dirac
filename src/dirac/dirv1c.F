@@ -29,9 +29,6 @@ C*****************************************************************************
       use dcbbas_mod, only: NNBBASX
       use dummy_mod, only: DUMMY
       use symmet_mod, only: FMULT
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use dcbham_mod, only: ICTLV1C
       use nuclei_mod, only: CHARGE, GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
@@ -143,10 +140,7 @@ C*****************************************************************************
       use dummy_mod, only: DUMMY
       use dcbbas_mod, only: NNBBASX
       use symmet_mod, only: FMULT
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I,J
 C
@@ -286,11 +280,8 @@ C
 C*****************************************************************************
       use dcbham_mod, only: ICTLV1C
       use nuclei_mod, only: GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: NNBBASX
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
       use dummy_mod, only: DUMMY
       use symmet_mod, only: FMULT
       use kinds_mod, only: dp
@@ -423,7 +414,6 @@ C
 C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: NUCDEP
       use kinds_mod, only: dp
@@ -471,7 +461,6 @@ C
 C*****************************************************************************
       use dcbham_mod, only: ICTLV1C
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -652,13 +641,10 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: NNBBASX
-      use maxorb_mod, only: MXCORB
       use symmet_mod, only: FMULT
       use dcbham_mod, only: ICTLV1C
-      use maxaqn_mod, only: MXAQN, MXQN
       use nuclei_mod, only: GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
       use dummy_mod, only: DUMMY
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I,J
 C
@@ -763,7 +749,6 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: NNBBASX
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dummy_mod, only: DUMMY
       use nuclei_mod, only: GNUEXP, NUCDEP, NUCIND
       use kinds_mod, only: dp
@@ -865,7 +850,6 @@ C*****************************************************************************
       use dgroup_mod, only: IPQTOQ
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBASX, NTBAS
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbdhf_mod, only: INTDEF, INTFLG, NOPEN
       use nuclei_mod, only: NUCDEP
       use dcbham_mod, only: ICTLV1C, INTV1C, ONECAP, SMLV1C

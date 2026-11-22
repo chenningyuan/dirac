@@ -1970,7 +1970,6 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: CHARGE, NAMDEP, NOORBT, NUCDEP, NUCPRE
 !      use dcbpop_mod, only: ADD_ALL, ADDSML, DO_SCFPOP, ILABDF, IPOPLAB, LABDEF, NPOPLAB, POPLAB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dcbibt_mod, only: JGET, KGET
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
@@ -2395,9 +2394,6 @@ C
 C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
       use nuclei_mod, only: CORD, ISTBNU, NAMN, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, MULT, PT
 #include "implicit.h"
@@ -2535,7 +2531,6 @@ C     Written by Trond Saue Nov 5 2002
 C
 C***********************************************************************
       use dcbrho_mod, only: ILSCUB, IPRRHO, NCUBE
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: N2BBASXQ, NTBAS
@@ -2630,7 +2625,6 @@ c     and ungerade orbitals orbs(1,2)..orbs(N2,2).
 c     orbital indices are defined so that 1 is first occupied.
 c     Based on GT3RHO, this one by ulfek.
       use dcbham_mod, only: LEVYLE
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: N2BBASXQ, NTBAS
       use nuclei_mod, only: NUCDEP
@@ -2827,12 +2821,9 @@ C     Written by Trond Saue Nov 6 2002
 C
 C***********************************************************************
       use dcbrho_mod, only: CUBADJ, NCUBE
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEP, NUCIND
       use codata_mod, only: XTANG
-      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I,J
 C
@@ -2886,7 +2877,6 @@ C***********************************************************************
       use dcbrho_mod, only: NCUBE
       use dcbgen_mod, only: TITLE
       use nuclei_mod, only: NUCDEP
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I,J
 C
@@ -4203,8 +4193,6 @@ C     AO. In case of SO combinations from multiple atoms give the index
 C     of the first of these atoms. /UE 2008 (adapted from INDAOC)
       use dcbbas_mod, only: NTBAS
       use nuclei_mod, only: NUCDEG, NUCIND
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXSHEL
       use shells_mod, only: KHKT, KMAX, NCENT, NHKT, NLRGSH
 #include "implicit.h"
 C
@@ -4392,7 +4380,6 @@ C***********************************************************************
       use dgroup_mod, only: IPQTOQ, IQDEF, NFSYM, NZ, NZC1
       use dcbbas_mod, only: N2BBASXQ, NFBAS, NTBAS
       use nuclei_mod, only: NONT, NONTYP, NOORBT, NUCDEG
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
        use dircmo
        use labeled_storage
