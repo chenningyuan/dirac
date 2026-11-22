@@ -32,7 +32,6 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
       use dcbbos_mod, only: IBOSYM
 !      use cprnt_mod, only: IPRORB, IPRSTR, IPRTRA
 !      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
@@ -278,7 +277,6 @@ C***********************************************************************
 C***********************************************************************
 *
 !      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXPWRD, MXROOT
-      use maxorb_mod, only: MXCORB
       use dcbbos_mod, only: IBOSYM
       use dgroup_mod, only: NZ
 !      use ipoist8_mod, only: KDUM, KGROUPLIST, KPCBLTP, KPCI1BT, KPCIBT, KPCLBT, KPCLEBT, KPROCLENGTH, KPROCLIST, KPROCLIST2, KVEC1, K_OFFSET

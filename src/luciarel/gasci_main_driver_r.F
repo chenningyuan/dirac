@@ -39,7 +39,6 @@
 !      use integrals_off_mod, only: NTERMS
       use noccn_inf_mod, only: IDENSI_STATE, NOOCCN_DENS_RUN
       use dgroup_mod, only: ITERSEOUT, NZ
-      use maxorb_mod, only: MXCORB
 #if defined (VAR_MPI)
       use dcbbos_mod, only: IBOSYM
 #endif

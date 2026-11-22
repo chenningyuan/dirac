@@ -17,7 +17,7 @@
       SUBROUTINE RECP_LNK_READCP(LUINFO,NUC1,NONT0,IPREAD)
 !     Read ECP parameters
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
       use molinp_mod, only: MLINE, NMLINE
       use nuclei_mod, only: CHARGE
 !      use inc_mxvalue_mod, only: MSUP
@@ -304,7 +304,7 @@
       SUBROUTINE RECP_LNK_RDGEO(SYMTXT,NSYMOP,KASYM,blk,
      &           IQM,JCO,KATOM,KANG)
 !     Write geometry data for RECP integral
-      use mxcent_mod, only: MAX_NONT, MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MAX_NONT, MXATOM
       use nuclei_mod, only: CHARGE, NAMN, NONT, NONTYP, NUCIND
       USE RECP_NTR
 #include "implicit.h"
@@ -407,7 +407,7 @@
 
 
       SUBROUTINE RECP_LNK_PATM(ISEND,XYZ3,MJ2,NSYMOP,KASYM)
-      use mxcent_mod, only: MAX_NONT, MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MAX_NONT, MXATOM
       use nuclei_mod, only: CORD, NONT, NONTYP
       IMPLICIT NONE
       CHARACTER*1 KASYM(3,3)
@@ -538,7 +538,7 @@
       END
 
       SUBROUTINE RECP_LNK_PGEN(ISEND,NSYMOP,NGENP,MJ2)
-      use mxcent_mod, only: MAX_NONT, MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MAX_NONT, MXATOM
       use nuclei_mod, only: NONT, NUCIND
       IMPLICIT NONE
       INTEGER   NGENP,IGENP(8),IGENQ(3),NSYMOP
@@ -600,7 +600,6 @@
      &           ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,KPRIM)
 !     Write Basis-set information for RECP integral
 !     From SUBROUTINE ORBPRO 
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NONTYP
       USE RECP_NTR
 #include "implicit.h"
@@ -660,8 +659,6 @@
 
 
       SUBROUTINE RECP_LNK_CTRAN(blk)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXSHEL
       use nuclei_mod, only: NUCDEG, NUCIND
       use shells_mod, only: KHKT, KMAX, NCENT, NHKT
       use argoscom_mod, only: IROWMAX
@@ -697,9 +694,6 @@
 
 
       SUBROUTINE RECP_LNK_CTRAN1(ICENT,IA,blk)
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB, MXSHEL
       use shells_mod, only: ISTBAO, KHKT, NHKT
       use symmet_mod, only: ISYMAO, MAXREP, PT
       use argoscom_mod, only: IREPARG, MAXANG
@@ -735,7 +729,6 @@
 
       SUBROUTINE RECP_LNK_CTRAN2
 !     Set AO to SO transformation matrices
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCIND
       use argoscom_mod, only: IREPARG, IROWMAX, MAXANG
       USE RECP_NTR

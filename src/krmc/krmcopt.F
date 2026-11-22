@@ -324,9 +324,7 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use consts_mod, only: D0
 !      use thrzer_mod, only: THRZER
-      use maxorb_mod, only: MXCORB
       use dcbnrt_mod, only: LNOROT, NOROT
       use dcbkrmc_itinfo_mod, only: DINFO, IINFO, LDINFO, LIINFO
       use dcbgen_mod, only: LUITFO, LUKRMC
@@ -880,7 +878,6 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use consts_mod, only: D0
 !      use dcbopt_mod, only: COMPROT, FROZCI, IPROPT, JMCMIN, MCTYPE, NZCONF, NZCONFQ, NZHOPE, NZHOPEQ, NZXOPP, NZXOPPQ, NZXOPT
       use dcbgen_mod, only: LUKRM3, LUKRMC
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NCMOTQ, NNASHX, NORBT
@@ -1357,7 +1354,7 @@ C                    save orbital energies in ORBENE      T. Fleig
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use consts_mod, only: D0, D2, DP5
+      use consts_mod, only: D2, DP5
 !      use dcborb_mod, only: I2ORBX, ICMOQ, MXGAS, N2ORBXQ, NASHT, NISHT, NORB, NORBT
 !      use dcbopt_mod, only: IOPT_IFCKOP, IOPT_IHRMOP, IOPT_INTFLG, IOPT_ISYMOP, IPROPT
       use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
@@ -1657,7 +1654,7 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use consts_mod, only: D0, D2
+      use consts_mod, only: D2
 !      use dcborb_mod, only: I2ORBX, ICMOQ, N2ORBXQ, NISHT, NORB, NORBT
 !      use dcbopt_mod, only: CWRTFO_MAT, ECORE_LR, E_LVCORR_MC, IOPT_IFCKOP, IOPT_IHRMOP, IOPT_INTFLG, IOPT_ISYMOP, IPROPT
       use dcbgen_mod, only: LUKRM3, LUX2C
@@ -2846,7 +2843,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
       use maxorb_mod, only: MXCORB
-      use consts_mod, only: D0, DP5
+      use consts_mod, only: DP5
 !      use dcborb_mod, only: N2ASHT, N2ASHXQ, NASHT, NORBT
       use dgroup_mod, only: IPQTOQ, NZ
 !      use dcbidx_mod, only: IDXU2G
@@ -3051,7 +3048,6 @@ C                             --> reuse mj-related logicals.
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
       use dcbgen_mod, only: BNCRON, LUCOEF, LUKRM5, LUKRMC
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NORB, NORBT
 !      use dcbopt_mod, only: CINT_REORD, IANACI, IOPT_INTDEF, IOPT_INTFLG, IPROPT, JKRRUNTYPE, JMCMIN, JTRLVL, KTRLVL, MAXCIT, MCTYPE, MOPT_MXMACRO, NATOLCR, NZCONF, NZCONFQ, OPT_CIPROGRAM, SPINFR_KRMC
@@ -3815,7 +3811,6 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use dummy_mod, only: DUMMY
-      use maxorb_mod, only: MXCORB
       use dcbnrt_mod, only: NOROTC
 !      use dcbopt_mod, only: COMPROT, EACTIV, FROZCI, IOPT_INTDEF, IOPT_INTFLG, IPROPT, JMCMIN, JTRLVL, KTRLVL, KZCONF, MCTYPE, MOPT_MXMICRO, NZCONF, NZCONFQ, NZHOPE, NZHOPEQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZXOPT, NZXOPTQ, OPT_CIPROGRAM, OPT_NOFQX, OPT_NOPFQ, RBETA, STPLCI, STPLEE, STPLEN, STPLEP
       use dgroup_mod, only: NZ
@@ -4411,7 +4406,6 @@ C     Written by J. Thyssen - Nov 27 1998
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use consts_mod, only: D0
 !      use dcbopt_mod, only: DEPRED, DONR, EMCOLD, EMCSCF, IOPT_STATE, IPROPT, LDIRNR, RATGOD, RATMIN, RATREJ, RTRUST, STPINC, STPLEN, STPMAX, STPRED
       use dcbkrmc_itinfo_mod, only: DINFO
       use kinds_mod, only: dp
@@ -4693,7 +4687,7 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use consts_mod, only: D0, DP5
+      use consts_mod, only: DP5
 !      use dcbopt_mod, only: DLVLSH, DONR, IOPT_STATE, IPROPT, JHESSIAN, RBETA, RTRUST, RTTOL
       use dcbkrmc_itinfo_mod, only: DINFO, IINFO
       use kinds_mod, only: dp
@@ -4807,7 +4801,7 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use consts_mod, only: D0, DP5
+      use consts_mod, only: DP5
 !      use dcbopt_mod, only: DLVLSH, DONR, IOPT_STATE, IPROPT, JHESSIAN, RBETA, RTRUST, RTTOL
       use dcbkrmc_itinfo_mod, only: DINFO, IINFO
 !      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
@@ -4998,7 +4992,7 @@ C     Written by J. Thyssen - Dec 12 2000
 C     Last revision :
 C
 C***********************************************************************
-      use consts_mod, only: D0, D2, DP5
+      use consts_mod, only: D2, DP5
 !      use dcbopt_mod, only: DLVLSH, GNORM, JHESSIAN, OPT_THRGRD, RBETA, STPLEN, THQKVA, THQLIN
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -5062,7 +5056,6 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use consts_mod, only: D0
 !      use thrzer_mod, only: THRZER
 !      use dcbopt_mod, only: NZCONF, NZCONFQ, OPT_CIPROGRAM
       use dgroup_mod, only: NZ
@@ -5938,7 +5931,6 @@ C
 C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
 C
 C***********************************************************************
-      use consts_mod, only: D0
 !      use maxash_mod, only: MAXASH
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IOBTYP, JTACT, JTINAC
@@ -5979,7 +5971,6 @@ C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use consts_mod, only: D0, D2
       use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -6105,8 +6096,6 @@ C
 C     Written by J. Thyssen - Thu Mar 15 15:15:58 "MET 2001
 C
 C***********************************************************************
-      use consts_mod, only: D0
-      use maxorb_mod, only: MXCORB
       use dcbnrt_mod, only: NOROT, NOROTC
       use dcbgen_mod, only: LUKRM3
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NORBT
@@ -6342,7 +6331,6 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
-      use consts_mod, only: D0
 !      use thrzer_mod, only: THRZER
 !      use dcborb_mod, only: NASHT, NISHT, NPSHT, NSSHT
       use maxorb_mod, only: MXCORB

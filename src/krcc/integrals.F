@@ -423,7 +423,6 @@ C     call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
       use dgroup_mod, only: NZ
       use dcbgen_mod, only: LUCOEF, LUKRMC
       use consts_mod, only: D0
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C

@@ -987,9 +987,6 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
       use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ICOS, ISYMAX
 !      use dcbtra_mod, only: IFPCK12, NFPCK12, NFPCK12T
       use comdis_mod, only: ISPCK, LGFIL, NGBFSZ, NPASS, NSPCK
@@ -1222,9 +1219,6 @@ C     - Q1           Coefficients for index 1
 C     - Q2           Coefficients for index 2
 C     - LSORT        Array with information about the stored HT integrals
 C
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXCENT
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS
       use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ

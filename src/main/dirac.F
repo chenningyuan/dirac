@@ -121,7 +121,6 @@ C  /* Deck dirctl */
 #endif
 
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCOOR
       use dcbgrd_mod, only: DONGRD
       use dcbgen_mod, only: DOHRM, INPTES, OPTIMI
       implicit none

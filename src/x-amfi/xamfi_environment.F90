@@ -45,7 +45,7 @@ contains
       use dgroup_mod, only: IHQMAT, IPQTOQ, IQTOPQ, IRQMAT, JBTOF, JM4POS, JQBAS, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, I2TMT, N2BASTQ, N2BBASXQ, N2TMT, NFBAS, NTBAS, NZT
       use dcbgen_mod, only: CVAL, LUTMAT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXCENT
       use nuclei_mod, only: CHARGE, CORD, GAUNUC, NONT, NONTYP, NUCDEG, NUCDEP, NUCIND
 !      use dcbdhf_mod, only: DF, I2TMOT, INTFLG, NFMAT, NOPEN, NTMO
       use quaternion_algebra

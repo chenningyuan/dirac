@@ -26,8 +26,6 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use dirac_partask_mod, only: EXIT_NODEMENU, MOLTRA_PAR
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use aovec_mod, only: MXAOVC
       use dcbgen_mod, only: MP2ORG
 #if defined (VAR_MPI)
       use dcbgen_mod, only: PARCAL
@@ -1549,9 +1547,6 @@ C     Written by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbtra_mod, only: NFPCK12
       use comdis_mod, only: NINSHA, NINSHB
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS
@@ -1707,9 +1702,6 @@ C     Written by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dcbtra_mod, only: IFPCK34, NFPCK12, NFPCK34
       use symmet_mod, only: ISYMAX

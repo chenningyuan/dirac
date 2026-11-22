@@ -87,7 +87,6 @@ module electrostatic_potential
 ! RDR 0512.
 !
 
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: CHARGE, NUCDEG, NUCDEP, NUCIND
 
 !     Passed variables
@@ -195,7 +194,6 @@ module electrostatic_potential
 ! RDR 0612.
 !
 
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEG, NUCDEP, NUCIND
 
 !     Passed variables
@@ -265,9 +263,6 @@ module electrostatic_potential
 !            density matrix as input, potentials vector as output.                        
 !                        
 
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB, MXSHEL
       use ccom_mod, only: THRS
       use dgroup_mod, only: NBSYM
       use dcbham_mod, only: BSS, LEVYLE, NOSMLV, X2C
@@ -480,8 +475,6 @@ module electrostatic_potential
 !
 ! RDR 090312 Clean-up.      
 !
-      use aovec_mod, only: MXCONT
-      use maxorb_mod, only: MXPRIM
       use onecom_mod
       use primit_mod, only: PRICCF, PRIEXP
 
@@ -581,7 +574,6 @@ module electrostatic_potential
 !            in abacus/her1car.f of TUH
 ! RDR 090312 Clean-up.      
 !     
-      use maxaqn_mod, only: MXQN
       use gamcom_mod, only: FJW, JMAX0, WVAL
 
 ! Parameters
@@ -657,7 +649,6 @@ module electrostatic_potential
 ! RDR 060312 Clean-up.
 !
 
-      use maxaqn_mod, only: MXAQN
       use onecom_mod, only: JMAX, KCKTA, KCKTB
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 
@@ -708,7 +699,6 @@ module electrostatic_potential
 ! Roberto Di Remigio May 2012
 ! Purified from the evil implicit.h and all the other common blocks.  
 !
-      use maxaqn_mod, only: MXQN
       use gamcom_mod, only: FJW, JMAX0, MAXJ, TABFJW, WVAL
 
 ! A long and boring parameter list

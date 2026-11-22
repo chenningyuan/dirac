@@ -5,9 +5,6 @@
 !
 !     andre gomes, october 2012
 !
-      use mxcent_mod, only: MXCENT
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use dcbgen_mod, only: LU1INT
       use cbihr1_mod, only: IPRONE
       use dcbbas_mod, only: IBAS, IBBAS, N2BAS, N2BAST, N2BBASX, NBBAS,

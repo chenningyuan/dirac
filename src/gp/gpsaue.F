@@ -1755,9 +1755,6 @@ C     Written by T.Saue - May 15 1996
 C     Last revision: May 15 1996 - tsaue
 C
 C***********************************************************************
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IXVAL, JSOP, MAXREP
 #include "implicit.h"
       INTEGER :: I, II
@@ -2284,11 +2281,7 @@ C     Based on LMNVAL by tuh March 87
 C
 C     Written by T.Saue - Mar 24 1998
 C***********************************************************************
-      use maxmom_mod, only: MXAQNM
       use xyzpow_mod, only: ISTEP, MVAL, NVAL
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXCENT
       use symmet_mod, only: ISYMAO
 #include "implicit.h"
       INTEGER :: I
@@ -3848,7 +3841,6 @@ C
 C  Written by T. Saue Feb 2008
 C
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: ISOTOP, IZATOM, NOORBT, NUCDEG, NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"

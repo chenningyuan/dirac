@@ -3626,7 +3626,6 @@ c#include "dcborb.h"
 !     Called by:   CLTMOM2
 !-----------------------------------------------------------------------
       use codata_mod, only: DEBYE
-      use mxcent_mod, only: MXCOOR
       use dipole_mod, only: DIPMN
       use priunit_mod, only: LUPRI
 #include "implicit.h"

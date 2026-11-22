@@ -1180,7 +1180,7 @@ cbs   to(i,j,k,l)=to(i,j,k,l)+fact*from(i,k,j,l)
 
       subroutine gen1overR3(Lhigh)
       use pi_mod, only: PI
-      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML, NDFMX
+      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
       use dofuc_mod, only: DF
 #include "implicit.h"
 cbs   generates the radial integrals  for the one electron spin orbit integrals   
@@ -1662,7 +1662,7 @@ cbs   now generate OVLPinv
       end   
       subroutine genpowers(Lhigh)   
       use dofuc_mod, only: DF
-      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML, NDFMX
+      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
 #include "implicit.h"
 #include "param.h"
 cbs   set some often used powers of exponents 

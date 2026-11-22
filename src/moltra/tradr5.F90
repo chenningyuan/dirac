@@ -618,9 +618,6 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbtra_mod, only: NFPCK12
       use comdis_mod, only: NINSHA, NINSHB
 !      use dcborb_mod, only: NAOCC, NAVIR, NCMOTQ

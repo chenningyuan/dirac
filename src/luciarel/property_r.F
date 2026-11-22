@@ -246,7 +246,6 @@ C
 
       SUBROUTINE GET_XPROP_REOD_KRCI(LUF1MAT,WRK,LWRK,CIRUN)
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
       use dcbbos_mod, only: IBOSYM
 !      use dcborb_mod, only: N2ASHX
       use dgroup_mod, only: NZ

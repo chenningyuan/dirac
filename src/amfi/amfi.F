@@ -1391,7 +1391,7 @@ cbs ##################################################################
       use pi_mod, only: PI
 !      use param_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
       use dofuc_mod, only: DFFRAC
-      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML, NDFMX
+      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
 #include "implicit.h"
       INTEGER :: K
 #include "param.h"

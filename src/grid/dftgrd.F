@@ -35,8 +35,6 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP, NUCIND
       use ccom_mod, only: NHTYP
       use dftwrk_mod, only: NSCHEME, RADERR, RNDMAX
@@ -206,11 +204,8 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use codata_mod, only: XTANG
       use priunit_mod, only: LUPRI
-      use consts_mod, only: D0, D1
+      use consts_mod, only: D1
       use dftwrk_mod, only: NSCHEME, RADERR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
       use nuclei_mod, only: ISTBNU, NAMN, NOORBT, NUCIND
       use symmet_mod, only: MAXREP, MULT
       use ccom_mod, only: NHTYP
@@ -657,8 +652,6 @@ C     RADWT(K) = (RADNDE(K)+GRDC)*RADNDE(K)*RADNDE(K)*H
 C           
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dummy_mod, only: DUMMY
       use ccom_mod, only: NHTYP
       use nuclei_mod, only: NUCIND
@@ -993,9 +986,6 @@ C     T. Helgaker  Feb 01                                              C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX, MAXREP, MULT
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1283,7 +1273,6 @@ C
 C***********************************************************************
       use codata_mod, only: XTANG
       use priunit_mod, only: LUPRI
-      use consts_mod, only: D0
       use dcbbas_mod, only: NTBAS
 #include "implicit.h"
       INTEGER :: I, K
@@ -1567,9 +1556,6 @@ C
 
 
       SUBROUTINE SET_GRID_INFO(NAT,NUM,ZAN,C)
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMN, NBASIS, NOORBT,
      &  NUCDEP, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
@@ -1601,10 +1587,7 @@ C                                                           radovan bast
 C                                           last revision: february 2007
 C=======================================================================
 
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: CORD
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use symmet_mod, only: JSOP, MAXREP
 #include "implicit.h"
       INTEGER :: I

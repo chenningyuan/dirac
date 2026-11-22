@@ -576,7 +576,6 @@ module pelib_dirac_interface
 
     subroutine pelib_ifc_init()
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: CHARGE, CORD, NATOMS
         use pelib, only: pelib_init
         implicit none

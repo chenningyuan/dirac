@@ -390,9 +390,6 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
       use iratdef_mod, only: IRAT
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use aovec_mod, only: MXAOVC
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbtra_mod, only: LUTRA2, NFPCK12, NFPCK12T, NFPCK34T, SCRTRA
       use comdis_mod, only: ISHLA, ISHLB, ISPCK, KIGBUF, KLGBUF, KLGREC,
      &  KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS, NSPCK
@@ -1040,14 +1037,10 @@ C
 C     Luuk Visscher, 25-8-97
 C     Modified for ISHEL range May 2001 /jth+hjaaj
 C
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use aovec_mod, only: MXAOVC
       use blocks_mod, only: IORBSB, IORBSH, ISTBSH, KHKTSH, LCLASH,
      &  NHKTSH, NORBSH
       use dgroup_mod, only: JBTOF, NZ
       use dcbbas_mod, only: IBAS, IBBAS
-      use mxcent_mod, only: MXCENT
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ICOS, IPTSYM, ISYMAO, MAXREP
 #include "implicit.h"
 C

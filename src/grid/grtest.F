@@ -90,13 +90,11 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use dcbibt_mod, only: JGET
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT
       use dcbham_mod, only: LEVYLE, MC, SSMTRC
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NFBAS, NTBAS
       use dgroup_mod, only: NFSYM
       use maxorb_mod, only: MXCORB
 !      use dcblab_mod, only: IATTR, IPLAB, PLABEL
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: MAXREP, NCOS
          use dft_cfg
       use memory_allocator
@@ -569,9 +567,6 @@ C                                                                      C
 C     Modified for GETW1 by O. Fossgaard - May 2003                    C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMN, NATOMS, NBASIS,
      &  NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
@@ -661,7 +656,6 @@ C                                                                      C
 C      Modified for WT1CON by C. Fossgaard - May 2003                  C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NAMN, NATOMS
       use kinds_mod, only: dp
 #include "implicit.h" 
@@ -894,7 +888,6 @@ C     Written by Trond Saue May 9 2000
 C
 C     Modified for GT1WT by O. Fossgaard - May 2003
 C***********************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NATOMS
       use memory_allocator
 #include "implicit.h"
@@ -928,9 +921,6 @@ C
 C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX, MAXOPR, MULT, PT
       use nuclei_mod, only: CORD, ISTBNU, NAMN, NATOMS, NUCIND
 #include "implicit.h"
@@ -1005,8 +995,6 @@ C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
       use codata_mod, only: XTANG
-      use consts_mod, only: D0
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NATOMS
       use dcbwt1_mod, only: DSTEP
 #include "implicit.h"

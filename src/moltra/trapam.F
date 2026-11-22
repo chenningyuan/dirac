@@ -1768,9 +1768,6 @@ C     Output :
 C
 C     - HMAT         Symmetry packed half-transformed integrals
 C
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXCENT
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS
       use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
@@ -2044,8 +2041,6 @@ C
 C     Written by Luuk Visscher, january 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use aovec_mod, only: MXAOVC
       use blocks_mod, only: MAXSHL, NLRGBL
 #include "implicit.h"
 C
@@ -2144,8 +2139,6 @@ C
 C*****************************************************************************
       use dgroup_mod, only: JBTOF, NBSYM, NFSYM
       use dcbbas_mod, only: NBBAS
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use aovec_mod, only: MXAOVC
       use blocks_mod, only: NLRGBL
 #include "implicit.h"
 C
@@ -2299,13 +2292,9 @@ C
 C     Luuk Visscher, 24-1-97
 C
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use aovec_mod, only: MXAOVC
       use blocks_mod, only: IORBSB, IORBSH, ISTBSH, KHKTSH, MAXSHL,
      &  NHKTSH, NORBSH
       use dcbbas_mod, only: NTBAS
-      use mxcent_mod, only: MXCENT
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTSYM, ISYMAO, MAXREP
 #include "implicit.h"
       INTEGER :: I, II
@@ -2435,13 +2424,9 @@ C                 disbuf)
 C     - IJPASS  : Like IJPAIRS, but for each batch separately
 C
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use aovec_mod, only: MXAOVC
       use blocks_mod, only: BIGVEC, IORBSB, IORBSH, ISTBSH, KHKTSH,
      &  NHKTSH, NORBSH
       use dgroup_mod, only: NBSYM
-      use mxcent_mod, only: MXCENT
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTSYM, ISYMAO, MAXREP
       use comdis_mod, only: ISHLA, ISHLB, NINSHA, NINSHB, NPASS, NSPCK
 #include "implicit.h"
@@ -2842,8 +2827,6 @@ C     Written by T.Saue - Aug 19 1998
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use aovec_mod, only: MXAOVC
       use blocks_mod, only: NSYMBL
       use dgroup_mod, only: FREP, NFSYM
       use dcbbas_mod, only: NTBAS
@@ -3040,8 +3023,6 @@ C         2 - positronic
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use aovec_mod, only: MXAOVC
       use dcbbas_mod, only: NTBAS
       use dgroup_mod, only: FREP, NFSYM
       use blocks_mod, only: NSYMBL
@@ -3114,8 +3095,6 @@ C
 C     Written by T.Saue Sep 8 1998
 C
 C***********************************************************************
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use aovec_mod, only: MXAOVC
       use dgroup_mod, only: NFSYM
       use blocks_mod, only: NSYMBL
 #include "implicit.h"
@@ -3163,8 +3142,6 @@ C     Written by T.Saue Sep 8 1998
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use aovec_mod, only: MXAOVC
       use dgroup_mod, only: FREP, NFSYM
       use blocks_mod, only: NSYMBL
 #include "implicit.h"
@@ -3230,8 +3207,6 @@ C
 C     Written by L.Visscher 2013
 C
 C***********************************************************************
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use aovec_mod, only: MXAOVC
       use dgroup_mod, only: NFSYM
       use blocks_mod, only: NSYMBL
 #include "implicit.h"
@@ -5317,7 +5292,6 @@ C
 C HJAaJ Aug 2001: return maximum memory needed in Hermit for the
 C                 type of integrals specified with IC, I2TYP
 C
-      use maxaqn_mod, only: MXQN
       use twosta_mod, only: MXHERMEM
 #include "implicit.h"
 C

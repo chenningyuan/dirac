@@ -272,7 +272,6 @@ END SUBROUTINE RECP_INP2_READORB
 
 SUBROUTINE RECP_INP2_READCSO(lcr,lls,nkcrl,nkcru,nklsl,  &
            nklsu,ncr,ncrs,ncru,lproju,ns,zcr,ccr)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NAMN
 !      use inc_mxvalue_mod, only: MCRUP
 !      use inc_print_mod, only: RECP_DBG, RECP_OUT

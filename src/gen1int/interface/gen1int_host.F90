@@ -576,7 +576,6 @@
   !> \param word is the keyword from input file
   subroutine gen1int_host_cube_init(io_input, io_viewer, word)
     ! module of generating cube files
-      use maxorb_mod, only: MXCORB
       use infinp_mod, only: DO_CUBE
     use gen1int_cube
     ! to decode the string of MOs (in Gen1Int library)
@@ -689,7 +688,6 @@
 #if defined(VAR_MPI)
       use dirac_partask_mod, only: GEN1INT_GET_CUBE, RELEASE_NODES
 #endif
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: CHARGE, CORD, NUCDEP
       use inforb_mod, only: NBAST, NCMOT, NOCCT
       use inftap_mod, only: LUSIFC
@@ -1074,10 +1072,8 @@
   !> \param io_viewer is the logical unit number of the viewer
   !> \param level_print is the level of print
   subroutine gen1int_host_test(len_work, wrk_space, io_viewer, level_print)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use nuclei_mod, only: NUCDEP, NUCIND
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: MAXREP
     use london_ao
     use gen1int_api

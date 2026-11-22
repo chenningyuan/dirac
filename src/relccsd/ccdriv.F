@@ -142,7 +142,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCINPT (IN,IW)
       use ihm_mod, only: AIH, DOIH, ER_IH, IHSCHEME, NIH, SHIFT_IH
       use dcbham_mod, only: X2CMMF
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use relcc_cfg
 !     All initialization should be done in relcc_cfg, ultimately all common
 !     blocks should go, keep them for the moment for compatibility with reladc

@@ -55,7 +55,6 @@ C***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
       use dummy_mod, only: DUMMY
 !      use maxash_mod, only: MAXASH
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dcbgen_mod, only: DOLVC, INTGEN, IPRGEN, LVNEW
 !      use dcbopt_mod, only: ISHMEM_TYPE
       use nuclei_mod, only: NUCIND

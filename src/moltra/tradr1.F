@@ -361,9 +361,6 @@ C     Luuk Visscher
 C
 C
       use dgroup_mod, only: JBTOF, NZ
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ICOS
 !      use dcbtra_mod, only: NFPCK12
       use comdis_mod, only: ISPCK, NINSHA, NINSHB, NSPCK
@@ -464,9 +461,6 @@ C     Output :
 C
 C     - HMAT         Symmetry packed half-transformed integrals
 C
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXCENT
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS
       use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ

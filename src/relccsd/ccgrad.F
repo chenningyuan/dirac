@@ -1635,7 +1635,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE STORE_CC_DENSITY (WF,DMO,NMO,NZ)
 !      use files_mod, only: MCCDENS
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: DOEXP, MXPRP_WF, NPRP_WF, PRP_WF
       use labeled_storage
 C

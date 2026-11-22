@@ -45,7 +45,7 @@ C                     for DCOPY if ITIM == -1 and MZ == 2.
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use consts_mod, only: D0, DM1
+      use consts_mod, only: DM1
 !      use dcborb_mod, only: IASH, NASH, NASHT
       use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
 #include "implicit.h"

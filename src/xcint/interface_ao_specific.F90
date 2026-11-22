@@ -24,12 +24,8 @@ contains
    subroutine interface_ao_write_dirac()
 
 !     --------------------------------------------------------------------------
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
-      use maxaqn_mod, only: MXAQN, MXQN
       use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NUCO, NUMCF, SPHR
       use symmet_mod, only: ICOS, ISYMAX
-      use aovec_mod, only: MXCONT
       use primit_mod, only: PRICCF, PRIEXP
       use dcbbas_mod, only: IBBAS, NBBAS
       use dgroup_mod, only: IPQTOQ, IQTOPQ, JBTOF, JM4POS, JQBAS, NBSYM, NFSYM, NZ

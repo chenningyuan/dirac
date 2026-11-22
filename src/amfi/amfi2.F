@@ -1,6 +1,5 @@
       subroutine initired
       use priunit_mod, only: LUPRI
-      use para_mod, only: LMAX, MXCART
       use ired_mod, only: IPOW2IRED, IREDORDER, IREDORDERINV, IRWITHLX,
      &  IRWITHLY, IRWITHLZ, MULT
 #include "implicit.h"

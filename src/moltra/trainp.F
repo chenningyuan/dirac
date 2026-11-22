@@ -1187,7 +1187,7 @@ C
 C*****************************************************************************
       use cbiher_mod, only: QUADRU
       use priunit_mod, only: LUCMD, LUPRI
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: DIPOLE, DONMQM, EFG, NQCC, QUADRU
       use dcbtrp_mod, only: IPRTRP, LTRPP, MAXTRP, NTRPP
       use dgroup_mod, only: NFSYM

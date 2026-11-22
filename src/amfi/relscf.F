@@ -3707,7 +3707,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use relscf_dim_mod, only: FACTO, MXBF, NBAS, NBAS1, NCSH, NOSH, NSTEP, NSYM, OCCUP, THRSH
       use relscf_v10_mod, only: LPQ
       use relscf_ijpair_mod, only: IDK
-      use scfarr_mod, only: MXB
 #include "implicit.h"
       INTEGER :: I,J,JJ,K
 #include "relscf_dim.h"
