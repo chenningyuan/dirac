@@ -35,6 +35,7 @@ set(FIXED_PRP_FORTRAN_SOURCES
 
 
 set(FREE_PRP_FORTRAN_SOURCES
+    dcbxpp.F90
     dcbexp.F90
     gauss_legendre.F90
    conf_parameters.F90

@@ -1629,11 +1629,10 @@ C
 C**********************************************************************
 C
 !      use parluci_mod, only: IRC_SAVE, LUWRT, MYNEW_COMM, MYPROC, MY_ACT_BLK1, MY_ACT_BLK2, MY_LU1_OFF, MY_LU2_OFF, MY_VEC1_IOFF, MY_VEC2_IOFF, NEWCOMM_PROC, NPTEST_VAR, NUM_BLOCKS
-!      use krciprop_mod, only: IXSYMACT
+      use krciprop_mod, only: IXSYMACT
       use interface_to_mpi
 #include "implicit.h"
 #include "parluci.h"
-#include "krciprop.h"
 C
       DIMENSION IGROUPLIST(*), IBLOCKL_X(NUM_BLOCKS,*)
       DIMENSION IBLOCKD_X(NUM_BLOCKS,*)
@@ -3443,11 +3442,11 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
      &                            ICWEIGHTF,IAM_BLK_ACT_C,
      &                            IAM_BLK_ACT_S,NDIM)
 !      use parluci_mod, only: I_NZERO_LEN_C
-!      use krciprop_mod, only: DOSIGPROP
 !      use mxpdim_mod, only: MXROOT
 !      use ipoist8_mod, only: KDUM, KLSI1BT, KLSIBT, KLSLBT, KLSLEBT, KXDUM
 !      use cstate_mod, only: IBAT_MS2, IBLK_MS2, IDC, NBAT_MS2, NBLK_MS2, NBLK_MS2_C, NMS2VAL
 !      use cands_mod, only: ICSM, ISSM
+      use krciprop_mod, only: DOSIGPROP
       use cands_luciarel_mod, only: ICSM, ISSM
       use luci_wrkspc
 C**********************************************************************
@@ -3464,7 +3463,6 @@ C**********************************************************************
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
-#include "krciprop.h"
       DIMENSION ISCALFAC_C(*),ISCALFAC_S(*),ICCTOS(I_NZERO_LEN_C,*)
       DIMENSION ICWEIGHTF(*), IAM_BLK_ACT_S(*), IAM_BLK_ACT_C(*)
 #include "mxpdim.inc"
@@ -3517,7 +3515,7 @@ C
 !      use stinf_mod, only: NOCTYP
 !      use gasstr_mod, only: IST_FOR_DT
 !      use parluci_mod, only: CHECK_TC, IRC_SAVE, I_NZERO_LEN_C, I_NZERO_LEN_S, LUWRT, MYPROC, SPLIT_IJKL
-!      use krciprop_mod, only: DOSIGPROP
+      use krciprop_mod, only: DOSIGPROP
       use cands_luciarel_mod, only: IACTP, IASTP, IBCTP, IBSTP, ISSM,
      &  ISSPC
       use luci_wrkspc
@@ -3539,7 +3537,6 @@ C
       INTEGER   IAM_BLK_ACT_S(*),IAM_BLK_ACT_C(*),ISCLFAC_S(*)
       INTEGER   ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S) 
 #include "parluci.h"
-#include "krciprop.h"
 C     batches of sigma
       DIMENSION LBATS(*),LEBATS(*),I1BATS(*),IBATS(8,*)
 C     scratch
@@ -10059,7 +10056,7 @@ C**********************************************************************
 !      use dcborb_mod, only: IASH, N2ORBX, NASHT, NNASHX, NORBT
       use dgroup_mod, only: IPQTOQ, IQTOPQ, JBTOF, NBSYM, NFSYM, NZ
       use maxorb_mod, only: MXCORB
-!      use maxash_mod, only: MAXASH
+      use maxash_mod, only: MAXASH
 !      use dcbidx_mod, only: IDXG2U, IDXT2G, IDXU2G, IIDX3, IIDX4, NIDX3, NIDX4
       use interface_to_mpi
 #include "implicit.h"
@@ -10069,7 +10066,6 @@ C**********************************************************************
 #include "cicisp.inc"
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "maxash.h"
 #include "dcbidx.h"
       CHARACTER*6 CIRUN
 !
@@ -10207,15 +10203,16 @@ C
 C**********************************************************************
 !      use parluci_mod, only: MASTER
 !      use dcborb_mod, only: MXGAS
-!      use krciprop_mod, only: DOPROPREOD, IHTYPE_X, IN1ELPRP_KRCI, ISYMEIG_KRCI, ISYMOPPRP_KRCI, LPROP_KRCI, MXPROP_KRCI, MXPRPE_KRCI, NPROP_KRCI, NPROP_ROOTS_KRCI
 !      use dcbxpr_mod, only: IPRPTIM, MAXPRPS, PRPNAM
+      use krciprop_mod, only: DOPROPREOD, IHTYPE_X, IN1ELPRP_KRCI,
+     &  ISYMEIG_KRCI, ISYMOPPRP_KRCI, LPROP_KRCI, MXPROP_KRCI,
+     &  MXPRPE_KRCI, NPROP_KRCI, NPROP_ROOTS_KRCI
       use dcbkrci_mod, only: MAX_NKRCI_MAX_SYM, NKRCI_CIROOTS
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "dcborb.h"
-#include "krciprop.h"
 #include "dcbxpr.h"
 C
 C     common block in dcbkrci.h

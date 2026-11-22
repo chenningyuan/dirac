@@ -92,12 +92,14 @@ set(MODULE_SOURCES
     infpar.F90
     inftap.F90
     iratdef.F90
+    krciprop.F90
     krmcluci_inf.F90
     lapdim.F90
     lmns.F90
     logging.F90
     luctinp.F90
     maxaqn.F90
+    maxash.F90
     maxmom.F90
     maxorb.F90
     moldip.F90

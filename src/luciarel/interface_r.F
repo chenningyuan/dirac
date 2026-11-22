@@ -67,13 +67,13 @@
 *  Written by Timo Fleig (including all subroutines)
 !      use ipoist8_mod, only: KDUM, KDUMX12, KHMAT, KINTI12, KISTR_AA, KISTR_AB, KISTR_CA, KISTR_CB, KLABEXTP, KLSOBEX, KMDIASV, KT_CC
 !      use parluci_mod, only: IIOMOD_REL, IT_SHL, IXCOMM, IXCOMM_RK, IXCOMM_SZ, LEN_ALL_INT, LOWSRT_IJKL, LUWRT, MASTER, MYNEW_ID, MYPROC, NFLGRPS_REL, N_MASTER, REORD_IJKL, SPLIT_IJKL
-!      use krciprop_mod, only: DOPROPREOD
 !      use mxpdim_mod, only: MXINT_DIA, MXINT_TP, MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
 !      use glbbas_mod, only: KMDIASV, KT_CC
 !      use ctcc_mod, only: KLABEXTP, KLSOBEX, MX_ST_TSOSO_BLK_MX, N1ELINT, NALLINT, NSPOBEX_TP
 !      use cgas_mod, only: NGAS
 !      use integrals_off_mod, only: IPOSDIA
 !      use dcborb_mod, only: NGSHT, NORBT
+      use krciprop_mod, only: DOPROPREOD
       use dgroup_mod, only: LINEAR, NZ
       use luci_wrkspc
 *---------------------------------------------------
@@ -88,7 +88,6 @@
 #include "implicit.inc"
 #include "ipoist8.inc"
 #include "parluci.h"
-#include "krciprop.h"
 #include "mxpdim.inc"
 #include "glbbas.inc"
 #include "ctcc.inc"
@@ -2463,7 +2462,8 @@ C***********************************************************************
       use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM, NZ
       use pgroup_mod, only: REP
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
-!      use krciprop_mod, only: DODIPMOM_KRCI, DOOSCILLST, ISYMOPPRP_KRCI, LPROP_KRCI, NPROP_KRCI
+      use krciprop_mod, only: DODIPMOM_KRCI, DOOSCILLST, ISYMOPPRP_KRCI,
+     &  LPROP_KRCI, NPROP_KRCI
       use dcbkrci_mod, only: NKRCIAELEC, NKRCI_CIROOTS
       use symmetry_setup_krci
 #include "implicit.h"
@@ -2471,7 +2471,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dcbxpr.h"
-#include "krciprop.h"
       DIMENSION WORK(*)
       CHARACTER REPVOP_KRCI*3, FILELAB*8
       integer, allocatable :: nroots_temp(:)

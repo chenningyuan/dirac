@@ -55,7 +55,6 @@ C***********************************************************************
       use memory_allocator
 
 #include "implicit.h"
-!#include "maxash.h"
 C
       CHARACTER WFTYP*(*)
       LOGICAL   WFCONV
@@ -1900,7 +1899,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
-!      use maxash_mod, only: MAXASH
+      use maxash_mod, only: MAXASH
 !      use dcbopt_mod, only: IOPTST, IPROPT, LZXOPE, LZXOPP, N2DSHX, N2DSHXQ, N2VSHX, N2VSHXQ, NDSH, NDSHT, NVSH, NVSHT, NZCONF, NZHOPE, NZXOPE, NZXOPP, OPT_CHCKJZ, OPT_CIPROGRAM, OPT_DELSTR, OPT_INDSTR, OPT_SKIPEE, OPT_SKIPEP, OPT_UCIBOS, SPINFR_KRMC
 !      use dcborb_mod, only: IORB, NASH, NCMOTQ, NESH, NFRO, NGAS_DC, NISH, NOCC, NORB, NORBT, NPSH, NSSH
       use dgroup_mod, only: LINEAR, NFSYM, NZ
@@ -1911,7 +1910,6 @@ C***********************************************************************
 
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "maxash.h"
 C
       CHARACTER WFTYP*(*)
 C
@@ -2781,12 +2779,11 @@ C***********************************************************************
 !      use dcborb_mod, only: N2ASHXQ, NASHT, NORBT
       use dgroup_mod, only: IPQTOQ, NZ
       use maxorb_mod, only: MXCORB
-!      use maxash_mod, only: MAXASH
+      use maxash_mod, only: MAXASH
 !      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "maxash.h"
 #include "dcbidx.h"
 C
       DIMENSION FC(*),FCAC(*)
@@ -2840,14 +2837,13 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use maxash_mod, only: MAXASH
+      use maxash_mod, only: MAXASH
       use maxorb_mod, only: MXCORB
       use consts_mod, only: DP5
 !      use dcborb_mod, only: N2ASHT, N2ASHXQ, NASHT, NORBT
       use dgroup_mod, only: IPQTOQ, NZ
 !      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
-#include "maxash.h"
 C
 C
 #include "dcborb.h"
@@ -5370,7 +5366,6 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbopt_mod, only: JCAS, JDHF, JGAS, JODHF, MCTYPE
 #include "implicit.h"
-!#include "maxash.h"
 C
 #include "dcbopt.h"
 C
@@ -5926,14 +5921,13 @@ C
 C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
 C
 C***********************************************************************
-!      use maxash_mod, only: MAXASH
+      use maxash_mod, only: MAXASH
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IOBTYP, JTACT, JTINAC
 !      use dcborb_mod, only: NORBT
       use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I
-#include "maxash.h"
 C
 #include "dcbidx.h"
 #include "dcborb.h"
@@ -6325,7 +6319,7 @@ C     Written by J. Thyssen - Thu Mar 15 15:15:58 "MET 2001
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use maxash_mod, only: MAXASH
+      use maxash_mod, only: MAXASH
       use thrzer_mod, only: THRZER
 !      use dcborb_mod, only: NASHT, NISHT, NPSHT, NSSHT
       use maxorb_mod, only: MXCORB
@@ -6333,7 +6327,6 @@ C***********************************************************************
       use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
       INTEGER :: I, II, K, KK
-#include "maxash.h"
 C
 C
 #include "dcborb.h"
@@ -6463,13 +6456,12 @@ C     This routine is used by SVLDEG.
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use maxash_mod, only: MAXASH
+      use maxash_mod, only: MAXASH
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXE2G, IDXI2G, IDXP2G, IDXS2G, IDXU2G
 !      use dcborb_mod, only: NASHT, NESHT, NISHT, NORBT, NPSHT, NSSHT
       use dgroup_mod, only: NZ
 #include "implicit.h"
-#include "maxash.h"
 C
 #include "dcbidx.h"
 #include "dcborb.h"

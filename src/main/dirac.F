@@ -877,7 +877,7 @@ C     Last revision:
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use maxash_mod, only: MAXASH
+      use maxash_mod, only: MAXASH
       use dgroup_mod, only: NBSYM, NFSYM
 !      use dcborb_mod, only: MXGAS, NAELEC, NASH, NESH, NFRO, NGASSP, NGAS_DC, NGSH, NGSHT, NISH, NOCC, NSSH
       use dcbkrmc_mod
@@ -886,7 +886,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, J
 C
-#include "maxash.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dcbdhf.h"

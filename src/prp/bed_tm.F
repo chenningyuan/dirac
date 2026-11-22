@@ -18,7 +18,8 @@ C***********************************************************************
       use pgroup_mod, only: REP
       use dgroup_mod, only: JM4, JM4REP, MCMP, NBSYM, NZ
 !      use dcbxrs_mod, only: JSYMOP, JTIMOP, LUBOE, LUBOP, NESIM, NEXCNV, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
-!      use dcbxpp_mod, only: BEDCHK, BEDECD, DOBED, IPRXPP, KEXCNV, MAXEXC, UPOL, UWAVE
+      use dcbxpp_mod, only: BEDCHK, BEDECD, DOBED, IPRXPP, KEXCNV,
+     &  MAXEXC, UPOL, UWAVE
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
       use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL,
      &  PDOINT, PRPLBL
@@ -31,7 +32,6 @@ C
 C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0,D4=4.0D0)
 #include "dcbxrs.h"
-#include "dcbxpp.h"
 #include "dcbxpr.h"
       LOGICAL DOINT(2,2)
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
@@ -461,7 +461,7 @@ C***********************************************************************
       use dgroup_mod, only: MCMP, NZ
       use nuclei_mod, only: NUCIND
 !      use dcbxrs_mod, only: JSYMOP, JTIMOP, LUBOE, LUBOP, NESIM, NEXCNV, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
-!      use dcbxpp_mod, only: IPRXPP, KEXCNV, MAXEXC
+      use dcbxpp_mod, only: IPRXPP, KEXCNV, MAXEXC
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
       use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL,
      &  PDOINT, PRPLBL
@@ -474,7 +474,6 @@ C
 C
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, D1=1.0D0
 #include "dcbxrs.h"
-#include "dcbxpp.h"
 #include "dcbxpr.h"
       LOGICAL DOINT(2,2)
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
@@ -710,7 +709,7 @@ C***********************************************************************
       use dgroup_mod, only: JM4, JM4REP, NZ
       use nuclei_mod, only: NUCIND
 !      use dcbxrs_mod, only: JSYMOP, JTIMOP, LUBOE, LUBOP, NESIM, NEXCNV, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
-!      use dcbxpp_mod, only: IPRXPP, KEXCNV, MAXEXC
+      use dcbxpp_mod, only: IPRXPP, KEXCNV, MAXEXC
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
       use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL,
      &  PDOINT, PRPLBL
@@ -723,7 +722,6 @@ C
 C
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, D1=1.0D0
 #include "dcbxrs.h"
-#include "dcbxpp.h"
 #include "dcbxpr.h"
       LOGICAL DOINT(2,2)
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
@@ -980,7 +978,8 @@ C***********************************************************************
       use pgroup_mod, only: REP
       use dgroup_mod, only: JM4, JM4REP, NBSYM, NZ
 !      use dcbxrs_mod, only: JSYMOP, JTIMOP, LUBOE, LUBOP, NESIM, NEXCNV, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
-!      use dcbxpp_mod, only: ANGPLOT, BEDCHK, BEDECD, DOBED, IPRXPP, KEXCNV, MAXEXC, NROTAV
+      use dcbxpp_mod, only: ANGPLOT, BEDCHK, BEDECD, DOBED, IPRXPP,
+     &  KEXCNV, MAXEXC, NROTAV
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
       use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL,
      &  PDOINT, PRPLBL
@@ -999,10 +998,8 @@ C
       INTEGER :: I, II
 C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0,D4=4.0D0)
-!#include "maxash.h"
 C
 #include "dcbxrs.h"
-#include "dcbxpp.h"
 #include "dcbxpr.h"
 !#include "dcbidx.h"
 #if defined (VAR_MPI)
@@ -1490,7 +1487,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use dcbbas_mod, only: N2BBASXQ, NTBAS
       use mxcent_mod, only: MXCOOR
       use infpar_mod, only: MPARID
-!      use dcbxpp_mod, only: BEDECD, DOBED, MAXEXC
+      use dcbxpp_mod, only: BEDECD, DOBED, MAXEXC
       use memory_allocator                                 
       use interface_to_mpi                                 
 #include "implicit.h"                                      
@@ -1499,7 +1496,6 @@ C
 c TODO added due to NESH
 
 C TODO commented out due to dcborb.hç
-#include "dcbxpp.h"
 C
 C                                                          
       DIMENSION DINTSKP(14*3*3)                            
@@ -1509,9 +1505,9 @@ C
       real(8), allocatable :: WORK(:), CMO(:), OMEGA(:), TMPISSYM(:)
       real(8), allocatable :: TMPOSCBED(:),TMPOSCECD(:)
       integer, allocatable :: IBEIG(:)
-      INTEGER MAXEXC, I
-      call legacy_lwork_get(LWORK)                         
-      call alloc(WORK,LWORK,id='WORK in BEDLEB')           
+      INTEGER I
+      call legacy_lwork_get(LWORK)
+      call alloc(WORK,LWORK,id='WORK in BEDLEB')
       KWORK = 1
       KFREE = KWORK
       LFREE = LWORK
@@ -1578,9 +1574,7 @@ C
 C
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0, DP5=0.5D0
       real(8)             :: TMPCPU, buff(2)
-!#include "maxash.h"
 #include "dcbxrs.h"
-!#include "dcbxpp.h"
 !#include "dcbxpr.h"
 !#include "dcbidx.h"
 #include "mpif.h"
@@ -1722,11 +1716,11 @@ C                                                                      C
      &       IBCVC,IBEVC,IBPVC,INTTYP, NBAST,
      &       NELMNT,NPRPINT, CMO, WORK,KFREE,LFREE)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use maxash_mod, only: MAXASH
 !      use dcborb_mod, only: ICMO, ICMOQ, IORB, N2ORB, N2ORBT, N2ORBX, NASH, NCMO, NCMOQ, NCMOT, NCMOTQ, NESH, NFRO, NISH, NORB, NORBT, NPSH
 !      use dcbxrs_mod, only: INDSTR, JOPSY, NEXCNV, NREDM, NZHOPE, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, SKIPEE, SKIPEP
-!      use dcbxpp_mod, only: ANGPLOT, BEDECD, DOBED, MAXEXC
 !      use dcbxpr_mod, only: IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
+      use maxash_mod, only: MAXASH
+      use dcbxpp_mod, only: ANGPLOT, BEDECD, DOBED, MAXEXC
       use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL,
      &  PDOINT, PRPLBL
       use dgroup_mod, only: NFSYM
@@ -1745,11 +1739,9 @@ C
 #include "implicit.h"
 C
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0, DP5=0.5D0
-#include "maxash.h"
 #include "dcborb.h"
 C
 #include "dcbxrs.h"
-#include "dcbxpp.h"
 #include "dcbxpr.h"
 #include "dcbidx.h"
 #include "mpif.h"

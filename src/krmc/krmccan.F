@@ -612,7 +612,7 @@ C                S. Knecht  - Jul 16 2008
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use maxash_mod, only: MAXASH
+      use maxash_mod, only: MAXASH
       use consts_mod, only: D0, D1
 !      use dcborb_mod, only: I2ASHX, I2ORBX, ICMOQ, MXGAS, N2ASHXQ, N2ISHX, N2ORBXQ, N2PSHX, NASH, NASHT, NCMOTQ, NISH, NISHT, NORB, NORBT, NPSH, NPSHT
 !      use dcbopt_mod, only: IPROPT, JGAS, MCTYPE, N2DSHXQ, N2VSHXQ, NDSH, NDSHT, NVSH, NVSHT, NZCONF, OPT_CHCKJZ, SPINFR_KRMC
@@ -624,7 +624,6 @@ C***********************************************************************
       use dcbkrmc_mod, only: DKRMC_MVOFAC
 #include "implicit.h"
       INTEGER :: I
-#include "maxash.h"
 C
 C
 #include "dcborb.h"
@@ -1253,18 +1252,17 @@ C***********************************************************************
 !      use dcborb_mod, only: MXGAS
       use dgroup_mod, only: NZ
 !      use dcbopt_mod, only: OPT_CIPROGRAM
-!      use krciprop_mod, only: ISYMEIG_KRCI, LXPRPKRCI, NPROP_KRCI, NPROP_ROOTS_KRCI
+      use krciprop_mod, only: ISYMEIG_KRCI, LXPRPKRCI, NPROP_KRCI,
+     &  NPROP_ROOTS_KRCI
       use dcbkrci_mod, only: NKRCI_CIROOTS, NKRCI_MAX_SYM, NKRCI_SELOM,
      &  NOMEGASEL_STATENR, STATE_SELECT_KRCI
 #include "implicit.h"
       INTEGER :: I, J
-!#include "maxash.h"
 C
 C
 !#include "dcbidx.h"
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "krciprop.h"
 C
       DIMENSION CMO(*), WORK(*)
       integer, allocatable :: iomval(:)
@@ -1431,7 +1429,10 @@ C***********************************************************************
 !      use dcbopt_mod, only: IPROPT
       use dcbgen_mod, only: LUKRM3
       use dgroup_mod, only: IPQTOQ, JBTOF, NZ
-!      use krciprop_mod, only: DOJZEXP, LPROP_KRCI, NPROP_KRCI
+      use krciprop_mod, only: LPROP_KRCI, NPROP_KRCI
+#if defined (MCSCF_DEBUG)
+      use krciprop_mod, only: DOJZEXP
+#endif
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 #include "implicit.h"
       INTEGER :: I
@@ -1439,7 +1440,6 @@ C write-protection for DUMMY.
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "krciprop.h"
 #include "dcbxpr.h"
       DIMENSION CMO(*), PRPCOREE(*), WORK(*)
       CHARACTER*8 FILELAB
@@ -1594,7 +1594,7 @@ C***********************************************************************
 !      use dcborb_mod, only: MXGAS, NAELEC
       use dcbgen_mod, only: CVAL
       use dgroup_mod, only: NZ
-!      use krciprop_mod, only: DODIPMOM_KRCI, DOEEDM_KRCI, DOENSPS_KRCI, DOGENP_KRCI, DOJZEXP, DOMHYP_KRCI, DONMQM_KRCI, DOOSCILLST, ISYMEIG_KRCI, LPROP_KRCI, NPROP_KRCI, NPROP_ROOTS_KRCI, VKRCI_NUCMAGMOM, VKRCI_NUCSPIN, XREPEIG
+      use krciprop_mod
       use dcbkrci_mod, only: MAX_NKRCI_MAX_SYM, NKRCI_CIROOTS,
      &  NKRCI_MAX_SYM
 !      use dcbxpr_mod, only: PRPNAM
@@ -1608,7 +1608,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 !#include "dcbopt.h"
-#include "krciprop.h"
 #include "dcbxpr.h"
       DOUBLE COMPLEX XMOM
       REAL*8 OSCL, OSCLABS
@@ -2389,12 +2388,11 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use krciprop_mod, only: LPROP_KRCI, LXPRPKRCI
+      use krciprop_mod, only: LPROP_KRCI, LXPRPKRCI
 !      use dcbxpr_mod, only: PRPNAM
 #include "implicit.h"
       INTEGER :: I
 C
-#include "krciprop.h"
 #include "dcbxpr.h"
       CHARACTER*4 XREPOM(*)
       DIMENSION OMEGAMAT(NOMEGAST,NOMEGAST,*), NKRCI_CIROOTS(*)

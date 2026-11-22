@@ -54,11 +54,11 @@ C
 C***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
       use dummy_mod, only: DUMMY
-!      use maxash_mod, only: MAXASH
+      use maxash_mod, only: MAXASH
       use dcbgen_mod, only: DOLVC, INTGEN, IPRGEN, LVNEW
 !      use dcbopt_mod, only: ISHMEM_TYPE
       use nuclei_mod, only: NUCIND
-!      use krciprop_mod, only: DODIPMOM_KRCI, DOEEDM_KRCI, DOENSPS_KRCI, DOGENP_KRCI, DOJZEXP, DOMHYP_KRCI, DONMQM_KRCI, DOOSCILLST, DOPROP_KRCI, ISYMOPPRP_KRCI, LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI, RUNXPROP, VKRCI_NUCMAGMOM, VKRCI_NUCSPIN, XREPEIG
+      use krciprop_mod
 !      use dcborb_mod, only: MXGAS
       use dcbkrci_mod
       use dcbham_mod, only: LEVYLE, SPINFR, ZORA, ZORA4
@@ -69,7 +69,6 @@ C***********************************************************************
       use os_utils
 #include "implicit.h"
       INTEGER :: I, J
-#include "maxash.h"
       PARAMETER (NTABLE = 52)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
 C
@@ -81,7 +80,6 @@ C
       INTEGER IKWSET(NTABLE)
 C
 #include "dcbopt.h"
-#include "krciprop.h"
 #include "dcborb.h"
 C
       SAVE SET
@@ -1463,7 +1461,7 @@ C***********************************************************************
       use dcbgen_mod, only: DOLVC, LUKRM3, LUKRM5
       use dcbkrci_mod, only: DKRCI_THRGCI, NKRCI_CIROOTS, NKRCI_MAX_SYM,
      &  XPSINTERFACE_KRCI
-!      use krciprop_mod, only: DOPROP_KRCI, RUNXPROP, XREPEIG
+      use krciprop_mod, only: DOPROP_KRCI, RUNXPROP, XREPEIG
       use dcbham_mod, only: INTV1C, ONECAP
       use frame_mod, only: CORRLV
       use memory_allocator
@@ -1479,7 +1477,6 @@ C
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "krciprop.h"
 !frame.h needed for CORRLV for LVCORR
 C
       LOGICAL   EX, FILEOPEN
@@ -1825,7 +1822,6 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-!#include "maxash.h"
 C
 C
       CALL TITLER('KR-CI calculation ','*',199)

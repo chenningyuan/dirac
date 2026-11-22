@@ -80,13 +80,13 @@ C     Based on PRPXLR
 C
 C*****************************************************************************
 !      use dcborb_mod, only: NORBT
-!      use dcbxpp_mod, only: IPRXPP, MAXEXC, NBED, NCLS_XPP, NPPAPT, ORBXPP, XPPANA, XPP_INDSTR, XPP_SKIPEE, XPP_SKIPEP
+      use dcbxpp_mod, only: IPRXPP, MAXEXC, NBED, NCLS_XPP, NPPAPT,
+     &  ORBXPP, XPPANA, XPP_INDSTR, XPP_SKIPEE, XPP_SKIPEP
       use dgroup_mod, only: NBSYM, NFSYM
 #include "implicit.h"
       INTEGER :: I
 C
 #include "dcborb.h"
-#include "dcbxpp.h"
       DIMENSION WORK(*)
 C
       CALL QENTER('PRPXPP')
@@ -178,7 +178,9 @@ C     OSCECD : Differential oscillator strengths Beyond the Electric Dipole appr
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbxpp_mod, only: IPRXPP, KEXCNV, KEXSIM, KEXSTV, MAXEXC, NBED, NCLS_XPP, NPPAPT, ORBXPP, XPP_INDSTR, XPP_RSPEXP, XPP_SKIPEE, XPP_SKIPEP
+      use dcbxpp_mod, only: IPRXPP, KEXCNV, KEXSIM, KEXSTV, MAXEXC,
+     &  NBED, NCLS_XPP, NPPAPT, ORBXPP, XPP_INDSTR, XPP_RSPEXP,
+     &  XPP_SKIPEE, XPP_SKIPEP
       use dgroup_mod, only: JFSYM, NBSYM, NFSYM
       use pgroup_mod, only: REP
 !      use dcbxrs_mod, only: JOPSY, JSYMOP, JTIMOP, LUXVC, NCRED, NERED, NEXCNV, NEXSIM, NEXSTV, NFREQ, NPRED, NREDM, NZCONF, NZRED, NZXOPEQ, RSPLAB
@@ -187,7 +189,6 @@ C*****************************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2=2.0D0
 C
-#include "dcbxpp.h"
 !#include "dcbxlr.h"
 !#include "dcbxpr.h"
 #include "dcbxrs.h"
@@ -351,7 +352,7 @@ C*****************************************************************************
       use mxcent_mod, only: MXCOOR
       use dcbgen_mod, only: INTGEN
 !      use dcbprp_mod, only: DOXPP
-!      use dcbxpp_mod, only: ANGPLOT, BEDCHK, BEDECD, CNVXPP, DOBED, DOLENR, DOVELR, GCLEAN, GCLEAN_FAC, GNOISE, GNOISE_FAC, IBDOFF, IEPOFF, IMPOFF, INTXPP, IPRXPP, ITRIPP, ITRXPP, IVPOFF, KEXCNV, KEXSIM, KEXSTV, KVAL_OSC, LPPAPU, MAXEXC, MAXLPP, MAX_KVAL, NBED, NPPAP, NPPAPT, NROTAV, ORBXPP, ORIENTED, RESXPP, THCPP, UPOL, UWAVE, XPPANA, XPPFIL, XPPNRM, XPP_E2CHEK, XPP_INDSTR, XPP_LSFG, XPP_RSPEXP, XPP_SKIPEE, XPP_SKIPEP, XPP_TRIPLET
+      use dcbxpp_mod
 !      use dcbxlr_mod, only: MAXRM, MXLOAD
       use dcbham_mod, only: BSS, ECPCALC, FREEPJ, LEVYLE, QED, SPINFR,
      &  VEXTPJ, X2C
@@ -366,7 +367,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: DRESFAC = 1.0D2
 C
 #include "dcbprp.h"
-#include "dcbxpp.h"
 #include "dcbxlr.h"
 #include "dcbxpr.h"
 C
@@ -1000,14 +1000,13 @@ C     Written by H.J.Aa.Jensen 2000
 C     Based on SETXLR
 C
 C*****************************************************************************
-!      use dcbxpp_mod, only: CNVXPP, INTXPP, IPRXPP, ITRIPP, ITRXPP, JPPAP, LPPAPS, LPPAPU, NPPAP, NPPAPT, RESXPP, THCPP, XPPERG, XPPFIL, XPPNRM, XPP_E2CHEK, XPP_INDSTR, XPP_LSFG, XPP_SKIPEE, XPP_SKIPEP, XPP_TRIPLET
 !      use dcbxlr_mod, only: MAXRM, MXLOAD
 !      use dcbxrs_mod, only: CNVINT, DIAGHE, E2CHEK, FKRMC, INTDEF, IPRXRS, ITRINT, LINEQ, LOFFTY, LSVCFG, LURST, LUXVC, MAXITR, MAXSIM, N2REDM, NFREQ, NREDM, RESFAC, RSREST, STATIC, STERNH, THCXRS, TKNORM, TRIPLET
+      use dcbxpp_mod
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
-#include "dcbxpp.h"
 #include "dcbxlr.h"
 #include "dcbxrs.h"
 C
@@ -1103,8 +1102,9 @@ C     Written by H.J.Aa. Jensen 2000, based on GETLRF
 C
 C*****************************************************************************
 !      use dcbxrs_mod, only: JSYMOP, NCSIM, NESIM, NEXCNV, NPSIM, NREDM, NZCONF, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
-!      use dcbxpp_mod, only: BEDECD, DOBED, MAXEXC, NBED, NCLS_XPP, NPPAPT, ORBXPP, ORIENTED
 !      use dcborb_mod, only: NCMOTQ
+      use dcbxpp_mod, only: BEDECD, DOBED, MAXEXC, NBED, NCLS_XPP,
+     &  NPPAPT, ORBXPP, ORIENTED
       use dcbibn_mod, only: JBENDX, JBPNDX
       use dgroup_mod, only: NBSYM, NFSYM
       use dcbbas_mod, only: NTBAS
@@ -1116,7 +1116,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0=0.0D0
 C
 #include "dcbxrs.h"
-#include "dcbxpp.h"
 Chj: MAXRM, MXLOAD
 #include "dcborb.h"
       LOGICAL FIRST
@@ -1271,7 +1270,8 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
       use dcbibn_mod, only: JBENDX, JBPNDX
 !      use dcbxrs_mod, only: BVTYP, IMX, INTXRS, IPEP, IPPP, IPX, JSYMOP, JTIMOP, LUBOE, LUBOP, LUXVC, NERED, NEXCNV, NPRED, NREDM, RSPLAB
-!      use dcbxpp_mod, only: GCLEAN, GCLEAN_FAC, GNOISE, GNOISE_FAC, IPRXPP, JPPAP, LPPAPS, LPPAPU, MAXEXC, NPPAP, NPPAPT, ORBXPP
+      use dcbxpp_mod, only: GCLEAN, GCLEAN_FAC, GNOISE, GNOISE_FAC,
+     &  IPRXPP, JPPAP, LPPAPS, LPPAPU, MAXEXC, NPPAP, NPPAPT, ORBXPP
       use dcbham_mod, only: SPINFR
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NORB
       use dcbbas_mod, only: NFBAS
@@ -1284,7 +1284,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D00
 C
 #include "dcbxrs.h"
-#include "dcbxpp.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
       LOGICAL FIRST,TEST
@@ -1514,14 +1513,14 @@ C*****************************************************************************
       use dgroup_mod, only: FREP, JFSYM, LINEAR, NBSYM, NFSYM, NZ
       use pgroup_mod, only: REP
       use dcbham_mod, only: SPINFR
-!      use dcbxpp_mod, only: JPPAP, KEXCNV, LPPAPS, LPPAPU, MAXEXC, NCLS_XPP, NPPAP, NPPAPT, ORBXPP, THCPP, XPP_SKIPEE, XPP_SKIPEP
+      use dcbxpp_mod, only: JPPAP, KEXCNV, LPPAPS, LPPAPU, MAXEXC,
+     &  NCLS_XPP, NPPAP, NPPAPT, ORBXPP, THCPP, XPP_SKIPEE, XPP_SKIPEP
       use symmet_mod, only: ISYMAX
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 #include "implicit.h"
       INTEGER :: I, J, K
 C
       PARAMETER ( D0 = 0.0D0, D2R3 = (2.0D0/3.0D0), D2 = 2.0D0 )
-#include "dcbxpp.h"
 !#include "dcbxlr.h"
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
@@ -2079,13 +2078,12 @@ C***********************************************************************
       use dgroup_mod, only: JFSYM, LINEAR, NBSYM, NFSYM, NZ
       use pgroup_mod, only: REP
       use dcbham_mod, only: SPINFR
-!      use dcbxpp_mod, only: BEDECD, DOBED, DOLENR, DOVELR, JPPAP, KEXCNV, KVAL_OSC, LPPAPS, LPPAPU, MAXEXC, NBED, NPPAP, NPPAPT, ORIENTED, UPOL, UWAVE, XPPERG
+      use dcbxpp_mod
       use symmet_mod, only: ISYMAX, MAXREP
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 #include "implicit.h"
       INTEGER :: I, II
 C
-#include "dcbxpp.h"
 C
 #include "dcbxpr.h"
 C

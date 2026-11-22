@@ -47,7 +47,7 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use maxash_mod, only: MAXASH
+      use maxash_mod, only: MAXASH
       use dgroup_mod, only: NZ
 !      use dcborb_mod, only: NASHT, NORBT
       use maxorb_mod, only: MXCORB
@@ -55,7 +55,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: K
-#include "maxash.h"
 C
       REAL(dp), PARAMETER :: D2 = 2.0D0
 C

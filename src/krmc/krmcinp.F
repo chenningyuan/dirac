@@ -27,7 +27,7 @@
 !***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
       use dummy_mod, only: DUMMY, IDUMMY
-!      use maxash_mod, only: MAXASH
+      use maxash_mod, only: MAXASH
       use dcbgen_mod, only: DOLVC, INTGEN, IPRGEN, LVNEW
       use dcbpsi_mod, only: DOKRMC
       use dcbham_mod, only: BSS, FREEPJ, LEVYLE, SPINFR, VEXTPJ, X2C,
@@ -37,11 +37,10 @@
       use dcbbas_mod, only: NFBAS
       use dgroup_mod, only: LINEAR, NBSYM, NFSYM, NZ
       use pgroup_mod, only: REP
-!      use krciprop_mod, only: XREPEIG
+      use krciprop_mod, only: XREPEIG
       use symmetry_setup_krci
 #include "implicit.h"
       INTEGER :: I, J
-#include "maxash.h"
 !
       PARAMETER (NTABLE = 36)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
@@ -53,7 +52,6 @@
       DIMENSION WORK(LWORK)
 !
 #include "dcborb.h"
-#include "krciprop.h"
 C
       character (len= 4)              :: symmetry_str
       character (len= 4)              :: tmp_symmetry_str

@@ -571,7 +571,7 @@ CTEMP     ISM2(3,5) = 1
 *
 *
 !      use dcborb_mod, only: NASH, NGSH, NORBT
-!      use maxash_mod, only: MAXASH
+      use maxash_mod, only: MAXASH
       use dgroup_mod, only: LINEAR, NFSYM
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXU2G
@@ -592,7 +592,6 @@ CTEMP     ISM2(3,5) = 1
       DIMENSION NCPMT(10,NOCCLS)
       DIMENSION WCPMT(10,NOCCLS)
 #include "dcborb.h"
-#include "maxash.h"
 C
 #include "dcbidx.h"
 !     scratch
@@ -1097,7 +1096,6 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
       SUBROUTINE GET_3BLKS_REL(KVEC1,KVEC2,LSCR2,CIRUN)
 !      use ipoist8_mod, only: KDUM, KLCIOIO, KNSTSO, KNSTSO2, KVEC1, KVEC2
 !      use parluci_mod, only: LMEMFREE_PTR, LUWRT
-!      use krciprop_mod, only: IXSYMACT, IXSYMLIST
 !      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXROOT
 !      use cicisp_mod, only: LCJRES_SAVE, MXADKBLK, MXSOOB
 !      use cstate_mod, only: NMS2VAL
@@ -1109,6 +1107,7 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 !      use gasstr_mod, only: IBSPGPFTP, IST_FOR_DT, ITPM1, ITPM2, MXNSTR, NELFSPGP, NSTFSMSPGP, NSTFSMSPGP2
 !      use cgas_mod, only: NGAS
 !      use cands_mod, only: ISSM, ISSPC
+      use krciprop_mod, only: IXSYMACT, IXSYMLIST
       use cands_luciarel_mod, only: ISSM, ISSPC
       use luci_wrkspc
 C**********************************************************************
@@ -1137,7 +1136,6 @@ C
 #include "mpif.h"
 #endif
 #include "parluci.h"
-#include "krciprop.h"
 *
 #include "mxpdim.inc"
 #include "cicisp.inc"
@@ -4203,7 +4201,8 @@ C***********************************************************************
 !      use crun_mod, only: L2BLOCK, LBLOCK, LCSBLK
 !      use gasstr_mod, only: IBSPGPFTP, IST_FOR_DT
 !      use parluci_mod, only: ISMEMFAC, LMEMFREE_PTR, LUWRT, L_COMBI_MAX, NUM_BLOCKS, NUM_BLOCKS2
-!      use krciprop_mod, only: IXSYMACT, IXSYMLIST, MXPROPKRCI_SYM, NXSYMPAIRS
+      use krciprop_mod, only: IXSYMACT, IXSYMLIST, MXPROPKRCI_SYM,
+     &  NXSYMPAIRS
       use luci_wrkspc
 C***********************************************************************
 C
@@ -4231,7 +4230,6 @@ C
 #include "crun.inc"
 #include "gasstr.inc"
 #include "parluci.h"
-#include "krciprop.h"
 #if defined (VAR_MPI2)
 #include "mpif.h"
       INTEGER ISTAT(MPI_STATUS_SIZE)
@@ -4484,13 +4482,13 @@ C     Last revision :
 C
 C***********************************************************************
 C
-!      use krciprop_mod, only: IHTYPE_X, IXSYMACT, IXSYMLIST, MXPROPKRCI_SYM
 !      use parluci_mod, only: COMPDISTL, COMPRCCTOS, NUM_BLOCKS, NUM_BLOCKS2
 !      use cands_mod, only: ICSM, ISSM
+      use krciprop_mod, only: IHTYPE_X, IXSYMACT, IXSYMLIST,
+     &  MXPROPKRCI_SYM
       use cands_luciarel_mod, only: ICSM, ISSM
       use symmetry_setup_krci
 #include "implicit.h"
-#include "krciprop.h"
 #include "mpif.h"
 #include "parluci.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE), ISYM_DISTR(IXSYMACT)
@@ -4561,11 +4559,10 @@ C
 C     Last revision :
 C
 C***********************************************************************      
-!      use krciprop_mod, only: NXSYMPAIRS
+      use krciprop_mod, only: NXSYMPAIRS
       use symmetry_setup_krci
 #include "implicit.h"
       INTEGER :: I, J
-#include "krciprop.h"
       DIMENSION IXSYMPAIRS(IXSYM,IXSYM), ISYMOPX(*),IXROOTSYM(*)
 C
       IONE = 1

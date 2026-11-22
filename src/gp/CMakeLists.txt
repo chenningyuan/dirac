@@ -42,6 +42,7 @@ set(FIXED_GP_FORTRAN_SOURCES_noruntimecheck
 )
 
 set(FREE_GP_FORTRAN_SOURCES
+    bucket_sort.F90
     basis_datatypes.F90
     checkpoint.F90
     codata.F90

@@ -1291,9 +1291,8 @@ C
 C     Written by Luuk Visscher, August 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use bucket_sort_mod, only: NGBFSZ, N_BUFFER
+      use bucket_sort_mod, only: NGBFSZ, N_BUFFER
 #include "implicit.h"
-#include "bucket_sort.h"
 C
       NBUF = N_BUFFER
       NSIZE = NGBFSZ
@@ -1313,10 +1312,13 @@ C     I_FILE   : Bucket sort indentifier (we may have more than one active)
 C     Written by Luuk Visscher, August 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use bucket_sort_mod, only: BF_NAME, IREQ, I_BF_REC, I_BF_UNIT, LGBUF, LGREC, MAX_SEND_BUFFERS, NGBFSZ, N_BUFFER, N_DELETED, N_WRITTEN
+      use bucket_sort_mod, only: BF_NAME, I_BF_REC, I_BF_UNIT, LGBUF,
+     &  LGREC, MAX_SEND_BUFFERS, NGBFSZ, N_BUFFER, N_DELETED, N_WRITTEN
+#if defined (VAR_MPI)
+      use bucket_sort_mod, only: IREQ
+#endif
       use interface_to_mpi
 #include "implicit.h"
-#include "bucket_sort.h"
       CHARACTER*10 FNODE,LFNAM
       CHARACTER*5  NAME
 C
@@ -1373,13 +1375,12 @@ C
 C     Written by Luuk Visscher, August 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use bucket_sort_mod, only: LGBUF, NGBFSZ, N_DELETED, N_WRITTEN
+      use bucket_sort_mod, only: LGBUF, NGBFSZ, N_DELETED, N_WRITTEN
 #if defined (VAR_PFS) || defined (VAR_MPI)
       use infpar_mod, only: MYTID
 #endif
 #include "implicit.h"
       INTEGER :: I
-#include "bucket_sort.h"
       REAL*8 RGBUF(NGBFSZ,*), A(NROWS)
       DIMENSION IGBUF(2,NGBFSZ,*)
       DIMENSION IROWS(3,NROWS)
@@ -1438,9 +1439,9 @@ C
 C     Written by Luuk Visscher, August 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use bucket_sort_mod, only: I_BF_REC, I_BF_UNIT, LGREC, NGBFSZ, RECORDS_IN_BUFFER
+      use bucket_sort_mod, only: I_BF_REC, I_BF_UNIT, LGREC, NGBFSZ,
+     &  RECORDS_IN_BUFFER
 #include "implicit.h"
-#include "bucket_sort.h"
       REAL*8 RGBUF(NGBFSZ)
       DIMENSION IGBUF(2,NGBFSZ)
 C
@@ -1475,11 +1476,10 @@ C     Written by Luuk Visscher, August 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use bucket_sort_mod, only: LGBUF, NGBFSZ, N_DELETED, N_WRITTEN
+      use bucket_sort_mod, only: LGBUF, NGBFSZ, N_DELETED, N_WRITTEN
       use infpar_mod, only: MYTID
 #include "implicit.h"
       INTEGER :: I
-#include "bucket_sort.h"
       REAL*8 RGBUF(NGBFSZ,*)
       DIMENSION IGBUF(2,NGBFSZ,*)
       DIMENSION IROWS(3,NROWS)
@@ -1544,9 +1544,8 @@ C
 C     Delete the buffer file (free some disk space)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use bucket_sort_mod, only: I_BF_UNIT
+      use bucket_sort_mod, only: I_BF_UNIT
 #include "implicit.h"
-#include "bucket_sort.h"
 C
 C     Get file unit number and file pointer
 C
@@ -1573,10 +1572,9 @@ C
 C     Written by Luuk Visscher, October 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use bucket_sort_mod, only: IREQ, MAX_SEND_BUFFERS
+      use bucket_sort_mod, only: IREQ, MAX_SEND_BUFFERS
       use interface_to_mpi
 #include "implicit.h"
-#include "bucket_sort.h"
       LOGICAL READY
       integer :: status_array(df_mpi_status_size)
 C
@@ -1609,10 +1607,9 @@ C
 C     Written by Luuk Visscher, October 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use bucket_sort_mod, only: IREQ, ISGBUF, NGBFSZ
+      use bucket_sort_mod, only: IREQ, ISGBUF, NGBFSZ
       use interface_to_mpi
 #include "implicit.h"
-#include "bucket_sort.h"
       REAL*8 RGBUF(NGBFSZ)
 !     INTEGER*4 IGBUF(2,NGBFSZ) ! should be default int as far as i can see
       INTEGER   IGBUF(2,NGBFSZ)
@@ -1645,10 +1642,9 @@ C
 C     Written by Luuk Visscher, October 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use bucket_sort_mod, only: NGBFSZ
+      use bucket_sort_mod, only: NGBFSZ
       use interface_to_mpi
 #include "implicit.h"
-#include "bucket_sort.h"
       INTEGER ISTAT(df_MPI_STATUS_SIZE)
       LOGICAL NEWMAIL
       INTEGER IHBUF(4*NGBFSZ+4)
@@ -1688,11 +1684,10 @@ C
 C     Written by Luuk Visscher, October 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use bucket_sort_mod, only: IREQ, MAX_SEND_BUFFERS
+      use bucket_sort_mod, only: IREQ, MAX_SEND_BUFFERS
       use infpar_mod, only: MPARID, MYTID, NODES
       use interface_to_mpi
 #include "implicit.h"
-#include "bucket_sort.h"
       INTEGER ISTAT(df_MPI_STATUS_SIZE)
       INTEGER ISTATS(df_MPI_STATUS_SIZE,MAX_SEND_BUFFERS)
       LOGICAL NEWMAIL
@@ -1809,10 +1804,9 @@ c          and we can just read those related to the column we want. the informa
 c          of which columns are in which records is in the metadata file generated
 c          by the fine sorting routines before the 2HT actually starts 
 C
-!      use bucket_sort_mod, only: I_BF_UNIT, LGREC, NGBFSZ
+      use bucket_sort_mod, only: I_BF_UNIT, LGREC, NGBFSZ
 #include "implicit.h"
       INTEGER :: I
-#include "bucket_sort.h"
        REAL*8 RGBUF(NGBFSZ),A(NROW)
        DIMENSION IGBUF(2,NGBFSZ)
        logical do_finesort
@@ -1856,9 +1850,8 @@ C
 
 
       subroutine set_record_range(IBUF,ICOL,irec_initial,irec_final)
-!      use bucket_sort_mod, only: IREC_MD_LASTWRITTEN, I_MD_UNIT
+      use bucket_sort_mod, only: IREC_MD_LASTWRITTEN, I_MD_UNIT
 #include "implicit.h"
-#include "bucket_sort.h"
          integer, intent(in)  :: ibuf, icol
          integer, intent(out) :: irec_initial, irec_final 
          integer :: meta(3), imdrec, imdrecn

@@ -45,10 +45,11 @@ c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
        subroutine sort_buffers(thisnode,i_file)
-!      use bucket_sort_mod, only: KLPAIRSINBUFFER, MAX_RECORDS_PER_BUFFER, NGBFSZ, NODE_FOR_BUFFER, N_BUFFER, RECORDS_IN_BUFFER
+      use bucket_sort_mod, only: KLPAIRSINBUFFER,
+     &  MAX_RECORDS_PER_BUFFER, NGBFSZ, NODE_FOR_BUFFER, N_BUFFER,
+     &  RECORDS_IN_BUFFER
           use memory_allocator
 #include "implicit.h"
-#include "bucket_sort.h"
 C
           integer :: i_file, thisnode, verbosity_factor
           integer :: data_chunksize, buffer, idim3
@@ -159,11 +160,12 @@ c
      &                           data_chunksize,
      &                           kl_in_buffer,
      &                           imdsz,isiz1)
-!      use bucket_sort_mod, only: IREC_MD_GLOBAL_LASTWRITTEN, IREC_MD_LASTWRITTEN, I_BF_UNIT, I_MD_UNIT, LGREC, MAX_RECORDS_PER_BUFFER, NGBFSZ
+      use bucket_sort_mod, only: IREC_MD_GLOBAL_LASTWRITTEN,
+     &  IREC_MD_LASTWRITTEN, I_BF_UNIT, I_MD_UNIT, LGREC,
+     &  MAX_RECORDS_PER_BUFFER, NGBFSZ
       use memory_allocator
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "bucket_sort.h"
        integer, intent(in) :: i_file, i_metadata_file
        integer :: iactive_buffer
        integer :: kl_in_buffer
@@ -332,11 +334,11 @@ c init_metadata_file: used to create the direct access file
 c
       subroutine init_metadata_file(i_file)
       
-!      use bucket_sort_mod, only: IREC_MD_GLOBAL_LASTWRITTEN, IREC_MD_LASTWRITTEN, I_MD_UNIT, N_BUFFER
+      use bucket_sort_mod, only: IREC_MD_GLOBAL_LASTWRITTEN,
+     &  IREC_MD_LASTWRITTEN, I_MD_UNIT, N_BUFFER
          use memory_allocator
 #include "implicit.h"
       INTEGER :: I
-#include "bucket_sort.h"
          CHARACTER*10 NAME*5,FNODE,LFNAM
 
          IRECL  = IRECLEN(0,6,0)
@@ -622,9 +624,9 @@ c below is a selection sort implementation...
 
 
       subroutine init_finesort_commons(kl_in_buf,NumBuffers,BuffNodes)
-!      use bucket_sort_mod, only: KLPAIRSINBUFFER, NODE_FOR_BUFFER, N_BUFFER, RECORDS_IN_BUFFER
+      use bucket_sort_mod, only: KLPAIRSINBUFFER, NODE_FOR_BUFFER,
+     &  N_BUFFER, RECORDS_IN_BUFFER
 #include "implicit.h"
-#include "bucket_sort.h"
 
          integer :: kl_in_buf, NumBuffers, BuffNodes(NumBuffers)
          integer :: ibuf

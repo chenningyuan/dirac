@@ -1301,14 +1301,13 @@ C     Last revision :
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 !      use parluci_mod, only: FILE_INFO_OBJ, ICOMM, ILPRP_X, MASTER, MYNEW_COMM, MYNEW_ID, MYPROC, MY_GROUPN, NEWCOMM_PROC, N_MASTER
-!      use krciprop_mod, only: IN1ELPRP_KRCI, LPROP_KRCI, NPROP_KRCI
 !      use dcbxpr_mod, only: PRPNAM
+      use krciprop_mod, only: IN1ELPRP_KRCI, LPROP_KRCI, NPROP_KRCI
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C information for property run
-#include "krciprop.h"
 #include "dcbxpr.h"
       CHARACTER FILE_INFO_GROUPSZ*4,XPROP_INT*13,FILELAB_REOD*8
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_XPRP

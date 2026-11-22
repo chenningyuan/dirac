@@ -93,7 +93,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
-!      use maxash_mod, only: MAXASH
+      use maxash_mod, only: MAXASH
 !      use dcbidx_mod, only: IDXU2G
       use dcbbos_mod, only: IBOSYM
       use dgroup_mod, only: NFSYM, NZ
@@ -104,7 +104,6 @@ C***********************************************************************
       use pgroup_mod, only: REP
 #include "implicit.h"
       INTEGER :: I, II, J
-#include "maxash.h"
 
       LOGICAL UCIBOS
       INTEGER ICIREP, IPRINT_in, IPRINT

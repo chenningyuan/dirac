@@ -152,13 +152,12 @@ C
 !**********************************************************************
 !      use clunit_mod, only: LUC, LUDIA, LUHC, LUSC1, LUSC2, LUSC3, LUSC34, LUSC35, LUSC36, LUSC37, LUSC38, LUSC39, LUSC41, LUSC61, LUSC62
 !      use parluci_mod, only: LU_INFO, MASTER, MYPROC
-!      use krciprop_mod, only: RUNXPROP
+      use krciprop_mod, only: RUNXPROP
       use mospinor_info
       use symmetry_setup_krci
 #include "implicit.h"
 #include "../luciarel/clunit.inc"
 #include "parluci.h"
-#include "krciprop.h"
 *
 !     close files
       close(unit=ludia,status='KEEP')
@@ -314,7 +313,6 @@ C***********************************************************************
 !#include "../luciarel/glbbas.inc"
 !#include "../luciarel/ctcc.inc"
 C information for property run
-!#include "krciprop.h"
       COMMON/CECORER/ECORE
 CTF
       character*6 CIRUN
@@ -2185,7 +2183,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use mxpdim_mod, only: MXNDGIRR, MXPICI
 !      use cicisp_mod, only: ISYM_KRMC, XISPSM
       use noccn_inf_mod, only: NOOCCN_DENS_RUN
-!      use krciprop_mod, only: LXPRPKRCI, NPROP_KRCI, NPROP_ROOTS_KRCI, RUNXPROP
+      use krciprop_mod, only: LXPRPKRCI, NPROP_KRCI, NPROP_ROOTS_KRCI,
+     &  RUNXPROP
 !      use dcborb_mod, only: NASHT, NNASHX, NORBT
       use dcbgen_mod, only: PARCAL
       use dgroup_mod, only: NZ
@@ -2199,7 +2198,6 @@ C
 C
 #include "../luciarel/mxpdim.inc"
 #include "../luciarel/cicisp.inc"
-#include "krciprop.h"
 !#include "dcbopt.h"
 #include "dcborb.h"
 

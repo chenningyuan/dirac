@@ -3490,15 +3490,14 @@ C
 C     Written by J. Thyssen - Nov 22 2000
 C
 C***********************************************************************
-!      use maxash_mod, only: MAXASH
 !      use dcborb_mod, only: NASHT, NORBT
+      use maxash_mod, only: MAXASH
       use dgroup_mod, only: NZ
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXG2U, IFSMO, IOBTYP, JTACT, JTINAC
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: II
-#include "maxash.h"
 C
       REAL(dp), PARAMETER :: D2 = 2.0D0, DP5 = 0.5D0
 C
@@ -3614,15 +3613,14 @@ C
 C     Written by J. Thyssen - Jun 1 1999
 C
 C***********************************************************************
-!      use maxash_mod, only: MAXASH
 !      use dcborb_mod, only: NASHT
+      use maxash_mod, only: MAXASH
       use dgroup_mod, only: NZ
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXG2U, IFSMO, IOBTYP, JTACT, JTINAC
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: II
-#include "maxash.h"
 C
       REAL(dp), PARAMETER :: D2 = 2.0D0
 C

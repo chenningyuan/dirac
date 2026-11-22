@@ -431,7 +431,6 @@ C
 !hope we don't need it
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "krciprop.h"
 #include "mxpdim.inc"
 #include "ctcc.inc"
 #include "ctccp.inc"
@@ -1753,12 +1752,12 @@ C     Written by J. Thyssen - Jul 21 2000
 C     Last revision : L. Visscher - Mar 15 2001
 C
 C***********************************************************************
+      use maxash_mod, only: MAXASH
       use dcbham_mod, only: SPINFR
       use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "maxash.h"
 C
 #include "dcbopt.h"
 #include "dcborb.h"

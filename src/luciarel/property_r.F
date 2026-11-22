@@ -257,7 +257,8 @@ C
 !      use cintfo_mod, only: ISM2D, IUB2D, NL2D
 !      use ctcc_mod, only: NALLINT
 !      use glbbas_mod, only: KT_CC
-!      use krciprop_mod, only: DOPROPREOD, IHTYPE_X, IN1ELPRP_KRCI, ISYMOPPRP_KRCI, LPROP_KRCI, NPROP_KRCI
+      use krciprop_mod, only: DOPROPREOD, IHTYPE_X, IN1ELPRP_KRCI,
+     &  ISYMOPPRP_KRCI, LPROP_KRCI, NPROP_KRCI
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
 #if defined (VAR_MPI)
       use infpar_mod, only: MPARID, MYTID, NUMNOD
@@ -292,7 +293,6 @@ C required common blocks
 #include "ctcc.inc"
 #include "glbbas.inc"
 C information for property run
-#include "krciprop.h"
 #include "dcbxpr.h"
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -501,9 +501,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use cgas_mod, only: NCMBSPC
 !      use clunit_mod, only: LUC, LUHC, LUPROP_MAT
 !      use cstate_mod, only: IDC, NMS2VAL
-!      use krciprop_mod, only: DOSIGPROP, IN1ELPRP_KRCI, ISYMEIG_KRCI, ISYMOPPRP_KRCI, IXSYMACT, IXSYMLIST, LPROP_KRCI, LXPRPKRCI, MXPROPKRCI_SYM, NPROP_KRCI, NPROP_ROOTS_KRCI
 !      use dcbxpr_mod, only: PRPNAM
 !      use parluci_mod, only: IALL_LU1, IALL_LU2, IALL_LUC, ILPRP_X, ILU1, ILU2, IRC_SAVE, LUWRT, L_COMBI, L_COMBI_MAX, L_COMBI_S, MASTER, MYPROC, MY_ACT_BLK2, MY_ACT_BLK_ALL, MY_LU1_OFF, MY_LU2_OFF, MY_LUC_OFF, NUM_BLOCKS, NUM_BLOCKS2
+      use krciprop_mod, only: DOSIGPROP, IN1ELPRP_KRCI, ISYMEIG_KRCI,
+     &  ISYMOPPRP_KRCI, IXSYMLIST, LPROP_KRCI, LXPRPKRCI,
+     &  MXPROPKRCI_SYM, NPROP_KRCI, NPROP_ROOTS_KRCI
+#if defined (VAR_MPI)
+      use krciprop_mod, only: IXSYMACT
+#endif
       use cands_luciarel_mod, only: ICSM, ICSPC, ISSM, ISSPC
       use dgroup_mod, only: NZ
       use luci_wrkspc
@@ -536,7 +541,6 @@ C required common blocks
 #include "clunit.inc"
 #include "cstate.inc"
 C information for property run
-#include "krciprop.h"
 #include "dcbxpr.h"
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)

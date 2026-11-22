@@ -4372,14 +4372,12 @@ C     Written by S. Knecht Sep 2008
 C
 C***********************************************************************
       use consts_mod, only: D1
-!      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
+      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
 #include "implicit.h"
       INTEGER :: II
 C
-!#include "maxash.h"
 !#include "dcbprp.h"
 !#include "dcbxpr.h"
-#include "krciprop.h"
 !#include "dcborb.h"
 C
 #ifdef CODE_NOT_WORKING
@@ -4455,14 +4453,12 @@ C     Written by S. Knecht Sep 2008
 C
 C***********************************************************************
       use consts_mod, only: D1, DP5
-!      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
+      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
 #include "implicit.h"
       INTEGER :: II
 C
-!#include "maxash.h"
 !#include "dcbprp.h"
 !#include "dcbxpr.h"
-#include "krciprop.h"
 !#include "dcborb.h"
 C
       CHARACTER PNAME(2)*16, PLABEL(2)*8
@@ -4500,13 +4496,11 @@ C
 C***********************************************************************
       use dcbgen_mod, only: CVAL
 !      use dcbxpr_mod, only: PRPNAM
-!      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
+      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
 #include "implicit.h"
 C
-!#include "maxash.h"
 !#include "dcbprp.h"
 #include "dcbxpr.h"
-#include "krciprop.h"
 !#include "dcborb.h"
 C
 C     define operator type, factor, name and label
@@ -4547,17 +4541,15 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: PRPNAM
-!      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
+      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
       use nuclei_mod, only: NUCIND
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
       use chrxyz_mod, only: CHRXYZ
       use chrnos_mod, only: CHRNOS
 #include "implicit.h"
 C
-!#include "maxash.h"
 !#include "dcbprp.h"
 #include "dcbxpr.h"
-#include "krciprop.h"
 !#include "dcbxlr.h"
 !#include "dcborb.h"
       LOGICAL   SAME
@@ -4659,15 +4651,13 @@ C***********************************************************************
       use codata_mod, only: GFAC
       use pi_mod, only: PI
       use consts_mod, only: D1, D3, D4
-!      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
+      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
 !      use dcbxpr_mod, only: PRPNAM
       use nuclei_mod, only: GAUNUC, ISTBNU, NAMDEP, NUCIND, NUCPRE
       use symmet_mod, only: IPTNUC, MAXREP
       use chrnos_mod, only: CHRNOS
 #include "implicit.h"
-!#include "maxash.h"
 !#include "dcbprp.h"
-#include "krciprop.h"
 #include "dcbxpr.h"
 C
       CHARACTER PNAME*16, PLABEL*8
@@ -4736,7 +4726,7 @@ C***********************************************************************
       use symmet_mod, only: ISYMAX, MAXREP
       use chrnos_mod, only: CHRNOS
       use chrxyz_mod, only: CHRXYZ
-!      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
+      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3
@@ -4744,7 +4734,6 @@ C***********************************************************************
       REAL*8    PFAC(2)
 #include "dcbxpr.h"
 C
-#include "krciprop.h"
 C
       logical, allocatable :: DOATOM(:)
 C
@@ -11427,10 +11416,9 @@ C     Written by Trond Saue, July 18 2017
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbxpp_mod, only: BEDECD
+      use dcbxpp_mod, only: BEDECD
 #include "implicit.h"
       INTEGER :: I
-#include "dcbxpp.h"
       DIMENSION WAVVEC(3),POLVEC(3,2)
 C
       FAC      = ACOS(-1.0D0)/180.0D0

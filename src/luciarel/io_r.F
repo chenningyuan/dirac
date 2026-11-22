@@ -279,7 +279,7 @@ C
 !      use mxpdim_mod, only: MXROOT
 !      use parluci_mod, only: IIJKL_ROD, IIJKL_ROD_LL, LU_INFO, MASTER, MYPROC, NIIJKL_ROD, SYMFLABEL
 !      use cstate_mod, only: IREFSM, NMAX_SYM_CI
-!      use krciprop_mod, only: RUNXPROP
+      use krciprop_mod, only: RUNXPROP
       use files_r_mod
 #include "implicit.h"
 *
@@ -334,7 +334,6 @@ C
 #include "parluci.h"
       CHARACTER*10 LUSC41_MPIN
 #include "cstate.inc"
-#include "krciprop.h"
       INTEGER LUSCR_MPIL,LUDIA_MPIL,LUC_MPIL, LUHC_MPIL, LUSC123_MPIL
       LOGICAL EX
 
@@ -724,7 +723,6 @@ C**********************************************************************
 #include "implicit.h"
 #include "mxpdim.inc"
 #include "cstate.inc"
-!#include "krciprop.h"
       CHARACTER LUC_NAME*10, my_LUC_NAME*14, SYMFLABEL*3
       LOGICAL EX, open_already
 

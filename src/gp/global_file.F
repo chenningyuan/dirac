@@ -56,12 +56,12 @@ C (a DECI / DEISA project).
 C Written by Walter.Lioen@sara.nl, 2007.
 C
       SUBROUTINE GLOBAL_FILE_OPEN_WRITE
-!      use bucket_sort_mod, only: GF_BREC, GF_HANDLE, GF_NAME, GF_NREC, N_BUFFER, WRITE_REQUEST
+      use bucket_sort_mod, only: GF_BREC, GF_HANDLE, GF_NAME, GF_NREC,
+     &  N_BUFFER, WRITE_REQUEST
       use infpar_mod, only: NUMNOD
       use interface_to_mpi
       IMPLICIT NONE
 
-#include "bucket_sort.h"
 
       INTEGER IERR
       INTEGER GF_INFO
@@ -99,12 +99,12 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       END
 
       SUBROUTINE GLOBAL_FILE_OPEN_READ
-!      use bucket_sort_mod, only: GF_BREC, GF_HANDLE, GF_NAME, GF_NREC, N_BUFFER
+      use bucket_sort_mod, only: GF_BREC, GF_HANDLE, GF_NAME, GF_NREC,
+     &  N_BUFFER
       use infpar_mod, only: NUMNOD
       use interface_to_mpi
       IMPLICIT NONE
 
-#include "bucket_sort.h"
 
       INTEGER IERR
       INTEGER GF_INFO
@@ -143,11 +143,10 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       END
 
       SUBROUTINE GLOBAL_FILE_CLOSE_WRITE
-!      use bucket_sort_mod, only: GF_HANDLE, WRITE_REQUEST
+      use bucket_sort_mod, only: GF_HANDLE, WRITE_REQUEST
       use interface_to_mpi
       IMPLICIT NONE
 
-#include "bucket_sort.h"
 
       INTEGER istat(df_MPI_STATUS_SIZE)
 
@@ -158,11 +157,10 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       END
 
       SUBROUTINE GLOBAL_FILE_CLOSE_READ
-!      use bucket_sort_mod, only: GF_HANDLE
+      use bucket_sort_mod, only: GF_HANDLE
       use interface_to_mpi
       IMPLICIT NONE
 
-#include "bucket_sort.h"
 
       CALL interface_MPI_FILE_CLOSE(GF_HANDLE)
 
@@ -171,13 +169,12 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
 
       INTEGER FUNCTION GLOBAL_FILE_RECORD(
      +   TARGET_NODE, SOURCE_NODE, LOCAL_RECORD)
-!      use bucket_sort_mod, only: GF_MAXREC
+      use bucket_sort_mod, only: GF_MAXREC
       use infpar_mod, only: NUMNOD
       use interface_to_mpi
       IMPLICIT NONE
       INTEGER TARGET_NODE, SOURCE_NODE, LOCAL_RECORD
 
-#include "bucket_sort.h"
       INTEGER IERR
 
       IF (TARGET_NODE .LT. 0 .OR. TARGET_NODE .GT. NUMNOD) THEN
@@ -211,13 +208,12 @@ C increase GF_MAXREC in bucket_sort.h
 
       FUNCTION GLOBAL_FILE_OFFSET(
      +   TARGET_NODE, SOURCE_NODE, LOCAL_RECORD)
-!      use bucket_sort_mod, only: GF_RECLEN
+      use bucket_sort_mod, only: GF_RECLEN
       use interface_to_mpi
       IMPLICIT NONE
       INTEGER(KIND=df_MPI_OFFSET_KIND) GLOBAL_FILE_OFFSET
       INTEGER TARGET_NODE, SOURCE_NODE, LOCAL_RECORD
 
-#include "bucket_sort.h"
 
       INTEGER GLOBAL_FILE_RECORD
       EXTERNAL GLOBAL_FILE_RECORD
@@ -232,12 +228,11 @@ C     in two parts (the first part performs an implicit cast).
       END
 
       SUBROUTINE GLOBAL_FILE_SEEK(TARGET_NODE,SOURCE_NODE,LOCAL_RECORD)
-!      use bucket_sort_mod, only: GF_HANDLE
+      use bucket_sort_mod, only: GF_HANDLE
       use interface_to_mpi
       IMPLICIT NONE
       INTEGER TARGET_NODE, SOURCE_NODE, LOCAL_RECORD
 
-#include "bucket_sort.h"
       INTEGER(KIND=df_MPI_OFFSET_KIND) RECORD_OFFSET
       INTEGER IERR
 
@@ -255,13 +250,13 @@ C     in two parts (the first part performs an implicit cast).
 
       SUBROUTINE GLOBAL_FILE_WRITE(
      +   RGBUF,IGBUF,N,SOURCE_NODE,TARGET_NODE,IBUF)
-!      use bucket_sort_mod, only: GF_BREC, GF_HANDLE, GF_NREC, GF_RECBUF, GF_RECLEN, NGBFSZ, WRITE_REQUEST
+      use bucket_sort_mod, only: GF_BREC, GF_HANDLE, GF_NREC, GF_RECBUF,
+     &  GF_RECLEN, NGBFSZ, WRITE_REQUEST
       use interface_to_mpi
       IMPLICIT NONE
       INTEGER N, SOURCE_NODE, TARGET_NODE, IBUF
       INTEGER istat(df_MPI_STATUS_SIZE)
 
-#include "bucket_sort.h"
 
       REAL*8  RGBUF(NGBFSZ)
       INTEGER IGBUF(2,NGBFSZ)
@@ -321,12 +316,11 @@ C     in two parts (the first part performs an implicit cast).
 
       SUBROUTINE GLOBAL_FILE_GET_RECORD(
      +   TARGET_NODE,SOURCE_NODE,LOCAL_RECORD)
-!      use bucket_sort_mod, only: GF_HANDLE, GF_RECBUF, GF_RECLEN
+      use bucket_sort_mod, only: GF_HANDLE, GF_RECBUF, GF_RECLEN
       use interface_to_mpi
       IMPLICIT NONE
       INTEGER TARGET_NODE, SOURCE_NODE, LOCAL_RECORD
 
-#include "bucket_sort.h"
       INTEGER   STATUS(df_MPI_STATUS_SIZE)
       INTEGER NUMREAD
       INTEGER IERR
@@ -352,7 +346,7 @@ CSK   ... zero NUMREAD, otherwise it may fail
       END
 
       SUBROUTINE GLOBAL_FILE_READ(A,NROW,ICOL,IBUF)
-!      use bucket_sort_mod, only: GF_BREC, GF_RECBUF, GF_RECLEN, NGBFSZ
+      use bucket_sort_mod, only: GF_BREC, GF_RECBUF, GF_RECLEN, NGBFSZ
       use infpar_mod, only: MYTID, NUMNOD
       use interface_to_mpi
       IMPLICIT NONE
@@ -361,7 +355,6 @@ CSK   ... zero NUMREAD, otherwise it may fail
 C
 C     Read back the sorted integrals and put them at the right position
 C
-#include "bucket_sort.h"
       INTEGER SOURCE_NODE
       REAL*8 RGBUF(NGBFSZ)
       INTEGER IGBUF(2,NGBFSZ)
@@ -426,12 +419,11 @@ C           Pick out the integrals that we need.
       END
 
       SUBROUTINE LOCAL_FILE_OPEN_WRITE
-!      use bucket_sort_mod, only: LF_HANDLE, LF_NAME, WRITE_REQUEST
+      use bucket_sort_mod, only: LF_HANDLE, LF_NAME, WRITE_REQUEST
       use infpar_mod, only: MYTID
       use interface_to_mpi
       IMPLICIT NONE
 
-#include "bucket_sort.h"
 
       INTEGER IERR
       INTEGER GF_INFO
@@ -462,11 +454,10 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       END
 
       SUBROUTINE LOCAL_FILE_CLOSE_WRITE
-!      use bucket_sort_mod, only: LF_HANDLE, WRITE_REQUEST
+      use bucket_sort_mod, only: LF_HANDLE, WRITE_REQUEST
       use interface_to_mpi
       IMPLICIT NONE
 
-#include "bucket_sort.h"
 
       INTEGER istat(df_MPI_STATUS_SIZE)
 
@@ -477,12 +468,12 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       END
 
       SUBROUTINE SELECT_LOCAL_FROM_GLOBAL
-!      use bucket_sort_mod, only: GF_HANDLE, GF_NREC, GF_RECBUF, GF_RECLEN, LF_HANDLE, WRITE_REQUEST
+      use bucket_sort_mod, only: GF_HANDLE, GF_NREC, GF_RECBUF,
+     &  GF_RECLEN, LF_HANDLE, WRITE_REQUEST
       use infpar_mod, only: MYTID, NUMNOD
       use interface_to_mpi
       IMPLICIT NONE
 
-#include "bucket_sort.h"
       CHARACTER LF_RECBUF(GF_RECLEN)
       INTEGER SOURCE_NODE,LOCAL_RECORD
       INTEGER I
@@ -530,12 +521,12 @@ CSK         ... zero NUMREAD, otherwise it may fail
       END
 
       SUBROUTINE LOCAL_FILE_OPEN_READ
-!      use bucket_sort_mod, only: GF_NREC, GF_RECLEN, LF_NAME, LF_OFFSET, LF_UNIT
+      use bucket_sort_mod, only: GF_NREC, GF_RECLEN, LF_NAME, LF_OFFSET,
+     &  LF_UNIT
       use infpar_mod, only: MYTID, NUMNOD
       use interface_to_mpi
       IMPLICIT NONE
 
-#include "bucket_sort.h"
 
       INTEGER SOURCE_NODE
 
@@ -554,13 +545,12 @@ CSK         ... zero NUMREAD, otherwise it may fail
       END
 
       INTEGER FUNCTION LOCAL_FILE_RECORD(SOURCE_NODE, LOCAL_RECORD)
-!      use bucket_sort_mod, only: GF_MAXREC, LF_OFFSET
+      use bucket_sort_mod, only: GF_MAXREC, LF_OFFSET
       use infpar_mod, only: NUMNOD
       use interface_to_mpi
       IMPLICIT NONE
       INTEGER SOURCE_NODE, LOCAL_RECORD
 
-#include "bucket_sort.h"
 
       IF (SOURCE_NODE .LT. 1 .OR. SOURCE_NODE .GT. NUMNOD) THEN
          PRINT *, 'ERROR: LOCAL_FILE_RECORD: SOURCE_NODE = ',
@@ -580,11 +570,10 @@ C increase GF_MAXREC in bucket_sort.h
       END
 
       SUBROUTINE LOCAL_FILE_GET_RECORD(SOURCE_NODE,LOCAL_RECORD)
-!      use bucket_sort_mod, only: GF_RECBUF, LF_UNIT
+      use bucket_sort_mod, only: GF_RECBUF, LF_UNIT
       IMPLICIT NONE
       INTEGER SOURCE_NODE, LOCAL_RECORD
 
-#include "bucket_sort.h"
 
       INTEGER IREC
       INTEGER LOCAL_FILE_RECORD
@@ -597,10 +586,9 @@ C increase GF_MAXREC in bucket_sort.h
       END
 
       SUBROUTINE LOCAL_FILE_CLOSE_READ
-!      use bucket_sort_mod, only: LF_UNIT
+      use bucket_sort_mod, only: LF_UNIT
       IMPLICIT NONE
 
-#include "bucket_sort.h"
 
       CLOSE(UNIT=LF_UNIT,STATUS='DELETE')
 

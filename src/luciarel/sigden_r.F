@@ -2752,7 +2752,6 @@ C
 
       SUBROUTINE SIGDEN_CTRL(C,HC,LUC,LUHC,T,T_BUFF,ISIGDEN
 !      use parluci_mod, only: NUM_BLOCKS2
-!      use krciprop_mod, only: DOSIGPROP
 !      use ipoist8_mod, only: KLSI1BT, KLSIBT, KLSLBT, KLSLEBT, KSCALLOC, KXDUM, KXX_BLTP
 !      use mxpdim_mod, only: MXROOT
 !      use cstate_mod, only: IBAT_MS2, IBLK_MS2, IDC, NBAT_MS2, NBLK_MS2, NBLK_MS2_C, NMS2VAL
@@ -2764,6 +2763,7 @@ C
      &                   ,IBLOCKL_S,NPARBLOCK_S
 #endif
      &                   )
+      use krciprop_mod, only: DOSIGPROP
       use cands_luciarel_mod, only: ICSM, ISSM
       use luci_wrkspc
 *
@@ -2781,7 +2781,6 @@ C
       INTEGER RCCTOS(*)
 #endif
 #include "parluci.h"
-#include "krciprop.h"
 *
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -2849,6 +2848,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                     ,IBLOCKL_S,NPARBLOCK_S
 #endif
      &                 )
+      use krciprop_mod, only: DOSIGPROP
       use cands_luciarel_mod, only: IACTP, IASTP, IBCTP, IBSTP, ISSM,
      &  ISSPC
 #if defined (LUCI_DEBUG)
@@ -2912,7 +2912,6 @@ C***********************************************************************
       CHARACTER SECTID*12,WALLTID*12,WALLTID2*12,WALLTID3*12
 #endif /* if def VAR_MPI2 */
 #include "parluci.h"
-#include "krciprop.h"
 *
       LOGICAL SBLK_READS2
 *
@@ -4757,7 +4756,6 @@ C        ^ "shared memory" / split mode
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE XSIGDEN_CTRL(VEC1,VEC2,T_X,COPY_NEW_C,NVC_LUC,IZ
-!      use krciprop_mod, only: MXPROPKRCI_SYM
 !      use parluci_mod, only: IALL_LU2, IALL_LUC, ILU1, ILU2, ILUC, JVEC_SF, LUWRT, MY_LU1_OFF, MY_LUC_OFF, NUM_BLOCKS, NUM_BLOCKS2
 !      use clunit_mod, only: LUC, LUHC, LUSC61
 #if defined (VAR_MPI2)
@@ -4777,11 +4775,11 @@ C
 C     last revision:
 C
 C**********************************************************************
+      use krciprop_mod, only: MXPROPKRCI_SYM
       use dummy_mod, only: DUMMY
       use interface_to_mpi
 #include "implicit.h"
 !#include "ipoist8.inc"
-#include "krciprop.h"
 #include "parluci.h"
 #if defined (VAR_MPI2)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE), IBLOCKL_X(NUM_BLOCKS,*)
