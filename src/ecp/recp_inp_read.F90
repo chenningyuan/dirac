@@ -119,12 +119,11 @@ END SUBROUTINE RECP_INP2_READIRREP
 
 SUBROUTINE RECP_INP2_READAO2SO(naords,ngcs,maords,la,nir,CX0)
 ! Read in AO to SO transformation matrices 
-!      use inc_mxvalue_mod, only: MRUP
 !      use inc_print_mod, only: RECP_DBG, RECP_OUT
+      use inc_mxvalue_mod, only: MRUP
   USE RECP_IPT
   USE RECP_NTR
   IMPLICIT NONE
-#include "inc_mxvalue.h"
 #include "inc_print.h"
   INTEGER naords, ngcs, maords(*),la(mrup,*),nir(*)
   INTEGER AORDS1 ! ith-AO reduction set
@@ -190,11 +189,10 @@ SUBROUTINE RECP_INP2_READAO2SO(naords,ngcs,maords,la,nir,CX0)
 END SUBROUTINE RECP_INP2_READAO2SO
 
 SUBROUTINE RECP_INP2_READORB(zet,eta,lmnp1,nrcr,ncon)
-!      use inc_mxvalue_mod, only: MCONUP, MRCRUP
 !      use inc_print_mod, only: RECP_DBG, RECP_OUT
+      use inc_mxvalue_mod, only: MCONUP, MRCRUP
   USE RECP_NTR
   IMPLICIT NONE
-#include "inc_mxvalue.h"
 #include "inc_print.h"
   REAL*8  zet(mconup,*), eta(mrcrup,mconup,*)
   INTEGER lmnp1(*),nrcr(*),ncon(*)
@@ -273,13 +271,12 @@ END SUBROUTINE RECP_INP2_READORB
 SUBROUTINE RECP_INP2_READCSO(lcr,lls,nkcrl,nkcru,nklsl,  &
            nklsu,ncr,ncrs,ncru,lproju,ns,zcr,ccr)
       use nuclei_mod, only: NAMN
-!      use inc_mxvalue_mod, only: MCRUP
+      use inc_mxvalue_mod, only: MCRUP
 !      use inc_print_mod, only: RECP_DBG, RECP_OUT
       use argoscom_mod, only: ECPNONT
   USE RECP_NTR
   USE RECP_OUTPUT
   IMPLICIT NONE
-#include "inc_mxvalue.h"
 #include "inc_print.h"
   INTEGER lcr(*),lls(*),nkcrl(6,*),nkcru(6,*),nklsl(4,*),nklsu(4,*),ncr(*)
   INTEGER ncrs,ncru,lproju,ns
@@ -415,13 +412,12 @@ END SUBROUTINE RECP_INP2_READCSO
 SUBROUTINE RECP_INP2_READGEO(ns,ng,mcu,msu,NBASIS,NUC2,ica,X,Y,Z,CHG1,NUCNAME, &
            nst,nso,nbft,mcons,mgcs,nt,ntl,ntu,la,lb,nrcr,nir,lmn1u,lmnp1,  &
            maords,ncrs,mcrs)
-!      use inc_mxvalue_mod, only: MCUP, MRUP, MSFRUP, MSFUP, MSUP
 !      use inc_print_mod, only: RECP_DBG, RECP_OUT
+      use inc_mxvalue_mod, only: MCUP, MRUP, MSFRUP, MSFUP, MSUP
   USE RECP_NTR
   USE RECP_FUNCTION1
   USE RECP_OUTPUT
   IMPLICIT NONE
-#include "inc_mxvalue.h"
 #include "inc_print.h"
   INTEGER ns,ng,mcu,msu,NBASIS(*),NUC2(*),ica(mcup,msup,*) 
   REAL*8  X(mcup,*),Y(mcup,*),Z(mcup,*),CHG1(*)

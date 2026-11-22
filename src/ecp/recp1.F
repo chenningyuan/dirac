@@ -56,7 +56,7 @@
 
       SUBROUTINE RECP_1E 
 !  read the user input and compute the 1-e integrals.
-!      use inc_mxvalue_mod, only: KAORDP, MCCUP, MCONSP, MCONUP, MCRUP, MCUP, MGCSUP, MGUP, MNRUP, MNSFUP, MRCRUP, MRUP, MSFRUP, MSFUP, MSTUP, MSUP
+      use inc_mxvalue_mod
       USE RECP_CSO_TABLE
       USE RECP_INP
       USE RECP_IPT
@@ -65,7 +65,6 @@
       USE RECP_OUTPUT
       USE RECP_SOCFPD
       implicit logical(a-z)
-#include "inc_mxvalue.h"
 !#include "inc_print.h" 
       integer
      & mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
@@ -267,10 +266,10 @@
 
 
       SUBROUTINE RECP_SETPARM
-!      use inc_mxvalue_mod, only: MCCUP, MCONSP, MCONUP, MCRUP, MCUP, MRCRUP, MRUP, MSFRUP, MSFUP, MSTUP, MSUP
 !      use inc_print_mod, only: RECP_FNAM, RECP_FNUM
+      use inc_mxvalue_mod, only: MCCUP, MCONSP, MCONUP, MCRUP, MCUP,
+     &  MRCRUP, MRUP, MSFRUP, MSFUP, MSTUP, MSUP
       IMPLICIT NONE
-#include "inc_mxvalue.h"
 #include "inc_print.h" 
       integer
      & mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst

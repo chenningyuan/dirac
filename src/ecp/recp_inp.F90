@@ -22,8 +22,8 @@ SUBROUTINE RECP_INP_MAIN(ccr,chg,eta,ica,idp,ityp,la,lb,lcr,  &
            nt,ntl,ntu,x,y,z,zcr,zet,CX_TEMP)
 ! read and verify the user input: symmetry info, basis sets,
 ! geometry, etc.
-!      use inc_mxvalue_mod, only: MGUP
 !      use inc_print_mod, only: PRINT_LEVEL, RECP_DBG, RECP_OUT
+      use inc_mxvalue_mod, only: MGUP
   USE RECP_INP_READ
   USE RECP_INP_ORBITAL 
   USE RECP_INP_PRINT
@@ -34,7 +34,6 @@ SUBROUTINE RECP_INP_MAIN(ccr,chg,eta,ica,idp,ityp,la,lb,lcr,  &
   USE RECP_FUNCTION2
   USE RECP_WRITE
   implicit logical(a-z)
-#include "inc_mxvalue.h"
 #include "inc_print.h" 
 ! /bufout/ holds some output integral file parameters.
   integer         itypea,itypeb,ibuf,numout,nrec,ntape

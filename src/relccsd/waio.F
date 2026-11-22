@@ -23,8 +23,9 @@ C
 C     Initialize list of word-addressable files
 C     This variable gives the number of records that has been written.
 C
-!      use waio_mod, only: IWRIT_WAIO, MAX_WAIO_FILES, NWORDS_ON_RECORD, WAIO_RCALL, WAIO_RNLEN, WAIO_RTIME, WAIO_WCALL, WAIO_WNLEN, WAIO_WTIME
-#include "waio.h"
+      use waio_mod, only: IWRIT_WAIO, MAX_WAIO_FILES, NWORDS_ON_RECORD,
+     &  WAIO_RCALL, WAIO_RNLEN, WAIO_RTIME, WAIO_WCALL, WAIO_WNLEN,
+     &  WAIO_WTIME
 C
 #if defined (VAR_WAIO_C)
       WRITE (IW,1000) "      C",NWORDS_ON_RECORD*4/1024
@@ -54,8 +55,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Print statistics for the Word-addressable I/O
 C
-!      use waio_mod, only: WAIO_RCALL, WAIO_RNLEN, WAIO_RTIME, WAIO_WCALL, WAIO_WNLEN, WAIO_WTIME
-#include "waio.h"
+      use waio_mod, only: WAIO_RCALL, WAIO_RNLEN, WAIO_RTIME,
+     &  WAIO_WCALL, WAIO_WNLEN, WAIO_WTIME
       REAL*8 WAIO_RMB,WAIO_WMB,WAIO_RAMB,WAIO_WAMB
 C
 C     Compute average speed and totals in MB
@@ -89,12 +90,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Opens a word-addressable file.
 C
-!      use waio_mod, only: DN, MAX_WAIO_FILES, NWORDS_ON_RECORD
 !      use ccpar_mod, only: MYPROC, NMPROC
+      use waio_mod, only: DN, MAX_WAIO_FILES, NWORDS_ON_RECORD
       implicit none
       integer itape
 C
-#include "waio.h"
 #if defined (VAR_MPI)
 #include "ccpar.inc"
 #endif
@@ -151,11 +151,13 @@ C
 C     JCODE = 3     CLOSE AND SAVE FILE
 C     JCODE = 4     CLOSE AND DELETE FILE
 C
-!      use waio_mod, only: DN, IWRIT_WAIO
+      use waio_mod, only: IWRIT_WAIO
+#if defined (VAR_WAIO_C)
+      use waio_mod, only: DN
+#endif
       implicit none
       integer itape,jcode
 C
-#include "waio.h"
 C
       INTEGER*8 STAT
       IF(JCODE.NE.3.AND.JCODE.NE.4) THEN
@@ -209,10 +211,11 @@ C     either be zero (start at begin of file) or positive.
 C     This word-addressable I/O is done using either standard c byte 
 C     addressable I/O or using FORTRAN direct access files.
 C
-!      use waio_mod, only: IWRIT_WAIO, NWORDS_ON_RECORD, NWORDS_ON_RECORD8, WAIO_RCALL, WAIO_RNLEN, WAIO_RTIME, WAIO_WCALL, WAIO_WNLEN, WAIO_WTIME
+      use waio_mod, only: IWRIT_WAIO, NWORDS_ON_RECORD,
+     &  NWORDS_ON_RECORD8, WAIO_RCALL, WAIO_RNLEN, WAIO_RTIME,
+     &  WAIO_WCALL, WAIO_WNLEN, WAIO_WTIME
       implicit none
 C
-#include "waio.h"
       integer itape,array,nlen,extra,init_waio,irec,irec_first
       integer irec_last,nwords4,offb
       INTEGER BUFF(NWORDS_ON_RECORD)
@@ -402,10 +405,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Used for compatibility with the old code.
 C
-!      use waio_mod, only: NWORDS_ON_RECORD
+      use waio_mod, only: NWORDS_ON_RECORD
       implicit none
 C
-#include "waio.h"
       integer itape,array,nlen,irec
       DIMENSION ARRAY(NLEN)
       LOGICAL DO_READ

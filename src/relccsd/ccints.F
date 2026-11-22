@@ -30,7 +30,7 @@ C
 !      use files_mod, only: ITAPT, IW, MDINT
 !      use ccpar_mod, only: IDIST, MASTER, MYPROC, NMPROC, NV5PAR, NV6PAR
 !      use inpt_mod, only: NORECMP, USEOE
-!      use waio_mod, only: NWORDS_ON_RECORD, NWORDS_ON_RECORD8
+      use waio_mod, only: NWORDS_ON_RECORD, NWORDS_ON_RECORD8
       use dcbgen_mod, only: LUCOEF
       use interface_to_mpi
       use spinor_indexing
@@ -58,7 +58,6 @@ C
 #include "files.inc"
 #include "ccpar.inc"
 #include "inpt.inc"
-#include "waio.h"
 C
 C---------------Calling variables--------------------------------------
 C

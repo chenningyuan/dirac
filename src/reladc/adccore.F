@@ -159,7 +159,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "../relccsd/eqns.inc"
 #include "../relccsd/complex.inc"
 #include "../relccsd/ccpar.inc"
-#include "../relccsd/waio.h"
 !
 !---------------Local variables--------------------------------------
 !

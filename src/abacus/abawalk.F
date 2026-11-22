@@ -1192,8 +1192,7 @@ C  /* Deck wlkcgh */
      *                  IPRINT)
       use priunit_mod, only: LUPRI
       use symmet_mod, only: FMULT, IPTAX, IPTCNT, MAXREP, NCRREP
-      use mxcent_mod, only: MXCOOR
-!      use moldip_mod, only: DIP0
+      use moldip_mod, only: DIP0, DIPFLT
       use taymol_mod, only: GRDMOL, HESMOL
       use nuclei_mod, only: ISTBNU, NUCIND
       use kinds_mod, only: dp
@@ -1205,7 +1204,6 @@ C
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), DIPG0(3,NCART),
      *          DIPM(3), WORK(LWORK)
 C
-#include "moldip.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from WLKCGH','*',103)
 C
@@ -3634,6 +3632,7 @@ C     coordinates of the molecule at the effective molecular geometry.
 C
 C     K.Ruud, San Diego March 1999
 C
+      use moldip_mod, only: DIP0, POLARS
       use spinro_mod, only: GTRANT
       use codata_mod, only: ALPHA2, PMASS, XFAMU, XTHZ
       use dcbsusc_mod, only: SUS2EL, SUSDIA, SUSFS, SUSFSY, SUSREL,
@@ -3667,7 +3666,6 @@ C
      DOUBLE PRECISION FACTOR, AUTOHZ
 C
 C
-#include "moldip.h"
 #include "quadru.h"
 #include "sigma.h"
 #include "cbiwlk.h"

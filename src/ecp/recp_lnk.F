@@ -20,11 +20,10 @@
       use mxcent_mod, only: MXCENT
       use molinp_mod, only: MLINE, NMLINE
       use nuclei_mod, only: CHARGE
-!      use inc_mxvalue_mod, only: MSUP
+      use inc_mxvalue_mod, only: MSUP
       use argoscom_mod, only: ECPNONT, ECPNUC
       USE RECP_NTR
       IMPLICIT NONE
-#include "inc_mxvalue.h"
 !     global variables
       INTEGER LUINFO,NUC1,NONT0,IPREAD
       REAL*8  Q,Q1

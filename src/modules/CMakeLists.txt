@@ -88,6 +88,7 @@ set(MODULE_SOURCES
     maxaqn.F90
     maxmom.F90
     maxorb.F90
+    moldip.F90
     molinp.F90
     mp1stpr.F90
     mxcent.F90
@@ -124,6 +125,7 @@ set(MODULE_SOURCES
     twocom.F90
     twosta.F90
     typesz_mpi2.F90
+    waio.F90
     xyzpow.F90
     # drafts, not migrated yet
 )

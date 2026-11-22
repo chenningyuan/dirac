@@ -2144,6 +2144,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCSETI (ICALC,MXCORR,EPS,NSP,IREPSP,IREPSPI)
 C
+      use waio_mod, only: NWORDS_ON_RECORD
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
 
@@ -2174,7 +2175,6 @@ C
 #include "inpt.inc"
 #include "symm.inc"
 #include "eqns.inc"
-#include "waio.h"
 #include "complex.inc"
 C
 C---------------Calling variables--------------------------------------

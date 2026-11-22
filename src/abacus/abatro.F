@@ -899,7 +899,7 @@ C
       use taymol_mod, only: GRDMOL, HESMOL
       use nuclei_mod, only: NUCDEP
       use priunit_mod, only: LUPRI
-!      use moldip_mod, only: DIP1
+      use moldip_mod, only: DIP1
       use symmet_mod, only: IPTXYZ, MAXREP, NAXREP, NCRREP
       use chrxyz_mod, only: CHRXYZ
       use abainf_mod, only: DOSYM
@@ -910,7 +910,6 @@ C
 #include "implicit.h"
       INTEGER :: I,J
       DIMENSION WORK(LWORK), HESTR(MXCOOR,MXCOOR), DIPTR(3,MXCOOR)
-#include "moldip.h"
       IF (HESTRO) THEN
          CALL DZERO(HESTR,MXCOOR*MXCOOR)
          DO 50 I = 1, NCOOR
@@ -1419,13 +1418,12 @@ C
       use mxcent_mod, only: MXCOOR
       use priunit_mod, only: LUPRI
       use trkoor_mod, only: NCOOR
-!      use moldip_mod, only: DIP1
+      use moldip_mod, only: DIP1
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D0 = 0.0D0
       DIMENSION DIPTR(3,MXCOOR), CSTRA(*), SCTRA(*)
-#include "moldip.h"
       DIFMAX = D0
       DO 100 I = 1, 3
          DO 200 J = 1, NCOOR
@@ -1471,10 +1469,9 @@ C     tuh 071288
 C     tuh 171289 - modified to include dipole moment derivatives
 C
       use taymol_mod, only: GRDMOL
-      use mxcent_mod, only: MXCOOR
       use nuclei_mod, only: CORD, ISTBNU, NUCIND
       use priunit_mod, only: LUPRI
-!      use moldip_mod, only: WORK
+      use moldip_mod, only: DIP0
       use symmet_mod, only: FMULT, IPTAX, IPTCNT, ISYMAX
       use trkoor_mod, only: DEPEND, IPTTRO, NCOOR
       use kinds_mod, only: dp
@@ -1486,7 +1483,6 @@ C
       CHARACTER*(*) KEY1, KEY2, KEY3
       DIMENSION AMAT(NROW,NCOL), IPTCOL(NCOOR)
 C
-#include "moldip.h"
 C
       IF (IPRINT.GE.5) THEN
          CALL TITLER('Output from GETTRO','*',103)

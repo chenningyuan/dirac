@@ -1374,11 +1374,10 @@ C  /* Deck vibpol */
 C
 C     Vibrational polarization, implemented 19-Jul-1986 HJAaJ
 C     Ref: Rinaldi et al., Chem.Phys.Lett. 128 (1986) 177-181
-!      use moldip_mod, only: POLFLT
+      use moldip_mod, only: POLFLT
       use dorps_mod, only: DOREPS
       use symmet_mod, only: ISYMAX
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
 C
@@ -1386,7 +1385,6 @@ C
 C
       LOGICAL POLAR, ALLXYZ
       DIMENSION DGRAD(3,NCORD), VINRTI(3,3), EVAL(NCORD), EVEC(NCORD,*)
-#include "moldip.h"
 C
       DIMENSION ALFVIB(3,3), ALFELE(3,3), AMAT(3,3), AVEC(3)
 C
@@ -2125,13 +2123,12 @@ C  /* Deck getnos */
       use taymol_mod, only: GRDMOL, HESMOL
       use energy_mod, only: GRADNN
       use aatens_mod, only: AATTOT
+      use moldip_mod, only: DIPFLT
 #include "implicit.h"
-!      use moldip_mod, only: DIPFLT
       LOGICAL DIPDER, DOVCD,HESPUN
       DIMENSION ICHRG(NOATOM), GEOM(NCORD), GRAD(NCORD), GRDN(NCORD),
      &          HESS(NCORD,NCORD), WRK(LWRK),
      &          DGRAD(3,NCORD), CAAT(3,NCORD)
-#include "moldip.h"
 C
 C
 C     Atomic numbers and geometry

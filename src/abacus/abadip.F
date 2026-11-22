@@ -180,6 +180,7 @@ C  /* Deck dipct1 */
 C
 C     December 1989, tuh
 C
+      use moldip_mod, only: DIP1
       use infdim_mod, only: NVARMA
       use cbidip_mod, only: AOMAT, IPRINT, NODC, NODV
       use inforb_mod, only: NASHT, NBAST, NCMOT, NNASHX, NNBASX
@@ -203,7 +204,6 @@ C
      *          SOPACK(NNBASX,3), DIPRHS(NVARMA), DIPREO(3*NUCDEP),
      *          WORK(LWORK), SOINT(NBAST,NBAST)
 C
-#include "moldip.h"
 C
 #include "linaba.h"
 #include "inflin.h"
@@ -331,11 +331,11 @@ C
       END
 C  /* Deck dipadd */
       SUBROUTINE DIPADD(AMAT)
+      use moldip_mod, only: DIP1
       use nuclei_mod, only: NUCDEP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       DIMENSION AMAT(3,MXCOOR)
-#include "moldip.h"
       NCOORD = 3*NUCDEP
       DO 100 I = 1, 3
          DO 200 J = 1, NCOORD
@@ -530,6 +530,7 @@ C
       END
 C  /* Deck dp0sum */
       SUBROUTINE DP0SUM
+      use moldip_mod, only: DIP0
       use dipole_mod, only: DIPME, DIPMN
       use symmet_mod, only: ISYMAX
       use mxcent_mod, only: MXCENT, MXCOOR
@@ -537,7 +538,6 @@ C  /* Deck dp0sum */
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0)
-#include "moldip.h"
       DO 100 I = 1, 3
          IF (ISYMAX(I,1) .EQ. 0) THEN
             DIP0(I) = DIPMN(I) + DIPME(I)
@@ -591,6 +591,7 @@ C  /* Deck diapol */
 C
 C     Principal values and axes of polarizability
 C
+      use moldip_mod, only: POLFLT
       use dorps_mod, only: DOREPS
       use symmet_mod, only: IPTAX, MAXREP, NAXREP
       use mxcent_mod, only: MXCENT, MXCOOR
@@ -600,7 +601,6 @@ C
 #include "implicit.h"
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0, D3 = 3.0D0)
       DIMENSION AXES(3,3), VALUES(6), WORK(3), IWORK(3)
-#include "moldip.h"
       NAXES = 0
       DO 100 IREP = 0, MAXREP
          IF (DOREPS(IREP) .AND. (NAXREP(IREP,1).GT.0)) THEN

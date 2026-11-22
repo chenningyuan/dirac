@@ -87,15 +87,14 @@ END SUBROUTINE RECP_WRITE_ISA
 
 SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,n_bfn_sym, &
                            N_INTEGRAL,MN_INTEGRAL,INT_AREP,nnam,mpru,nbft,nnbft,nst)
-!      use inc_mxvalue_mod, only: MSTUP
 !      use inc_print_mod, only: PRINT_LEVEL, RECP_DBG, RECP_OUT
+      use inc_mxvalue_mod, only: MSTUP
   USE RECP_IPT
   USE RECP_FUNCTION2
   USE RECP_OUTPUT
 ! write 1-e integral arrays, Y.C. Park
   IMPLICIT NONE
 ! variables
-#include "inc_mxvalue.h"
 #include "inc_print.h"
 
 ! global variable
@@ -237,12 +236,11 @@ END SUBROUTINE RECP_WRITE_MAIN
 SUBROUTINE RECP_WRITE_ARRAY(n_sym,INT_TYPE,n_bfn_sym,nbft,labels_stvc,mpru,array_stvc,array_so, & 
                              values_stvc,N_INTEGRAL,MN_INTEGRAL,lblop)
 ! From cnvrt_stvz, Y.C. Park
-!      use inc_mxvalue_mod, only: MSTUP
 !      use inc_print_mod, only: PRINT_LEVEL, RECP_OUT
+      use inc_mxvalue_mod, only: MSTUP
   USE RECP_FUNCTION1
   USE RECP_OUTPUT
   IMPLICIT NONE
-#include "inc_mxvalue.h"
 #include "inc_print.h"
   integer :: n_bfn_sym(mstup) ! nbpsy or nso : number of basis functions per symmetry block
   integer :: INT_TYPE         ! integral type 

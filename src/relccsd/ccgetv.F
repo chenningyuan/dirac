@@ -21,7 +21,7 @@ C
 !      use files_mod, only: ITAPT
 !      use complex_mod, only: IRW, RCW
 !      use symm_mod, only: NE, NFOO, NFVO, NFVV
-!      use waio_mod, only: NWORDS_ON_RECORD
+      use waio_mod, only: NWORDS_ON_RECORD
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -44,7 +44,6 @@ C
 #include "files.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "waio.h"
 C
 C---------------Local variables--------------------------------------
 C

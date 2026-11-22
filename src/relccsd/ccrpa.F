@@ -270,7 +270,7 @@ C
 !      use param_mod, only: A0, A1, D0, LFA
 !      use symm_mod, only: JVOXX, MVO, NDIMX, NE
 !      use complex_mod, only: CARITH, RCW
-!      use waio_mod, only: NWORDS_ON_RECORD
+      use waio_mod, only: NWORDS_ON_RECORD
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -307,7 +307,6 @@ C
 #include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
-#include "waio.h"
 C
 C---------------Local variables--------------------------------------
 C

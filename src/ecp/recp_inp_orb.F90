@@ -436,11 +436,10 @@ end function iodfac
 ! --------------- SOCFPD ---------------
 SUBROUTINE RECP_SOCFPD_SETNPR(nst,npr,isfr,jsfr,isfrib,jsfrjb,iru,jru,iaords,jaords,ipair, &
            ijsf,mru,la,lb,mstu,idp,nsopr,mau,MAXICS,MAXJCS,nd,nprir,npair,ilfact,esfb)
-!      use inc_mxvalue_mod, only: MNRUP
+      use inc_mxvalue_mod, only: MNRUP
   USE RECP_IPT
   USE RECP_FUNCTION2
   IMPLICIT NONE
-#include "inc_mxvalue.h"
 !#include "inc_print.h"
 ! global variable
   INTEGER nst,npr,isfr,jsfr,isfrib,jsfrjb,iru,jru,iaords,jaords,ipair,ijsf
