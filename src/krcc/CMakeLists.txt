@@ -9,6 +9,7 @@ if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fort
 endif()
 
 set(FREE_KRCC_FORTRAN_SOURCES
+    cands_krcc.F90
     cecore_krcc.F90
     cintfo_krcc.F90
     irat_krcc.F90

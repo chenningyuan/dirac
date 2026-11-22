@@ -136,6 +136,7 @@ C
 * Now master routine for general relativistic mr coupled cluster
 *
 *
+      use cands_krcc_mod, only: ICSPC, ISSPC
       use cecore_krcc_mod, only: ECORE
       use dgroup_mod, only: NZ
 #include "implicit.h"
@@ -147,7 +148,6 @@ C
 #include "gasstr.inc"
 #include "orbinp.inc"
 #include "glbbas.inc"
-#include "cands.inc"
 #include "crun.inc"
 #include "clunit.inc"
 #include "cstate.inc"

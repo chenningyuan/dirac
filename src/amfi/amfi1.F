@@ -42,14 +42,15 @@
      *EXP_FIN,DOEXIT) 
 cbs   suposed to read the maximum of l-values, the number of primitive and contracted 
 cbs   functions, the exponents and contraction coefficients
-!      use amfi_if_mod, only: IPR_AMFI
+      use amfi_if_mod, only: IPR_AMFI
+      use param_amfi_mod, only: CNTSCRTCH, EXPONENTS, ICORE, IKEEPLIST,
+     &  IKEEPORB, IPOWXYZ, NCONTRAC, NPRIMIT, NRTOFIPERIR
       use ired_mod
       use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
       use priunit_mod, only: LUPRI
 !      use param_mod, only: EXPONENTS, ICORE, IKEEPORB, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NPRIMIT
 #include "implicit.h"
       INTEGER :: I
-#include "param.h"
       character*4 WORD                         
       character*4 symmetry   
       character*13 Llimit 
@@ -63,7 +64,6 @@ cbs   functions, the exponents and contraction coefficients
       Integer ibeginIRED(8),idelpersym(8) 
       dimension INOFT(Mxcart),INOFF(MxCart)
 
-#include "amfi_if.h"
 c     logical amfi1_verbose
 c     amfi1_verbose = .false.
 

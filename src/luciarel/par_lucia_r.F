@@ -35,6 +35,7 @@ C
 !      use krmc_shmem_mod, only: MY_BPROC_LEN, MY_BPROC_PTR, MY_BWEIGHT_LEN, MY_BWEIGHT_PTR, MY_IAPROC_PTR, MY_RCCTOS_PTR, MY_TCTR_PTR, MY_TRED_PTR
 !      use ctcc_mod, only: NSPOBEX_TP
 !      use cands_mod, only: ISSM
+      use cands_luciarel_mod, only: ISSM
       use mxdim_mpi2_mod, only: IDUMMY_BUFF_SZ
       use luci_wrkspc
 C
@@ -66,7 +67,6 @@ C**********************************************************************
 #include "ipoist8.inc"
 #include "krmc_shmem.h"
 #include "ctcc.inc"
-#include "cands.inc"
 !#include "mxpdim.inc"
       POINTER (MY_TCTR_PTR,   IT_CTONE(IDUMMY_BUFF_SZ))
       POINTER (MY_TRED_PTR,   IT_CTALL(IDUMMY_BUFF_SZ))
@@ -3448,6 +3448,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
 !      use ipoist8_mod, only: KDUM, KLSI1BT, KLSIBT, KLSLBT, KLSLEBT, KXDUM
 !      use cstate_mod, only: IBAT_MS2, IBLK_MS2, IDC, NBAT_MS2, NBLK_MS2, NBLK_MS2_C, NMS2VAL
 !      use cands_mod, only: ICSM, ISSM
+      use cands_luciarel_mod, only: ICSM, ISSM
       use luci_wrkspc
 C**********************************************************************
 C
@@ -3469,7 +3470,6 @@ C**********************************************************************
 #include "mxpdim.inc"
 #include "ipoist8.inc"
 #include "cstate.inc"
-#include "cands.inc"
 C
 C
       IDUM = 0
@@ -3518,6 +3518,8 @@ C
 !      use gasstr_mod, only: IST_FOR_DT
 !      use parluci_mod, only: CHECK_TC, IRC_SAVE, I_NZERO_LEN_C, I_NZERO_LEN_S, LUWRT, MYPROC, SPLIT_IJKL
 !      use krciprop_mod, only: DOSIGPROP
+      use cands_luciarel_mod, only: IACTP, IASTP, IBCTP, IBSTP, ISSM,
+     &  ISSPC
       use luci_wrkspc
 *
       use symmetry_setup_krci
@@ -3529,7 +3531,6 @@ C
 * =====
 *.Input
 * =====
-#include "cands.inc"
 #include "cicisp.inc"
 #include "cstate.inc"
 #include "stinf.inc"
@@ -3715,6 +3716,8 @@ C               keep track of correct offset
 !      use gasstr_mod, only: IBSPGPFTP, MAX_NSYMDIST, NELFSPGP
 !      use cgas_mod, only: NGAS
 !      use ctcc_mod, only: KLSOBEX, MAXLEN_I1, MX_ST_TSOSO_BLK_MX, NSPOBEX_TP
+      use cands_luciarel_mod, only: IACTP, IASTP, IBCTP, IBSTP, ICSM,
+     &  ICSPC, ISSM
       use luci_wrkspc
 *
       use symmetry_setup_krci
@@ -3730,7 +3733,6 @@ C               keep track of correct offset
 *. Sigma blocks require
       INTEGER IBLOCK(8,*)
 *
-#include "cands.inc"
 #include "cicisp.inc"
 #include "strbas.inc"
 #include "cstate.inc"

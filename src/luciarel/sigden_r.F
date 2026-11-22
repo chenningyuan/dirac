@@ -2764,6 +2764,7 @@ C
      &                   ,IBLOCKL_S,NPARBLOCK_S
 #endif
      &                   )
+      use cands_luciarel_mod, only: ICSM, ISSM
       use luci_wrkspc
 *
 * Outer routine for sigma vector generation
@@ -2790,7 +2791,6 @@ C
 * ======
 *
 #include "cstate.inc"
-#include "cands.inc"
 *
       CALL QENTER('SIGDC')
       IDUM = 0
@@ -2849,6 +2849,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                     ,IBLOCKL_S,NPARBLOCK_S
 #endif
      &                 )
+      use cands_luciarel_mod, only: IACTP, IASTP, IBCTP, IBSTP, ISSM,
+     &  ISSPC
+#if defined (LUCI_DEBUG)
+      use cands_luciarel_mod, only: ICSM
+#endif
 #if !defined (VAR_MPI2)
       use files_r_mod, only: LUSC344_MPIL, NLUSC37_MPI
 #endif
@@ -2884,7 +2889,6 @@ C***********************************************************************
 * =====
 *.Input
 * =====
-#include "cands.inc"
 #include "cicisp.inc"
 #include "strbas.inc"
 #include "cstate.inc"
@@ -3569,9 +3573,11 @@ C           CPU-block - test if non-zero
      &                      ,IBLOCKL_S,NPARBLOCK_S
 #endif
      &                       )
+      use cands_luciarel_mod, only: IACTP, IASTP, IBCTP, IBSTP, ICSM,
+     &  ICSPC, ISSM
       use luci_wrkspc
 *
-* Generate a set of sigma blocks, 
+* Generate a set of sigma blocks,
 * The NBLOCK specified in IBLOCK starting from IBOFF,
 * be more specific.
 *
@@ -3603,7 +3609,6 @@ C           CPU-block - test if non-zero
 *. Sigma blocks require
       INTEGER IBLOCK(8,*)
 *
-#include "cands.inc"
 #include "cicisp.inc"
 #include "strbas.inc"
 #include "cstate.inc"

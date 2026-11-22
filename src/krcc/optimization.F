@@ -22,6 +22,7 @@
 *
 * CCVEC1 : Complete CC vector
 *
+      use cands_krcc_mod, only: ICSM, ISSM
       use cecore_krcc_mod, only: ECORE, ECORE_AB, ECORE_H, ECORE_ORIG
       IMPLICIT REAL*8(A-H,O-Z)
       REAL*8 INPROD
@@ -34,7 +35,6 @@
 #include "clunit.inc"
 #include "ctcc.inc"
 #include "ctccp.inc"
-#include "cands.inc"
 #include "cstate.inc"
 #include "cgas.inc"
 C added

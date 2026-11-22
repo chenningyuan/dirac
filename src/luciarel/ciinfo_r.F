@@ -308,6 +308,7 @@ CTEMP     ISM2(3,5) = 1
 !      use cprnt_mod, only: IPRWFC
 !      use cands_mod, only: IACTP, IBCTP
 !      use parluci_mod, only: L_COMBI
+      use cands_luciarel_mod, only: IACTP, IBCTP
       use dgroup_mod, only: LINEAR
       use luci_wrkspc
 *
@@ -341,7 +342,6 @@ CTEMP     ISM2(3,5) = 1
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "cprnt.inc"
-#include "cands.inc"
 #include "parluci.h"
 *
       DIMENSION IBLOCK(8,NBLOCK),IBLTP(*)
@@ -1109,6 +1109,7 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 !      use gasstr_mod, only: IBSPGPFTP, IST_FOR_DT, ITPM1, ITPM2, MXNSTR, NELFSPGP, NSTFSMSPGP, NSTFSMSPGP2
 !      use cgas_mod, only: NGAS
 !      use cands_mod, only: ISSM, ISSPC
+      use cands_luciarel_mod, only: ISSM, ISSPC
       use luci_wrkspc
 C**********************************************************************
 C
@@ -1149,7 +1150,6 @@ C
 #include "gasstr.inc"
 C
 #include "cgas.inc"
-#include "cands.inc"
 C
       IDUM = 0
       call memmar(KDUM,IDUM,'MARK  ',KDUM,'GET_3B')
@@ -4487,12 +4487,12 @@ C
 !      use krciprop_mod, only: IHTYPE_X, IXSYMACT, IXSYMLIST, MXPROPKRCI_SYM
 !      use parluci_mod, only: COMPDISTL, COMPRCCTOS, NUM_BLOCKS, NUM_BLOCKS2
 !      use cands_mod, only: ICSM, ISSM
+      use cands_luciarel_mod, only: ICSM, ISSM
       use symmetry_setup_krci
 #include "implicit.h"
 #include "krciprop.h"
 #include "mpif.h"
 #include "parluci.h"
-#include "cands.inc"
       INTEGER   ISTAT(MPI_STATUS_SIZE), ISYM_DISTR(IXSYMACT)
       INTEGER   NPARBLOCK_X(NUM_BLOCKS,*),IBLOCKL_X(NUM_BLOCKS,*)
       INTEGER   IXSYMPAIRS(MXPROPKRCI_SYM,*)

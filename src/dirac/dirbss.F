@@ -8719,7 +8719,6 @@ C
       DIMENSION xa(4),ya(4),za(5)
       CHARACTER*20 AFN
       CHARACTER*3 file_tag
-!#include "amfi_if.h"
 c     logical dirbss_verbose
 
       CALL QENTER('AMFIIN')
@@ -10067,7 +10066,7 @@ C   Last modifications: MI, Odense, June 2008
 C                       S. Knecht, Duesseldorf, Jan 2009
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use amfi_if_mod, only: IPR_AMFI, IPR_RELSCF, MXXTRP_INP, ONRELSCF
+      use amfi_if_mod, only: IPR_AMFI, IPR_RELSCF, MXXTRP_INP, ONRELSCF
       use priunit_mod, only: LUCMD, LUPRI
       use nuclei_mod, only: CHARGE, IAMFA, NAMFA, NUCDEG, NUCDEP, NUCIND
       use dcbham_mod, only: ALLAMFA, IMFCH, ISORDER_AMFI_X2C, X2C
@@ -10075,7 +10074,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "amfi_if.h"
       PARAMETER (NTABLE = 20)
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0=0.0D0, D2=2.0D00,
      &                       DTHRS=1.0D-13, DP5 = 0.50D00

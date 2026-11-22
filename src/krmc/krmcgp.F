@@ -2130,6 +2130,7 @@ C
 C     Last revision:
 C
 C***********************************************************************
+      use cands_luciarel_mod, only: IELCI
       use priunit_mod, only: LUPRI
 !      use parluci_mod, only: CHECKPOINT_LUCIX, CKRCIONLY, CPBLCK_FILE_LUCIX, IC_SHL, IIOMOD_REL, ISMEMFAC, IT_SHL, LEVEL_SM, LOWSRT_IJKL, MASTER, MYPROC, NO_CDIAF, REORD_IJKL, SHARED_M, SPLIT_IJKL
       use pgroup_mod, only: GROUP
@@ -2172,7 +2173,6 @@ C***********************************************************************
 #include "../luciarel/cprnt.inc"
 #include "../luciarel/cgas.inc"
 #include "../luciarel/oper.inc"
-#include "../luciarel/cands.inc"
 #include "krciprop.h"
 C
       CHARACTER*6 CIRUN

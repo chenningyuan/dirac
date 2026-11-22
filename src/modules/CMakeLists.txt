@@ -2,11 +2,13 @@
 set(MODULE_SOURCES
     abainf.F90
     ader.F90
+    amfi_if.F90
     aosotr.F90
     aovec.F90
     argoscom.F90
     argoscomch.F90
     blocks.F90
+    cands_luciarel.F90
     cbiher.F90
     cbihr1.F90
     cbihr2.F90

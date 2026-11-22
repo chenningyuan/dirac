@@ -92,11 +92,10 @@ C statuses (nonconvergence, divergence etc...)
 C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use amfi_if_mod, only: IPR_RELSCF
+      use amfi_if_mod, only: IPR_RELSCF
       use relscf_dim_mod
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "amfi_if.h"
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
      *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(*),SMIN(*),THRE(*),EPS(2),
@@ -190,13 +189,12 @@ C     MXBAS IS MAXIMAL NUMBER OF BASIS FUNCTIONS
 C     MXOCC IS MAXIMAL SUM OF ALL OCCUPATION NUMBERS (OPEN AND CLOSED)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use amfi_if_mod, only: IPR_RELSCF
+      use amfi_if_mod, only: IPR_RELSCF
       use relscf_v10_mod, only: MXBAS, MXOCC
       use scfarr_mod, only: LDIMC, MXB, MXO
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       DIMENSION WORK(LWORK)
-#include "amfi_if.h"
       KWORK = 1
       KFREE = KWORK
       LFREE = LWORK
@@ -406,7 +404,7 @@ C
 C   Called from INPUT_AT34.
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use amfi_if_mod, only: IPR_RELSCF
+      use amfi_if_mod, only: IPR_RELSCF
       use relscf_dim_mod, only: MXBF
       use relscf_v10_mod, only: LPQ, LQM, MX100, NOR
       use relscf_ijpair_mod, only: IDK
@@ -417,7 +415,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 Cvec  VERSION INCLUDING IDK ARRAY
 C
-#include "amfi_if.h"
       DIMENSION WORK(LWORK)
 CMI   DIMENSION C(LDIMC),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
       DIMENSION C(*),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
@@ -653,10 +650,9 @@ C
 
       SUBROUTINE CHECK(ICORE,K,TEXT)
       use priunit_mod, only: LUPRI
+      use amfi_if_mod, only: IPR_RELSCF
 #include "implicit.h"
-!      use amfi_if_mod, only: IPR_RELSCF
       INTEGER :: K
-#include "amfi_if.h"
       CHARACTER*8 TEXT
       DATA MSK /0/, KSK /5000000/
 C
@@ -826,10 +822,9 @@ C
       DOUBLE PRECISION FUNCTION DER(IDER,IS1,IS2,AL,BE)
       use priunit_mod, only: LUPRI
       use relscf_crelop_mod, only: GA
+      use amfi_if_mod, only: IPR_RELSCF
 #include "implicit.h"
-!      use amfi_if_mod, only: IPR_RELSCF
       INTEGER :: I,II,J,JJ,KK
-#include "amfi_if.h"
       INTEGER IS1(3),IS2(3),I1(2,3),I2(2,3)
       REAL*8 F(2),G(2)
 
@@ -963,9 +958,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &  NDIAG, NSTEP
       use relscf_v10_mod, only: LPQ
       use priunit_mod, only: LUPRI
-!      use amfi_if_mod, only: IPR_RELSCF
+      use amfi_if_mod, only: IPR_RELSCF
 #include "implicit.h"
-#include "amfi_if.h"
       INTEGER :: I,J,K
 CMI   DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(2),PCAP(2),
@@ -1154,13 +1148,12 @@ C     DOS - open-shell density matrix
 C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use amfi_if_mod, only: IPR_RELSCF
+      use amfi_if_mod, only: IPR_RELSCF
       use relscf_dim_mod, only: CIN, ENERG, IDATA, MXBF, N1T, NBVAR1,
      &  NDIMPQ, NITSCF, NUMVAR, POT, VIR, ZN
       use priunit_mod, only: LUPRI
       use scfarr_mod, only: NDIMPQPAR
 #include "implicit.h"
-#include "amfi_if.h"
       INTEGER :: I,J
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
      *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,*),CM2SCF(MXBF,*),
@@ -2124,7 +2117,7 @@ C
 C   C(MXBF,1) -> C(MXBF,*)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use amfi_if_mod, only: IPR_RELSCF
+      use amfi_if_mod, only: IPR_RELSCF
       use scfarr_mod, only: LDIMC, MXB
       use priunit_mod, only: LUPRI
       use relscf_v10_mod, only: IPARM, LPQ, MX100, NOR
@@ -2154,7 +2147,6 @@ CMI  &          ZADD(MX100,4),C(MXBF,1),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),
    
       LOGICAL ZEROELECTRONS
 
-#include "amfi_if.h"
       KWORK = 1
       KFREE = KWORK
       LFREE = LWORK
@@ -2787,7 +2779,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use relscf_v10_mod, only: GJ0, GK0, IPARM, ISIZE, LPQ, LQM, MX100,
      &  MXBAS, MXOCC, NBF, NEXPND, NOR, TRHI, TRLO
       use priunit_mod, only: LUPRI
-!      use amfi_if_mod, only: IPR_RELSCF, IRELSCF_INFO, MXRELSCF_INFO, MXXTRP_INP, RELSCFLABI, RELSCFLABX
+      use amfi_if_mod, only: IPR_RELSCF, IRELSCF_INFO, MXRELSCF_INFO,
+     &  MXXTRP_INP, RELSCFLABI, RELSCFLABX
       use scfarr_mod, only: LDIMC, MXB, MXO, NDIMPQPAR
       use relscf_dim_mod
 #include "implicit.h"
@@ -2812,7 +2805,6 @@ C
       DIMENSION NOOC(5),TITLE(12)
       CHARACTER*8 OPER(3)
       EQUIVALENCE (TITLE(1),NAME(1))
-#include "amfi_if.h"
 C
 C     SET DEFAULT VALUES
 C
@@ -3994,9 +3986,8 @@ CMI   PARAMETER (MAINST=1500000)
 C     PARAMETER (MAINST=2400000)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
-!      use amfi_if_mod, only: IPR_RELSCF
+      use amfi_if_mod, only: IPR_RELSCF
 #include "implicit.h"
-#include "amfi_if.h"
 
       REAL*8 GJ0,GK0
       REAL*8 WORK
@@ -4033,7 +4024,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &  ZN
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "amfi_if.h"
 C
       DIMENSION P(*),Q(*),S(*),U(*),T(*),
      &          DT(*),DOS(*),PCAP(*),QCAP(*),FC(*),FO(*),
@@ -4279,7 +4269,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use scfarr_mod, only: LDIMC, MXB, NDIMPQPAR
       use dummy_mod, only: DUMMY
       use priunit_mod, only: LUPRI
-!      use amfi_if_mod, only: IPR_RELSCF, IRELSCF_INFO, MXRELSCF_INFO, RELSCFLABI, RELSCFLABX
+      use amfi_if_mod, only: IPR_RELSCF, IRELSCF_INFO, MXRELSCF_INFO,
+     &  RELSCFLABI, RELSCFLABX
 #include "implicit.h"
       INTEGER :: I,II,J,JJ,K,KK
 
@@ -4302,7 +4293,6 @@ C
       DIMENSION NTYSM(4),ATCO(300)
 C     PUNCH BASIS SET AND VECTORS FOR INPUT TO IBMOL-H
       LOGICAL LLIE(4), EX
-#include "amfi_if.h"
 CMI   DATA LLIE/1HS,1HP,1HD,1HF/, NTYSM/1,3,6,10/
       DATA LLIE/.false.,.false.,.false.,.false./, NTYSM/1,3,6,10/
       KWORK = 1
@@ -4945,7 +4935,7 @@ C
 C     PRINT INTERMEDIATE ITERATION RESULTS
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use amfi_if_mod, only: IPR_RELSCF
+      use amfi_if_mod, only: IPR_RELSCF
       use priunit_mod, only: LUPRI
       use relscf_dim_mod, only: CIN, ENERG, MXBF, N1T, NITSCF, POT, VIR,
      &  ZN
@@ -4961,7 +4951,6 @@ CMI  *C(MXBF,1),CTRAN(*),PQN(*),ZETA(*),ZETINC(*),
      *C(MXBF,*),CTRAN(*),PQN(*),ZETA(*),ZETINC(*),
      *ITRAN(*),NROW(*),NBVAR(*),IORCN(*)
       COMMON /CLOCKX/ CPU,CLK
-#include "amfi_if.h"
 C
 CMI   IF (NITSCF.EQ.1.and.IPR_RELSCF.GE.2) THEN
       IF (NITSCF.EQ.1.and.IPR_RELSCF.GE.0) THEN
@@ -5096,7 +5085,7 @@ C      RELOP - PROGRAM TO CALCULATE RELATIVISTIC ONE-ELECTRON
 C      OPERATORS IN A BASIS SET OF GAUSSIAN FUNCTIONS
 C      V 1.0 - 12.3.86 - BERND HESS
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use amfi_if_mod, only: IPR_RELSCF
+      use amfi_if_mod, only: IPR_RELSCF
       use priunit_mod, only: LUPRI
       use relscf_crelop_mod, only: BCO, CSQ, FAK, GA, PI, PREA, SQPI,
      &  VELIT, ZWP, ZWPH12, ZWPH32
@@ -5107,7 +5096,6 @@ C     SUBROUTINE RELOP INITIALIZES THE COMMON BLOCK USED BY
 C     THE RELOP PACKAGE
 C     V 1.0 - 12.3.86 - BERND HESS
 C
-#include "amfi_if.h"
 
       if (IPR_RELSCF.GE.2)  THEN
          WRITE (LUPRI,100)
@@ -5985,8 +5973,8 @@ C.......................................................................
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SETABJ(AJMN,NSYM,NOSH,NCCUP)
       use priunit_mod, only: LUPRI
+      use amfi_if_mod, only: IPR_RELSCF
 #include "implicit.h"
-!      use amfi_if_mod, only: IPR_RELSCF
       INTEGER :: I,K
 C.......................................................................
 C
@@ -6018,7 +6006,6 @@ CMI   DIMENSION NOSH(2),AJMN(24),NCCUP(2),IANUM(90),IADEN(90)
      X            77,38115,307461,11990979,42,11340,91476,3567564,91,
      X            17745,13013,507507/
 
-#include "amfi_if.h"
 
       IEXCHG = 20
       DO I = 1,24  ! MI: AJMN has range 1-24 !

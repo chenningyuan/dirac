@@ -504,6 +504,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use krciprop_mod, only: DOSIGPROP, IN1ELPRP_KRCI, ISYMEIG_KRCI, ISYMOPPRP_KRCI, IXSYMACT, IXSYMLIST, LPROP_KRCI, LXPRPKRCI, MXPROPKRCI_SYM, NPROP_KRCI, NPROP_ROOTS_KRCI
 !      use dcbxpr_mod, only: PRPNAM
 !      use parluci_mod, only: IALL_LU1, IALL_LU2, IALL_LUC, ILPRP_X, ILU1, ILU2, IRC_SAVE, LUWRT, L_COMBI, L_COMBI_MAX, L_COMBI_S, MASTER, MYPROC, MY_ACT_BLK2, MY_ACT_BLK_ALL, MY_LU1_OFF, MY_LU2_OFF, MY_LUC_OFF, NUM_BLOCKS, NUM_BLOCKS2
+      use cands_luciarel_mod, only: ICSM, ICSPC, ISSM, ISSPC
       use dgroup_mod, only: NZ
       use luci_wrkspc
 C***********************************************************************
@@ -530,7 +531,6 @@ C print flags
 C required common blocks
 #include "mxpdim.inc"
 #include "crun.inc"
-#include "cands.inc"
 #include "cicisp.inc"
 #include "cgas.inc"
 #include "clunit.inc"

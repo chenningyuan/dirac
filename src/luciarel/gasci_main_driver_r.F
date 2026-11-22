@@ -37,6 +37,7 @@
 !      use cintfo_mod, only: ISM2D, NL2D
 !      use cands_mod, only: ICSM, ICSPC, ISSM, ISSPC
 !      use integrals_off_mod, only: NTERMS
+      use cands_luciarel_mod, only: ICSM, ICSPC, ISSM, ISSPC
 #if defined (VAR_MPI)
       use cintfo_luciarel_mod, only: ISM2D, NL2D
 #endif
@@ -91,7 +92,6 @@
 #include "ctcc.inc"
 *
 *. Common block for communicating with sigma
-#include "cands.inc"
 *  nat. orb. occ. num.
 #include "integrals_off.inc"
 *     /CECORE/

@@ -41,10 +41,11 @@ CMI  CVEL     ... speed of light (in au) entering from DIRAC
 CMI              (is in alphac.h )
 CMI
 CMI=====================================================================
-!      use amfi_if_mod, only: IPR_AMFI
+      use amfi_if_mod, only: IPR_AMFI
       use alphac_mod, only: ALPHA2, ALPHAC, CVEL, SPEED2, SPEED4
       use datapow_mod, only: IXYZPOW, LPOWMAX
       use para_mod, only: LMAX
+      use param_amfi_mod, only: IPOWXYZ
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 c###########################################################################
@@ -151,10 +152,8 @@ cbs                         ! integrals in memory
       LOGICAL DOEXIT ! Exit AMFi when charge in readbas is 0
       LOGICAL EXAMF ! if .true., leave AMFI after readbas
       character*4  symmetry  
-      common ipowxyz(3,-Lmax:Lmax,0:Lmax)
       dimension WRK(LFREE)
 
-#include "amfi_if.h"
 c     logical amfi_verbose
 c     amfi_verbose = .false.
 
@@ -354,9 +353,10 @@ cbs   subroutine to set up parameters for finite nucleus. The s-functions are re
 cbs   by just one exponent which models the nucleus.
 cbs
 !      use param_mod, only: EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NCONTRAC_KEEP, NOCCORB, NPRIMIT, NPRIMIT_KEEP, OCCUP
-      use para_mod, only: LMAX, LMAX_OCC, MXCART, MXCONTL, MXPRIML
+      use param_amfi_mod, only: EXPONENTS, NCONTRAC, NCONTRAC_KEEP,
+     &  NOCCORB, NPRIMIT, NPRIMIT_KEEP, OCCUP
+      use para_mod, only: LMAX_OCC
 #include "implicit.h"
-#include "param.h"
       common /nucleus/ charge,Exp_finite    
       noccorb(0)=1  
       do l=1,lmax_occ
@@ -386,17 +386,16 @@ cbs   Therefore, the integrals are kept in memory and
 cbs   can be further transformed, whenever required.   
 cbs   in order not to waste to much memory, the atomic  
 cbs   integrals are thrown away after each l,l,l,l-block 
+      use param_amfi_mod
       use priunit_mod, only: LUPRI
-!      use amfi_if_mod, only: IPR_AMFI
+      use amfi_if_mod, only: IPR_AMFI
       use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
 !      use param_mod, only: CLEBSCH, IPOWXYZ, ISIGNM, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, ONECARTX, ONECARTY, ONECARTZ, PREROOTS, SCRATCH4
 #include "implicit.h"
       INTEGER :: I,J
-#include "param.h"
       logical keep,keepcart,icheck,mcheckxy,mcheckz,makemean,bonn,   
      *breiT,sameorb,cleaner,NFINI
 
-#include "amfi_if.h"
 c     logical amfi_verbose
 cbs   NFINI means not finite nucleus  
       dimension l2block(0:Lmax,0:Lmax,0:Lmax,0:Lmax)
@@ -1388,13 +1387,13 @@ cbs  with extra factors to correct the
 cbs  normalization                  
 c
 cbs ##################################################################
+      use param_amfi_mod, only: COULOVLP
       use pi_mod, only: PI
 !      use param_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
       use dofuc_mod, only: DFFRAC
-      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
+      use para_mod, only: LMAX, MXPRIML
 #include "implicit.h"
       INTEGER :: K
-#include "param.h"
       dimension expo1(nprim1),
      *expo2(nprim2),
      *expo3(nprim3),
@@ -1983,9 +1982,9 @@ cbs   cont prepares all required contraction coefficients for functions
 cbs   with angular momentum L
 cbs###########################################################################
 !      use param_mod, only: ENERGY, EVAL, EVEC, EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NORMOVLP, NPRIMIT, ROOTOVLPINV, TKIN, TYPE1, TYPE2
+      use param_amfi_mod
       use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
 #include "implicit.h"
-#include "param.h"
       dimension tkintria((MxprimL*MxprimL+MxprimL)/2)
       logical breit,breit_finite
       breit_finite=.true.
