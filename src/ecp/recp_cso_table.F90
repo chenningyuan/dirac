@@ -26,7 +26,6 @@ SUBROUTINE RECP_CSO_TABLE_HERMIT(nn,x,a,eps)
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-!#include "inc_print.h"
       REAL(dp), PARAMETER :: sixth = 1.0d0/6.0d0
   dimension x(*), a(*)
 
@@ -116,7 +115,6 @@ SUBROUTINE RECP_CSO_TABLE0(eps,lmax,lmn1u,lproju,ndfac)
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J, K
-!#include "inc_print.h"
       REAL(dp), PARAMETER :: a0=0.0d0, a1s2=0.5d0, a1=1.0d0, a2=2.0d0, a3=3.0d0
 
 ! # compute gauss-hermite points and weights for c, z integrals.

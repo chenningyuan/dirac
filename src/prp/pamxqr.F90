@@ -27,7 +27,7 @@
       use dummy_mod, only: DUMMY
       use priunit_mod, only: LUCMD, LUPRI
       use mxcent_mod, only: MXCOOR
-!      use dcbxqr_mod, only: BQRFR, CNVXQR, CQRFR, INTXQR, IPRXQR, ITRIQR, ITRXQR, LAQROP, LBQROP, LCQROP, LQROP, MAXFQR, MAXLQR, MAXQRM, NAQROP, NBQRFR, NBQROP, NCQRFR, NCQROP, RESXQR, THCQR, XQRDIH, XQRNRM, XQR_ALLCMB, XQR_INDSTR, XQR_LEVICI, XQR_SKIPEE, XQR_SKIPEP
+      use dcbxqr_mod
       use dcbgen_mod, only: INTGEN
       use dcbham_mod, only: BSS, FREEPJ, GAUNT, LEVYLE, VEXTPJ, X2C
 !      use dcbprp_mod, only: DOEXCPRP, DOTPA, DOVER, DOXQR, EXCPRPTYP
@@ -36,7 +36,6 @@
 #include "implicit.h"
       INTEGER :: I, J
 !
-#include "dcbxqr.h"
 #include "dcbprp.h"
 !#include "dcbxpr.h"
 !
@@ -456,13 +455,12 @@
 !     Written by panor 1998
 !
 !***********************************************************************
-!      use dcbxqr_mod, only: MAXFQR, MAXLQR, MAXQR, MZYEE, MZYEP
 !      use dcborb_mod, only: NCMOTQ
+      use dcbxqr_mod, only: MAXFQR, MAXLQR, MAXQR, MZYEE, MZYEP
       use dcbham_mod, only: SPINFR
       use dgroup_mod, only: NZ
       use dcbbas_mod, only: NTBAS
 #include "implicit.h"
-#include "dcbxqr.h"
 #include "dcborb.h"
 !
       PARAMETER ( LUCMO = 22 )
@@ -579,14 +577,13 @@
 !*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
-!      use dcbxqr_mod, only: BQRFR, CQRFR, IPRXQR, LAQROP, LBQROP, LCQROP, LQRHYP, LQROP, MAXQR, MZYEE, MZYEP, NAQROP, NBQRFR, NBQROP, NCQRFR, NCQROP, NQRHYP, NQROP, QRFRHYP, XQR_INDSTR, XQR_LEVICI, XQR_SKIPEE, XQR_SKIPEP
+      use dcbxqr_mod
       use dgroup_mod, only: JBTOF
 !      use dcborb_mod, only: NPSHT
 !      use dcbxrs_mod, only: JOPSY, JSYMOP, JTIMOP, NZXOPE, NZXOPP
 #include "implicit.h"
       INTEGER :: I
 #include "dcbxpr.h"
-#include "dcbxqr.h"
 #include "dcborb.h"
 #include "dcbxrs.h"
 !
@@ -733,12 +730,11 @@
 !
 !*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbxqr_mod, only: IPRXQR, LQROP, NQROP, QRFREQ
+      use dcbxqr_mod, only: IPRXQR, LQROP, NQROP, QRFREQ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: K
 !
-#include "dcbxqr.h"
 !
       REAL(dp), PARAMETER :: THRES = 1.0D-6
       CALL QENTER('INDQR')
@@ -789,11 +785,10 @@
 !     Written by panor 1998
 !
 !*****************************************************************************
-!      use dcbxqr_mod, only: MAXQR, XQR_ALLCMB
+      use dcbxqr_mod, only: MAXQR, XQR_ALLCMB
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "dcbxqr.h"
 !
       REAL(dp), PARAMETER :: THD = 1.0D-8
       LOGICAL DOHYP
@@ -879,7 +874,7 @@
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 !      use dcbxrs_mod, only: JOPSY, JSYMOP, JTIMOP, NCRED, NERED, NEXCNV, NEXSIM, NEXSTV, NFREQ, NPRED, NREDM, NZCONF, NZCONFQ, NZRED, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, STATIC
-!      use dcbxqr_mod, only: IEXCOFF, IPRXQR, LQROP, NQROP, QRFREQ, XQR_INDSTR, XQR_SKIPEE, XQR_SKIPEP
+      use dcbxqr_mod, only: IEXCOFF, IPRXQR, LQROP, NQROP, QRFREQ, XQR_INDSTR, XQR_SKIPEE, XQR_SKIPEP
       use pgroup_mod, only: REP
       use dgroup_mod, only: JBTOF
       use orbital_rotation_indices
@@ -889,7 +884,6 @@
       INTEGER :: I
 #include "dcbxpr.h"
 #include "dcbxrs.h"
-#include "dcbxqr.h"
 !
       REAL(dp), PARAMETER :: D0 = 0.0D0
 !
@@ -1035,11 +1029,10 @@
 !     Written by panor 1998
 !
 !*****************************************************************************
-!      use dcbxqr_mod, only: CNVXQR, INTXQR, IPRXQR, ITRIQR, ITRXQR, MAXQRM, RESXQR, THCQR, XQRDIH, XQRNRM
 !      use dcbxrs_mod, only: CNVINT, DIAGHE, FKRMC, INTDEF, IPRXRS, ITRINT, LINEQ, LOFFTY, LSVCFG, MAXITR, N2REDM, NREDM, RESFAC, STERNH, THCXRS, TKNORM
+      use dcbxqr_mod, only: CNVXQR, INTXQR, IPRXQR, ITRIQR, ITRXQR, MAXQRM, RESXQR, THCQR, XQRDIH, XQRNRM
 #include "implicit.h"
 !
-#include "dcbxqr.h"
 #include "dcbxrs.h"
 !
       CALL QENTER('SETXQR')
@@ -1089,12 +1082,11 @@
 !
 !*****************************************************************************
 !      use dcbxrs_mod, only: NCSIM, NESIM, NFREQ, NPSIM, NREDM, NSTAT, NZXOPE, NZXOPP
-!      use dcbxqr_mod, only: MZYEE, MZYEP
+      use dcbxqr_mod, only: MZYEE, MZYEP
       use dcbibn_mod, only: JBENDX, JBPNDX
       use dgroup_mod, only: NZ
 #include "implicit.h"
 #include "dcbxrs.h"
-#include "dcbxqr.h"
 !
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),                           &
            IBPVC(*),EVALR(*),EVECR(NREDM,*)
@@ -1166,7 +1158,7 @@
 !*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: JSYMOP, LUBOE, LUBOP, NERED, NFREQ, NPRED, NREDM
-!      use dcbxqr_mod, only: IPRXQR, LUQREE, LUQREP
+      use dcbxqr_mod, only: IPRXQR, LUQREE, LUQREP
       use dcbibn_mod, only: JBENDX, JBPNDX
       use dgroup_mod, only: IPQTOQ, NZ
 !      use dcbxpr_mod, only: PRPNAM
@@ -1174,7 +1166,6 @@
 #include "implicit.h"
       INTEGER :: I
 #include "dcbxrs.h"
-#include "dcbxqr.h"
 !
 #include "dcbxpr.h"
 !
@@ -1307,7 +1298,8 @@
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
       use dgroup_mod, only: JBTOF, NZ
 !      use dcborb_mod, only: ICMOQ, N2ORBXQ, NORB
-!      use dcbxqr_mod, only: IEXCOFF, IPRXQR, LQROP, LUQREE, LUQREP, MAXFQR, MAXLQR, MZYEE, MZYEP, NQROP, QRFREQ, XQR_INDSTR, XQR_SKIPEE, XQR_SKIPEP
+      use dcbxqr_mod, only: IEXCOFF, IPRXQR, LQROP, LUQREE, LUQREP, MAXFQR, MAXLQR, MZYEE, MZYEP, NQROP, QRFREQ, XQR_INDSTR, &
+        XQR_SKIPEE, XQR_SKIPEP
       use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: DOEXCPRP, DOTPA
       use kinds_mod, only: dp
@@ -1316,7 +1308,6 @@
 #include "dcbxrs.h"
 #include "dcbxpr.h"
 #include "dcborb.h"
-#include "dcbxqr.h"
 #include "dcbprp.h"
 !
       REAL(dp), PARAMETER :: D4 = 4.0D0
@@ -1531,11 +1522,10 @@
 !
 !*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbxqr_mod, only: MAXQR, MZYEE, MZYEP, NQRHYP
+      use dcbxqr_mod, only: MAXQR, MZYEE, MZYEP, NQRHYP
       use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "dcbxqr.h"
 !
       REAL(dp), PARAMETER :: D0=0.0D0
       CHARACTER ALAB*8,BLAB*8,CLAB*8
@@ -1635,13 +1625,12 @@
 !*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
-!      use dcbxqr_mod, only: IPRXQR, LQRHYP, LUQREE, LUQREP, MZYEE, MZYEP, QRFRHYP, XQR_INDSTR, XQR_SKIPEE, XQR_SKIPEP
+      use dcbxqr_mod, only: IPRXQR, LQRHYP, LUQREE, LUQREP, MZYEE, MZYEP, QRFRHYP, XQR_INDSTR, XQR_SKIPEE, XQR_SKIPEP
       use dgroup_mod, only: JBTOF, NZ
 !      use dcbxrs_mod, only: JOPSY, JSYMOP, JTIMOP, NZXOPE, NZXOPP
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dcbxpr.h"
-#include "dcbxqr.h"
 #include "dcbxrs.h"
 !
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, DM1=-1.0D0
@@ -1754,12 +1743,11 @@
 !     Written by panor 1998
 !
 !*****************************************************************************
-!      use dcbxqr_mod, only: IPRXQR
 !      use dcborb_mod, only: ICMOQ, N2ORBXQ, NORB
+      use dcbxqr_mod, only: IPRXQR
       use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "dcbxqr.h"
 #include "dcborb.h"
 !
       REAL(dp), PARAMETER :: D1 = 1.0D0, D4 = 4.0D0
@@ -1836,12 +1824,11 @@
 !
 !*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbxqr_mod, only: IPRXQR
+      use dcbxqr_mod, only: IPRXQR
 !      use dcborb_mod, only: ICMOQ, N2ORBXQ, NORB, NORBT
       use dgroup_mod, only: IPQTOQ, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "dcbxqr.h"
 #include "dcborb.h"
 !
       REAL(dp), PARAMETER :: D1 = 1.0D0, D8 = 8.0D0
@@ -1926,13 +1913,12 @@
 !      use dcborb_mod, only: N2ORBXQ, NORBT
 !      use dcbxrs_mod, only: JOPSY, JSYMOP, NZXOPE, NZXOPP
       use dgroup_mod, only: IPQTOQ, JBTOF, NZ
-!      use dcbxqr_mod, only: XQR_INDSTR, XQR_SKIPEE, XQR_SKIPEP
+      use dcbxqr_mod, only: XQR_INDSTR, XQR_SKIPEE, XQR_SKIPEP
       use orbital_rotation_indices
 
 #include "implicit.h"
 #include "dcborb.h"
 #include "dcbxrs.h"
-#include "dcbxqr.h"
 !
       DIMENSION VECEE(NZYEE,NZ),VECEP(NZYEP,NZ),ZYMAT(NORBT,NORBT,NZ)
       DIMENSION WORK(LWRK)
@@ -2163,13 +2149,12 @@
 !      use dcborb_mod, only: NORBT
       use dgroup_mod, only: IPQTOQ, JBTOF, NZ
 !      use dcbxrs_mod, only: JOPSY, JSYMOP, NZXOPE, NZXOPP
-!      use dcbxqr_mod, only: XQR_INDSTR, XQR_SKIPEE, XQR_SKIPEP
+      use dcbxqr_mod, only: XQR_INDSTR, XQR_SKIPEE, XQR_SKIPEP
       use orbital_rotation_indices
 
 #include "implicit.h"
 #include "dcborb.h"
 #include "dcbxrs.h"
-#include "dcbxqr.h"
 !
       DIMENSION GEE(NZYEE,NZ),GEP(NZYEP,NZ),OP(NORBT,NORBT,NZ)
       DIMENSION WORK(LWRK)
@@ -2323,7 +2308,7 @@
       use dirac_partask_mod, only: XCINT_PAR
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ORBXQ, NORBT
-!      use dcbxqr_mod, only: IPRXQR
+      use dcbxqr_mod, only: IPRXQR
       use dgroup_mod, only: IPQTOQ, NZ
 !      use dcbxrs_mod, only: INTFLG
 #if defined (VAR_MPI)
@@ -2339,7 +2324,6 @@
       use dcbbas_mod, only: N2BBASXQ, NTBAS
 #include "implicit.h"
 #include "dcborb.h"
-#include "dcbxqr.h"
 #include "dcbxrs.h"
 !
 !
@@ -2566,12 +2550,11 @@
 !
 !*****************************************************************************
 !      use dcborb_mod, only: N2ORBXQ
-!      use dcbxqr_mod, only: IPRXQR
+      use dcbxqr_mod, only: IPRXQR
       use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dcborb.h"
-#include "dcbxqr.h"
 !
       REAL(dp), PARAMETER :: D2 = 2.0D0
 !
@@ -2631,12 +2614,11 @@
 !      use dcborb_mod, only: NORBT
       use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
       use dgroup_mod, only: IPQTOQ, NZ
-!      use dcbxqr_mod, only: IPRXQR
+      use dcbxqr_mod, only: IPRXQR
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dcborb.h"
-#include "dcbxqr.h"
 !
       REAL(dp), PARAMETER :: D1 = 1.0D0, DM1 = -1.0D0
 !
@@ -2685,12 +2667,11 @@
 !      use dcborb_mod, only: ICMOQ, IORB, NISH, NORB, NORBT, NPSH
       use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
-!      use dcbxqr_mod, only: IPRXQR
+      use dcbxqr_mod, only: IPRXQR
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dcborb.h"
-#include "dcbxqr.h"
 !
       REAL(dp), PARAMETER :: D0 = 0.0D0, DM1 = -1.0D0, D1 = 1.0D0
 !
@@ -2785,12 +2766,11 @@
 !      use dcborb_mod, only: N2ORBXQ, NORBT
       use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
       use dgroup_mod, only: IPQTOQ, NZ
-!      use dcbxqr_mod, only: IPRXQR
+      use dcbxqr_mod, only: IPRXQR
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dcborb.h"
-#include "dcbxqr.h"
 !
       REAL(dp), PARAMETER :: D1 = 1.0D0, DM1 = -1.0D0
 !
@@ -2855,14 +2835,13 @@
 !
 !*****************************************************************************
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBXQ, NISH, NORB, NORBT, NPSH
-!      use dcbxqr_mod, only: IPRXQR
+      use dcbxqr_mod, only: IPRXQR
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dcborb.h"
-#include "dcbxqr.h"
 !
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0
 !
@@ -2966,11 +2945,10 @@
 !*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: INTFLG
-!      use dcbxqr_mod, only: INTXQR, IPRXQR
+      use dcbxqr_mod, only: INTXQR, IPRXQR
 #include "implicit.h"
       INTEGER :: I
 #include "dcbxrs.h"
-#include "dcbxqr.h"
 !
       DIMENSION ISYMOP(3), IHRMOP(3), IFCKOP(3)
 !
@@ -3220,13 +3198,12 @@
 !*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: GPTNRM, NZXOPE, NZXOPP
-!      use dcbxqr_mod, only: LUQREE, LUQREP, MZYEE, MZYEP
+      use dcbxqr_mod, only: LUQREE, LUQREP, MZYEE, MZYEP
       use dgroup_mod, only: NZ
 !      use dcbxpr_mod, only: PRPNAM
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dcbxrs.h"
-#include "dcbxqr.h"
 #include "dcbxpr.h"
 !
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2=2.0D0, THD = 1.0D-9
@@ -3298,9 +3275,8 @@
 !
 !*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbxqr_mod, only: LUQRINFO
+      use dcbxqr_mod, only: LUQRINFO
 #include "implicit.h"
-#include "dcbxqr.h"
 !
       LOGICAL EXST
       CHARACTER*1 TYP
@@ -3365,9 +3341,8 @@
 !
 !*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbxqr_mod, only: LUQRINFO
+      use dcbxqr_mod, only: LUQRINFO
 #include "implicit.h"
-#include "dcbxqr.h"
 !
       LOGICAL EXST
       CHARACTER*1 TYP,TYPDUM
@@ -3420,11 +3395,10 @@
 !     Written by johhe 2002
 !
 !*****************************************************************************
-!      use dcbxqr_mod, only: BQRFR, CQRFR, IPRXQR, LAQROP, LBQROP, LCQROP, MAXLQR, NAQROP, NBQRFR, NBQROP, NCQRFR, NCQROP
+      use dcbxqr_mod, only: BQRFR, CQRFR, IPRXQR, LAQROP, LBQROP, LCQROP, MAXLQR, NAQROP, NBQRFR, NBQROP, NCQRFR, NCQROP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "dcbxqr.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
       CHARACTER PNAME*16
       DIMENSION WORK(LWRK),PNAME(3)
@@ -3468,13 +3442,12 @@
 !     Written by panor/ulfek 2004
 !
 !*****************************************************************************
-!      use dcbxqr_mod, only: BQRFR, CQRFR, IPRXQR, LAQROP, LBQROP, LCQROP, MAXLQR, NAQROP, NBQRFR, NBQROP, NCQRFR, NCQROP
+      use dcbxqr_mod, only: BQRFR, CQRFR, IPRXQR, LAQROP, LBQROP, LCQROP, MAXLQR, NAQROP, NBQRFR, NBQROP, NCQRFR, NCQROP
       use dcbham_mod, only: LEVYLE
       use dcbgen_mod, only: CVAL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "dcbxqr.h"
 !
       REAL(dp), PARAMETER :: D1 = 1.0D0
       CHARACTER PNAME*16,PLABEL*8
@@ -3551,14 +3524,13 @@
 !
 !*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbxqr_mod, only: BQRFR, LQRHYP, MAXFQR, MAXLQR, MAXQR, NBQRFR, NQRHYP, QRFRHYP, XQR_LEVICI
+      use dcbxqr_mod, only: BQRFR, LQRHYP, MAXFQR, MAXLQR, MAXQR, NBQRFR, NQRHYP, QRFRHYP, XQR_LEVICI
 !      use dcbxpr_mod, only: PRPNAM
       use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: DOVER
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "dcbxqr.h"
 #include "dcbxpr.h"
 #include "dcbprp.h"
 !

@@ -1001,7 +1001,6 @@ C
 C
 #include "dcbxrs.h"
 #include "dcbxpr.h"
-!#include "dcbidx.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
 #endif
@@ -1576,7 +1575,6 @@ C
       real(8)             :: TMPCPU, buff(2)
 #include "dcbxrs.h"
 !#include "dcbxpr.h"
-!#include "dcbidx.h"
 #include "mpif.h"
       integer MASTER, NMPROC, MYPROC
 C
@@ -1729,7 +1727,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use dcbgen_mod, only: CVAL, LU1INT
       use codata_mod, only: CVEL
       use maxorb_mod, only: MXCORB
-!      use dcbidx_mod, only: IFSMO, IOBTYP
+      use dcbidx_mod, only: IFSMO, IOBTYP
       use infpar_mod, only: MPARID
       use orbital_rotation_indices
       use interface_to_mpi
@@ -1743,7 +1741,6 @@ C
 C
 #include "dcbxrs.h"
 #include "dcbxpr.h"
-#include "dcbidx.h"
 #include "mpif.h"
       integer MASTER, NMPROC, MYPROC
 C

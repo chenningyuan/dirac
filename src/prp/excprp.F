@@ -53,14 +53,14 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: PRPNAM
-!      use dcbxqr_mod, only: LAQROP, LSTATE, MAXFQR, MAXLQR, MAXQR, MZYEE, MZYEP, NAQROP, NQRHYP, RSTATE
+      use dcbxqr_mod, only: LAQROP, LSTATE, MAXFQR, MAXLQR, MAXQR,
+     &  MZYEE, MZYEP, NAQROP, NQRHYP, RSTATE
       use dgroup_mod, only: NBSYM, NZ
 !      use dcborb_mod, only: NCMOTQ
       use dcbbas_mod, only: NTBAS
       use dcbham_mod, only: SPINFR
 #include "implicit.h"
 #include "dcbxpr.h"
-#include "dcbxqr.h"
 #include "dcborb.h"
 C
       INTEGER LUCMO
@@ -197,10 +197,9 @@ C
 C     Written by Erik Tellgren, aug 2004
 C
 C***********************************************************************
-!      use dcbxqr_mod, only: LSTATE, RSTATE
+      use dcbxqr_mod, only: LSTATE, RSTATE
       use dgroup_mod, only: JFSYM, NBSYM, NFSYM
 #include "implicit.h"
-#include "dcbxqr.h"
 !
       LOGICAL prponly
       LOGICAL nonzeroflag
@@ -242,11 +241,11 @@ C
 C     Written by Erik Tellgren, sep 2004
 C
 C***********************************************************************
-!      use dcbxqr_mod, only: LAQROP, MAXFQR, MAXLQR, MAXQR, MZYEE, MZYEP, NQRHYP
 !      use dcbxpr_mod, only: IPRPSYM
+      use dcbxqr_mod, only: LAQROP, MAXFQR, MAXLQR, MAXQR, MZYEE, MZYEP,
+     &  NQRHYP
       use dgroup_mod, only: JFSYM, NBSYM, NFSYM, NZ
 #include "implicit.h"
-#include "dcbxqr.h"
 #include "dcbxpr.h"
 C
       REAL*8 D0
@@ -321,11 +320,10 @@ C     Written by Erik Tellgren, aug 2004
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbxqr_mod, only: IEXCOFF, LAQROP, MZYEE, MZYEP, NQRHYP
+      use dcbxqr_mod, only: IEXCOFF, LAQROP, MZYEE, MZYEP, NQRHYP
       use dgroup_mod, only: JFSYM, NZ
 !      use dcbxpr_mod, only: IPRPSYM
 #include "implicit.h"
-#include "dcbxqr.h"
 #include "dcbxpr.h"
 C
       REAL*8 D1
@@ -424,12 +422,11 @@ C
 C     Written by Erik Tellgren, aug 2004
 C
 C***********************************************************************
-!      use dcbxqr_mod, only: LAQROP, LSTATE, NAQROP, RSTATE
 !      use dcbxpr_mod, only: IPRPSYM
+      use dcbxqr_mod, only: LAQROP, LSTATE, NAQROP, RSTATE
       use dgroup_mod, only: JFSYM, NBSYM, NFSYM
 #include "implicit.h"
       INTEGER :: J
-#include "dcbxqr.h"
 #include "dcbxpr.h"
 C
       LOGICAL stateOK, prponly
@@ -507,10 +504,10 @@ C             info about the calculation is stored in SETTINGS
 C
 C*****************************************************************************
       use priunit_mod, only: LUCMD, LUPRI
-!      use dcbxqr_mod, only: IPRXQR, LAQROP, LSTATE, MAXLQR, NAQROP, NBQRFR, NBQROP, NCQRFR, NCQROP, RSTATE
+      use dcbxqr_mod, only: IPRXQR, LAQROP, LSTATE, MAXLQR, NAQROP,
+     &  NBQRFR, NBQROP, NCQRFR, NCQROP, RSTATE
       use dgroup_mod, only: NBSYM
 #include "implicit.h"
-#include "dcbxqr.h"
 !
       REAL*8 D1
       PARAMETER ( D1=1.0D0 )
@@ -648,11 +645,10 @@ C
 C     Written by Erik Tellgren, aug 2004
 C
 C***********************************************************************
-!      use dcbxqr_mod, only: MAXQR
+      use dcbxqr_mod, only: MAXQR
 #include "implicit.h"
       INTEGER :: I, J
 !#include "dcbxpr.h"
-#include "dcbxqr.h"
 !
       INTEGER tmomlist(5,MAXQR)
       INTEGER iop,sym1,sym2,exc1,exc2,numeqs
@@ -715,11 +711,11 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: IPRPSYM
-!      use dcbxqr_mod, only: EXCIT, LAQROP, LQRHYP, LSTATE, MAXQR, NAQROP, NQRHYP, QRFRHYP, RSTATE
+      use dcbxqr_mod, only: EXCIT, LAQROP, LQRHYP, LSTATE, MAXQR,
+     &  NAQROP, NQRHYP, QRFRHYP, RSTATE
       use dgroup_mod, only: JFSYM, NBSYM, NFSYM
 #include "implicit.h"
 #include "dcbxpr.h"
-#include "dcbxqr.h"
 !
       LOGICAL prponly, toomanyeqs
       INTEGER tmomlist(5,MAXQR)
@@ -840,12 +836,12 @@ C
 C***********************************************************************
       use codata_mod, only: XTEV
       use priunit_mod, only: LUPRI
-!      use dcbxqr_mod, only: EXCIT, IEXCOFF, LAQROP, LQROP, LSTATE, MAXFQR, MAXLQR, MAXQR, NAQROP, NQRHYP, NQROP, QRFREQ, RSTATE
+      use dcbxqr_mod, only: EXCIT, IEXCOFF, LAQROP, LQROP, LSTATE,
+     &  MAXFQR, MAXLQR, MAXQR, NAQROP, NQRHYP, NQROP, QRFREQ, RSTATE
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
       use dgroup_mod, only: JFSYM, NBSYM, NFSYM
       use pgroup_mod, only: REP
 #include "implicit.h"
-#include "dcbxqr.h"
 #include "dcbxpr.h"
 C
       PARAMETER ( LUCMO = 22, D0 = 0.0D0, D2R3 = (2.0D0/3.0D0),
@@ -1110,9 +1106,8 @@ C
 C     Written by Erik Tellgren
 C
 C***********************************************************************
-!      use dcbxqr_mod, only: IEXCOFF, LQROP, NQROP
+      use dcbxqr_mod, only: IEXCOFF, LQROP, NQROP
       IMPLICIT NONE
-#include "dcbxqr.h"
 C
       integer sym
       integer excop, excopptr, excopsym

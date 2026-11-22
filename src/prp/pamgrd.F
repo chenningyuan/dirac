@@ -847,9 +847,7 @@ C     Last revision
 C
 C***********************************************************************
 !      use dcborb_mod, only: I2ASHT, IORB, N2ASH, NASH, NISH, NPSH
-      use maxash_mod, only: MAXASH
-      use maxorb_mod, only: MXCORB
-!      use dcbidx_mod, only: IFSMO, IOBTYP, JTACT, JTINAC
+      use dcbidx_mod, only: IFSMO, IOBTYP, JTACT, JTINAC
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: K
@@ -857,7 +855,6 @@ C
       REAL(dp), PARAMETER :: D2 = 2.0D00, D1 = 1.0D00, DM1 = -1.0D00
 C
 #include "dcborb.h"
-#include "dcbidx.h"
 C
       DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ),
      &          DV(*)

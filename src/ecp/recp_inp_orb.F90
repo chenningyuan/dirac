@@ -53,7 +53,6 @@ END SUBROUTINE RECP_INP_INTCHECK
 SUBROUTINE RECP_INP_ORBITAL_CCNORM(mrcru,mconu,ncons,nrcr,ncon,lmnp1,eta,zet)
 ! normalize the contraction coefficients
   IMPLICIT NONE
-!#include "inc_print.h"
 ! variables : local 
   INTEGER :: mrcru,mconu ! from common (parmi)
   INTEGER :: ncons    ! I  Number of basis-set blocks
@@ -108,10 +107,9 @@ END SUBROUTINE RECP_INP_ORBITAL_CCNORM
 
 SUBROUTINE RECP_INP_ORBITAL_OFFSET(nsopr,nso,nblpr,nst,FILE_NUM)
 ! compute contracted orbital and lower-triangle-packed matrix symmetry offsets.
-!      use inc_print_mod, only: RECP_DBG
+      use inc_print_mod, only: RECP_DBG
   USE RECP_FUNCTION1
   IMPLICIT NONE
-#include "inc_print.h"
 ! variable : global
   INTEGER  :: nsopr(*),nso(*),nblpr(*),nst,FILE_NUM(*)
 ! variable : local
@@ -131,11 +129,10 @@ END SUBROUTINE RECP_INP_ORBITAL_OFFSET
 
 SUBROUTINE RECP_INP_ORBITAL_ANGSYM(icu,itl,itu,ICS,igcs,lai,ixyzir)
 ! # determine angular momentum symmetries.
-!      use inc_print_mod, only: RECP_OUT
+      use inc_print_mod, only: RECP_OUT
   USE RECP_IPT
   USE RECP_FUNCTION2
   IMPLICIT NONE
-#include "inc_print.h"
   INTEGER :: icu,itl,itu,ICS,igcs,lai,ixyzir(3)
 ! local variables
   REAL*8  :: c_sum 
@@ -170,7 +167,6 @@ END SUBROUTINE RECP_INP_ORBITAL_ANGSYM
 SUBROUTINE RECP_INP_ORBITAL_MULTNORMCOEF(ncons,ncon,nrcr,mrcru,mconu,zet,eta,lmnp1)
 ! # multiply normalization constants into contraction coefficients.
   IMPLICIT NONE
-!#include "inc_print.h"
 ! global variables
   INTEGER ncons,ncon(*),nrcr(*),mrcru,mconu,lmnp1(*) 
   REAL*8  zet(mconu,*),eta(mrcru,mconu,*)
@@ -192,9 +188,8 @@ END SUBROUTINE RECP_INP_ORBITAL_MULTNORMCOEF
 
 SUBROUTINE RECP_INP_ORBITAL_SETLXYZIR(nu,inam,nst,ixyzir,lxyzir,mstu,idp,ityp)
 ! set lxyzir
-!      use inc_print_mod, only: PRINT_LEVEL, RECP_OUT
+      use inc_print_mod, only: PRINT_LEVEL, RECP_OUT
   IMPLICIT NONE
-#include "inc_print.h"
   INTEGER nu,inam(5),nst,ixyzir(3),lxyzir(3),mstu,idp(mstu,mstu,*)
   CHARACTER*3 ityp(*)
 ! local variables
@@ -440,7 +435,6 @@ SUBROUTINE RECP_SOCFPD_SETNPR(nst,npr,isfr,jsfr,isfrib,jsfrjb,iru,jru,iaords,jao
   USE RECP_IPT
   USE RECP_FUNCTION2
   IMPLICIT NONE
-!#include "inc_print.h"
 ! global variable
   INTEGER nst,npr,isfr,jsfr,isfrib,jsfrjb,iru,jru,iaords,jaords,ipair,ijsf
   INTEGER mru,la(mru,*),lb(*),mstu,idp(mstu,mstu,*),nsopr(*),mau(*),MAXICS(*),MAXJCS(*),nd(*)
@@ -549,7 +543,6 @@ SUBROUTINE RECP_SOCFPD_CALCX0(icu,jcu,itl,itu,jtl,jtu,npr,icx,icxa,MAXICS,MAXJCS
 ! # compute new cx block
   USE RECP_IPT
   IMPLICIT NONE
-!#include "inc_print.h"
 ! global variable
   INTEGER icu,jcu,itl,itu,jtl,jtu,npr,icx,icxa,MAXICS(*),MAXJCS(*),mau(*),igcs,jgcs,FILE_NUM(3)
   LOGICAL SO_CALC,msfbct,esfb
@@ -585,10 +578,9 @@ END SUBROUTINE RECP_SOCFPD_CALCX0
 
 SUBROUTINE RECP_SOCFPD_CX0(npr,icx,icxa,MAXICS,MAXJCS,mau,ict,jct,igcs,jgcs, &
            FILE_NUM,easfb,msfbct)
-!      use inc_print_mod, only: RECP_DBG
+      use inc_print_mod, only: RECP_DBG
   USE RECP_IPT
   IMPLICIT NONE
-#include "inc_print.h"
 ! global variable
   INTEGER npr,icx,icxa,MAXICS(*),MAXJCS(*),mau(*),ict,jct,igcs,jgcs,FILE_NUM(*)
   LOGICAL easfb,msfbct
@@ -657,10 +649,9 @@ SUBROUTINE RECP_SOCFPD_SHIFTCX(MAXCX,MAXCX0,icx,icxu,ijsf,icxast,SO_CALC)
 ! now:    a(*)-->cx(*)......x(*),c(*)
 !                0    MAXCX2 MAXCX       (mblu+MAXCX)
 ! after:  a(*)-->cx(*),x(*),........
-!      use inc_print_mod, only: RECP_DBG, RECP_OUT
+      use inc_print_mod, only: RECP_DBG, RECP_OUT
   USE RECP_IPT
   IMPLICIT NONE
-#include "inc_print.h"
 ! global variable
   INTEGER MAXCX,MAXCX0,icx,icxu,ijsf,icxast(*)
   LOGICAL SO_CALC

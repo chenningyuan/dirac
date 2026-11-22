@@ -190,13 +190,11 @@ contains
 !***********************************************************************
       use priunit_mod, only: LUPRI
       use maxash_mod, only: MAXASH
-      use maxorb_mod, only: MXCORB
-!      use dcbidx_mod, only: IDXG2U
+      use dcbidx_mod, only: IDXG2U
       use dgroup_mod, only: NFSYM
       use dcbbas_mod, only: MXFBAS
 !      use dcbxrs_mod, only: STERNC
 !
-#include "dcbidx.h"
 #include "dcbxrs.h"
 !
       integer :: JXOPE(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
@@ -627,13 +625,11 @@ contains
 !***********************************************************************
       use priunit_mod, only: LUPRI
       use maxash_mod, only: MAXASH
-      use maxorb_mod, only: MXCORB
-!      use dcbidx_mod, only: IDXG2U
+      use dcbidx_mod, only: IDXG2U
       use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: MXGAS, NAELEC, NASHT, NGASSP, NGAS_DC, NGSH
       use dcbbas_mod, only: MXFBAS
 !
-#include "dcbidx.h"
 #include "dcborb.h"
 !
       integer :: JXOPE(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)

@@ -4833,15 +4833,12 @@ C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NORBT
-      use maxash_mod, only: MAXASH
       use dgroup_mod, only: NZ
-      use maxorb_mod, only: MXCORB
-!      use dcbidx_mod, only: IDXU2G
+      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
       INTEGER :: I, J
 C
 #include "dcborb.h"
-#include "dcbidx.h"
 C
       DIMENSION DV(NASHT,NASHT,NZ)
       DIMENSION DVF(NORBT,NORBT,NZ)

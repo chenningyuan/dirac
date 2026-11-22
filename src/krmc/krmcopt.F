@@ -1899,13 +1899,12 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
-      use maxash_mod, only: MAXASH
 !      use dcbopt_mod, only: IOPTST, IPROPT, LZXOPE, LZXOPP, N2DSHX, N2DSHXQ, N2VSHX, N2VSHXQ, NDSH, NDSHT, NVSH, NVSHT, NZCONF, NZHOPE, NZXOPE, NZXOPP, OPT_CHCKJZ, OPT_CIPROGRAM, OPT_DELSTR, OPT_INDSTR, OPT_SKIPEE, OPT_SKIPEP, OPT_UCIBOS, SPINFR_KRMC
 !      use dcborb_mod, only: IORB, NASH, NCMOTQ, NESH, NFRO, NGAS_DC, NISH, NOCC, NORB, NORBT, NPSH, NSSH
       use dgroup_mod, only: LINEAR, NFSYM, NZ
       use dcbbos_mod, only: IBOSYM
       use dcbnrt_mod, only: LNOROT, NOROT, NOROTC
-!      use dcbidx_mod, only: IDXD2G, IDXG2D, IDXG2V, IDXV2G
+      use dcbidx_mod, only: IDXD2G, IDXG2D, IDXG2V, IDXV2G
       use orbital_rotation_indices
 
 #include "implicit.h"
@@ -1915,7 +1914,6 @@ C
 C
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dcbidx.h"
 C
       DIMENSION WORK(*), ILIST(MXCORB)
       LOGICAL   GASWF
@@ -2778,13 +2776,10 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ASHXQ, NASHT, NORBT
       use dgroup_mod, only: IPQTOQ, NZ
-      use maxorb_mod, only: MXCORB
-      use maxash_mod, only: MAXASH
-!      use dcbidx_mod, only: IDXU2G
+      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
 C
 #include "dcborb.h"
-#include "dcbidx.h"
 C
       DIMENSION FC(*),FCAC(*)
 C
@@ -2837,17 +2832,14 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxash_mod, only: MAXASH
-      use maxorb_mod, only: MXCORB
       use consts_mod, only: DP5
 !      use dcborb_mod, only: N2ASHT, N2ASHXQ, NASHT, NORBT
       use dgroup_mod, only: IPQTOQ, NZ
-!      use dcbidx_mod, only: IDXU2G
+      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
 C
 C
 #include "dcborb.h"
-#include "dcbidx.h"
 C
       DIMENSION DV(*),FCAC(*),FQ(NORBT,NASHT,NZ)
 C
@@ -5921,15 +5913,12 @@ C
 C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
 C
 C***********************************************************************
-      use maxash_mod, only: MAXASH
-      use maxorb_mod, only: MXCORB
-!      use dcbidx_mod, only: IOBTYP, JTACT, JTINAC
+      use dcbidx_mod, only: IOBTYP, JTACT, JTINAC
 !      use dcborb_mod, only: NORBT
       use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcbidx.h"
 #include "dcborb.h"
 C
       DIMENSION NOROT(*),GRAD(NORBT,NORBT,*)
@@ -6319,18 +6308,16 @@ C     Written by J. Thyssen - Thu Mar 15 15:15:58 "MET 2001
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxash_mod, only: MAXASH
       use thrzer_mod, only: THRZER
 !      use dcborb_mod, only: NASHT, NISHT, NPSHT, NSSHT
-      use maxorb_mod, only: MXCORB
-!      use dcbidx_mod, only: IDXG2I, IDXG2S, IDXG2U, IDXP2G, IDXS2G, IOBTYP, JTINAC, JTSEC
+      use dcbidx_mod, only: IDXG2I, IDXG2S, IDXG2U, IDXP2G, IDXS2G,
+     &  IOBTYP, JTINAC, JTSEC
       use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
       INTEGER :: I, II, K, KK
 C
 C
 #include "dcborb.h"
-#include "dcbidx.h"
 C
       CHARACTER*1 C
       LOGICAL DOGRAD, DOTRI
@@ -6456,14 +6443,11 @@ C     This routine is used by SVLDEG.
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxash_mod, only: MAXASH
-      use maxorb_mod, only: MXCORB
-!      use dcbidx_mod, only: IDXE2G, IDXI2G, IDXP2G, IDXS2G, IDXU2G
+      use dcbidx_mod, only: IDXE2G, IDXI2G, IDXP2G, IDXS2G, IDXU2G
 !      use dcborb_mod, only: NASHT, NESHT, NISHT, NORBT, NPSHT, NSSHT
       use dgroup_mod, only: NZ
 #include "implicit.h"
 C
-#include "dcbidx.h"
 #include "dcborb.h"
 C
       CHARACTER C*1

@@ -28,7 +28,6 @@ SUBROUTINE CINTS(a,ccr,etai,etaj,g2,lcr,lambu, &
   USE RECP_OUTPUT 
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "inc_print.h"
   logical esf, esfc, igueq1, jgueq1
       REAL(dp), PARAMETER :: a1s2=0.5d0, a1=1.0d0, a4=4.0d0
   common /parmr/ tol
@@ -159,7 +158,6 @@ SUBROUTINE LSINTS(a,ccr,etai,etaj,g2,lls,lambu,ltot1,mcrs,mproju,nc,ncr,nklsl, &
   USE RECP_OUTPUT
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "inc_print.h"
   logical esf, esfc, igueq1, jgueq1
       REAL(dp), PARAMETER :: a1s2=0.5d0, a1=1.0d0, a4=4.0d0
   common /parmr/ tol

@@ -30,11 +30,10 @@ SUBROUTINE RECP_INP_PRINT_ORBLABEL(nsym,ns,nbft,ityp,nso,mtype,ms,mnl)
 !   mnl(1:nbft) = integer codes for basis function types.
 !                 1:s, 2:p, 3:3s, 4:d, 5:4p, 6:f, 7:5s, 8:5d, 9:g
 !   map(1:2,1:nbft) = temporary scratch array for writing the output map(*) vectors.
-!      use inc_print_mod, only: PRINT_LEVEL, RECP_OUT
+      use inc_print_mod, only: PRINT_LEVEL, RECP_OUT
   USE RECP_IPT
   USE RECP_FUNCTION2
   implicit logical(a-z)
-#include "inc_print.h"
   integer    nbfmx      
   parameter( nbfmx=1000 )  !nbfmx=500->1000
   integer    nsym,ns,nbft,nso(*),ms(1:nbft),mnl(1:nbft)
@@ -118,9 +117,8 @@ END SUBROUTINE RECP_INP_PRINT_ORBLABEL
 
 
 SUBROUTINE RECP_INP_INFO1(is,nc,mcu,msu,ica,ng,ngen,chg,x,y,z,mtype)
-!      use inc_print_mod, only: PRINT_LEVEL, RECP_OUT
+      use inc_print_mod, only: PRINT_LEVEL, RECP_OUT
   IMPLICIT NONE
-#include "inc_print.h"
   INTEGER     is,nc(*),mcu,msu,ica(mcu,msu,*),ng,ngen
   REAL*8      chg(*),x(mcu,*),y(mcu,*),z(mcu,*)
   CHARACTER*3 mtype(*)
@@ -151,10 +149,9 @@ END SUBROUTINE RECP_INP_INFO1
 
 SUBROUTINE RECP_INP_INFO2(LMNP1,ICONS,IRCRU,ICONU,ZET,ETA,ICSU,IGCS,  &
                 ISFR,IRU,LA,ND,LB,ITYP,ICU,ITL,ITU,LMNV,IAORDS)
-!      use inc_print_mod, only: PRINT_LEVEL, RECP_OUT
+      use inc_print_mod, only: PRINT_LEVEL, RECP_OUT
   USE RECP_IPT
   IMPLICIT NONE
-#include "inc_print.h"
   integer        mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
   common /parmi/ mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
   integer        mconsu,mru,mcru,msfu,msfru,ngcs,nu,lxyzir,inam,nnam,mdum
@@ -254,11 +251,10 @@ END SUBROUTINE RECP_INP_INFO2
 
 SUBROUTINE RECP_INP_INFO3(mru,ircru,iru,isfr,iaords,la,nsopr,lb,ms,is,ixyzir, &
            icons,lmnp1,itl,itu,igcs,mnl,nd,nu,inam,icu,eval,ityp)
-!      use inc_print_mod, only: PRINT_LEVEL, RECP_OUT
+      use inc_print_mod, only: PRINT_LEVEL, RECP_OUT
   USE RECP_INP_ORBITAL
   USE RECP_IPT
   IMPLICIT NONE
-#include "inc_print.h"
   INTEGER  mru,ircru,iru,isfr,iaords,la(mru,*),nsopr(*),lb(*),ms(*),is,ixyzir(3)
   INTEGER  icons,lmnp1(*),itl,itu,igcs,mnl(*),nd(*),nu,inam(5),icu
   REAL(8)  eval

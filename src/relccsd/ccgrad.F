@@ -1200,14 +1200,11 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IASH, IORB, NASH, NASHT, NESH, NIOCC, NORBT, NPSH
       use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM, NZ
-      use maxorb_mod, only: MXCORB
-      use maxash_mod, only: MAXASH
-!      use dcbidx_mod, only: IDXU2G
+      use dcbidx_mod, only: IDXU2G
       use memory_allocator
 #include "implicit.h"
       INTEGER :: I, J
 #include "dcborb.h"
-#include "dcbidx.h"
 C
       DIMENSION OCC_NAT(*), CMO_NAT(NASHT,NASHT,NZ), ibeig(norbt)
       DIMENSION DMO(NORBT,NORBT,*)

@@ -10057,7 +10057,8 @@ C**********************************************************************
       use dgroup_mod, only: IPQTOQ, IQTOPQ, JBTOF, NBSYM, NFSYM, NZ
       use maxorb_mod, only: MXCORB
       use maxash_mod, only: MAXASH
-!      use dcbidx_mod, only: IDXG2U, IDXT2G, IDXU2G, IIDX3, IIDX4, NIDX3, NIDX4
+      use dcbidx_mod, only: IDXG2U, IDXT2G, IDXU2G, IIDX3, IIDX4, NIDX3,
+     &  NIDX4
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -10066,7 +10067,6 @@ C**********************************************************************
 #include "cicisp.inc"
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dcbidx.h"
       CHARACTER*6 CIRUN
 !
 !     introduce CIRUN and JKRRUNTYPE for NODES

@@ -10598,6 +10598,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
       SUBROUTINE SET_INTFLG(new_intflg)
 C***********************************************************************      
+      use dcbxqr_mod, only: INTXQR
       use dcbgrd_mod, only: IGRD_INTBUF, IGRD_INTFLG
       use dcbkrci_mod, only: IKRCI_INTBUF, IKRCI_INTDEF, IKRCI_INTFLG
 !      use mxgas_mod, only: MXGAS
@@ -10610,7 +10611,6 @@ C***********************************************************************
 #include "mxgas.h"
 #include "dcbdhf.h"
 #include "dcbopt.h"
-#include "../prp/dcbxqr.h"
       ICOSC_INTDEF = new_intflg
       ICOSC_INTFLG = new_intflg
       ICOSC_INTBUF = new_intflg

@@ -192,15 +192,12 @@ C
 C***********************************************************************
 !      use dcbopt_mod, only: SPINFR_KRMC
 !      use dcborb_mod, only: NASHT, NORBT
-      use maxash_mod, only: MAXASH
       use dgroup_mod, only: NZ
-      use maxorb_mod, only: MXCORB
-!      use dcbidx_mod, only: IDXU2G
+      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
 C
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dcbidx.h"
 C
 C
       DIMENSION HX(NORBT,NORBT,NZ,3)
@@ -244,17 +241,14 @@ C        UGINT: (ug) integrals.
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxash_mod, only: MAXASH
       use dgroup_mod, only: NZ
 !      use dcbopt_mod, only: IPROPT, SPINFR_KRMC
 !      use dcborb_mod, only: NASHT, NNASHX, NORBT
-      use maxorb_mod, only: MXCORB
-!      use dcbidx_mod, only: IDXU2G
+      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
 C
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dcbidx.h"
 C
 C
       DIMENSION HX(NORBT,NORBT,NZ,3)
@@ -618,16 +612,13 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
-      use maxash_mod, only: MAXASH
-      use maxorb_mod, only: MXCORB
-!      use dcbidx_mod, only: IDXT2G, IIDX3, IIDX4, NIDX3, NIDX4
+      use dcbidx_mod, only: IDXT2G, IIDX3, IIDX4, NIDX3, NIDX4
 !      use dcbopt_mod, only: JTRLVL, NZXOPP, OPT_NOPFQ
 !      use dcborb_mod, only: NORBT
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 #include "implicit.h"
       INTEGER :: II, JJ
 C
-#include "dcbidx.h"
 #include "dcbopt.h"
 #include "dcborb.h"
 C
@@ -1468,14 +1459,11 @@ C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxash_mod, only: MAXASH
-      use maxorb_mod, only: MXCORB
-!      use dcbidx_mod, only: IDXE2G, IDXI2G, IDXP2G, IDXS2G, IDXU2G
+      use dcbidx_mod, only: IDXE2G, IDXI2G, IDXP2G, IDXS2G, IDXU2G
       use dgroup_mod, only: NZ
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NESHT, NISHT, NORBT, NPSHT, NSSHT
 #include "implicit.h"
 C
-#include "dcbidx.h"
 #include "dcborb.h"
 C
       CHARACTER C*1
@@ -1652,18 +1640,15 @@ C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxash_mod, only: MAXASH
       use consts_mod, only: D0, D1
       use dcbbas_mod, only: NFBAS
-      use maxorb_mod, only: MXCORB
-!      use dcbidx_mod, only: IDXE2G, IDXI2G, IDXP2G, IDXS2G, IDXU2G
+      use dcbidx_mod, only: IDXE2G, IDXI2G, IDXP2G, IDXS2G, IDXU2G
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcborb_mod, only: I2ORBX, ICMOQ, N2ORBXQ, NASHT, NCMOTQ, NESHT, NISHT, NORB, NORBT, NPSHT, NSSHT
 #include "implicit.h"
       INTEGER :: I
 C
 C
-#include "dcbidx.h"
 #include "dcborb.h"
 C
       CHARACTER C*1

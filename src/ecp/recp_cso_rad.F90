@@ -24,7 +24,6 @@ SUBROUTINE RECP_CSO_RAD1(aa,aarr1,alpt,arp2,ccr,fctr2,  &
   USE RECP_FUNCTION2
   USE RECP_OUTPUT 
   implicit real(8) (a-h,o-z)
-!#include "inc_print.h"
   dimension ccr(*), ncr(*), zcr(*)
 ! global variables
   REAL(8) :: aa

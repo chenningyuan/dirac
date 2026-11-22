@@ -47,11 +47,9 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxash_mod, only: MAXASH
       use dgroup_mod, only: NZ
 !      use dcborb_mod, only: NASHT, NORBT
-      use maxorb_mod, only: MXCORB
-!      use dcbidx_mod, only: IDXG2U, IFSMO, IOBTYP, JTACT, JTINAC
+      use dcbidx_mod, only: IDXG2U, IFSMO, IOBTYP, JTACT, JTINAC
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: K
@@ -59,7 +57,6 @@ C
       REAL(dp), PARAMETER :: D2 = 2.0D0
 C
 #include "dcborb.h"
-#include "dcbidx.h"
 C
       DIMENSION DV(NASHT,NASHT,NZ),  FC(NORBT,NORBT,NZ)
       DIMENSION FCX(NORBT,NORBT,NZ), FVX(NORBT,NORBT,NZ)

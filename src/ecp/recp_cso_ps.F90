@@ -25,7 +25,6 @@ SUBROUTINE pseud1(ccr,crda,crdb,gout,lmnv,ltot1,ncr,nkcrl,nkcru,zcr)
   USE RECP_OUTPUT
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "inc_print.h"
   logical esf, esfc, igueq1, jgueq1
       REAL(dp), PARAMETER :: a0=0.0d0
   common /parmr/ tol
@@ -131,7 +130,6 @@ SUBROUTINE pseud2(a,ccr,crda,crdb,gout,lambu,ltot1,mproju,ncr,nkcrl,nkcru,zcr)
   USE RECP_OUTPUT
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "inc_print.h"
   logical esf, esfc, igueq1, jgueq1
       REAL(dp), PARAMETER :: a0=0.0d0
   integer        mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
@@ -243,7 +241,6 @@ SUBROUTINE PSEUD3(a,ccr,crda,crdb,gout,lambu,ltot1,mproju,ncr,nklsl,nklsu,zcr )
   USE RECP_OUTPUT
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "inc_print.h"
   logical esf, esfc, igueq1, jgueq1
       REAL(dp), PARAMETER :: a0=0.0d0
   integer        mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst

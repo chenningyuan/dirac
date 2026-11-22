@@ -612,15 +612,13 @@ C                S. Knecht  - Jul 16 2008
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxash_mod, only: MAXASH
       use consts_mod, only: D0, D1
 !      use dcborb_mod, only: I2ASHX, I2ORBX, ICMOQ, MXGAS, N2ASHXQ, N2ISHX, N2ORBXQ, N2PSHX, NASH, NASHT, NCMOTQ, NISH, NISHT, NORB, NORBT, NPSH, NPSHT
 !      use dcbopt_mod, only: IPROPT, JGAS, MCTYPE, N2DSHXQ, N2VSHXQ, NDSH, NDSHT, NVSH, NVSHT, NZCONF, OPT_CHCKJZ, SPINFR_KRMC
       use dcbgen_mod, only: LUKRMC
       use dgroup_mod, only: IPQTOQ, NBSYM, NFSYM, NZ
       use dcbbas_mod, only: NFBAS
-      use maxorb_mod, only: MXCORB
-!      use dcbidx_mod, only: IDXD2G, IDXI2G, IDXP2G, IDXU2G, IDXV2G
+      use dcbidx_mod, only: IDXD2G, IDXI2G, IDXP2G, IDXU2G, IDXV2G
       use dcbkrmc_mod, only: DKRMC_MVOFAC
 #include "implicit.h"
       INTEGER :: I
@@ -628,7 +626,6 @@ C
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dcbidx.h"
 C
       DIMENSION CREF(*), CMO(*), EIG(*), WORK(*)
       CHARACTER KEYCNO*6
@@ -1260,7 +1257,6 @@ C***********************************************************************
       INTEGER :: I, J
 C
 C
-!#include "dcbidx.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 C

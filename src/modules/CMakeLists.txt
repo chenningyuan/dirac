@@ -42,6 +42,7 @@ set(MODULE_SOURCES
     dcbham.F90
     dcbibn.F90
     dcbibt.F90
+    dcbidx.F90
     dcbimp.F90
     dcbkrci.F90
     dcbkrmc.F90
@@ -60,6 +61,7 @@ set(MODULE_SOURCES
     dcbtr3.F90
     dcbwav.F90
     dcbwt1.F90
+    dcbxqr.F90
     derzer.F90
     dgroup.F90
     dipole.F90

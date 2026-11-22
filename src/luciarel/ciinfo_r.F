@@ -571,10 +571,8 @@ CTEMP     ISM2(3,5) = 1
 *
 *
 !      use dcborb_mod, only: NASH, NGSH, NORBT
-      use maxash_mod, only: MAXASH
       use dgroup_mod, only: LINEAR, NFSYM
-      use maxorb_mod, only: MXCORB
-!      use dcbidx_mod, only: IDXU2G
+      use dcbidx_mod, only: IDXU2G
       use mospinor_info
 *  Orbitals
 #include "implicit.h"
@@ -593,7 +591,6 @@ CTEMP     ISM2(3,5) = 1
       DIMENSION WCPMT(10,NOCCLS)
 #include "dcborb.h"
 C
-#include "dcbidx.h"
 !     scratch
       integer, allocatable              :: mjorb_vec(:)
       integer, intent(inout)            :: mj_statistics(-32:32)

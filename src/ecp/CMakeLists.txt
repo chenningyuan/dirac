@@ -14,6 +14,7 @@ set(FIXED_ECP_FORTRAN_SOURCES
 )
 
 set(FREE_ECP_FORTRAN_SOURCES
+    inc_print.F90
     inc_mxvalue.F90
    recp_chk.F90
    recp_cso.F90

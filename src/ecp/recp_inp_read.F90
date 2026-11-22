@@ -22,7 +22,6 @@ SUBROUTINE RECP_INP2_READGEN(ngen,ns,naords,ncons,ngcs,ncrs)
   USE RECP_NTR
   USE RECP_OUTPUT
   IMPLICIT NONE
-!#include "inc_print.h"
   INTEGER I,ngen,ns,naords,ncons,ngcs,ncrs
 
   CALL OUTPUT_DBG_TITLE('INP_READGEN : Input parameter')
@@ -53,10 +52,9 @@ SUBROUTINE RECP_INP2_READGEN(ngen,ns,naords,ncons,ngcs,ncrs)
 END SUBROUTINE RECP_INP2_READGEN
 
 SUBROUTINE RECP_INP2_READIRREP(idp,nd,ityp)
-!      use inc_print_mod, only: RECP_DBG, RECP_OUT
+      use inc_print_mod, only: RECP_DBG, RECP_OUT
   USE RECP_NTR
   IMPLICIT NONE
-#include "inc_print.h"
   INTEGER        mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
   COMMON /PARMI/ mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
   INTEGER idp(mstu,mstu,*),nd(*),DPT1,IPRD
@@ -119,12 +117,11 @@ END SUBROUTINE RECP_INP2_READIRREP
 
 SUBROUTINE RECP_INP2_READAO2SO(naords,ngcs,maords,la,nir,CX0)
 ! Read in AO to SO transformation matrices 
-!      use inc_print_mod, only: RECP_DBG, RECP_OUT
+      use inc_print_mod, only: RECP_DBG, RECP_OUT
       use inc_mxvalue_mod, only: MRUP
   USE RECP_IPT
   USE RECP_NTR
   IMPLICIT NONE
-#include "inc_print.h"
   INTEGER naords, ngcs, maords(*),la(mrup,*),nir(*)
   INTEGER AORDS1 ! ith-AO reduction set
   INTEGER IRREP1,IRREP_MAX
@@ -189,11 +186,10 @@ SUBROUTINE RECP_INP2_READAO2SO(naords,ngcs,maords,la,nir,CX0)
 END SUBROUTINE RECP_INP2_READAO2SO
 
 SUBROUTINE RECP_INP2_READORB(zet,eta,lmnp1,nrcr,ncon)
-!      use inc_print_mod, only: RECP_DBG, RECP_OUT
+      use inc_print_mod, only: RECP_DBG, RECP_OUT
       use inc_mxvalue_mod, only: MCONUP, MRCRUP
   USE RECP_NTR
   IMPLICIT NONE
-#include "inc_print.h"
   REAL*8  zet(mconup,*), eta(mrcrup,mconup,*)
   INTEGER lmnp1(*),nrcr(*),ncon(*)
 ! local variables
@@ -272,12 +268,11 @@ SUBROUTINE RECP_INP2_READCSO(lcr,lls,nkcrl,nkcru,nklsl,  &
            nklsu,ncr,ncrs,ncru,lproju,ns,zcr,ccr)
       use nuclei_mod, only: NAMN
       use inc_mxvalue_mod, only: MCRUP
-!      use inc_print_mod, only: RECP_DBG, RECP_OUT
+      use inc_print_mod, only: RECP_DBG, RECP_OUT
       use argoscom_mod, only: ECPNONT
   USE RECP_NTR
   USE RECP_OUTPUT
   IMPLICIT NONE
-#include "inc_print.h"
   INTEGER lcr(*),lls(*),nkcrl(6,*),nkcru(6,*),nklsl(4,*),nklsu(4,*),ncr(*)
   INTEGER ncrs,ncru,lproju,ns
   REAL*8  zcr(*),ccr(*)
@@ -412,13 +407,12 @@ END SUBROUTINE RECP_INP2_READCSO
 SUBROUTINE RECP_INP2_READGEO(ns,ng,mcu,msu,NBASIS,NUC2,ica,X,Y,Z,CHG1,NUCNAME, &
            nst,nso,nbft,mcons,mgcs,nt,ntl,ntu,la,lb,nrcr,nir,lmn1u,lmnp1,  &
            maords,ncrs,mcrs)
-!      use inc_print_mod, only: RECP_DBG, RECP_OUT
+      use inc_print_mod, only: RECP_DBG, RECP_OUT
       use inc_mxvalue_mod, only: MCUP, MRUP, MSFRUP, MSFUP, MSUP
   USE RECP_NTR
   USE RECP_FUNCTION1
   USE RECP_OUTPUT
   IMPLICIT NONE
-#include "inc_print.h"
   INTEGER ns,ng,mcu,msu,NBASIS(*),NUC2(*),ica(mcup,msup,*) 
   REAL*8  X(mcup,*),Y(mcup,*),Z(mcup,*),CHG1(*)
   CHARACTER*3 NUCNAME(*)
@@ -571,10 +565,9 @@ END SUBROUTINE RECP_INP_READLINE
 SUBROUTINE RECP_INP_MENU
 ! Read menu file
       use priunit_mod, only: LUCMD
-!      use inc_print_mod, only: PRINT_LEVEL, RECP_DBG, RECP_OUT
+      use inc_print_mod, only: PRINT_LEVEL, RECP_DBG, RECP_OUT
   USE RECP_OUTPUT
   IMPLICIT NONE
-#include "inc_print.h"
   INTEGER I,IOS,NTABLE
   PARAMETER (NTABLE=2)
   CHARACTER WORD1*7,TABLE(NTABLE)*7
@@ -655,8 +648,7 @@ END SUBROUTINE RECP_INP_MENU
 
 
 SUBROUTINE RECP_INP_PRINTCSO(is,mcrs,lcr,nkcrl,nkcru,ncr,nklsl,nklsu,lls,zcr,ccr,mtype,lblsh)
-!      use inc_print_mod, only: PRINT_LEVEL, RECP_OUT
-#include "inc_print.h"
+      use inc_print_mod, only: PRINT_LEVEL, RECP_OUT
 ! Global variables 
   INTEGER is, mcrs(*), lcr(*),nkcrl(6,*), nkcru(6,*),ncr(*),nklsl(4,*), nklsu(4,*), lls(*)
   REAL*8  zcr(*), ccr(*)
@@ -719,11 +711,10 @@ SUBROUTINE RECP_INP_CARTEXP
 ! #             s  p  d   f   g   h   i
 ! #       lmn = 0  1  2   3   4   5   6
 ! #    numxyz = 1, 3, 6, 10, 15  21  28      =((lmn+1)*(lmn+2))/2
-!      use inc_print_mod, only: RECP_DBG, RECP_OUT
+      use inc_print_mod, only: RECP_DBG, RECP_OUT
   USE RECP_IPT
   USE RECP_FUNCTION1
   IMPLICIT NONE
-#include "inc_print.h"
   INTEGER X1,Y1,Z1,ANG0,NUM0,LMNV_MAX
 
 ! Set up variable IPT_LMNV

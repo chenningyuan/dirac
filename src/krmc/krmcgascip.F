@@ -92,9 +92,7 @@ C     Last revision : hjaaj Aug 2014
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
-      use maxash_mod, only: MAXASH
-!      use dcbidx_mod, only: IDXU2G
+      use dcbidx_mod, only: IDXU2G
       use dcbbos_mod, only: IBOSYM
       use dgroup_mod, only: NFSYM, NZ
       use dcbham_mod, only: LEVYLE, SPINFR
@@ -112,7 +110,6 @@ C Used from include files:
 C  dcbopt.h : IOPT_MINMK2, ...
 C  dcborb.h : NAELEC, NASHT, NASH(), IASH()
 C
-#include "dcbidx.h"
 #include "dcbopt.h"
 #include "dcborb.h"
 C

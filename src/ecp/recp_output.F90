@@ -21,9 +21,8 @@ CONTAINS
 
 SUBROUTINE OUTPUT_TITLE
 ! OUTPUT : print title
-!      use inc_print_mod, only: RECP_OUT
+      use inc_print_mod, only: RECP_OUT
   IMPLICIT NONE
-#include "inc_print.h"
   WRITE(RECP_OUT,'(/)')
   WRITE(RECP_OUT,'(10X,A)')'-----------------------------------------------------------'
   WRITE(RECP_OUT,'(10X,A)')'Relativistic Effective Core Potential Integral routine'
@@ -45,9 +44,8 @@ END SUBROUTINE OUTPUT_TITLE
 
 SUBROUTINE OUTPUT_LOC(RECP_LOC,RECP_STATUS)
 !  OUTPUT : print location
-!      use inc_print_mod, only: RECP_DBG, RECP_OUT
+      use inc_print_mod, only: RECP_DBG, RECP_OUT
    IMPLICIT NONE
-#include "inc_print.h"
    CHARACTER(LEN=*) :: RECP_LOC
    CHARACTER*1  :: RECP_STATUS
    IF (RECP_DBG.GE.5) THEN
@@ -60,9 +58,8 @@ END SUBROUTINE OUTPUT_LOC
 ! ---------------------------------------------------------------
 
 SUBROUTINE OUTPUT_ERROR(RECP_LOC,ERR_MESSAGE,ERR_VALUE,ERR_TYPE)
-!      use inc_print_mod, only: RECP_OUT
+      use inc_print_mod, only: RECP_OUT
   IMPLICIT NONE
-#include "inc_print.h"
   CHARACTER(LEN=*) :: RECP_LOC, ERR_MESSAGE
   INTEGER          :: ERR_VALUE, ERR_TYPE
   IF (ERR_TYPE.EQ.3) THEN    
@@ -74,9 +71,8 @@ END SUBROUTINE OUTPUT_ERROR
 ! ---------------------------------------------------------------
 
 SUBROUTINE OUTPUT_DBG_TITLE(DBG_TITLE)
-!      use inc_print_mod, only: RECP_DBG, RECP_OUT
+      use inc_print_mod, only: RECP_DBG, RECP_OUT
   IMPLICIT NONE
-#include "inc_print.h"
   CHARACTER(LEN=*) DBG_TITLE
   INTEGER  I
   IF (RECP_DBG.GE.2) THEN
@@ -88,9 +84,8 @@ END SUBROUTINE OUTPUT_DBG_TITLE
 ! ---------------------------------------------------------------
 
 SUBROUTINE OUTPUT_DBG_CHAR1(TITLE0,DBG_LEVEL)
-!      use inc_print_mod, only: RECP_DBG, RECP_OUT
+      use inc_print_mod, only: RECP_DBG, RECP_OUT
   IMPLICIT NONE
-#include "inc_print.h"
   CHARACTER(LEN=*) TITLE0
   INTEGER  DBG_LEVEL
   IF (RECP_DBG.GE.DBG_LEVEL) THEN
@@ -101,9 +96,8 @@ END SUBROUTINE OUTPUT_DBG_CHAR1
 ! ---------------------------------------------------------------
 
 SUBROUTINE OUTPUT_DBG_IVAL(DBG_TITLE,VAL,VAL_TYPE,DBG_LEVEL)
-!      use inc_print_mod, only: RECP_DBG, RECP_OUT
+      use inc_print_mod, only: RECP_DBG, RECP_OUT
   IMPLICIT NONE
-#include "inc_print.h"
   CHARACTER(LEN=*) DBG_TITLE,VAL_TYPE
   INTEGER  VAL,DBG_LEVEL
   IF (RECP_DBG.GE.DBG_LEVEL) THEN
@@ -119,9 +113,8 @@ END SUBROUTINE OUTPUT_DBG_IVAL
 ! ---------------------------------------------------------------
 
 SUBROUTINE RECP_EXIT_IPT(RECP_LOC)
-!      use inc_print_mod, only: RECP_OUT
+      use inc_print_mod, only: RECP_OUT
    IMPLICIT NONE
-#include "inc_print.h"
    CHARACTER(LEN=*) :: RECP_LOC
    WRITE(RECP_OUT,*) ' - RECP : Error in allocating variable', RECP_LOC
    STOP

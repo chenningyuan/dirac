@@ -19,7 +19,6 @@ CONTAINS
 
 SUBROUTINE RECP_CHK_MAIN
   IMPLICIT NONE
-!#include "inc_print.h"
 
 
 ! check inconsistency in property options 
@@ -40,10 +39,9 @@ SUBROUTINE RECP_CHK_PRP
       use mxcent_mod, only: MXCOOR
       use dcbgen_mod, only: DOPRP
 !      use dcbprp_mod, only: DSO, MGRAD, PVC, SHIELD
-!      use inc_print_mod, only: RECP_OUT
+      use inc_print_mod, only: RECP_OUT
   IMPLICIT NONE
 #include "dcbprp.h"
-#include "inc_print.h"
   IF (DOPRP) THEN
      IF (DSO) THEN
         WRITE(RECP_OUT,'(10X,A)')'>>> RECP error' 
@@ -70,9 +68,8 @@ SUBROUTINE RECP_CHK_OPT
 ! check inconsistency in optimize options
       use dcbgen_mod, only: OPTIMI
       use dcbgrd_mod, only: DONGRD
-!      use inc_print_mod, only: RECP_OUT
+      use inc_print_mod, only: RECP_OUT
   IMPLICIT NONE
-#include "inc_print.h"
 
   IF (OPTIMI) THEN
 !    Currently RECP only support numerical gradient in geo-opt
@@ -88,11 +85,10 @@ END SUBROUTINE RECP_CHK_OPT
 
 SUBROUTINE RECP_CHK_SYM
 ! switch off linear symmetry if this is active
-!      use inc_print_mod, only: RECP_OUT
+      use inc_print_mod, only: RECP_OUT
       use dcbham_mod, only: ECPCALC
       use dgroup_mod, only: LINEAR
   IMPLICIT NONE
-#include "inc_print.h"
   IF (LINEAR.AND.ECPCALC) THEN
 !       * Switch off linear symmetry
 !       WRITE(RECP_OUT,'(10X,A)')'>>> RECP incompatibility: '

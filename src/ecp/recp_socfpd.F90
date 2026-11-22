@@ -26,7 +26,7 @@ SUBROUTINE RECP_SOCFPD_MAIN(icxast,icxst,idp,iprst,la,   &
            nrcr,nsopr,nt,ntl,ntu,MAXCX)
 ! Compute symmetry orbital coefficient products.
 ! on return from socfpd(*), cx(1:MAXCX) was computed.
-!      use inc_print_mod, only: RECP_DBG
+      use inc_print_mod, only: RECP_DBG
       use inc_mxvalue_mod, only: MNRUP, MNSFUP, MSTUP
   USE RECP_FUNCTION1
   USE RECP_FUNCTION2
@@ -38,7 +38,6 @@ SUBROUTINE RECP_SOCFPD_MAIN(icxast,icxst,idp,iprst,la,   &
 ! il(*) packing factor. see also oneint() and wtint2().
   integer    ilfact
   parameter( ilfact=1024 )
-#include "inc_print.h"
   integer        mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
   common /parmi/ mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
   integer        mconsu,mru,mcru,msfu,msfru,ngcs,nu,lxyzir,   inam,   nnam,mdum

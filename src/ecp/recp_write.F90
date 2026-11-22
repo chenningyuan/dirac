@@ -21,10 +21,9 @@ SUBROUTINE RECP_WRITE_ISA(ircru,jrcru,nst,mstu,nprir,ijsf,nopir,ilxyz,iapt, &
                           mpru,ipr,N_INTEGRAL,h2,esf)
 
 ! # put integrals and labels into the intermediate storage arrays.
-!      use inc_print_mod, only: RECP_DBG
+      use inc_print_mod, only: RECP_DBG
   USE RECP_IPT
   IMPLICIT NONE
-#include "inc_print.h"
 ! global variables
   INTEGER :: ircru,jrcru,nst,mstu,nprir(2,mstu,*),ijsf,nopir(*),ilxyz(3,*),iapt(3)
   INTEGER :: mpru,ipr
@@ -87,7 +86,7 @@ END SUBROUTINE RECP_WRITE_ISA
 
 SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,n_bfn_sym, &
                            N_INTEGRAL,MN_INTEGRAL,INT_AREP,nnam,mpru,nbft,nnbft,nst)
-!      use inc_print_mod, only: PRINT_LEVEL, RECP_DBG, RECP_OUT
+      use inc_print_mod, only: PRINT_LEVEL, RECP_DBG, RECP_OUT
       use inc_mxvalue_mod, only: MSTUP
   USE RECP_IPT
   USE RECP_FUNCTION2
@@ -95,7 +94,6 @@ SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,n_bfn_sym, &
 ! write 1-e integral arrays, Y.C. Park
   IMPLICIT NONE
 ! variables
-#include "inc_print.h"
 
 ! global variable
   INTEGER :: mpru, nbft, nnbft, nst   ! common block (parmi)
@@ -236,12 +234,11 @@ END SUBROUTINE RECP_WRITE_MAIN
 SUBROUTINE RECP_WRITE_ARRAY(n_sym,INT_TYPE,n_bfn_sym,nbft,labels_stvc,mpru,array_stvc,array_so, & 
                              values_stvc,N_INTEGRAL,MN_INTEGRAL,lblop)
 ! From cnvrt_stvz, Y.C. Park
-!      use inc_print_mod, only: PRINT_LEVEL, RECP_OUT
+      use inc_print_mod, only: PRINT_LEVEL, RECP_OUT
       use inc_mxvalue_mod, only: MSTUP
   USE RECP_FUNCTION1
   USE RECP_OUTPUT
   IMPLICIT NONE
-#include "inc_print.h"
   integer :: n_bfn_sym(mstup) ! nbpsy or nso : number of basis functions per symmetry block
   integer :: INT_TYPE         ! integral type 
   integer :: n_sym            ! nsym or nst : number of symmetry blocks
@@ -346,10 +343,9 @@ END SUBROUTINE RECP_WRITE_ARRAY
 SUBROUTINE RECP_WRITE_FILE(INT_TYPE,N_INTEGRAL,nbft,array_stvc,array_so, &
                             INT_AREP,MN_INTEGRAL,LBLOP)
 ! write ro file
-!      use inc_print_mod, only: RECP_DBG, RECP_OUT
+      use inc_print_mod, only: RECP_DBG, RECP_OUT
   USE RECP_OUTPUT
   IMPLICIT NONE
-#include "inc_print.h"
   INTEGER :: LBLOP
   integer :: i,j
   integer :: INT_TYPE, INT_AREP
@@ -491,10 +487,9 @@ END SUBROUTINE RECP_WRITE_TYPE
 
 
 SUBROUTINE RECP_WRITE_FILEOPEN(UNIT0,FILE0,STAT0)
-!      use inc_print_mod, only: RECP_DBG, RECP_OUT
+      use inc_print_mod, only: RECP_DBG, RECP_OUT
   USE RECP_OUTPUT
   IMPLICIT NONE
-#include "inc_print.h"
   INTEGER :: UNIT0,IOS0
   CHARACTER(LEN=*) :: FILE0 
   CHARACTER(LEN=*) :: STAT0 

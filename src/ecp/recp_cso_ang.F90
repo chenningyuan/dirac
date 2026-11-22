@@ -22,7 +22,6 @@ SUBROUTINE RECP_CSO_ANG1(nanb,lalb,mamb,lamu,ltot1,xk,yk,zk)
   USE RECP_OUTPUT
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "inc_print.h"
       REAL(dp), PARAMETER :: a0=0.0d0, a1=1.0d0
   integer i,j
 

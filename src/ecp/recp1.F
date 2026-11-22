@@ -27,12 +27,11 @@
 
       use priunit_mod, only: LUPRI
       use argoscom_mod, only: ECPINT_DEBUG, ECPINT_PRINT
-!      use inc_print_mod, only: PRINT_LEVEL, RECP_DBG, RECP_OUT
+      use inc_print_mod, only: PRINT_LEVEL, RECP_DBG, RECP_OUT
       USE RECP_OUTPUT
       USE RECP_CHK
       USE RECP_INP_READ
       IMPLICIT NONE
-#include "inc_print.h"
 
 !     Enter RECP
       CALL QENTER('RECP')
@@ -65,7 +64,6 @@
       USE RECP_OUTPUT
       USE RECP_SOCFPD
       implicit logical(a-z)
-!#include "inc_print.h" 
       integer
      & mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
       common /parmi/
@@ -266,11 +264,9 @@
 
 
       SUBROUTINE RECP_SETPARM
-!      use inc_print_mod, only: RECP_FNAM, RECP_FNUM
       use inc_mxvalue_mod, only: MCCUP, MCONSP, MCONUP, MCRUP, MCUP,
      &  MRCRUP, MRUP, MSFRUP, MSFUP, MSTUP, MSUP
       IMPLICIT NONE
-#include "inc_print.h" 
       integer
      & mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
       common /parmi/
@@ -281,12 +277,6 @@
      & mconsu,mru,mcru,msfu,msfru,ngcs,nu,
      & lxyzir(3),inam(5),nnam,mdum(32)
       integer i
-
-      DATA RECP_FNUM / 71, 72, 73, 74, 75, 76, 77, 78, 79, 80 /
-      DATA RECP_FNAM / 'RECP_XXXXX', 'RECP_XXXXX', 'RECP_XXXXX',
-     &                 'RECP_H2___', 'RECP_XXXXX', 'RECP_XXXXX',
-     &                 'RECP_XXXXX', 'RECP_XXXXX', 'RECP_XXXXX',
-     &                 'RECP_XXXXX' /
 
 !     parmi values
 !     ------------

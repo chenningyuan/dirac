@@ -212,17 +212,16 @@ C     Written by J. Thyssen - Feb 19 2001
 C     Last revision :
 C
 C***********************************************************************
-      use maxash_mod, only: MAXASH
       use maxorb_mod, only: MXCORB
       use dummy_mod, only: IDUMMY
 !      use dcborb_mod, only: NASH, NESH, NORB, NORBT
       use dgroup_mod, only: NFSYM
-!      use dcbidx_mod, only: IDXE2G, IDXT2G, IDXU2G, IIDX1, IIDX2, IIDX3, IIDX4, NIDX1, NIDX2, NIDX3, NIDX4, NIDXT
+      use dcbidx_mod, only: IDXE2G, IDXT2G, IDXU2G, IIDX1, IIDX2, IIDX3,
+     &  IIDX4, NIDX1, NIDX2, NIDX3, NIDX4, NIDXT
 #include "implicit.h"
       INTEGER :: I, J
 C
 #include "dcborb.h"
-#include "dcbidx.h"
 C
       CHARACTER C*4
       CHARACTER*(*) SZTRA(2,4)
@@ -492,14 +491,12 @@ C     Written by J. Thyssen - Wed Mar 14 17:20:32 "MET 2001
 C     Last revision :
 C
 C***********************************************************************
-      use maxash_mod, only: MAXASH
       use maxorb_mod, only: MXCORB
-!      use dcbidx_mod, only: IFSMO, IOBTYP, JTPOSI
+      use dcbidx_mod, only: IFSMO, IOBTYP, JTPOSI
 !      use dcborb_mod, only: IORB, NPSH
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcbidx.h"
 #include "dcborb.h"
 C
       DIMENSION IDX(*)
@@ -2025,17 +2022,14 @@ C        H2YX   : integrals in (NORBT,NASHT,*) format.
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxash_mod, only: MAXASH
       use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: NASHT, NNASHX, NORBT
 !      use dcbopt_mod, only: IPROPT, JTRLVL, OPT_NOPFQ
-      use maxorb_mod, only: MXCORB
-!      use dcbidx_mod, only: IDXE2G, IDXG2U
+      use dcbidx_mod, only: IDXE2G, IDXG2U
 #include "implicit.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dcbidx.h"
 C
       DIMENSION H2FULL(NKL,NZ,3)
       DIMENSION H2XY(NORBT,NASHT,NZ,3)
@@ -2179,16 +2173,13 @@ C        IREC    : record number
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use maxash_mod, only: MAXASH
 !      use dcbopt_mod, only: JTRLVL
       use dgroup_mod, only: NFSYM
-      use maxorb_mod, only: MXCORB
-!      use dcbidx_mod, only: IDXU2G
+      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
       INTEGER :: I, J
 C
 #include "dcbopt.h"
-#include "dcbidx.h"
 C
       DIMENSION NFPCK12(2)
       DIMENSION IDXKR12(2,*)
@@ -2919,11 +2910,9 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
-      use maxash_mod, only: MAXASH
-      use maxorb_mod, only: MXCORB
+      use dcbidx_mod, only: IDXG2U, IDXT2G
 #include "implicit.h"
 C
-#include "dcbidx.h"
 C
       DIMENSION IDXKR12(2,*)
 C
@@ -3429,15 +3418,13 @@ C     Output:
 C        H2VP   : integrals in (NASHT,NASHT,*) format.
 C
 C***********************************************************************
-      use maxash_mod, only: MAXASH
+      use dcbidx_mod, only: IDXE2G, IDXG2U
       use dgroup_mod, only: NFSYM, NZ
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dcbidx.h"
 C
       DIMENSION H2GG(NKL,NZ,3)
       DIMENSION H2VP(NASHT,NASHT,NZ,3)
@@ -3533,16 +3520,14 @@ C
 C     Written by J. Thyssen - Dec 6 2000
 C
 C***********************************************************************
-      use maxash_mod, only: MAXASH
+      use dcbidx_mod, only: IDXG2U
       use dgroup_mod, only: IPQTOQ, NZ
       use consts_mod, only: D1, DM1, DMP5, DP5
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
 C
 #include "dcborb.h"
-#include "dcbidx.h"
 C
       DIMENSION H2VPX(NASHT,NASHT,NZ,3)
       DIMENSION PV(NASHT,NASHT,NNASHX,NZ,3)
