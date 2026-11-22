@@ -35,6 +35,7 @@ set(FIXED_DIRAC_FORTRAN_SOURCES
 )
 
 set(FREE_DIRAC_FORTRAN_SOURCES
+    dcbana.F90
     dcbrho.F90
     dcbrot.F90
     dcbrho1.F90

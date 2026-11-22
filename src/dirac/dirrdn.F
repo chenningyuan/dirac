@@ -4290,7 +4290,8 @@ C
 C***********************************************************************
 
       use priunit_mod, only: LUCMD, LUPRI
-!      use dcbana_mod, only: DO1RHO, DO1WT, DO3RHO, DOLOC, DOPOP, DOPRJ, DOVEC
+      use dcbana_mod, only: DO1RHO, DO1WT, DO3RHO, DOLOC, DOPOP, DOPRJ,
+     &  DOVEC
       use dirac_cfg
 
       use kinds_mod, only: dp
@@ -4303,7 +4304,6 @@ C
      &          WORD1*7,WRDSRC*7
       DIMENSION WORK(LWORK)
 C
-#include "dcbana.h"
 C
       DATA TABDIR /'*END OF','*MULPOP','*PROJEC','*PRIVEC',
      &             '*RHO1  ','*DENSIT','*WT1   ','*LOCALI',
@@ -4537,7 +4537,7 @@ C     Last revision: April 27 - 1996
 C
 C***********************************************************************
       use dummy_mod, only: IDUMMY
-!      use dcbana_mod, only: DOPOP
+      use dcbana_mod, only: DOPOP
 !      use dcborb_mod, only: NOCC
       use maxorb_mod, only: MXCORB
       use dcbmp2no_mod, only: MP2NATPOP
@@ -4549,7 +4549,6 @@ C***********************************************************************
       INTEGER :: I
       PARAMETER (NTABLE = 8)
 C
-#include "dcbana.h"
 #include "dcbpop.h"
 #include "dcborb.h"
 C
@@ -4758,12 +4757,11 @@ C***********************************************************************
 !      use dcborb_mod, only: NOCC
       use dcbbas_mod, only: NFBAS
 !      use dcbprj_mod, only: C1READ, IPRPRJ, IREFADJ, LWGPOP, MAXREF, MAYER, NPROJNUC, NREFS, OWNBAS, PATOMS, POLNRM, POLREF, PRJADJ, PROTHR, REFFIL, VECPRJ, VECREF
-!      use dcbana_mod, only: DOPRJ
+      use dcbana_mod, only: DOPRJ
 #include "implicit.h"
       INTEGER :: I,J
       PARAMETER (NTABLE = 12)
 C
-#include "dcbana.h"
 #include "dcbprj.h"
 #include "dcborb.h"
 C
@@ -5080,7 +5078,7 @@ C***********************************************************************
       use dgroup_mod, only: FREP, NFSYM
       use dcbbas_mod, only: NFBAS
       use priunit_mod, only: LUCMD, LUPRI
-!      use dcbana_mod, only: DOVEC
+      use dcbana_mod, only: DOVEC
       use dummy_mod, only: IDUMMY
       use dcbvec_mod, only: ILABDF, IPRCMP, IPRVEC, VECPRI
 !      use dcborb_mod, only: NOCC
@@ -5088,7 +5086,6 @@ C***********************************************************************
       INTEGER :: I
       PARAMETER (NTABLE = 8)
 C
-#include "dcbana.h"
 #include "dcborb.h"
 C
       LOGICAL SET, NEWDEF, ORBDEF, RESET
@@ -8059,7 +8056,7 @@ C***********************************************************************
       use cbihr2_mod, only: SOFOCK
       use priunit_mod, only: LUPRI
       use dcbgen_mod, only: DOLVC, DOPRP, DOTRA, DOTSC, INTGEN, TWOCOMP
-!      use dcbana_mod, only: DOLOC
+      use dcbana_mod, only: DOLOC
 !      use dcbprp_mod, only: LONDON
       use mxcent_mod, only: MXCENT, MXCOOR
          use dirac_cfg
@@ -8068,7 +8065,6 @@ C***********************************************************************
 C
 !#include "mxgas.h"
 #include "dcbpsi.h"
-#include "dcbana.h"
 #include "dcbprp.h"
       LOGICAL SS_COR, SS_COR_NEEDED
       logical is_2c_rel_run
@@ -8276,14 +8272,13 @@ C
 C     Written by T.Saue - May 9 2000
 C
 C***********************************************************************
-!      use dcbana_mod, only: DO1RHO
+      use dcbana_mod, only: DO1RHO
       use priunit_mod, only: LUCMD, LUPRI
       use dcbrho1_mod, only: DSTEP, IOPTDD, IPRHO1
 #include "implicit.h"
       INTEGER :: I
       PARAMETER (NTABLE = 8)
 C
-#include "dcbana.h"
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -8407,7 +8402,7 @@ C
 C     Written by T.Saue - Nov 5 2002
 C
 C***********************************************************************
-!      use dcbana_mod, only: DO3RHO
+      use dcbana_mod, only: DO3RHO
       use priunit_mod, only: LUCMD, LUPRI
       use dcbrho_mod, only: CUBADJ, ICUBORB, ILSCUB, IPRRHO, NCUBE,
      &  NCUBORB
@@ -8416,7 +8411,6 @@ C***********************************************************************
       INTEGER :: I
       PARAMETER (NTABLE = 8)
 C
-#include "dcbana.h"
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
@@ -8549,13 +8543,12 @@ C
 C     Modified for WT1IN by O. Fossgaard - May 2003
 C***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
-!      use dcbana_mod, only: DO1WT
+      use dcbana_mod, only: DO1WT
       use dcbwt1_mod, only: DSTEP, IPWT1
 #include "implicit.h"
       INTEGER :: I
       PARAMETER (NTABLE = 8)
 C
-#include "dcbana.h"
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -8673,7 +8666,7 @@ C***********************************************************************
       use dcbloc_mod, only: HESLOC, IPRLOC, ITRLOC, LGCHCK, LGDIAG,
      &  LGFULL, LGGRAD, PRJLOC, SELMOS, THDIAG, THFULL, THGRAD, THXVEC
       use dummy_mod, only: IDUMMY
-!      use dcbana_mod, only: DOLOC
+      use dcbana_mod, only: DOLOC
 !      use dcbprj_mod, only: C1READ, MAXREF, NREFS, OWNBAS, REFFIL, VECPRJ, VECREF
       use dgroup_mod, only: FREP, NFSYM
       use nuclei_mod, only: NAMDEP
@@ -8682,7 +8675,6 @@ C***********************************************************************
       INTEGER :: I,J
       PARAMETER (NTABLE = 16)
 C
-#include "dcbana.h"
 #include "dcbprj.h"
 C
       LOGICAL SET, NEWDEF,ORBDEF, RESET

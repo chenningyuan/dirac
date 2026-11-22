@@ -235,7 +235,6 @@ C       IJKL_REL = MAX(IJ,KL)*(MAX(IJ,KL)-1)/2 + MIN(IJ,KL)
 *
 #include "mxpdim.inc"
 #include "oper.inc"
-#include "cc_exc.inc"
 #include "clunit.inc"
 #include "cands.inc"
 C     COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
@@ -319,6 +318,7 @@ C     IC_H_T_REF(LUREF,VEC,HVEC,SVEC,VEC1,VEC2,IDOHV,IDOSV)
       RETURN
       END
       SUBROUTINE SOLVE_PT2_EQ(RHS,C1,VEC1,VEC2,H0,ENOT,S,CC_AMP)
+      use cc_exc_mod, only: ICC_EXC
       use luci_wrkspc
 *
 * Solve first order pt equations
@@ -337,7 +337,6 @@ C     IC_H_T_REF(LUREF,VEC,HVEC,SVEC,VEC1,VEC2,IDOHV,IDOSV)
 #include "mxpdim.inc"
 #include "crun.inc"
 #include "clunit.inc"
-#include "cc_exc.inc"
 #include "oper.inc"
 *. Specific input
       DIMENSION H0(*),S(*)
@@ -449,6 +448,7 @@ C     END IF
       END
 *
       SUBROUTINE LUCIA_ICCI(ISM,ISPC,CALC)
+      use cc_exc_mod, only: ICC_EXC
       use luci_wrkspc
 *
 * Internal contracted calculation with ICCI
@@ -461,7 +461,6 @@ C     END IF
 #include "mxpdim.inc"
 #include "cands.inc"
 #include "oper.inc"
-#include "cc_exc.inc"
 #include "glbbas.inc"
 #include "clunit.inc"
 #include "crun.inc"
@@ -614,6 +613,7 @@ C       CALL CASPT_CHECK
       END
       SUBROUTINE IC_H_T_REF(LUREF,VEC,HVEC,SVEC,VEC1,VEC2,IDOHV,IDOSV,
      &                       IADDREF)
+      use cc_exc_mod, only: ICC_EXC
       use luci_wrkspc
 *
 * Matrix vector routine for Internal contracted formulation
@@ -648,7 +648,6 @@ C       CALL CASPT_CHECK
       DIMENSION VEC1(*),VEC2(*)
 *.
 #include "mxpdim.inc"
-#include "cc_exc.inc"
 #include "clunit.inc"
 #include "glbbas.inc"
 #include "crun.inc"

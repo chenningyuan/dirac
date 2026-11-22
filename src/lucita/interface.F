@@ -2035,6 +2035,7 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GETH1(H,ISM,ITP,JSM,JTP)
+      use cc_exc_mod, only: ICC_EXC
       use luci_wrkspc
 *
 * One-electron integrals over orbitals belonging to
@@ -2056,7 +2057,6 @@ C
 #include "glbbas.inc"
 #include "lucinp.inc"
 #include "orbinp.inc"
-#include "cc_exc.inc"
 *.Output
       DIMENSION H(*)
 *
@@ -2481,6 +2481,7 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
 ***********************************************************************
       SUBROUTINE LGETINT(XINT,ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM,
      &                  IXCHNG,IKSM,JLSM,ICOUL)
+      use cc_exc_mod, only: ICC_EXC
       use luci_wrkspc
 
 *
@@ -2492,7 +2493,6 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
 #include "lucinp.inc"
 #include "orbinp.inc"
 #include "csm.inc"
-#include "cc_exc.inc"
 #include "crun.inc"
 #include "glbbas.inc"
 *

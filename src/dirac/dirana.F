@@ -27,7 +27,8 @@ C     Last revision : KApril 27 1996
 C
 C***********************************************************************
 
-!      use dcbana_mod, only: DO1RHO, DO1WT, DO3RHO, DOLOC, DOPOP, DOPRJ, DOVEC
+      use dcbana_mod, only: DO1RHO, DO1WT, DO3RHO, DOLOC, DOPOP, DOPRJ,
+     &  DOVEC
       use dcbrho_mod, only: ICUBORB, NCUBORB
       use dirac_cfg
       use second_order_minimization
@@ -36,7 +37,6 @@ C***********************************************************************
 
 #include "implicit.h"
 C
-#include "dcbana.h"
       real(8), allocatable :: WORK(:)
 C Used from COMMON blocks:
 C  CBIANA: DOPOP,DOANA,DOEXP

@@ -43,12 +43,12 @@ C  /* Deck troinp */
       SUBROUTINE TROINP(WORD)
       use priunit_mod, only: LUCMD, LUPRI
       use abainf_mod, only: GDALL, IPRDEF
+      use cbitro_mod, only: COMPAR, CUT, GDTRO, IPRINT, NOROT1, RDTRO,
+     &  SKIP, THRESH
 #include "implicit.h"
-!      use cbitro_mod, only: COMPAR, CUT, GDTRO, IPRINT, NOROT1, RDTRO, SKIP, THRESH
       INTEGER :: I
       PARAMETER (NTABLE = 9)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include "cbitro.h"
       LOGICAL NEWDEF
 C
       DATA TABLE /'.SKIP  ', '.PRINT ', '.STOP  ', '.THRESH', '.COMPAR',
@@ -148,12 +148,13 @@ C  /* Deck troini */
 C
 C     Initialize /CBITRO/
 C
+      use cbitro_mod, only: COMPAR, CUT, GDTRO, HESTRO, IPRINT, NOROT1,
+     &  RDTRO, SKIP, THRESH, TRODIP, TROGRD, TROHES
       use infinp_DALTON_mod, only: NFIELD
       use abainf_mod, only: DIPDER, DOSYM, GDALL, IPRDEF, MOLGRD,
      &  MOLHES, VCD
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
-#include "cbitro.h"
 C
       IPRINT = IPRDEF
       THRESH = 0.1D00
@@ -193,14 +194,14 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP
       use priunit_mod, only: LUPRI
-!      use cbitro_mod, only: CUT, GDTRO, HESTRO, IPRINT, NOROT1, RDTRO, SKIP
+      use cbitro_mod, only: CUT, GDTRO, HESTRO, IPRINT, NOROT1, RDTRO,
+     &  SKIP
       use dorps_mod, only: DOPERT
 #include "implicit.h"
       INTEGER :: I
 C
       DIMENSION WORK(LWORK)
 C
-#include "cbitro.h"
 C
 C     The variable FIRST has been replaced with FTRONV in /EXEINF/,
 C     which can be controlled from outside. This is necessary because
@@ -566,7 +567,7 @@ C
       use nuclei_mod, only: NAMEX, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use cbitro_mod, only: COMPAR, IPRINT
+      use cbitro_mod, only: COMPAR, IPRINT
       use trkoor_mod, only: DEPEND, NCOOR
       use symmet_mod, only: IPTCNT, IPTCOR, MAXREP, NCRREP
       use dorps_mod, only: DOPERT
@@ -576,7 +577,6 @@ C
       LOGICAL TRCORD(MXCENT,3)
       DIMENSION TMAT(6,NCOOR), WORK(LWORK)
 C
-#include "cbitro.h"
 C
 C     *************************************************
 C     ***** Determine trarot coordinates and TMAT *****
@@ -649,7 +649,7 @@ C
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: CHARGE, ISTBNU, NUCIND
-!      use cbitro_mod, only: IPRINT, THRESH
+      use cbitro_mod, only: IPRINT, THRESH
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use trkoor_mod, only: DEPEND, NCDEP, NCOOR
@@ -661,7 +661,6 @@ C
       DIMENSION TMAT(6,NCOOR), AMAT(6,NCOOR), NPREF(NCOOR),
      *          ITBDEP(NCOOR)
 C
-#include "cbitro.h"
 C
       IF (IPRINT .GE. 5) THEN
          CALL TITLER('Output from SETDEP','*',103)
@@ -914,13 +913,13 @@ C
       use chrxyz_mod, only: CHRXYZ
       use maxorb_mod, only: MXCORB
       use abainf_mod, only: DOSYM
-!      use cbitro_mod, only: COMPAR, HESTRO, IPRINT, TRODIP, TROGRD, TROHES
+      use cbitro_mod, only: COMPAR, HESTRO, IPRINT, TRODIP, TROGRD,
+     &  TROHES
       use trkoor_mod, only: DEPEND, NCOOR, NTRREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I,J
       DIMENSION WORK(LWORK), HESTR(MXCOOR,MXCOOR), DIPTR(3,MXCOOR)
-#include "cbitro.h"
 #include "moldip.h"
       IF (HESTRO) THEN
          CALL DZERO(HESTR,MXCOOR*MXCOOR)
@@ -1707,7 +1706,7 @@ C
       use infvar_mod, only: NVAR
       use nuclei_mod, only: NUCIND
       use maxorb_mod, only: MXCORB
-!      use cbitro_mod, only: COMPAR, GDTRO, IPRINT, RDTRO
+      use cbitro_mod, only: COMPAR, GDTRO, IPRINT, RDTRO
 #ifdef PRG_DIRAC
       use nuctap_mod, only: ABAGDR, ABARDR, LUGDR, LURDR
 #endif
@@ -1727,7 +1726,6 @@ C
 C Used from common blocks:
 C  NUCLEI: DCORGD, DCORD
 C
-#include "cbitro.h"
 C
 C
 C     Run over vector types (gradient or solution vector)
@@ -1843,7 +1841,7 @@ C
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use trkoor_mod, only: IPTTRO, NCDEP, NCOOR, NTRREP
-!      use cbitro_mod, only: IPRINT, THRESH
+      use cbitro_mod, only: IPRINT, THRESH
       use maxorb_mod, only: MXCORB
       use chrxyz_mod, only: CHRXYZ
 #include "implicit.h"
@@ -1853,7 +1851,6 @@ C
       LOGICAL OK, DONE
       DIMENSION TMAT(6,NCOOR), TVEC(NCOOR), AMAT(NCOOR,6)
 C
-#include "cbitro.h"
 C
 C     (I) Set up TMAT for 6 trarot coordinates
 C
@@ -2002,7 +1999,7 @@ C
 C     Set DCORGD, indicating which GD vectors to calculate
 C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use cbitro_mod, only: COMPAR
+      use cbitro_mod, only: COMPAR
       use abainf_mod, only: GDALL
       use nuclei_mod, only: ITRACO, NTRACO
       use dorps_mod, only: DCORD, DCORGD
@@ -2014,7 +2011,6 @@ C  ABAINF: GDALL
 C  CBITRO: COMPAR
 C  NUCLEI: DCORD, DCORGD, NTRACO, ITRACO
 C
-#include "cbitro.h"
 C
 C     DCORGD is initialized to all .true. in HESINP subroutine/
 C
@@ -2054,14 +2050,13 @@ C
       use symmet_mod, only: IPTCNT, MAXREP, NCRREP
       use priunit_mod, only: LUPRI
       use abainf_mod, only: DIPDER, DOSYM, MOLGRD, MOLHES, POLAR
-!      use cbitro_mod, only: COMPAR, IPRINT
+      use cbitro_mod, only: COMPAR, IPRINT
       use trkoor_mod, only: NTRREP
 #include "implicit.h"
       INTEGER :: I
 C
       CHARACTER*(*) KEY
 C
-#include "cbitro.h"
 C
       IF (KEY .EQ. 'HERMIT') THEN
          DO 100 IREP = 0, MAXREP

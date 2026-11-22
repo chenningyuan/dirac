@@ -23,6 +23,7 @@
 *
       SUBROUTINE GASCI(ISM,ISPC,IPRNT,EREF,LUWRTOUT,IPROCLIST,
      &                 IGROUPLIST)
+      use cc_exc_mod, only: ICC_EXC
       use comjep_mod, only: MXAADST, MXACIJ, MXACJ
       use intform_mod, only: IH1FORM, IH2FORM
       use luci_wrkspc
@@ -52,7 +53,6 @@
 #include "gasstr.inc"
 #include "cgas.inc"
 #include "lucinp.inc"
-#include "cc_exc.inc"
 #if defined (VAR_MPI2)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) ITEST_OFF

@@ -482,6 +482,7 @@ C            DIAVC2(VECOUT,VECIN,DIAG,SHIFT,NDIM)
 * as well as multireference cc expansions
 *
 * The CC vector function reads
+      use cc_exc_mod, only: ICC_EXC
       use luci_wrkspc
 *
 *     <\my! Exp(-T) H Exp (T) !0>
@@ -514,7 +515,6 @@ C            DIAVC2(VECOUT,VECIN,DIAG,SHIFT,NDIM)
       DIMENSION VEC1(*),VEC2(*)
 *.
 #include "mxpdim.inc"
-#include "cc_exc.inc"
 #include "clunit.inc"
 #include "glbbas.inc"
 #include "crun.inc"
@@ -1267,8 +1267,8 @@ C                  SCLDIA(A,FACTOR,NDIM,IPACK)
 *
 * Hiding cc restrictions etc
 *
+      use cc_exc_mod, only: ICC_EXC
       IMPLICIT REAL*8(A-H,O-Z)
-#include "cc_exc.inc"
 *
       IF(ICC_EXC.EQ.1) THEN
 *. Check for coupled cluster restrictions
@@ -1299,8 +1299,8 @@ C                  SCLDIA(A,FACTOR,NDIM,IPACK)
 *
 * Hiding cc restrictions etc
 *
+      use cc_exc_mod, only: ICC_EXC
       IMPLICIT REAL*8(A-H,O-Z)
-#include "cc_exc.inc"
 *
       IF(ICC_EXC.EQ.1) THEN
 *. Check for coupled cluster restrictions
@@ -1846,8 +1846,8 @@ C     WRITE(6,*) ' NELEC(1), NELEC(2) ', NELEC(1),NELEC(2)
 *
 *  Is excitation a+Igas a Jgas active
 *
+      use cc_exc_mod, only: ICC_EXC
       IMPLICIT REAL*8(A-H,O-Z)
-      COMMON/CC_EXC/ICC_EXC
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "orbinp.inc"
@@ -1875,8 +1875,8 @@ C     WRITE(6,*) ' NELEC(1), NELEC(2) ', NELEC(1),NELEC(2)
 *
 *  Is excitation a+Igas a+Kgas a Lgas a Jgas active
 *
+      use cc_exc_mod, only: ICC_EXC
       IMPLICIT REAL*8(A-H,O-Z)
-      COMMON/CC_EXC/ICC_EXC
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "orbinp.inc"
@@ -1936,7 +1936,6 @@ C     WRITE(6,*) ' NELEC(1), NELEC(2) ', NELEC(1),NELEC(2)
 #include "cgas.inc"
 #include "multd2h.inc"
 #include "csm.inc"
-      COMMON/CC_EXC/ICC_EXC
 *. ICC_EXC should be set to one before call
 *
 *. Single excitations
@@ -2085,6 +2084,7 @@ C            WRT_CC_VEC(CC,LU)
       RETURN
       END
       SUBROUTINE LUCIA_CC(ISM,ISPC,IPRNT,ECC,II_RESTRT_CC,I_TRANS_WF)
+      use cc_exc_mod, only: ICC_EXC
       use luci_wrkspc
 *
 * Coupled Cluster calculations with LUCIA
@@ -2099,7 +2099,6 @@ C            WRT_CC_VEC(CC,LU)
 #include "cands.inc"
 #include "clunit.inc"
 #include "cecore.inc"
-      COMMON/CC_EXC/ICC_EXC
 *
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'LUC_CC')
       WRITE(6,*)

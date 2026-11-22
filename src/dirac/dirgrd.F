@@ -2548,11 +2548,11 @@ C
 C     Copied from abacus/abatro.F (TROINI)
 C     and modified for use in Dirac./jth 1998-02-04
 C
-!      use cbitro_mod, only: COMPAR, CUT, GDTRO, HESTRO, IPRINT, NOROT1, RDTRO, SKIP, THRESH, TRODIP, TROGRD, TROHES
+      use cbitro_mod, only: COMPAR, CUT, GDTRO, HESTRO, IPRINT, NOROT1,
+     &  RDTRO, SKIP, THRESH, TRODIP, TROGRD, TROHES
       use dcbgen_mod, only: IPRGEN
       use abainf_mod, only: GDALL
 #include "implicit.h"
-#include "cbitro.h"
       LOGICAL LCOMPA
 C
       IPRINT = IPRGEN

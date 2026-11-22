@@ -7926,14 +7926,13 @@ C***********************************************************************
       use nuclei_mod, only: CHARGE, ISOTOP, ISTBNU, IZATOM, NAMDEP,
      &  NUCDEP, NUCIND
       use symmet_mod, only: MAXOPR
-!      use spinro_mod, only: GTRANT
+      use spinro_mod, only: GTRANT
       use codata_mod, only: CVEL, GFERMI, S2THETAW, XFMP
       use consts_mod, only: D0, D1, D2, D4, D6
       implicit none
 C
       integer I,J
 C
-#include "spinro.h"
 C
       integer K,KATOM,IPRINT,IATOM,ISYMOP,JATOM,NATTYP,NUMIS,IJ
 C
@@ -10925,7 +10924,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbprp_mod, only: IPSPINRO
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
       use dcbgen_mod, only: CVAL
-!      use spinro_mod, only: LINDET
+      use spinro_mod, only: LINDET
       use consts_mod, only: D0, D1
       use chrnos_mod, only: CHRNOS
       use memory_allocator
@@ -10937,7 +10936,6 @@ C
 #include "dcbexp.h"
 #include "dcbprp.h"   ! common block for expectation values
 #include "dcbxlr.h"   ! common block for linear reponse
-#include "spinro.h"
 C
       INTEGER IPRINT,NATOM,IATOM,IATOM1,
      &        IC1,IC2,ICOOR,ICOOR1,IFIRST,ILOW,INDOP1,
@@ -11267,7 +11265,7 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: IPTAX
       use orgcom_mod, only: CMXYZ
-!      use spinro_mod, only: LINDET, SPRDNL
+      use spinro_mod, only: LINDET, SPRDNL
       use dgroup_mod, only: LINEAR
       use dcbham_mod, only: SPINFR, URKBAL, ZORA
       use consts_mod, only: D0
@@ -11280,7 +11278,6 @@ C
 #include "dcbprp.h"
 #include "dcbexp.h"
 #include "dcbxlr.h"
-#include "spinro.h"
 C
       logical, allocatable :: DOATOM(:)
       integer, allocatable :: NAT(:),ISOT(:)
@@ -11658,13 +11655,12 @@ C
       use nuclei_mod, only: CHARGE, ISTBNU, NATOMS, NFLOAT, NUCDEP,
      &  NUCIND
       use symmet_mod, only: MAXOPR
-!      use spinro_mod, only: SPRNUC, SPRNUC2, SPRNUC3
+      use spinro_mod, only: SPRNUC, SPRNUC2, SPRNUC3
       use consts_mod, only: D0
       implicit none
 C
       integer I,J
 C
-#include "spinro.h"
 C
       double precision GEOM,ORIGIN
 C
@@ -11808,13 +11804,12 @@ C
       use maxorb_mod, only: MXCORB
       use nuclei_mod, only: CORD, ISTBNU, NUCDEP, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-!      use spinro_mod, only: SPRDNL
+      use spinro_mod, only: SPRDNL
       use orgcom_mod, only: CMXYZ
       implicit none
 C
       integer I,J
 C
-#include "spinro.h"
 C
       integer IPRINT,IATOM,ISYMOP,NATOM,NCMAT
 C
@@ -11889,7 +11884,7 @@ C***********************************************************************
       use nuclei_mod, only: CHARGE, CORD, ISOTOP, ISTBNU, IZATOM,
      &  NAMDEP, NUCDEP, NUCIND
       use symmet_mod, only: IPTAX, ISYMAX, MAXOPR, PT
-!      use spinro_mod, only: GTRANT, SPRNUC, SPRNUC2, SPRNUC3
+      use spinro_mod, only: GTRANT, SPRNUC, SPRNUC2, SPRNUC3
       use orgcom_mod, only: CMXYZ
       use dgroup_mod, only: LINEAR
       use codata_mod, only: ALPHA2, PMASS, XFAMU, XTHZ
@@ -11898,7 +11893,6 @@ C***********************************************************************
 C
       integer I,J
 C
-#include "spinro.h"
 C
       integer K,KATOM,IPRINT,IATOM,ICOOR,ISYMOP,IX,IY,
      &        JATOM,JX,JY,NATTYP,NUMIS,KHZPPM
@@ -12357,7 +12351,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbprp_mod, only: IP_PVC_SPINRO
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
       use dcbgen_mod, only: CVAL
-!      use spinro_mod, only: LINDET
+      use spinro_mod, only: LINDET
       use consts_mod, only: D0, D3, D4
       use codata_mod, only: GFAC
       use pi_mod, only: PI
@@ -12370,7 +12364,6 @@ C
 C
 #include "dcbprp.h"
 #include "dcbxlr.h"     ! Common block for linear reponse
-#include "spinro.h"
 C
       INTEGER IPRINT,NATOM,IATOM,ICOOR,INDXPR,
      &        IOP,IPTYP,IREPO,ISCOR,ISYXPR,
@@ -12619,7 +12612,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: IPTAX
-!      use spinro_mod, only: LINDET
+      use spinro_mod, only: LINDET
       use dgroup_mod, only: LINEAR
       use dcbham_mod, only: SPINFR, URKBAL, ZORA
       use consts_mod, only: D0
@@ -12629,7 +12622,6 @@ C
 C
 #include "dcbprp.h"
 #include "dcbxlr.h"
-#include "spinro.h"
 C
       logical, allocatable :: DOATOM(:)
       integer, allocatable :: NAT(:),ISOT(:)
@@ -12923,7 +12915,7 @@ C***********************************************************************
       use nuclei_mod, only: CHARGE, CORD, ISOTOP, ISTBNU, IZATOM,
      &  NAMDEP, NUCDEP, NUCIND
       use symmet_mod, only: IPTAX, ISYMAX, MAXOPR, PT
-!      use spinro_mod, only: GTRANT
+      use spinro_mod, only: GTRANT
       use orgcom_mod, only: CMXYZ
       use codata_mod, only: CVEL, GFERMI, S2THETAW, XFAMU, XTHZ
       use consts_mod, only: D0, D1, D2, D4
@@ -12931,7 +12923,6 @@ C***********************************************************************
 C
       integer I,J
 C
-#include "spinro.h"
 C
       integer K,KATOM,IPRINT,IATOM,ICOOR,ISYMOP,IX,IY,
      &        JATOM,JX,JY,NATTYP,NUMIS

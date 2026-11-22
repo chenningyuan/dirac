@@ -14,6 +14,7 @@ set(MODULE_SOURCES
     cbione.F90
     cbirea.F90
     cbisol.F90
+    cbitro.F90
     cbivib.F90
     ccom.F90
     chrnos.F90
@@ -109,6 +110,7 @@ set(MODULE_SOURCES
     siripc.F90
     sotabs.F90
     sphtrm.F90
+    spinro.F90
     subdir.F90
     symind.F90
     symmet.F90

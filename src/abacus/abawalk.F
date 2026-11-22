@@ -3645,6 +3645,7 @@ C     coordinates of the molecule at the effective molecular geometry.
 C
 C     K.Ruud, San Diego March 1999
 C
+      use spinro_mod, only: GTRANT
       use codata_mod, only: ALPHA2, PMASS, XFAMU, XTHZ
       use dcbsusc_mod, only: SUS2EL, SUSDIA, SUSFS, SUSFSY, SUSREL,
      &  SUSTOT
@@ -3680,7 +3681,6 @@ C
 #include "moldip.h"
 #include "quadru.h"
 #include "sigma.h"
-#include "spinro.h"
 #include "cbiwlk.h"
 C
       FACTOR = 1.D6*ALPHA2

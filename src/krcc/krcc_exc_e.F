@@ -19,7 +19,6 @@
 #include "ctccp.inc"
 #include "clunit.inc"
 #include "glbbas.inc"
-!#include "cc_exc.inc" Check if there is something on this common block
 !#include "lorr.inc"
 #include "symm.inc"
 *
