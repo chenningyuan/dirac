@@ -1710,7 +1710,6 @@ C***********************************************************************
       use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I, J
-c#include "ibndxdef.h"
 C
 C
 #include "dcbxrs.h"
