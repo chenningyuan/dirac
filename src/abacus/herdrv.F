@@ -34,7 +34,7 @@ C
       use nuclei_mod, only: GAUNUC, NATOMS
       use priunit_mod, only: LUCMD, LUPRI
       use efield_mod, only: FIELD1, FIELD2
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
       use iratdef_mod, only: IRAT
       use cbisol_mod, only: SOLVNT
       use kinds_mod, only: dp
@@ -970,7 +970,6 @@ C
 
 C  /* Deck hr1inp */
       SUBROUTINE HR1INP(WORD)
-      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUCMD, LUPRI
       use cbiher_mod, only: IPRDEF
       use cbihr1_mod, only: ALLRLM, CAVUSR, DORLM, IPRONE, LMAX, RUNONE
@@ -1104,7 +1103,6 @@ C  /* Deck hr2inp */
       use priunit_mod, only: LUCMD, LUPRI
       use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD,
      &  IPRTWO, RTNTWO, RUNTWO, SCRFCK, SOFOCK, THRFAC, TKTIME, USRSCR
-      use mxcent_mod, only: MXCENT
       use infpar_mod, only: NUMNOD
       use cbiher_mod, only: IPRDEF, NOTWO
       use kinds_mod, only: dp
@@ -1430,10 +1428,7 @@ C
 C  /* Deck setdch */
       SUBROUTINE SETDCH
 C
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXCENT
       use symmet_mod, only: MAXREP
-      use maxorb_mod, only: MXCORB
       use dorps_mod, only: DOREPS
 #include "implicit.h"
 C

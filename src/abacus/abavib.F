@@ -185,7 +185,7 @@ C  /* Deck vibini */
 C
 C     Initialize /CBIVIB/
 C
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
       use abainf_mod, only: DIPDER, IPRDEF, LINCPL, MOLGRD, MOLHES, VCD,
      &  VIB
       use cbivib_mod, only: DIPOL, DOVCD, HESFIL, HESPUN, IPRINT, ISOTP,
@@ -245,7 +245,6 @@ C
       use priunit_mod, only: LUPRI
       use cbivib_mod, only: DOVCD, HESFIL, HESPUN, IPRINT, MAXDIF,
      &  NINTCM
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use iratdef_mod, only: IRAT
       use dorps_mod, only: DOREPS
       use dummy_mod, only: IDUMMY
@@ -465,12 +464,9 @@ C      3) partition functions  (PRTFUN)
 C      4) vibrational polarizabilities (VIBPOL)
 C
       use dorps_mod, only: DOREPS
-      use maxorb_mod, only: MXCORB
       use cbisol_mod, only: SOLVNT
       use codata_mod, only: XFAMU, XTANG, XTKAYS, XTKMML
-      use mxcent_mod, only: MXCENT, MXCOOR
       use iratdef_mod, only: IRAT
-      use maxaqn_mod, only: MXAQN, MXQN
 !      use cbilnr_mod, only: NFRVAL
       use gnrinf_mod, only: OPTWLK
       use symmet_mod, only: MAXREP, NCRREP
@@ -709,9 +705,6 @@ C  /* Deck rotana */
      &                  AIMOM,BIMOM,CIMOM,
      &                  LINEAR,NATOMS,NCORD,IPRINT)
       use symmet_mod, only: ISYMAX, MAXREP
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXCENT
-      use maxaqn_mod, only: MXAQN, MXQN
       use cbisol_mod, only: SOLVNT
       use priunit_mod, only: LUPRI
       use inirep_mod, only: IREPPI, NREPPI
@@ -849,8 +842,7 @@ C  /* Deck vibana */
       use hotfccom_mod, only: HOTFC, IHOTFC, IHOTFF
       use codata_mod, only: CCM, DEBYE, ECHARGE, EMASS, HBAR, XFAMU,
      &  XKCMOL, XKJMOL, XTANG, XTKAYS, XTKMML
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use pgroup_mod, only: REP
 !      use cbiwlk_mod, only: IMODE, NMODIF, V3CAL
@@ -861,7 +853,6 @@ C  /* Deck vibana */
       use molde_mod, only: MOLDEN
       use dummy_mod, only: IDUMMY
       use nuclei_mod, only: NAMDPX, NATOMS
-      use maxorb_mod, only: MXCORB
       use kinds_mod, only: dp
 #include "implicit.h"
 C
@@ -1387,9 +1378,7 @@ C     Ref: Rinaldi et al., Chem.Phys.Lett. 128 (1986) 177-181
       use dorps_mod, only: DOREPS
       use symmet_mod, only: ISYMAX
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
 C
@@ -1663,7 +1652,6 @@ C  /* Deck intern */
      &                  IWORK,CMAT,QQ,CTYPE,WRK,LWORK)
       use cbivib_mod, only: DIPOL, DOVCD, IPRINT, ITYPCM, MAXDIF
       use facang_mod, only: FACANG
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use codata_mod, only: DEBYE, XAJOUL, XTANG
       use kinds_mod, only: dp
@@ -1987,9 +1975,6 @@ C  /* Deck getb */
       SUBROUTINE GETB(IPRINT,NINTER,NCORD,BMAT,QQ,CTYPE,XA,YA,ZA,BDAG)
       use nuclei_mod, only: CORD, ISTBNU, NATOMS, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       DIMENSION XA(NCORD), YA(NCORD), ZA(NCORD), QQ(NINTER),
@@ -2031,9 +2016,6 @@ C  /* Deck getcmat */
       use nuclei_mod, only: CORD, ISTBNU, NATOMS, NUCIND
       use priunit_mod, only: LUPRI
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: DELTA = 1.D-6, DM1 = -1.D00, ONE = 1.0D0
@@ -2136,9 +2118,7 @@ C  /* Deck getnos */
       SUBROUTINE GETNOS(ICHRG,GEOM,GRAD,HESS,GRDN,DGRAD,CAAT,WRK,
      &                  LWRK,NOATOM,NCORD,DIPDER,DOVCD,IPRINT,HESPUN)
       use dummy_mod, only: IDUMMY
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCOOR
       use priunit_mod, only: LUPRI
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use nuclei_mod, only: CORD, ISTBNU, IZATOM, NUCIND
@@ -2261,16 +2241,14 @@ C  /* Deck vibv3 */
      &                 POS,AMASS,WORK,LWORK,NCORD,NUMMOD)
 !      use cbiwlk_mod, only: DOCENT, DOTEMP, NMODIF, NTEMP
       use nuclei_mod, only: CORD, ISTBNU, NAMDEP, NUCDEP, NUCIND
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
       use codata_mod, only: AUTK, XFAMU
       use cbivib_mod, only: IPRINT
       use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use thrzer_mod, only: THRZER
-      use maxaqn_mod, only: MXAQN, MXQN
       use nuctap_mod, only: LUWLK
       use gnrinf_mod, only: NMWALK
       use dummy_mod, only: IDUMMY
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2671,7 +2649,7 @@ C  /* Deck vibro1 */
      &                  C0L,C0NL,CBL,CBNL,CONVER,BOLTZ,ROAAFD,ROAGND,
      &                  ROAGLD,ROAAD,ROAAFU,ROAGNU,ROAGLU,ROAAU)
       use abainf_mod, only: RAMAN, VROA
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use codata_mod, only: ALPHAC, XFAMU, XTANG, XTKAYS, XTNM
       use nuctap_mod, only: LUWLK
       use cbivib_mod, only: IPRINT
@@ -2983,10 +2961,7 @@ C     Determines the irep of a given normal coordinate, by comparing
 C     the results of symmetry operations with the character table.
 C
       use optinf_mod, only: VRVIBA
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use codata_mod, only: XFAMU
-      use maxaqn_mod, only: MXAQN, MXQN
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCIND
       use symmet_mod, only: ISOP, ISYMAX, IXVAL, MAXOPR, MAXREP, PT
 #include "implicit.h"
@@ -4025,7 +4000,6 @@ C
       use codata_mod, only: XTANG
       use nuclei_mod, only: NAMDEP
       use pi_mod, only: PI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
       LOGICAL WRI, QONLY, FREAD, NEW, OLD, GETB

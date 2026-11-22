@@ -48,7 +48,6 @@ C  /* Deck zergrd */
       SUBROUTINE ZERGRD
       use taymol_mod, only: GRDMOL
       use trkoor_mod, only: NCOOR
-      use mxcent_mod, only: MXCOOR
 #include "implicit.h"
       GRDMOL(1:NCOOR) = 0.0D0
       RETURN
@@ -57,14 +56,12 @@ C  /* Deck zerhes */
       SUBROUTINE ZERHES
       use taymol_mod, only: HESMOL
       use trkoor_mod, only: NCOOR
-      use mxcent_mod, only: MXCOOR
 #include "implicit.h"
       HESMOL(1:NCOOR,1:NCOOR) = 0.0D0
       RETURN
       END
 C  /* Deck addgrd */
       SUBROUTINE ADDGRD(GRAD)
-      use mxcent_mod, only: MXCOOR
       use trkoor_mod, only: NCOOR
       use taymol_mod, only: GRDMOL
 #include "implicit.h"
@@ -97,10 +94,8 @@ C
 C     tuh Mar 1985
 C     tuh Jun 28 1988 - modified for symmetry
 C
-      use maxaqn_mod, only: MXAQN, MXQN
       use nuclei_mod, only: NAMDEP, NAMEX, NUCDEP
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use priunit_mod, only: LUPRI
       use abainf_mod, only: DOSYM
       use symmet_mod, only: IPTCOR, MAXREP, NCRREP
@@ -146,9 +141,7 @@ C
       use symmet_mod, only: IPTCOR, MAXREP, NCRREP
       use priunit_mod, only: LUPRI
       use abainf_mod, only: DOSYM
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCOOR
 #include "implicit.h"
       INTEGER :: I,J,K
       PARAMETER (D0=0.D00, KCOL=6)
@@ -295,10 +288,7 @@ C
 C     OC cloned PRIGEO (april 2009) of Jun 29 1988 tuh
 C
       use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I
 C
@@ -354,11 +344,8 @@ C
 C     Jun 29 1988 tuh
 C
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-      use maxaqn_mod, only: MXAQN, MXQN
       use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I
 C
@@ -381,7 +368,6 @@ C
       END
 C  /* Deck symhes */
       SUBROUTINE SYMHES(HESS,NROW_HESS)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -405,12 +391,9 @@ C
 C     Calculates total charge of molecule
 C
       use infinp_DALTON_mod, only: NACTEL
-      use maxaqn_mod, only: MXAQN, MXQN
       use inforb_mod, only: NISHT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use infinp_mod, only: NACTEL
       use nuclei_mod, only: CHARGE, ISTBNU, NUCIND
-      use maxorb_mod, only: MXCORB
       use symmet_mod, only: FMULT
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -434,10 +417,7 @@ C  /* Deck rmolchr */
 C
 C     Calculates sum of all nuclear charges
 C
-      use maxaqn_mod, only: MXAQN, MXQN
       use nuclei_mod, only: CHARGE, ISTBNU, NUCIND
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
       use symmet_mod, only: FMULT
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1929,7 +1909,6 @@ C
       END
 C  /* Deck pr2der */
       SUBROUTINE PR2DER(CHESS,NROW,NDIM,LUPRI)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NAMDPX
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1973,9 +1952,7 @@ C
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: NAMDPX, NAMEX, NUCDEP, NUCIND
       use codata_mod, only: ALPHA2
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCOOR
 !      use chrxy_mod, only: CHRXYZ
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2090,9 +2067,7 @@ C
       END
 C  /* Deck tradip */
       SUBROUTINE TRADIP(SDIPDR,CDIPDR,CSTRA,SCTRA,NCOOR,ITYPEF,ITYPEC)
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCOOR
       use symmet_mod, only: IPTAX
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2126,10 +2101,7 @@ C  /* Deck dp0pri */
 !
       use symmet_mod, only: ISYMAX, NAXREP
       use codata_mod, only: DEBYE
-      use mxcent_mod, only: MXCENT
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
       use chrxyz_mod, only: CHRXYZ
 #include "implicit.h"
       INTEGER :: I
@@ -2157,9 +2129,6 @@ C     Determine center of mass in orgcom.h(CMXYZ) from information in common blo
 C     K.Ruud, June-94
 C
 C
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
       use codata_mod, only: XFAMU
       use orgcom_mod, only: CMXYZ
       use nuclei_mod, only: CORD, ISOTOP, ISTBNU, IZATOM, NATOMS, NUCIND
@@ -2201,7 +2170,6 @@ C     ... Total NUClear MASs = TOTal MASs - Total ELeCtron MASs
 C  /* Deck vibmas */
       SUBROUTINE VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,NNATOM,
      &                  GEOM,ORIGIN,IPRINT)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use cbisol_mod, only: SOLVNT
       use priunit_mod, only: LUPRI
       use codata_mod, only: XTANG
@@ -2263,9 +2231,6 @@ C     J. J. Aucar, 2024
       use orgcom_mod, only: NCHBC
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, IZATOM, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use memory_allocator
       IMPLICIT NONE
@@ -2324,9 +2289,6 @@ C     tuh Jun 29 1988
 C
       use nuclei_mod, only: ISTBNU, NUCIND, NUCNUM
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
       use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, NCRREP, PT
       use kinds_mod, only: dp
 #include "implicit.h"

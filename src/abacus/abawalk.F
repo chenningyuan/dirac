@@ -1191,11 +1191,9 @@ C  /* Deck wlkcgh */
      *                  DOHESS,DODIP,NCRTOT,N2CRT,NXYZ,NCART,START,
      *                  IPRINT)
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: FMULT, IPTAX, IPTCNT, MAXREP, NCRREP
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use moldip_mod, only: DIP0
-      use maxorb_mod, only: MXCORB
       use taymol_mod, only: GRDMOL, HESMOL
       use nuclei_mod, only: ISTBNU, NUCIND
       use kinds_mod, only: dp
@@ -1585,9 +1583,6 @@ C  /* Deck wlkeig */
      &                  THRIND,WORK,CNDHES,INDHES,LWORK,IZEROG,NZEROG,
      &                  DOREPW,NCRTOT,N2CRT,NTMAT,PRJTRO,IPRINT)
       use iratdef_mod, only: IRAT
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use symmet_mod, only: MAXREP, NCRREP
       use prkoor_mod, only: NPRREP
@@ -2008,13 +2003,10 @@ C Modified 26-Nov-1986 tuh, for symmetry 17-Oct-1989
 C
 C     Write MOLECULE integral input deck on unit LUMOL.
 C
-      use maxaqn_mod, only: MXAQN, MXQN
       use dummy_mod, only: IDUMMY
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: CHARGE, ISTBNU, NUCIND
       use symmet_mod, only: ISYMAX, MAXREP, PT
-      use maxorb_mod, only: MXCORB
       use molinp_mod, only: MLINE, NCLINE, NMLAU, NMLINE
       use cbisol_mod, only: NCNTCV, SOLVNT
       use kinds_mod, only: dp
@@ -3137,10 +3129,7 @@ C  /* Deck wlkinc */
 C
 C     Atomic displacements for numerical differentiation
 C
-      use maxorb_mod, only: MXCORB
       use nuclei_mod, only: CORD, ISTBNU, NUCIND
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: FMULT, IPTCNT
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
@@ -4724,9 +4713,6 @@ C
 #endif /* ! PRG_DIRAC */
 C  /* Deck wlkcor */
       SUBROUTINE WLKCOR(STPSYM,STPCAR,NCART,NCRIND,IPRINT)
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: FMULT, IPTCNT
       use nuclei_mod, only: ISTBNU, NUCIND
 #include "implicit.h"

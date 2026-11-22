@@ -27,7 +27,6 @@ C
 C     Initializes everything that has to do with redundant internal
 C     coordinates.
 C
-      use mxcent_mod, only: MXCENT
       use optinf_mod, only: IPRINT
 #include "implicit.h"
       DIMENSION WILBMT(MXRCRD*MX2CRD), BMTRAN(MXRCRD*MXRCRD)
@@ -151,7 +150,6 @@ C
       use priunit_mod, only: LUPRI
       use optinf_mod, only: CONOPT, ICNSTR, INTCRD, IPRINT
       use pi_mod, only: PI
-      use mxcent_mod, only: MXCENT
       use codata_mod, only: XTANG
 #include "implicit.h"
       INTEGER :: I
@@ -216,7 +214,7 @@ C
 C     Converts normal coordinates to redundant internal coordinates.
 C
       use nuclei_mod, only: CORD, NUCIND
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
       use optinf_mod, only: DELINT, ICRTCR, IINTCR, INTCRD, IPRINT,
      &  IREDIC, REDINT, STPSYM
       use codata_mod, only: XFAMU
@@ -870,7 +868,6 @@ C  /* Deck rredun */
 C
 C     Reduces the redundancy of the redundant internal coordinates.
 C
-      use mxcent_mod, only: MXCENT
       use optinf_mod, only: CRDIN1, IINTCR, INTCRD, IPRINT
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
@@ -1980,7 +1977,7 @@ C  /* Deck gtbinv */
 !
       use optinf_mod, only: DELINT, ICRTCR, IINTCR, IPRINT, IREDIC,
      &  NPROJ
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2462,7 +2459,7 @@ C     Cartesian coordinates:
 C                              g_x = B^t g_q
 C
       use optinf_mod, only: ICRTCR, IINTCR
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 #include "implicit.h"
       INTEGER :: I,J
       DIMENSION GRADQ(MXRCRD), GRADX(MXCOOR), WILBMT(MXRCRD,MXCOOR)
@@ -2483,7 +2480,7 @@ C     internal coordinates:
 C                              g_q = (B^t)^-1 g_x
 C
       use optinf_mod, only: ICRTCR, IINTCR
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 #include "implicit.h"
       INTEGER :: I,J
       DIMENSION GRADX(MXCOOR), GRADQ(MXRCRD), BMTINV(MXRCRD,MXCOOR)
@@ -2624,11 +2621,9 @@ C
       use priunit_mod, only: LUPRI
       use optinf_mod, only: GRADNM, GRDINT, ICRTCR, IINTCR, IPRINT,
      &  NCRTOT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCOOR
       use symmet_mod, only: FMULT, IPTCNT, MAXREP, NCRREP
       use taymol_mod, only: GRDMOL, HESMOL
-      use maxorb_mod, only: MXCORB
       use nuclei_mod, only: ISTBNU, NUCDEP, NUCIND
 #include "implicit.h"
       DIMENSION SCLVEC(MXCOOR), HESTMP(MXCOOR,MXCOOR)
@@ -2714,7 +2709,6 @@ C     has been requested, we have to construct a matrix of constraints
 C     and modify the projection matrix.
 C
       use optinf_mod, only: CONOPT, GRDINT, ICNSTR, IPRINT
-      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J,K
@@ -2908,7 +2902,7 @@ C     The Hessian in redundant internal coordinates is diagonalized.
 C
       use optinf_mod, only: EVAL, GRDDIA, GRDINT, IINTCR, INDTOT,
      &  IPRINT, RATFUN, SADDLE
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3819,16 +3813,14 @@ C
       use gnrinf_mod, only: HRINPC, NEWSYM, RDINPC, RDMLIN
 #endif
       use nuclei_mod, only: CORD, ISTBNU, NONTYP, NUCIND, NUCNUM
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use molinp_mod, only: MLINE, NCLINE, NMLINE
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
       use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, NAXREP,
      &  NCRREP, PT
 !      use cbiwlk_mod, only: START, ZERGRD
       use optinf_mod
       use cbirea_mod, only: BASIS
-      use maxorb_mod, only: MXCORB
 #ifdef PRG_DIRAC
       use dcbgen_mod, only: DOHUCKEL, HRINPC, NEWSYM, RDINPC, RDMLIN
 #endif
@@ -4059,7 +4051,7 @@ C     coordinates using the partitioned rational function approach.
 C
       use optinf_mod, only: EVAL, GRDDIA, GRDINT, IINTCR, IPRINT,
      &  NSPMOD, STPINT, STPSYM, TRSTRA
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"

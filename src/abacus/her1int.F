@@ -64,17 +64,15 @@ C  /* Deck pr1dr1 */
 #ifdef PRG_DIRAC
       use dcbgen_mod, only: DOHUCKEL
 #endif
-      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN
       use priunit_mod, only: LUPRI
       use onecom_mod
       use nuclei_mod, only: NUCNUM
       use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX,
      &  LCLASS, NCENT, NHKT, NLRGSH, NSMLSH, NUCO, NUMCF, SPHR
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use orgcom_mod, only: CAVORG, CMXYZ, DIPORG, GAGORG, ORIGIN
       use pi_mod, only: PI
       use ccom_mod, only: THRS
-      use maxorb_mod, only: MXCORB, MXSHEL
       use symmet_mod, only: FMULT, ISYMAO, MAXREP, MULT
       use symind_mod, only: INDFA, INDFB, ISOFRA, ISOFRB
       use dummy_mod, only: DUMMY
@@ -731,7 +729,6 @@ C  /* Deck pr1sop */
 
       use iratdef_mod, only: IRAT
       use onecom_mod, only: KCKTAB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP, NUCIND
 #include "implicit.h"
       LOGICAL ANTI, DOATOM(NUCIND), TRIANG, SQUARE, DONUC1, DOMOM1
@@ -772,9 +769,6 @@ C  /* Deck pr1so1 */
 #ifdef PRG_DIRAC
       use dcbgen_mod, only: DOHUCKEL
 #endif
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use symmet_mod, only: FMULT, ISYMAX, MAXOPR, PT
       use shells_mod, only: LCLASS
@@ -1138,10 +1132,7 @@ C MI/HJAaJ - added new integrals for NMR & magnetizabilities with LAO
       use pi_mod, only: PI
       use priunit_mod, only: LUPRI
       use orgcom_mod, only: CAVORG, CMXYZ, DIPORG, GAGORG, ORIGIN
-      use aovec_mod, only: MXCONT
-      use maxorb_mod, only: MXPRIM
       use primit_mod, only: PRICCF, PRIEXP
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.00D00, D3 = 3.00D00, D3INV = D1/D3,
@@ -2037,14 +2028,10 @@ C  /* Deck pr1prd */
 !
       use symmet_mod, only: FMULT, ISYMAX, MAXOPR, PT
       use orgcom_mod, only: ORIGIN
-      use maxorb_mod, only: MXCORB, MXPRIM
       use primit_mod, only: PRICCF, PRIEXP
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use onecom_mod
       use nuclei_mod, only: CORD, ISTBNU, NUCIND
-      use maxaqn_mod, only: MXAQN, MXQN
-      use aovec_mod, only: MXCONT
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.00D00, D3 = 3.00D00, D3INV = D1/D3
@@ -2201,7 +2188,6 @@ C     tuh 23 Nov 1989
 C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB
-      use maxaqn_mod, only: MXAQN
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          AHGTF(*), SHLINT(KCKTAB,3)
@@ -2257,7 +2243,6 @@ C
 C     tuh 1989
 C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-      use maxaqn_mod, only: MXAQN
       use onecom_mod, only: KCKTA, KCKTB
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -2298,7 +2283,6 @@ C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: ICENTA, ICENTB, ISTEPU, ISTEPV, KCKTA,
      &  KCKTAB, KCKTB, NAHGTF
-      use maxaqn_mod, only: MXAQN
       implicit none
 C
 
@@ -2454,7 +2438,6 @@ C     tuh 1989
 C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
-      use maxaqn_mod, only: MXAQN
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3), ORIGIN(3)
@@ -2493,7 +2476,6 @@ C
 C     K.Ruud, Nov. 1991. Based on TUH's subroutine CINT0, but modified
 C     for use in HERPRO.
 C
-      use maxaqn_mod, only: MXAQN
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
@@ -2538,7 +2520,6 @@ C
       use codata_mod, only: ALPHA2
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
-      use maxaqn_mod, only: MXAQN
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB)
@@ -2584,7 +2565,6 @@ C
 C     K.Ruud, Aug. 1992
 C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-      use maxaqn_mod, only: MXAQN
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2643,7 +2623,6 @@ C
 C     Kenneth Ruud's first subroutine. Modified Dec. 1991, KR
 C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-      use maxaqn_mod, only: MXAQN
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2687,7 +2666,6 @@ C     K. Ruud, Oct. 1991
 C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
-      use maxaqn_mod, only: MXAQN
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0
@@ -2747,7 +2725,6 @@ C     dj oct 08, based on SM2INT
 C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
-      use maxaqn_mod, only: MXAQN
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0
@@ -2824,7 +2801,6 @@ C
 C     K. Ruud, Aug.-93.
 C     Rewritten in order to separate dipole origin, aug.-94 KR
 C
-      use maxaqn_mod, only: MXAQN
       use orgcom_mod, only: DIPORG
       use onecom_mod, only: CORAX, CORAY, CORAZ, KCKTA, KCKTAB, KCKTB
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
@@ -2902,7 +2878,6 @@ C     K. Ruud, Aug.-93
 C
       use orgcom_mod, only: DIPORG
       use onecom_mod, only: CORAX, CORAY, CORAZ, KCKTA, KCKTAB, KCKTB
-      use maxaqn_mod, only: MXAQN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3075,7 +3050,6 @@ C
 C     K. Ruud, February.-02.
 C     Based on CM1INT
 C
-      use maxaqn_mod, only: MXAQN
       use orgcom_mod, only: DIPORG
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: CORAX, CORAY, CORAZ, KCKTA, KCKTAB, KCKTB
@@ -3244,7 +3218,6 @@ C     K.Ruud, Oct 1991, Modified Dec. 1991, KR
 C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
-      use maxaqn_mod, only: MXAQN
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
@@ -3284,7 +3257,6 @@ C     K.Ruud, Feb. 1992
 C
 CMI/HJ March 2003 Added parameter DOKINE to decide whether calculate the only
 C       the potential contribution (DOKINE=.false.)
-      use maxaqn_mod, only: MXAQN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB
       use kinds_mod, only: dp
@@ -3383,7 +3355,6 @@ C the article
 C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: CORBX, CORBY, CORBZ, KCKTA, KCKTAB, KCKTB
-      use maxaqn_mod, only: MXAQN
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D2INV = 0.50D0, D4INV = 0.25D0
@@ -3478,7 +3449,6 @@ C     (used by Dirac for DSUSLH because Vnuc is same in 4-comp, but kin.en. is n
 
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB
-      use maxaqn_mod, only: MXAQN
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D4INV = 0.250D0, D8INV = 0.1250D0,
@@ -3629,7 +3599,6 @@ C     Nuclear shielding tensor integrals without London orbital contribution
 C
 C     K. Ruud, March 1992
 C
-      use maxaqn_mod, only: MXAQN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
       use kinds_mod, only: dp
@@ -3711,7 +3680,6 @@ C
 C     K. Ruud, March 1992
 C
       use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
-      use maxaqn_mod, only: MXAQN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3819,7 +3787,6 @@ C     K.Ruud, July 1992
 C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
-      use maxaqn_mod, only: MXAQN
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &              SHLINT(KCKTAB,NOPTYP), AHGTF(*)
@@ -3869,7 +3836,6 @@ C     Electric field gradient integrals
 C
 C     K.Ruud, June 1992
 C
-      use maxaqn_mod, only: MXAQN
       use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
@@ -3979,7 +3945,6 @@ C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: CORAX, CORAY, CORAZ, ISTEPU, ISTEPV, KCKTA,
      &  KCKTAB, KCKTB, NAHGTF
-      use maxaqn_mod, only: MXAQN
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D00, D1 = 1.0D00, D3 = 3.0D00,
@@ -4297,7 +4262,6 @@ C     Nuclear electric field integrals
 C
 C     K.Ruud, March 1992
 C
-      use maxaqn_mod, only: MXAQN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
 #include "implicit.h"
@@ -4364,7 +4328,6 @@ C  /* Deck qdpint */
 C
 C     tuh 1989
 C
-      use maxaqn_mod, only: MXAQN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use kinds_mod, only: dp
@@ -4465,7 +4428,6 @@ C     tuh 1989
 C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
-      use maxaqn_mod, only: MXAQN
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D0
@@ -4554,7 +4516,6 @@ C  /* Deck dpvint */
 C
 C     tuh Jan. 17 1990
 C
-      use maxaqn_mod, only: MXAQN
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 #include "implicit.h"
@@ -4596,7 +4557,6 @@ C
      &                         shlint)
 
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
-      use maxaqn_mod, only: MXAQN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       implicit none
 
@@ -4662,15 +4622,12 @@ C
 C     tuh Feb 91
 C
       use nuclei_mod, only: CORD, ISTBNU, NUCIND
-      use maxorb_mod, only: MXCORB
       use symmet_mod, only: ISYMAX, MAXOPR, MAXREP, PT
-      use maxaqn_mod, only: MXAQN, MXQN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use codata_mod, only: GFAC
       use pi_mod, only: PI
       use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ,
      &  KCKTA, KCKTAB, KCKTB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
 C
@@ -4738,10 +4695,7 @@ C
       use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ,
      &  KCKTA, KCKTAB, KCKTB
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
       use kinds_mod, only: dp
 #include "implicit.h"
 C
@@ -5047,14 +5001,10 @@ C--------------------------------------------------------------------------
      &                     DIFABY,DIFABZ,DONUC1,DOMOM1)
       use symmet_mod, only: MAXREP
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use primit_mod, only: PRICCF, PRIEXP
-      use maxaqn_mod, only: MXAQN, MXQN
       use orgcom_mod, only: ORIGIN
       use onecom_mod
       use pi_mod, only: PI
-      use aovec_mod, only: MXCONT
-      use maxorb_mod, only: MXCORB, MXPRIM
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use nuclei_mod, only: GNUEXP, ISTBNU, NUCIND
       use kinds_mod, only: dp
@@ -5256,9 +5206,6 @@ C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCIND
       use codata_mod, only: ALPHA2
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -5312,7 +5259,6 @@ C
 C     tuh 8 Feb 1991
 C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-      use maxaqn_mod, only: MXAQN
       use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -5376,10 +5322,7 @@ C  /* Deck nsttra */
 C  MI entry for LAO project
       use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
      &  NHKTA, NHKTB
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
-      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
@@ -5433,9 +5376,6 @@ CMI ... the RNST integral (204) is truly SQUARE !
 C  /* Deck psotra */
       SUBROUTINE PSOTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
       use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
      &  NHKTA, NHKTB
@@ -5477,9 +5417,6 @@ C  /* Deck psotra */
 C  /* Deck hdbtra */
       SUBROUTINE HDBTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,IORBA,IORBB,
      &                  NBAST,INTADR,IPRINT)
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
       use onecom_mod, only: HKAB, KCKTAB, NCENTA
 #include "implicit.h"
@@ -5509,9 +5446,6 @@ C  /* Deck hdbtra */
 C  /* Deck hdotra */
       SUBROUTINE HDOTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,IORBA,IORBB,
      &                  NBAST,INTTYP,IPRINT)
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
       use onecom_mod, only: HKAB, KCKTAB, NCENTA, NCENTB
 #include "implicit.h"
@@ -5538,12 +5472,9 @@ C  /* Deck symsqr */
       SUBROUTINE SYMSQR(AO,SO,IREPO,ISYMOP,IORBA,IORBB,FACTOR,NBAST,
      &                  IPRINT)
 C
-      use mxcent_mod, only: MXCENT
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTSYM, ISYMAO, MAXREP, PT
       use onecom_mod, only: KHKTA, KHKTAB, KHKTB, MULA, MULB, NHKTA,
      &  NHKTB
-      use maxorb_mod, only: MXCORB
 #include "implicit.h"
       DIMENSION AO(KHKTAB), SO(NBAST,NBAST)
       DO 100 IREPA = 0, MAXREP
@@ -5569,7 +5500,6 @@ C  /* Deck sdint */
      &                 NOPTYP,NATOMC,INTTYP,SAAB,EXPP,CORCX,CORCY,CORCZ,
      &                 CORPX,CORPY,CORPZ)
 C
-      use maxaqn_mod, only: MXAQN
       use pi_mod, only: PI
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use codata_mod, only: GFAC
@@ -5672,9 +5602,6 @@ C
 C  /* Deck sdtra */
       SUBROUTINE SDTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                 NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
       use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
      &  NHKTA, NHKTB
@@ -5726,13 +5653,10 @@ C  /* Deck pvctra */
 C
 C     J.Thyssen - Oct 7 1999
 C
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
      &  NHKTA, NHKTB
       use nuclei_mod, only: ISTBNU, NUCIND
       use symmet_mod, only: MAXREP, PT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
@@ -5771,9 +5695,6 @@ C     K.Ruud, July 92
 C
       use symmet_mod, only: MAXREP, PT
       use nuclei_mod, only: ISTBNU, NUCIND
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
       use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
      &  NHKTA, NHKTB
 #include "implicit.h"
@@ -5816,9 +5737,6 @@ C
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
       use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
      &  NHKTA, NHKTB
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
@@ -5857,9 +5775,6 @@ C
 C  /* Deck efgtra */
       SUBROUTINE EFGTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,IFGTBL,IPRINT)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX, MAXREP, PT
       use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
      &  NHKTA, NHKTB
@@ -5906,9 +5821,6 @@ C
 C  /* Deck efttra */
       SUBROUTINE EFTTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,IFGTBL,IPRINT)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX, MAXREP, PT
       use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
      &  NHKTA, NHKTB
@@ -5959,9 +5871,6 @@ C
 C  /* Deck dsotra */
       SUBROUTINE DSOTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,DOATOM,
      &                  KAB,TRIANG,NATOM,INTADR,NSHINT,IPRINT)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, PT
       use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
      &  NHKTA, NHKTB
@@ -6118,7 +6027,6 @@ C  /* Deck dsoint */
 C
 C     tuh & ov Feb 09 91
 C
-      use maxaqn_mod, only: MXAQN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
 #include "implicit.h"
@@ -6200,10 +6108,7 @@ C  Purpose:
 C          Symmetry unpack the matrix AINT into WORK
 C
 C
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use symmet_mod, only: MAXREP, NAOS, NPARNU
-      use mxcent_mod, only: MXCENT
 #include "implicit.h"
 C
       DIMENSION AINT(NELMNT),WORK(NELMNT),IOFFBL(8)
@@ -6269,7 +6174,6 @@ C
 C     tuh 1993
 C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-      use maxaqn_mod, only: MXAQN
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -6406,12 +6310,9 @@ C     Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
 C     Hans Joergen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
 C
 C***********************************************************************
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
       use dgroup_mod, only: IBTOSF
       use symmet_mod, only: ISYMAX
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
-      use maxaqn_mod, only: MXAQN, MXQN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use dcbwav_mod, only: WAVEVEC
       use kinds_mod, only: dp
@@ -6580,7 +6481,6 @@ C
 C     K.Ruud-94
 C
       use onecom_mod, only: CORAX, CORAY, CORAZ, KCKTA, KCKTAB, KCKTB
-      use maxaqn_mod, only: MXAQN
       use orgcom_mod, only: ORIGIN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
@@ -6692,7 +6592,6 @@ C     K.Ruud-94
 C
       use orgcom_mod, only: ORIGIN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-      use maxaqn_mod, only: MXAQN
       use onecom_mod, only: CORAX, CORAY, CORAZ, KCKTA, KCKTAB, KCKTB
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -6805,7 +6704,6 @@ C        H. Heiberg, -95
 C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
-      use maxaqn_mod, only: MXAQN
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
@@ -6865,7 +6763,6 @@ C  /* Deck se1inb */
 C
 C        H. Heiberg, -95
 C
-      use maxaqn_mod, only: MXAQN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use kinds_mod, only: dp
@@ -6915,7 +6812,6 @@ C  /* Deck h1eint */
 C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
-      use maxaqn_mod, only: MXAQN
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D4INV = 0.250D0, D2INV = 0.50D0
@@ -7007,7 +6903,6 @@ C     MI febr.2006 - added multyplying by 1/2 to make integrals compatible with 
 C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
-      use maxaqn_mod, only: MXAQN
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D2INV = 0.50D0
@@ -7097,7 +6992,6 @@ C     Written by Thomas Enevoldsen 20. nov 1997
 C     Integrals for Qmn<r(\alpha \cdot p)>
 C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-      use maxaqn_mod, only: MXAQN
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -7158,7 +7052,6 @@ C
 C     T. Enevoldsen
 C
       use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB
-      use maxaqn_mod, only: MXAQN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -7225,11 +7118,7 @@ C  /* Deck pr1prv */
       use primit_mod, only: PRICCF, PRIEXP
       use symmet_mod, only: MAXREP
       use priunit_mod, only: LUPRI
-      use aovec_mod, only: MXCONT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
       use onecom_mod
-      use maxorb_mod, only: MXCORB, MXPRIM
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.00D00, D3 = 3.00D00, D3INV = D1/D3,
@@ -7383,7 +7272,6 @@ C
 C Note MI,Oct.2010: These integrals already contain derived factor of 1/4
 C
 C*********************************************************************
-      use maxaqn_mod, only: MXAQN
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
@@ -7549,7 +7437,6 @@ C MI,note,Oct.2012: All terms are multiplied with factor 1/2
 C
 C*********************************************************************
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
-      use maxaqn_mod, only: MXAQN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -7713,7 +7600,6 @@ C
 C Note,MI,Oct.2012:  integrals -Z_A/r_iA already contain factor of +1/4, resulting in -1/4
 C
 C***************************************************************************************
-      use maxaqn_mod, only: MXAQN
       use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
@@ -7813,9 +7699,6 @@ C
       use onecom_mod, only: HKAB, ICENTA, ICENTB, KCKTAB, KHKTA, KHKTB,
      &  LDIAG, MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP,3), SOINT(NELMNT,NOPTYP),
@@ -7899,9 +7782,6 @@ C
       use onecom_mod, only: HKAB, KCKTAB, KHKTA, KHKTB, LDIAG, MULA,
      &  MULB, NCENTA, NCENTB, NHKTA, NHKTB
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,3), SOINT(NELMNT,NOPTYP)
@@ -7959,7 +7839,6 @@ C
 C     K.Ruud, July-97
 C
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
-      use maxaqn_mod, only: MXAQN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -8006,7 +7885,6 @@ C  /* Deck qugint */
 C
 C     K.Ruud, October/November-97
 C
-      use maxaqn_mod, only: MXAQN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
 #include "implicit.h"
@@ -8067,9 +7945,6 @@ C
 C  /* Deck dpgtra */
       SUBROUTINE DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
       use onecom_mod, only: HKAB, KCKTAB, KHKTA, KHKTB, LDIAG, MULA,
      &  MULB, NCENTA, NCENTB, NHKTA, NHKTB
@@ -8142,9 +8017,6 @@ C    &                          *PT(IBTAND(IREP,ISYMOP))
 C  /* Deck qugtra */
       SUBROUTINE QUGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
       use onecom_mod, only: HKAB, KCKTAB, KHKTA, KHKTB, LDIAG, MULA,
      &  MULB, NCENTA, NCENTB, NHKTA, NHKTB

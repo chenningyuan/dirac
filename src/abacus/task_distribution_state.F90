@@ -12,8 +12,6 @@ module task_distribution_state
 contains
 
   integer function required_task_order_size(is_parallel) result(required_size)
-      use aovec_mod, only: MXAOVC
-      use maxorb_mod, only: MXCORB, MXSHEL
       use blocks_mod, only: NLRGBL, NSMLBL
 #include "implicit.h"
 !#include "dcbdhf.h"
@@ -67,8 +65,6 @@ contains
   end subroutine mark_task_order_valid
 
   integer function task_class_offset(i2typ) result(offset)
-      use aovec_mod, only: MXAOVC
-      use maxorb_mod, only: MXCORB, MXSHEL
       use blocks_mod, only: NLRGBL, NSMLBL
 #include "implicit.h"
 !#include "dcbdhf.h"

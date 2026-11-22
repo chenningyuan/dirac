@@ -107,13 +107,10 @@ C  /* Deck oneso1 */
      &  GRD_NOSMLV, INTCLASS
 #endif
       use dummy_mod, only: DUMMY, IDUMMY
-      use maxorb_mod, only: MXCORB
       use nuclei_mod, only: NUCDEP, NUCNUM
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use onecom_mod
-      use maxaqn_mod, only: MXAQN, MXQN
 #ifdef PRG_DIRAC
       use dgroup_mod, only: IPQTOQ, NZ
 #endif
@@ -625,12 +622,9 @@ C     density matrix over distinct pairs of AOs
 C
 C                                          880418  PRT
 C
-      use maxorb_mod, only: MXCORB, MXSHEL
       use pincom_mod, only: IPIND
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT
       use symmet_mod, only: FMULT, ISYMAO, MAXOPR, MAXREP, NAOS, PT
-      use maxaqn_mod, only: MXAQN, MXQN
       use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
 #include "implicit.h"
       INTEGER :: I,J
@@ -703,11 +697,8 @@ C     from distinct AO integral derivatives
 C                                                PRT & TUH  880428
 C
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
       use ccom_mod, only: THRS
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: ISTBNU, NUCDEP
-      use maxorb_mod, only: MXCORB
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
 #include "implicit.h"
       INTEGER :: I,J
@@ -804,13 +795,10 @@ C     Arrange calculation of symmetry-adapted integral derivatives
 C     from distinct AO nuclear attraction integral derivatives
 C                                                PRT & TUH  880502
 C
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: ISTBNU, NUCDEP
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
-      use maxorb_mod, only: MXCORB
       use ccom_mod, only: THRS
-      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I,J
       LOGICAL LDIAG, ONECEN
@@ -927,13 +915,10 @@ C     (derivatives) for the totally symmetric case
 C                                          880407  PRT
 C     Modified tuh 880819
 C
-      use maxaqn_mod, only: MXAQN, MXQN
       use symind_mod, only: INDFA, INDFB
-      use maxorb_mod, only: MXCORB
       use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
       use priunit_mod, only: LUPRI
       use symmet_mod, only: ISYMAO, MAXREP, NPARSU, PT
-      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I,J
       PARAMETER (LUTEMP = 48, IREPO = 0)
@@ -1027,9 +1012,6 @@ C
       use symind_mod, only: INDFA, INDFB
       use priunit_mod, only: LUPRI
       use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
       use symmet_mod, only: ISYMAO, MAXREP, NAOS, NPARNU, PT
 #include "implicit.h"
       INTEGER :: I,J
@@ -1151,7 +1133,6 @@ C                                          920511  PRT
 C
       use onecom_mod, only: KCKTA, KCKTB, KHKTA, KHKTB, NHKTA, NHKTB,
      &  SPHRA, SPHRB
-      use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
       use sphtrm_mod, only: CSP, ISPADR
 #include "implicit.h"

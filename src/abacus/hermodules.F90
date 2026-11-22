@@ -591,7 +591,7 @@
 !     JHS050707 Writes the data contained in the list of atoms to the common blocks.
 
       use nuclei_mod, only: CHARGE, CORD, GAUNUC, GNUEXP, IATOMTYP, ISOTOP, IZATOM, NAMEX, NAMN, NUCIND
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
       IMPLICIT NONE
 !     CONSTANTS
 
@@ -723,16 +723,14 @@
 #ifdef PRG_DIRAC
       use dcbgen_mod, only: TWOCOMP
 #endif
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXBSETS
       use nuclei_mod, only: NONT, NONTYP, NOORBT, NUCDEP
       use symmet_mod, only: MAXREP
-      use maxorb_mod, only: MXCORB
       use cbirea_mod, only: FAMPAR, INPTST, IPREAD, NFAMEXP, TOL_SYMADD, UNCONT
       use ccom_mod, only: DOCART, DOSPHE, NHTYP, THRS
 #ifdef PRG_DIRAC
       use dgroup_mod, only: ATOMIC, LINEAR, NONATM
 #endif
-      use maxaqn_mod, only: MXAQN, MXQN
       use infpar_mod, only: MYTID
       use RECP_NTR
       IMPLICIT NONE

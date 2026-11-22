@@ -19,9 +19,9 @@ C  /* Deck pr1int */
      &                  TRIANG,PROPRI,IPRINT)
       use iratdef_mod, only: IRAT
       use dummy_mod, only: DUMMY
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN
       use symmet_mod, only: MAXREP, NCOS
       use shells_mod, only: KMAX, NLRGSH, NSMLSH
       use nuclei_mod, only: NBASIS, NLARGE, NPBAS, NPLRG, NPSML, NSMALL,
@@ -127,7 +127,6 @@ C     (TEC)+MI+HJAaJ,2002-2003)
 C
 
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP
 #include "implicit.h"
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, PROPRI, SQUARE,
@@ -256,13 +255,10 @@ C  MI(+HJ),2003...last added operators are for relativistic  NMR shielding
 C          and magnetizabilities when using London atomic orbitals,
 C          in total 8 new integrals
 C
-      use maxaqn_mod, only: MXAQN, MXQN
       use shells_mod, only: ISTBAO, KHKT, KMAX
       use symmet_mod, only: ISYMAX, MAXREP
       use priunit_mod, only: LUPRI
       use maxmom_mod, only: MXQNM
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB, MXSHEL
       use nuclei_mod, only: NUCIND
 #include "implicit.h"
       PARAMETER (NTABLE = 97)
@@ -2473,12 +2469,9 @@ C  /* Deck ioden */
 C  /* Deck setatm */
       SUBROUTINE SETATM(DOATOM,NATOM,INTTYP)
 C  MI,HJ(TEC) - minor modification for LAO integral types
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use cbiher_mod, only: ALLATM, IPATOM, NPATOM
       use nuclei_mod, only: ISTBNU, NUCDEP, NUCIND
-      use maxorb_mod, only: MXCORB
       use symmet_mod, only: MULT
 #include "implicit.h"
 C
@@ -2542,8 +2535,6 @@ C
 C  /* Deck cmtyp */
       SUBROUTINE CMTYP(IORDER,NOPTYP,INTREP,LABINT)
       use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX
       use chrnos_mod, only: CHRNOS
 #include "implicit.h"
@@ -2576,8 +2567,6 @@ C
 C  /* Deck sl1typ */
       SUBROUTINE SL1TYP(IORDER,NOPTYP,INTREP,LABINT)
       use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX
       use chrnos_mod, only: CHRNOS
 #include "implicit.h"
@@ -2621,8 +2610,6 @@ C
 C  /* Deck sl2typ */
       SUBROUTINE SL2TYP(IORDER,NOPTYP,INTREP,LABINT)
       use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX
       use chrnos_mod, only: CHRNOS
 #include "implicit.h"
@@ -2708,9 +2695,7 @@ C
       END
 C  /* Deck frmtyp */
       SUBROUTINE FRMTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
       use symmet_mod, only: IPTNUC, MAXREP
       use chrnos_mod, only: CHRNOS
       use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND, NUCPRE
@@ -2745,11 +2730,9 @@ C  /* Deck frmtyp */
 !-------------------------------------------------------------------
       use chrnos_mod, only: CHRNOS
       use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND, NUCPRE
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use symmet_mod, only: IPTNUC, ISYMAX, MAXREP
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       DIMENSION INTREP(3*MXCENT)
       LOGICAL   DOATOM(NUCIND)
@@ -2802,9 +2785,7 @@ C  /* Deck frmtyp */
 ! Written by Konstantin Gaul @ RUG, August 2021
 !-------------------------------------------------------------------
       SUBROUTINE GRDRHONUCTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
       use symmet_mod, only: IPTNUC, ISYMAX, MAXREP
       use chrnos_mod, only: CHRNOS
       use nuclei_mod, only: ISTBNU, NUCIND
@@ -2846,11 +2827,9 @@ C  /* Deck nsttyp */
 C    MI/HJaJ - extended for LAO integral
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
       use nuclei_mod, only: NUCIND
-      use maxorb_mod, only: MXCORB
       use chrxyz_mod, only: CHRXYZ
       use chrnos_mod, only: CHRNOS
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
@@ -2897,9 +2876,7 @@ C TODO HJAaJ: this may be wrong ????? 5. Nov. 2002
       END
 C  /* Deck psotyp */
       SUBROUTINE PSOTYP(NOPTYP,INTREP,LABINT,DOATOM,INTADR,NATOM)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
       use symmet_mod, only: IPTCNT, MAXREP
       use chrnos_mod, only: CHRNOS
       use nuclei_mod, only: NUCIND
@@ -2934,9 +2911,7 @@ C  /* Deck psotyp */
       END
 C  /* Deck sdtyp */
       SUBROUTINE SDTYP(INTTYP,NOPTYP,INTREP,LABINT,INTADR,DOATOM,NATOM)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
       use chrxyz_mod, only: CHRXYZ
       use chrnos_mod, only: CHRNOS
@@ -2983,12 +2958,10 @@ C     Note: Integrals are obtained by numerical integration
 C           (Gaussian quadrature) of field integrals according to
 C           O. Matsuoka and T. Aoyama, JCP 73 , 5718 (1980).
 C
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use chrnos_mod, only: CHRNOS
       use symmet_mod, only: IPTCNT, MAXREP
       use nuclei_mod, only: NUCDEP, NUCIND
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
@@ -3061,9 +3034,7 @@ C
       END
 C  /* Deck hdbtyp */
       SUBROUTINE HDBTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
       use chrxyz_mod, only: CHRXYZ
       use chrnos_mod, only: CHRNOS
@@ -3099,9 +3070,6 @@ C  /* Deck hdbtyp */
       END
 C  /* Deck hdotyp */
       SUBROUTINE HDOTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,ANTISY,INTTYP)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, MAXREP
       use chrnos_mod, only: CHRNOS
       use nuclei_mod, only: NUCIND
@@ -3141,9 +3109,7 @@ C  /* Deck hdotyp */
       END
 C  /* Deck npetyp */
       SUBROUTINE NPETYP(NOPTYP,INTREP,NPETBL,LABINT,DOATOM,NATOM)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
       use symmet_mod, only: MAXREP
       use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND, NUCPRE
 #include "implicit.h"
@@ -3178,11 +3144,8 @@ C
      &                  doatom)
 
       use chrnos_mod, only: CHRNOS
-      use maxaqn_mod, only: MXAQN, MXQN
       use nuclei_mod, only: NUCIND
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: IPTCNT, MAXREP
-      use maxorb_mod, only: MXCORB
       implicit none 
 
 C
@@ -3229,12 +3192,9 @@ C
      &                     doatom)
 
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use chrxyz_mod, only: CHRXYZ
       use chrnos_mod, only: CHRNOS
       use nuclei_mod, only: NUCIND
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       implicit none 
 
 
@@ -3280,9 +3240,7 @@ C
       end subroutine
 
       SUBROUTINE EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
       use symmet_mod, only: IPTCNT, MAXREP
       use chrnos_mod, only: CHRNOS
       use nuclei_mod, only: NUCIND
@@ -3319,9 +3277,7 @@ C
 
 C  /* Deck efgtyp */
       SUBROUTINE EFGTYP(NOPTYP,INTREP,IFGTBL,LABINT,DOATOM,NATOM)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
       use symmet_mod, only: ISYMAX, MAXREP
       use chrxyz_mod, only: CHRXYZ
       use chrnos_mod, only: CHRNOS
@@ -3371,11 +3327,9 @@ C     Based on EFGTYP.
 C
 C     Written by J. Thyssen - Sept 30 1999
 C
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
       use chrnos_mod, only: CHRNOS
       use symmet_mod, only: ISYMAX, MAXREP
-      use maxaqn_mod, only: MXAQN, MXQN
       use chrxyz_mod, only: CHRXYZ
       use nuclei_mod, only: ISTBNU, NUCIND
 #include "implicit.h"
@@ -3458,9 +3412,6 @@ C
 C  /* Deck efgsp1 */
       SUBROUTINE EFGSP1(CARINT,SPHINT,IORDER,TRAMAT,WORK,LWORK,NXYZ,
      &                  NLM,NELMNT,NATOM,DOATOM,NOPTYP,IPRINT)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use symmet_mod, only: MAXREP
       use nuclei_mod, only: ISTBNU, NUCIND
@@ -3518,9 +3469,6 @@ C
 C     K.Ruud, June 1991
 C
       use symmet_mod, only: MAXREP
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use nuclei_mod, only: ISTBNU, NAMEX, NUCIND
       use chrnos_mod, only: CHRNOS
 #include "implicit.h"
@@ -3569,9 +3517,7 @@ C
       END
 C  /* Deck pvtyp */
       SUBROUTINE PVCTYP(NOPTYP,INTREP,IPVCTBL,LABINT,DOATOM,NATOM)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
       use symmet_mod, only: IPTNUC, MAXREP
       use chrnos_mod, only: CHRNOS
       use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND, NUCPRE
@@ -4074,11 +4020,9 @@ C  /* Deck dsotst */
       SUBROUTINE DSOTST(SOINT,DIFFER,NBAST,NELMNT,NOPTYP,LABINT,DOATOM,
      &                  NPQUAD,INTADR,IPRINT)
 C
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
       use nuclei_mod, only: NUCDEP, NUCIND
       use symmet_mod, only: IPTCNT, MAXREP
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER (D0 = 0.D0)
@@ -4144,9 +4088,7 @@ C
 
       SUBROUTINE DPGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
       use nuclei_mod, only: NUCIND
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
       use chrxyz_mod, only: CHRXYZ
       use chrnos_mod, only: CHRNOS
@@ -4184,9 +4126,7 @@ C
       END
       SUBROUTINE QUGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
       use nuclei_mod, only: NUCIND
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
       use chrxyz_mod, only: CHRXYZ
       use chrnos_mod, only: CHRNOS
@@ -4225,9 +4165,7 @@ C
       END
 C  /* Deck effdentyp */
       SUBROUTINE EFFDE2TYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
       use symmet_mod, only: IPTNUC, MAXREP
       use chrnos_mod, only: CHRNOS
       use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND, NUCPRE

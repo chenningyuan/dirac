@@ -30,10 +30,7 @@ C     Loop over operator irreps outside loop over components 880928 tuh
 C
       use symmet_mod, only: PT
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXCENT
       use twocom_mod, only: NOABCD
-      use maxaqn_mod, only: MXAQN, MXQN
       USE AOINT_ZERO
 #include "implicit.h"
       INTEGER :: I,J
@@ -151,10 +148,7 @@ C
       use twocom_mod, only: IPTREP, NINTMX, NINTSR, NOABCD
       use priunit_mod, only: LUPRI
       use twosta_mod, only: LWTOT, MWDRSY, MWTOT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use dorps_mod, only: DOREPS
-      use mxcent_mod, only: MXCENT
       use symmet_mod, only: ISYMAX, MAXREP, PT
       use doxyz_mod, only: DOXYZ
 #include "implicit.h"
@@ -233,9 +227,6 @@ C     Driver routine for symmetrization of spin-orbit integrals
 C     TUH and OV, 891111
 C
       use symmet_mod, only: ISYMAX
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
       use twocom_mod, only: IPTREP, NINTMX, NINTSR, NOABCD
 #include "implicit.h"
@@ -272,10 +263,7 @@ C     tuh Sep 7 92
 C
       use twosta_mod, only: LWTOT, MWDRSY, MWTOT
       use twocom_mod
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT
       use symmet_mod, only: ISYMAX, PT
       use kinds_mod, only: dp
 #include "implicit.h"

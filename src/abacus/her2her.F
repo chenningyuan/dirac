@@ -30,7 +30,6 @@ C
       use gnrinf_mod, only: PANAS
 #endif
       use twosta_mod, only: LWTOT, MWRJ00, MWTOT
-      use maxaqn_mod, only: MXQN
 #ifdef PRG_DIRAC
       use dcbgen_mod, only: PANAS
 #endif
@@ -67,7 +66,6 @@ C  /* Deck hr2dr1 */
      &                  MAXDER,NUABCD,IPQ0X,IPQ0Y,IPQ0Z,NOINT,ONECEN,
      &                  NUC1,NUC2,NUC12,NUC3,NUC4,NUC34,THRESH,IPRINT,
      &                  SIGNT,IODDHR,PANAS)
-      use maxaqn_mod, only: MXQN
       use twosta_mod, only: THERI, THERIX, TKTIME, TR000, TR000X
 #include "implicit.h"
       LOGICAL NOINT, ONECEN
@@ -121,7 +119,6 @@ C
 C     TUH 84
 C
       use twosta_mod, only: LWTOT, MWTOT
-      use maxaqn_mod, only: MXQN
 #include "implicit.h"
       LOGICAL ONECEN, NOINT
       DIMENSION RJ000(*), PQX(*), PQY(*), PQZ(*), COOR12(*), COOR34(*),
@@ -157,7 +154,6 @@ C
 C     TUH 84
 C
       use dcbham_mod, only: HFXMU
-      use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
       use twosta_mod, only: LWTOT, MWTOT
       use subdir_mod, only: DPATH1
@@ -427,7 +423,6 @@ C  /* Deck getgam */
      &                  WVALS,REXPW,IPRINT)
       use gamcom_mod, only: TABFJW, WVAL
       use pi_mod, only: PI
-      use maxaqn_mod, only: MXQN
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -574,7 +569,6 @@ C     Modified for triangular addressing March 92 - tuh
 C
       use hertop_mod, only: JTOP
       use twosta_mod, only: LWTOT, MWHRSQ, MWTOT
-      use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J

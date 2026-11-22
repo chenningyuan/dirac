@@ -126,12 +126,10 @@ C     Jan 1985 tuh
 C     Revised Jan 9 1987 tuh - zero charges introduced
 C     Revised Jun 25 1988 tuh - symmetry introduced
 C
-      use maxaqn_mod, only: MXAQN, MXQN
       use dorps_mod, only: DOREPS
       use past_mod, only: PASONE
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, MAXREP, PT
-      use maxorb_mod, only: MXCORB
       use cbinuc_mod, only: CUT, IPRINT, MAXDIF, SKIP
 #ifdef PRG_DIRAC
       use dcbgrd_mod, only: GRADNN
@@ -389,7 +387,6 @@ C
 C  /* Deck number_of_nuclei */
       INTEGER FUNCTION NUMBER_OF_NUCLEI(IPAR)
       use nuclei_mod, only: NUCDEP, NUCIND
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 C
 C     Purpose : report total number of nuclei (expansion centers) in the molecule.

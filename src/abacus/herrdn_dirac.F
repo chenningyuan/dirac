@@ -35,10 +35,8 @@ C***********************************************************************
       use ccom_mod, only: KHK
       use cbirea_mod, only: INPTST
       use molinp_mod, only: MLINE, NMLINE
-      use maxaqn_mod, only: MXQN
       use dcbgen_mod, only: BASDIR
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT
       use gencon_mod, only: MXCON_PARAM
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -391,7 +389,6 @@ C             0 - if not specified same as 3 (both down and up)
 C
 C*****************************************************************************
       use ccom_mod, only: KHK
-      use maxaqn_mod, only: MXQN
 #include "implicit.h"
       INTEGER :: I,J,K
 C
@@ -749,10 +746,8 @@ C     L. Visscher, Nov 16, 2000.
 C
 C******************************************************************************
       use primit_mod, only: NPSHEL, PRIEXP
-      use maxorb_mod, only: MXPRIM, MXSHEL
       use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NUCO
       use priunit_mod, only: LUPRI
-      use aovec_mod, only: MXCONT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I

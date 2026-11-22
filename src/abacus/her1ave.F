@@ -31,9 +31,6 @@ C
       use onecom_mod, only: ICENTA, KCKTAB, KHKTAB, NCENTA
       use ader_mod, only: IA0000, IA000X, IA000Y, IA000Z, IA00XX,
      &  IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
       use kinds_mod, only: dp
 #ifndef PRG_DIRAC
       use energy_mod, only: ENERNA
@@ -526,12 +523,9 @@ C
 #ifdef PRG_DIRAC
       use dcbgrd_mod, only: GRADNU, INTCLASS
 #endif
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use onecom_mod, only: ICENTA, ICENTB, KCKTAB, KHKTAB, NCENTA,
      &  NCENTB, SIGNBX, SIGNBY, SIGNBZ
       use symmet_mod, only: IPTCNT, MAXREP, PT
-      use mxcent_mod, only: MXCENT, MXCOOR
       use ader_mod
       use dorps_mod, only: DOREPS
       use kinds_mod, only: dp
@@ -1139,14 +1133,11 @@ C
 C     tuh 1985
 C     symmetry 081288 tuh
 C
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use onecom_mod, only: KCKTAB, KHKTAB, NCENTA, NCENTB, ONECEN,
      &  SIGNBX, SIGNBY, SIGNBZ
       use symmet_mod, only: IPTAX, IPTCNT, ISYMAX, MAXREP, PT
       use dipole_mod, only: DDIPE
       use dorps_mod, only: DOREPS
-      use mxcent_mod, only: MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -1279,14 +1270,11 @@ C
 C     jth 1997/04/24
 C     Based on AVEKFS by tuh
 C
-      use mxcent_mod, only: MXCENT, MXCOOR
       use symmet_mod, only: IPTCNT
 #ifdef PRG_DIRAC
       use dcbgrd_mod, only: GRADRO, INTCLASS
 #endif
       use dorps_mod, only: DOREPS
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use onecom_mod, only: KCKTAB, KHKTAB, NCENTA, NCENTB, SIGNBX,
      &  SIGNBY, SIGNBZ
       use kinds_mod, only: dp
@@ -1361,12 +1349,9 @@ C     Based on AVEKFS by tuh
 C
       use onecom_mod, only: KCKTAB, KHKTAB, NCENTA, NCENTB, SIGNBX,
      &  SIGNBY, SIGNBZ
-      use mxcent_mod, only: MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
 #ifdef PRG_DIRAC
       use dcbgrd_mod, only: GRADKN
 #endif
-      use maxorb_mod, only: MXCORB
       use dorps_mod, only: DOREPS
       use symmet_mod, only: IPTCNT
       use kinds_mod, only: dp
@@ -1465,9 +1450,6 @@ C
       use onecom_mod, only: KCKTAB, KHKTAB, NCENTA, NCENTB, SIGNBX,
      &  SIGNBY, SIGNBZ
       use symmet_mod, only: IPTCNT
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
       use kinds_mod, only: dp
       use dcbgen_mod, only: CVAL
 #include "implicit.h"

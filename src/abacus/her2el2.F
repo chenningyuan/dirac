@@ -27,7 +27,6 @@ C
      &  KCKT3, KCKT34, KCKT4, KHKT3, KHKT4, NHKT3, NHKT4, NUC34
       use priunit_mod, only: LUPRI
       use twosta_mod, only: LWTOT, MWC2DR, MWTOT, TC2EIN, TC2HIN, TKTIME
-      use maxaqn_mod, only: MXQN
 #include "implicit.h"
       DIMENSION AOINT(*), HCINT(*), WORK(LWORK), COEF34(*), CONT3(*),
      &          CONT4(*), NPCO3(*), NPCO4(*), NUCS34(*), INDHER(*),
@@ -109,7 +108,6 @@ C  /* Deck c2hint */
 C
 C     TUH
 C
-      use maxaqn_mod, only: MXQN
       use twoao_mod
       use twosta_mod, only: LWTOT, MWC2HI, MWTOT
       use derzer_mod, only: DZER, FZERO, IZERO
@@ -367,7 +365,6 @@ C  /* Deck c2hin1 */
       USE AOINT_ZERO
 C
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXQN
       use sphtrm_mod, only: CSP, ISPADR
       use hertop_mod, only: JTOP
       use twocom_mod, only: KHKTAB, KHKTCD, NOABCD
@@ -696,7 +693,6 @@ C     TUH
 C
       use twoao_mod
       use twosta_mod, only: LWTOT, MWC2EI, MWTOT
-      use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       LOGICAL DCOOR, DCOOR0, DCOORH, DCOORE, DATOM,
@@ -1187,7 +1183,6 @@ C  /* Deck c2ein1 */
 C
 C     TUH
 C
-      use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
       use twocom_mod, only: KHKTAB, KHKTCD, NOABCD
       use twoao_mod

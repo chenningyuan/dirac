@@ -69,13 +69,10 @@ C  /* Deck onepr1 */
      &                  FACINT,COORC,GEXP,JCENTC,NCENTC,NHKTAP,
      &                  WORK,LWORK)
 C
-      use maxorb_mod, only: MXPRIM
       use ader_mod
-      use mxcent_mod, only: MXCOOR
       use cbisol_mod, only: LMNTOT, SOLVNT
       use primit_mod, only: PRICCF, PRIEXP
       use pi_mod, only: PI
-      use aovec_mod, only: MXCONT
 #ifdef PRG_DIRAC
       use dcbgrd_mod, only: DODERM
 #endif
@@ -321,7 +318,6 @@ C  /* Deck hernai */
       SUBROUTINE HERNAI(AHGTF,JMAX,PVAL,CPX,CPY,CPZ,FACINT,IADR,
      &                  ISTEPU,ISTEPV,NRTUV,IPRINT)
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXQN
       use pi_mod, only: PI
       use gamcom_mod, only: FJW, JMAX0, WVAL
 #include "implicit.h"
@@ -516,7 +512,6 @@ C     revised Sep 2001 hjaaj: DOST and DONA control flags
 C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
-      use maxaqn_mod, only: MXAQN
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -607,7 +602,6 @@ C
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: ICENTA, ISTEPU, ISTEPV, KCKTA, KCKTAB,
      &  KCKTB, NAHGTF
-      use maxaqn_mod, only: MXAQN
 #include "implicit.h"
       INTEGER :: I
       LOGICAL SECDER
@@ -715,7 +709,6 @@ C
       use ader_mod
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
-      use maxaqn_mod, only: MXAQN
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -969,7 +962,6 @@ C  /* Deck dipint */
 C
 C     tuh 1985
 C
-      use maxaqn_mod, only: MXAQN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB, ONECEN
 #include "implicit.h"

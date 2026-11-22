@@ -18,8 +18,6 @@ C
 C
 C  /* Deck sochk2 */
       SUBROUTINE SOCHK2(WORK,LWORK,IPRINT)
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use maxaqn_mod, only: MXAQN
       use cotabs_mod, only: ICOMAX, ICOMID
 #include "implicit.h"
 C
@@ -66,8 +64,6 @@ C
 C
       use priunit_mod, only: LUPRI
       use cotabs_mod, only: ICOMAX, ICOMID
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use maxaqn_mod, only: MXAQN
 #include "implicit.h"
 C
       DIMENSION SOINT(ISODIM,ISODIM,3), ONEINT(IONDIM,IONDIM),
@@ -175,7 +171,6 @@ C attraction integrals.
 C
       use primit_mod, only: PRIEXP
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXSHEL
       use shells_mod, only: NHKT
 #include "implicit.h"
       INTEGER :: II
@@ -330,8 +325,6 @@ C
 C Test drive for spin-orbit integrals.
 C
 C
-      use maxaqn_mod, only: MXAQN
-      use maxorb_mod, only: MXCORB, MXSHEL
       use cotabs_mod, only: ICOMAX, ICOMID
 #include "implicit.h"
 C
@@ -370,8 +363,6 @@ C
 C Sets up another table relating all orbital indices to a shell
 C index and a component index and vice versa
 C
-      use maxaqn_mod, only: MXAQN
-      use maxorb_mod, only: MXCORB, MXSHEL
       use shells_mod, only: KHKT, KMAX, NCENT, NHKT
       use sotabs_mod, only: ICMPDF, ISHLDF, KMAX1
       use cotabs_mod, only: ICMPCO, ICOMAX, ICOMID, ICSHCM, ISHLCO
@@ -523,7 +514,6 @@ C equivalent ones constructed explicitely from electron
 C repulsion integrals.
 C
       use primit_mod, only: PRIEXP
-      use maxorb_mod, only: MXSHEL
       use shells_mod, only: NHKT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
@@ -725,7 +715,6 @@ C  /* Deck mg1tst */
       SUBROUTINE MG1TST(WORK,LWORK,IPRINT,LABEL,LABELT,ORIGIN,WHATIN)
       use nuclei_mod, only: NBASIS, NUCIND
       use iratdef_mod, only: IRAT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 C
       DIMENSION WORK(LWORK), ORIGIN(3)
@@ -761,7 +750,6 @@ C  /* Deck mg1ts1 */
       use priunit_mod, only: LUPRI
       use iratdef_mod, only: IRAT
       use nuclei_mod, only: CORD, NBASIS, NUCIND
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
@@ -965,7 +953,6 @@ C
 C  /* Deck mgtst2 */
       SUBROUTINE MGTST2(WORK,LWORK,IPRINT,LABEL,LABELT)
       use iratdef_mod, only: IRAT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXQN
       use nuclei_mod, only: NBASIS, NUCIND
 #include "implicit.h"
@@ -1002,7 +989,6 @@ C  /* Deck mg1ts2 */
       use maxaqn_mod, only: MXQN
       use nuclei_mod, only: CORD, NBASIS, NUCIND
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
@@ -1199,7 +1185,7 @@ C
 C  /* Deck hdbtst */
       SUBROUTINE HDBTST(WORK,LWORK,IPRINT,LABELD,NATOM,ORIGIN)
       use iratdef_mod, only: IRAT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
       use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 #include "implicit.h"
 C
@@ -1234,7 +1220,6 @@ C  /* Deck hdbts1 */
       use primit_mod, only: PRIEXP
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: CORD, NBASIS, NUCIND
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use iratdef_mod, only: IRAT
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1403,7 +1388,6 @@ C
 C  /* Deck sustst */
       SUBROUTINE SUSTST(WORK,LWORK,IPRINT,LABEL,LABELT)
       use iratdef_mod, only: IRAT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NBASIS, NUCIND
 #include "implicit.h"
 C
@@ -1437,7 +1421,6 @@ C  /* Deck susts1 */
      &                  WORK,LWORK,IPRINT)
       use iratdef_mod, only: IRAT
       use primit_mod, only: PRIEXP
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: CORD, NBASIS, NUCIND
       use kinds_mod, only: dp
@@ -1610,7 +1593,7 @@ C
 C  /* Deck ns1tst */
       SUBROUTINE NS1TST(WORK,LWORK,IPRINT,DOATOM,NATOM)
       use iratdef_mod, only: IRAT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
       use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 #include "implicit.h"
 C
@@ -1653,7 +1636,6 @@ C  /* Deck ns1ts1 */
       use iratdef_mod, only: IRAT
       use nuclei_mod, only: CORD, NBASIS, NUCIND
       use primit_mod, only: PRIEXP
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1841,7 +1823,7 @@ C
 C  /* Deck nstst2 */
       SUBROUTINE NSTST2(WORK,LWORK,IPRINT,DOATOM,NATOM)
       use iratdef_mod, only: IRAT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
       use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 #include "implicit.h"
 C
@@ -1878,7 +1860,6 @@ C  /* Deck ns1ts2 */
      &                  WORK,LWORK,IPRINT,EFVEC,NOPTYP,NOPTY2)
       use primit_mod, only: PRIEXP
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use iratdef_mod, only: IRAT
       use nuclei_mod, only: CORD, NBASIS, NUCIND
       use kinds_mod, only: dp
@@ -2061,7 +2042,7 @@ C
       END
 C  /* Deck nstst3 */
       SUBROUTINE NSTST3(WORK,LWORK,IPRINT,DOATOM,NATOM)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
       use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 #include "implicit.h"
 C
@@ -2093,7 +2074,6 @@ C  /* Deck ns1ts3 */
       SUBROUTINE NS1TS3(AUXVEC,TSTVEC,RESVEC,LABEL,LABELS,
      &                  LABELT,DIFVEC,WORK,LWORK,IPRINT,VCNSNL,
      &                  VCNSLO,NOPTYP)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use iratdef_mod, only: IRAT
       use nuclei_mod, only: NBASIS
       use priunit_mod, only: LUPRI
@@ -2189,7 +2169,7 @@ C  /* Deck nptst */
 C
 C     Test nuclear potential integrals, KR, Aug -92
 C
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: NBASIS, NUCDEP
       use iratdef_mod, only: IRAT
@@ -2265,7 +2245,6 @@ C     K.Ruud, September 1992
 C
       use iratdef_mod, only: IRAT
       use nuclei_mod, only: NUCIND
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 C
       DIMENSION WORK(LWORK)
@@ -2315,8 +2294,6 @@ C
       use nuclei_mod, only: CORD, NUCIND
       use primit_mod, only: PRIEXP
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXSHEL
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use hrunit_mod, only: LUINTA
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2636,7 +2613,6 @@ C     Resided previously inside magnetic properties test routines.
 C     K.Ruud, sept 1992
 C
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCIND
 #include "implicit.h"
       INTEGER :: I,II,J,K

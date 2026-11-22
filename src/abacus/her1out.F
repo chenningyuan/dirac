@@ -29,7 +29,6 @@ C     This subroutine writes undifferentiated overlap, one-electron
 C     Hamiltonian, and kinetic energy integrals on sequential file.
 C
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXQN
       use hrunit_mod, only: LUONEL
       use ccom_mod, only: THRS
 #include "implicit.h"
@@ -131,12 +130,9 @@ C     The elements read in on LUTEMP are not the final SO integrals, but
 C     AO integrals multiplied by symmetry factors and addresses of the
 C     appropriate SO integrals.
 C
-      use maxorb_mod, only: MXCORB
       use iratdef_mod, only: IRAT
       use ccom_mod, only: THRS
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXCENT
       use symmet_mod, only: MAXREP
       use oneadr_mod, only: LABUF1, LABUFD, LABUFI, LASTAD, MXABF2,
      &  MXABUF
@@ -344,7 +340,6 @@ C
       use priunit_mod, only: LUPRI
       use iratdef_mod, only: IRAT
       use oneadr_mod, only: LABUF1, LABUFD, LABUFI, LASTAD, MXABF2
-      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I,J
       PARAMETER (IBIT16 = 65535, NBUF = 1202)
@@ -399,11 +394,8 @@ C     This subroutine prints all differentiated overlap and one-electron
 C     Hamiltonian matrices in the AO basis.
 C
       use nuclei_mod, only: NAMEX, NUCIND
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use symmet_mod, only: IPTCNT, MAXREP, NAOS
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
 #include "implicit.h"
       INTEGER :: I,J
       DIMENSION WORK(LWORK)
@@ -475,16 +467,13 @@ C     Hamiltonian gradients calculated in AO and SO basis. Note that
 C     only the totally symmetric derivatives can be checked this way.
 C
       use nuclei_mod, only: NUCDEP
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, MAXREP, NAOS, NPARSU
       use inforb_mod, only: NNBAST, NNBASX
       use energy_mod, only: GRADFS, GRADKE, GRADNA
       use priunit_mod, only: LUPRI
       use abainf_mod, only: NWNABA
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use ccom_mod, only: THRS
       use taysol_mod, only: GSOLTT
-      use maxorb_mod, only: MXCORB
       use kinds_mod, only: dp
 #include "implicit.h"
       LOGICAL NODC, NODV, DNULL

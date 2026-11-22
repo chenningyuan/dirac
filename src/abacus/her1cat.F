@@ -28,9 +28,6 @@ C*****************************************************************************
       use dorps_mod, only: DOREPS
       use iratdef_mod, only: IRAT
       use symmet_mod, only: MAXREP
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
       use shells_mod, only: ISTBAO, KHKT, KMAX
       use nuclei_mod, only: CHARGE, GNUEXP, NUCDEP
 #include "implicit.h"
@@ -136,9 +133,6 @@ C
 C*****************************************************************************
       use nuclei_mod, only: CORD, ISTBNU, NUCDEP, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
@@ -291,16 +285,14 @@ C*****************************************************************************
       use symmet_mod, only: FMULT, ISYMAO, MAXREP, MULT
       use symind_mod, only: INDFA, INDFB, ISOFRA, ISOFRB
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN
       use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX,
      &  LCLASS, NCENT, NHKT, NUCO, NUMCF, SPHR
       use nuclei_mod, only: NUCDEP, NUCNUM
       use priunit_mod, only: LUPRI
       use onecom_mod
       use ccom_mod, only: THRS
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
-      use maxorb_mod, only: MXCORB, MXSHEL
       use kinds_mod, only: dp
 #ifndef PRG_DIRAC
       use energy_mod, only: ENERNA, GRADNA
@@ -627,10 +619,7 @@ C*****************************************************************************
 #ifdef PRG_DIRAC
       use dcbgrd_mod, only: GRADNU, GRD_NOSMLV, INTCLASS
 #endif
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP, NUCNUM
       use dummy_mod, only: DUMMY, IDUMMY
       use priunit_mod, only: LUPRI
@@ -897,9 +886,7 @@ C
 C*****************************************************************************
       use ader_mod
       use pi_mod, only: PI
-      use maxorb_mod, only: MXPRIM
       use onecom_mod
-      use aovec_mod, only: MXCONT
       use primit_mod, only: PRICCF, PRIEXP
       use kinds_mod, only: dp
 #include "implicit.h"

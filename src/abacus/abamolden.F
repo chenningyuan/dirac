@@ -132,11 +132,8 @@ c
       SUBROUTINE MOATOMS(WORD)
 C 
       use nuclei_mod, only: CORD, ISTBNU, IZATOM, NAMN, NUCDEP, NUCIND
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use codata_mod, only: XTANG
       use symmet_mod, only: ISYMAX, MAXOPR, MULT, PT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use molde_mod, only: DONEIU
       use chrnos_mod, only: CHRNOS
 #include "implicit.h"

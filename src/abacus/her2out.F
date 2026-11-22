@@ -32,10 +32,7 @@ C
       use nuclei_mod, only: NBASIS
       use symmet_mod, only: IPTSYM
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use twocom_mod
-      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I
       PARAMETER (LBUF = 600)
@@ -238,8 +235,6 @@ C  /* Deck un2wrt */
       SUBROUTINE UN2WRT(BUF,IBUF,LBUF,NIBUF,ICOUNT,ITYPE,NBITS,INDA,
      &                  IPRINT)
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use iratdef_mod, only: IRAT
       use twosta_mod, only: N2WRIT
       use nuclei_mod, only: NBASIS
@@ -402,14 +397,10 @@ C     Rewritten to allow for triangular looping and to eliminate
 C     all duplicates by testing  880601 TUH
 C
 C*****************************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use twocom_mod
-      use aovec_mod, only: MXAOVC
       use blocks_mod, only: MAXSHL
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: NBASIS
-      use maxorb_mod, only: MXCORB, MXSHEL
       use symmet_mod, only: IPTSYM
       use kinds_mod, only: dp
       USE AOINT_ZERO
@@ -989,10 +980,7 @@ C
 C     tuh Sep 92
 C
       use symmet_mod, only: IPTSYM, ISYMAX, MAXREP
-      use maxorb_mod, only: MXCORB
       use doxyz_mod, only: DOXYZ
-      use mxcent_mod, only: MXCENT
-      use maxaqn_mod, only: MXAQN, MXQN
       use dorps_mod, only: DOREPS
       use twocom_mod
 #include "implicit.h"
@@ -1150,11 +1138,8 @@ C  /* Deck dr2wrt */
       SUBROUTINE DR2WRT(BUF,IBUF,ICOUNT,IATOM,ICOOR,IREPE,ITYPE,SPNORB,
      &                  IPRINT)
 C
-      use mxcent_mod, only: MXCENT
       use symmet_mod, only: MAXREP
       use nodint_mod, only: NDSINT, NOINTS
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1307,9 +1292,6 @@ C     tuh Sep 92
 C
       use twocom_mod
       use symmet_mod, only: IPTSYM, ISYMAX
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
@@ -1492,9 +1474,6 @@ C
 C     Write out blocks of symmetry integrals, eliminating duplicates
 C
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use twocom_mod
       use nuclei_mod, only: NBASIS
       use symmet_mod, only: IPTSYM
@@ -1771,13 +1750,9 @@ C*****************************************************************************
       use comdis_mod, only: ISPCK, NINSHA, NINSHB
       use twocom_mod
       use symmet_mod, only: ICOS, IPTSYM, NCOS
-      use maxorb_mod, only: MXCORB, MXSHEL
       use twosta_mod, only: N2WRIT
-      use aovec_mod, only: MXAOVC
       use priunit_mod, only: LUPRI
       use blocks_mod, only: LCLASH
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I
       LOGICAL FIRST, LAST, IPNTLG(3,*)
@@ -1938,16 +1913,12 @@ C     INDXAB - pointers from given p and q (relative in shell)
 C
 C*****************************************************************************
       use blocks_mod, only: LCLASH
-      use maxorb_mod, only: MXCORB, MXSHEL
       use twocom_mod
-      use maxaqn_mod, only: MXAQN, MXQN
-      use aovec_mod, only: MXAOVC
       use comdis_mod, only: IRECG, ISPCK, LGFIL, NGBFSZ, NINSHA, NINSHB,
      &  NPASS
       use symmet_mod, only: ICOS, IPTSYM, NCOS
       use twosta_mod, only: N2WRIT
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I
       LOGICAL FIRST, LAST, IPNTLG(3,*)

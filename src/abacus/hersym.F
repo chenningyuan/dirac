@@ -104,7 +104,7 @@ C
       use nuclei_mod, only: CHARGE, CORD, GNUEXP, IATOMTYP, ISOTOP,
      &  IZATOM, NAMEX, NAMN, NONT, NONTYP, NOORBT, NUCIND
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
       use molinp_mod, only: MLINE, NCLINE, NMLAU
       use infpar_mod, only: MPARID, MYTID
       use mxsymm_mod, only: IPRSYM, MAXAXS, MAXMIR
@@ -2419,7 +2419,6 @@ C ::       Removes symmetry-dependent atoms      ::
 C ::                                             ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::
       use mxsymm_mod, only: TOLLRN, TOLLRN_2
-      use mxcent_mod, only: MXCENT
       use molinp_mod, only: MLINE, NCLINE, NMLINE
 #include "implicit.h"
       INTEGER :: I,J,K

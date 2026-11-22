@@ -26,7 +26,6 @@ C
       use twoao_mod
       use priunit_mod, only: LUPRI
       use twosta_mod, only: LWTOT, MWC1DR, MWTOT, TC10IN, TC1EIN, TKTIME
-      use maxaqn_mod, only: MXQN
 #include "implicit.h"
       INTEGER TUV
       COMMON /DHCINF/ IHCADR(10), IHCSYM(10)
@@ -238,7 +237,6 @@ C  /* Deck c10int */
 C
 C     TUH
 C
-      use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
       use sphtrm_mod, only: CSP, ISPADR
       use hertop_mod, only: JTOP
@@ -452,7 +450,6 @@ C
       use twoao_mod
       use hertop_mod, only: JTOP
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXQN
       use sphtrm_mod, only: CSP, ISPADR
 #include "implicit.h"
       INTEGER T, U, V, TUV

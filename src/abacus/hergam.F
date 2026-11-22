@@ -24,7 +24,6 @@ C     This subroutine calculates the incomplete gamma function as
 C     described by McMurchie & Davidson, J. Comp. Phys. 26 (1978) 218.
 C
       use gamcom_mod, only: FJW, JMAX0, MAXJ, TABFJW, WVAL
-      use maxaqn_mod, only: MXQN
       use pi_mod, only: SQRTPI
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
@@ -164,7 +163,7 @@ C  /* Deck carpow */
       SUBROUTINE CARPOW
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXQN
-      use maxmom_mod, only: MXAQNM, MXQNM
+      use maxmom_mod, only: MXQNM
       use xyzpow_mod, only: ISTEP, MVAL, NVAL
 #include "implicit.h"
 C***********************************************************************
@@ -222,7 +221,6 @@ C
 C     tuh March 87
 C
       use xyzpow_mod, only: ISTEP, MVAL, NVAL
-      use maxmom_mod, only: MXAQNM
 #include "implicit.h"
       DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
 C

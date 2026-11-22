@@ -25,8 +25,6 @@ C
 C     Punch out geometry to VRML-file
 C
       use symmet_mod, only: MAXREP, NCRREP
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
       use optinf_mod, only: EVAL, IPRINT, VRBOND, VRCORD, VREIGV
@@ -161,7 +159,7 @@ C
       use codata_mod, only: XTANG
       use optinf_mod, only: IPRINT, VRBOND
       use nuclei_mod, only: NUCDEP
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       DIMENSION GVEC(NCORD), EVEC(NCORD), ATCHRG(NCORD)
@@ -495,9 +493,7 @@ C  /* Deck drwbnd */
 C
 C     Draws bonds between the atoms
 C
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
       use pi_mod, only: PI
 #include "implicit.h"
       LOGICAL VIBRA
@@ -644,9 +640,7 @@ C     Draws vectors to illustrate vibrational modes
 C
       use nuclei_mod, only: ISTBNU, NUCDEP, NUCIND
       use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, PT
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT, MXCOOR
 #include "implicit.h"
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION EVEC1(MXCOOR), EVEC2(MXCOOR)
@@ -947,9 +941,7 @@ C
       use codata_mod, only: XTANG
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       DIMENSION ATMARR(MXCENT,8)
       LOGICAL BOHR

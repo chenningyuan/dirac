@@ -50,7 +50,6 @@ C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
       use nuclei_mod, only: NBASIS
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use twocom_mod, only: DNSMAX, DOSCRN, NORBA, NORBB, NORBC, NORBD,
      &  SCRTHR
       use kinds_mod, only: dp
@@ -105,7 +104,6 @@ C
 C*****************************************************************************
       use twocom_mod
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NBASIS
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -565,12 +563,9 @@ C     density matrix over distinct pairs of AOs
 C
 C                                          880418  PRT
 C
-      use maxaqn_mod, only: MXAQN, MXQN
       use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use priunit_mod, only: LUPRI
       use symmet_mod, only: ISYMAO, MAXOPR, MAXREP, NAOS, PT
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB, MXSHEL
       use pincom_mod, only: IPIND
 #include "implicit.h"
       INTEGER :: I,J
@@ -641,12 +636,10 @@ C      Revised Oct 11 1996 by T.Saue
 C      - changed IFCTYP !
 C      - symmetrization/anti-symmetrization should be done aftewards !
 C*****************************************************************************
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: MAXREP
       use shells_mod, only: KMAX
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use nuctap_mod, only: LRDFCK, LUDFCK
-      use maxorb_mod, only: MXCORB, MXSHEL
       use nuclei_mod, only: NBASIS, NUCDEG, NUCDEP, NUCIND
       use iratdef_mod, only: IRAT
       use abainf_mod, only: EXPFCK
@@ -809,14 +802,11 @@ C   c) operations containing inversion provided with minus sign
 C      when acting on small components (RELCAL)
 C
 C*****************************************************************************
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB, MXSHEL
       use shells_mod, only: ISTBAO, KHKT, KMAX, KSTRT, NHKT, NLRGSH
       use nuclei_mod, only: ISTBNU, NBASIS
       use priunit_mod, only: LUPRI
       use symmet_mod, only: IPAR, ISYMAO, ISYMAX, MAXOPR, MAXREP, NAOS,
      &  PT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D2I = 0.5D0
@@ -1140,9 +1130,7 @@ C
 #endif
       use nuclei_mod, only: ISTBNU, NUCDEP, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, MAXREP, PT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCOOR
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1336,9 +1324,6 @@ C
       use nuclei_mod, only: NBASIS
       use shells_mod, only: ISTBAO, KHKT, KMAX, KSTRT, NHKT
       use symmet_mod, only: ISYMAO, ISYMAX, MAXOPR, MAXREP, NAOS, PT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"

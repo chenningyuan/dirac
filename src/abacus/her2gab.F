@@ -30,13 +30,9 @@ C*****************************************************************************
       use hertop_mod, only: JTOP, NRTOP
       use twosta_mod, only: TKTIME
       use symmet_mod, only: MAXOPR, MULT
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use ccom_mod, only: NHTYP
       use twocom_mod
-      use aovec_mod, only: MXAOVC
       use blocks_mod
       use nuclei_mod, only: NBASIS
       use kinds_mod, only: dp
@@ -391,8 +387,7 @@ C  /* Deck gabdr1 */
      &               NUCSAB,JSTRA,JSTRB,NINDAB,NPNTAB,NREDAB,
      &               COORCD,EXPCD,FACCD,CONTC,CONTD,NPCOC,NPCOD,
      &               NUCSCD,JSTRC,JSTRD,NINDCD,NPNTCD,NREDCD)
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use aovec_mod, only: MXAOVC
+      use maxorb_mod, only: MXSHEL
       use twocom_mod
       use blocks_mod, only: JSTRSH, NCONTS, NPRIMS
 #include "implicit.h"
@@ -563,7 +558,6 @@ C  /* Deck Gabdr2 */
      &                  INDHSQ,IODDHR,INDHER,LMNVLS)
       use nuclei_mod, only: NBASIS, NUCNUM
       use twocom_mod
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use dorps_mod, only: DOCOOR
 #ifdef PRG_DIRAC
@@ -571,9 +565,6 @@ C  /* Deck Gabdr2 */
 #endif
       use doxyz_mod, only: DOXYZ
       use blocks_mod, only: BIGVEC, IORBSH, NCNTSH
-      use aovec_mod, only: MXAOVC
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB, MXSHEL
       use dummy_mod, only: DUMMY, IDUMMY
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use kinds_mod, only: dp
@@ -1025,11 +1016,8 @@ C     Collect elements of GAB-matrix
 C     Written by T.Saue Oct 7 1996
 C
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
       use nuclei_mod, only: NBASIS
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTSYM
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use twocom_mod
 #include "implicit.h"
       INTEGER :: I
@@ -1105,12 +1093,8 @@ C  Written by T.Saue Oct 10 1996
 C
 C*****************************************************************************
       use nuclei_mod, only: NBASIS
-      use maxaqn_mod, only: MXAQN, MXQN
-      use aovec_mod, only: MXAOVC
-      use maxorb_mod, only: MXCORB, MXSHEL
       use blocks_mod, only: IORBSH
       use twocom_mod
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: MAXOPR
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1234,10 +1218,7 @@ C
 C     Last revision: Oct 3 1996 - tsaue
 C
 C*****************************************************************************
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NBASIS
-      use aovec_mod, only: MXAOVC
       use blocks_mod, only: NSYMBL
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1288,10 +1269,7 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
-      use aovec_mod, only: MXAOVC
-      use maxorb_mod, only: MXCORB, MXSHEL
       use nuclei_mod, only: NAMN, NUCDEG
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use blocks_mod, only: LCLASH, MAXSHL, NCNTSH, NHKTSH, NSYMBL
 #include "implicit.h"
@@ -1351,10 +1329,7 @@ C
 C     Written by T.Saue Oct 4 1996
 C
 C*****************************************************************************
-      use aovec_mod, only: MXAOVC
-      use maxorb_mod, only: MXCORB, MXSHEL
       use nuclei_mod, only: NBASIS, NUCDEG
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use shells_mod, only: IPTSHL, KMAX
       use blocks_mod, only: ISYMBL, KHKTSH, NCNTSH
 #include "implicit.h"
@@ -1392,10 +1367,7 @@ C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
       use symmet_mod, only: MAXREP, NAOS
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NBASIS
-      use maxaqn_mod, only: MXAQN, MXQN
       use pincom_mod, only: IPIND
       use shells_mod, only: IPTSHL
 #include "implicit.h"
@@ -1428,10 +1400,7 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
-      use maxorb_mod, only: MXCORB, MXSHEL
       use nuclei_mod, only: NAMN, NBASIS
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use aovec_mod, only: MXAOVC
       use blocks_mod, only: LCLASH, MAXSHL, NCNTSH, NHKTSH
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
@@ -1734,7 +1703,6 @@ C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use cbihr2_mod, only: IPRTWO
       use nuclei_mod, only: NBASIS
 #include "implicit.h"
@@ -1783,13 +1751,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Gabgen */
       SUBROUTINE GABGEN(IJOB,ITYPE,IGTYP,MAXDIF,JATOM,NOCONT,
      &                  recompute_Gab_,IPRINT,WORK,LWORK)
-      use maxorb_mod, only: MXCORB, MXSHEL
       use nuclei_mod, only: NBASIS
       use blocks_mod, only: MAXSHL, NSYMBL
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use chrxyz_mod, only: CHRXYZ
-      use aovec_mod, only: MXAOVC
       use labeled_storage
       use gab_screening, only: qorb_ok, qorb_igtyp
 C***********************************************************************
@@ -2012,9 +1977,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Getgab */
       SUBROUTINE GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,IPRINT,
      &     GABM,WORK,LWORK)
-      use aovec_mod, only: MXAOVC
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB, MXSHEL
       use blocks_mod, only: NSYMBL
       use chrxyz_mod, only: CHRXYZ
       use labeled_storage

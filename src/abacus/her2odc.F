@@ -27,7 +27,6 @@ C
 C     TUH Apr 11 1988
 C
       use twosta_mod, only: TKTIME, TODCVE
-      use maxaqn_mod, only: MXQN
 #include "implicit.h"
       LOGICAL TPR12, TCON12, GEN12, EXPECT, DIRFCK, RPRI12, RCNT12
       DIMENSION NPCO1(*), NPCO2(*), JSTR1(*), JSTR2(*), COOR12(*),
@@ -90,12 +89,8 @@ C  /* Deck odcgen */
 C
 C     TUH 84
 C
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB, MXPRIM
       use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
-      use aovec_mod, only: MXCONT
       use pi_mod, only: R2PI52
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use kinds_mod, only: dp
@@ -500,14 +495,10 @@ C
 C     TUH 84
 C
       use blocks_mod, only: IORBSH
-      use maxaqn_mod, only: MXAQN, MXQN
       use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP
       use pi_mod, only: R2PI52
       use priunit_mod, only: LUPRI
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-      use aovec_mod, only: MXAOVC, MXCONT
-      use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
-      use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
       use gab_screening, only: prune_thr, qorb, ao2orb
       use twocom_mod, only: ISHELA, ISHELB, ISHELC, ISHELD
@@ -705,7 +696,6 @@ C  /* Deck odcoef */
 C
 C     TUH Apr 11 1988
 C
-      use maxaqn_mod, only: MXQN
       use twosta_mod, only: LWTOT, MWTOT, TEXCOE, TKTIME
       use orgcom_mod, only: ORIGIN
 #include "implicit.h"
@@ -1606,11 +1596,8 @@ C    tuh March 92
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use chrxyz_mod, only: CHRXYZ
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX, PT
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
       use chrnos_mod, only: CHRNOS
       use kinds_mod, only: dp
 #include "implicit.h"

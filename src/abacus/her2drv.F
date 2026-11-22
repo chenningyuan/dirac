@@ -231,7 +231,6 @@ C  /* Deck twocal */
      &                 IREPDM,IFCTYP,ISHLA,ADISTR,I2TYP,ICEDIF,SCREEN,
      &                 DINTSKP,GABRAO,DMRAO,DMRSO,RELCAL,GENCNT,
      &                 INDEX,TIMES)
-      use maxaqn_mod, only: MXQN
       use twosta_mod, only: LWTOT, MWHRND
       use hertop_mod, only: JTOP, NRTOP
 #if defined (VAR_MPI)
@@ -344,9 +343,7 @@ C
 #endif
       use dcbsusc_mod, only: SUS2EL
       use blocks_mod
-      use maxaqn_mod, only: MXAQN, MXQN
       use inforb_mod, only: NBAST
-      use mxcent_mod, only: MXCENT, MXCOOR
       use symmet_mod, only: MULT
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -768,11 +765,9 @@ C  /* Deck twodsa */
 C
       use disbuf_mod, only: KDSIBF, KDSORB, KORBDS, NDIST
       use symmet_mod, only: MULT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use blocks_mod
       use nuclei_mod, only: NBASIS
-      use maxaqn_mod, only: MXAQN, MXQN
       use twocom_mod
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -998,10 +993,8 @@ C
       use comdis_mod, only: ISHLA, ISHLB
       use twocom_mod
       use symmet_mod, only: MULT
-      use mxcent_mod, only: MXCENT
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
-      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       LOGICAL NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, NOCONT, SPNORB, FIRST,
@@ -1100,10 +1093,8 @@ C
 #endif
       use priunit_mod, only: LUPRI
       use twocom_mod
-      use maxaqn_mod, only: MXAQN, MXQN
       use blocks_mod
       use maxorb_mod, only: MXCORB, MXSHEL
-      use mxcent_mod, only: MXCENT, MXCOOR
       use aovec_mod, only: MXAOVC
       use symmet_mod, only: MULT
       use kinds_mod, only: dp
@@ -1265,9 +1256,6 @@ C  /* Deck twoods */
      &                  DINTSKP,GABRAO,DMRAO,DMRSO,IREPDM,INDX,INDXAB,
      &                  GENCNT)
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXCENT
       use symmet_mod, only: MAXOPR
       use twocom_mod
       use twosta_mod, only: LWTOT, MWTOT
@@ -1439,9 +1427,7 @@ C  /* Deck twood1 */
      &                  NREDAB,NREDCD,IFCTYP,ADISTR,WRKBUF,
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,IREPDM,INDX,INDXAB,
      &                  GENCNT)
-      use maxaqn_mod, only: MXQN
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use aovec_mod, only: MXAOVC
+      use maxorb_mod, only: MXSHEL
       use twocom_mod
       use twosta_mod, only: LWTOT, MWFCAB, MWFCCD, MWPSO, MWSOIN, MWTOT
       use gab_screening, only: qorb_use, prune_thr
@@ -1644,8 +1630,6 @@ C
      &  ISHELD, SCRTHR
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: NUCDEG
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use aovec_mod, only: MXAOVC
       use gab_screening
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0)
@@ -1717,8 +1701,6 @@ C     contracted function in its AO block), required for pruning
 C
       use blocks_mod, only: IORBSH, NCONTS, NORBSH, NSETSH, SEGMSH
       use shells_mod, only: IPTSHL, NUMCF
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use aovec_mod, only: MXAOVC
       use gab_screening, only: ao2orb
 #include "implicit.h"
 C
@@ -1754,20 +1736,16 @@ C  /* Deck symlop */
 #endif
       use chrxyz_mod, only: CHRXYZ
       use priunit_mod, only: LUPRI
-      use aovec_mod, only: MXAOVC
-      use maxorb_mod, only: MXCORB, MXSHEL
 #ifdef PRG_DIRAC
       use dcbgrd_mod, only: GRADEE
 #endif
       use nuclei_mod, only: NAMDEP, NDEGNM, NUCNUM
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: FMULT, ISYMAX, MAXOPR, PT
       use blocks_mod, only: BIGVEC, IORBSH, ISYMBL, LCLASH, NCNTSH,
      &  NHKTSH, NSYMBL
       use twosta_mod, only: LWTOT, MWAOIN, MWTOT, TDSOUT, TFCKOU,
      &  TKTIME, TSYMOU
       use dorps_mod, only: DOCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
       use twocom_mod
       use doxyz_mod, only: DOXYZ
       use kinds_mod, only: dp
@@ -2480,8 +2458,6 @@ C  /* Deck caoint */
      &                  NUCSCD,SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                  NINDCD,NPNTAB,NPNTCD,NREDAB,NREDCD,IFCTYP,
      &                  DNSBUF,DINTSKP,DOGAB,HFXFAC,GENCNT)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
       use twocom_mod
       use twosta_mod, only: TDRSYM, TINTEX, TKTIME, TSPOSY, TSYM2S
@@ -2656,7 +2632,6 @@ C
 C  /* Deck paovec */
       SUBROUTINE PAOVEC(WORK,LWORK,IATOM1,IPRINT)
       use aovec_mod, only: MXAOVC
-      use maxorb_mod, only: MXCORB, MXSHEL
       use shells_mod, only: KMAX
       use blocks_mod, only: SEGMEN
 #include "implicit.h"
@@ -2703,15 +2678,13 @@ C                here we can also split a contracted block
 C                in more blocks, if needed for memory
 C
       use blocks_mod
-      use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
+      use maxorb_mod, only: MXCORB, MXSHEL
       use priunit_mod, only: LUPRI
       use shells_mod, only: CENT, IPTSHL, ISTBAO, KCKT, KHKT, KMAX,
      &  LCLASS, NBCH, NCENT, NHKT, NUCO, NUMCF, SEGM, SPHR
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
       use nuclei_mod, only: NUCDEG
       use symmet_mod, only: MULT
-      use aovec_mod, only: MXAOVC, MXCONT
+      use aovec_mod, only: MXAOVC
       use primit_mod, only: PRICCF
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3100,9 +3073,6 @@ C  /* Deck nintso */
       SUBROUTINE NINTSO(MULE,LONDON,SPNORB,UNDIFF,SOFOCK,DISTRI,SQ12EL,
      &                  IPRINT)
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXCENT
       use symmet_mod, only: ISYMAX
       use twocom_mod, only: IPTREP, NINTMX, NINTS, NINTSR, NOPREP
 #include "implicit.h"
@@ -3149,9 +3119,6 @@ C
       END
 C  /* Deck nmboso */
       FUNCTION NMBOSO(SQ12EL,IREPE)
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAO, MAXREP
       use twocom_mod
 #include "implicit.h"
@@ -3244,7 +3211,6 @@ C  /* Deck intder */
      &                  MAXDER,THRESH,JMAX0,ISMXYZ,ONECEN,NPCOA,NPCOB,
      &                  NPCOC,NPCOD,NUCSAB,NUCSCD,SIGNT,IODDHR,INDHSQ,
      &                  INDHER,LMNVLS,NPNTAB,NPNTCD,NREDAB,NREDCD)
-      use maxaqn_mod, only: MXQN
       use twocom_mod, only: NUCAB, NUCCD
       use twosta_mod, only: LWTOT, MWHRIN, MWTOT
 #include "implicit.h"
@@ -3298,7 +3264,6 @@ C
 C     tuh
 C
       use twocom_mod
-      use maxaqn_mod, only: MXQN
       use hertop_mod, only: NRTOP
       use twoao_mod
       use crossd_mod, only: CROSS1, CROSS2
@@ -3583,7 +3548,6 @@ C
       use crsdir_mod, only: DHCEX1, DHCEX2, DHCEY1, DHCEY2, DHCEZ1,
      &  DHCEZ2
       use twoao_mod
-      use maxaqn_mod, only: MXQN
 #include "implicit.h"
       DIMENSION HERINT(NU1234,*), INDHER(*), AOINT(NCCINT,*),
      &          WORK(LWORK), COEF12(*), COEF34(*),
@@ -3733,8 +3697,7 @@ C  /* Deck paoset */
       use shells_mod, only: KMAX, NRCO, NUCO
       use blocks_mod, only: JSTRSH, MAXSHL, NCONTS, NPRIMS, NSETSH,
      &  SEGMSH
-      use aovec_mod, only: MXAOVC, MXCONT
-      use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
+      use aovec_mod, only: MXAOVC
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
@@ -3790,11 +3753,8 @@ C     Called from GABDR2
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use symmet_mod, only: ISYMAO, MAXREP
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
       use twocom_mod
-      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       LOGICAL SQ12EL, DCMPAB, DCMPCD, DCABAB, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*),
@@ -3959,8 +3919,6 @@ C  /* Deck twoper */
       use priunit_mod, only: LUPRI
       use twosta_mod, only: N2WRIT, T2INT
       use nuclei_mod, only: NBASIS, NPBAS
-      use maxaqn_mod, only: MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -4150,7 +4108,6 @@ C
 C  /* Deck getlm1 */
       SUBROUTINE GETLM1(NHKTX,KCKTX,KHKTX,LMN,TYPE,IPRINT)
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXQN
       use twocom_mod, only: KCKMAX
       use sphtrm_mod, only: CSP, ISPADR
       use ccom_mod, only: DOCART
@@ -4258,9 +4215,6 @@ C
 C  /* Deck whtrep */
       SUBROUTINE WHTREP(ITYPE,MULE,IPRINT)
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXCENT
       use symmet_mod, only: ISYMAX, MAXREP
       use twocom_mod, only: IPTREP, NOPREP
       use dorps_mod, only: DOREPS
@@ -4351,9 +4305,6 @@ C
       END
 C  /* Deck seteff */
       SUBROUTINE SETEFF(IEFFB,IEFFC,IEFFD)
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXCENT
       use symmet_mod, only: MAXOPR
       use twocom_mod, only: KHKTB, KHKTC, KHKTD, MULB, MULC, MULD
 #include "implicit.h"
@@ -4401,10 +4352,7 @@ C
 C     Compiled by T.Saue Oct 7 1996
 C
 C*****************************************************************************
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use nuclei_mod, only: ISTBNU
       use symmet_mod, only: MULT
 #include "implicit.h"
@@ -4645,9 +4593,7 @@ C
 C     Written by J. Thyssen - Jan 22 1998
 C
 C*****************************************************************************
-      use aovec_mod, only: MXAOVC
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB, MXSHEL
       use blocks_mod, only: NSYMBL
       use kinds_mod, only: dp
 #include "implicit.h"

@@ -25,7 +25,6 @@ C  /* Deck intexp */
 C
       use twosta_mod, only: LWTOT, MWINTE, MWTOT
       use twocom_mod, only: NORBA, NORBB, NORBC, NORBD
-      use maxaqn_mod, only: MXQN
 #include "implicit.h"
       LOGICAL NOPMAT, NODV, LONDON, SUSCEP, DDFOCK, EXPECT, GENCNT
       DIMENSION PSO(*), PSA(*), DMAT(*), AOINT(NCCINT,NINTYP),
@@ -101,10 +100,7 @@ C     Calculates expectation values and Fock matrices
 C     of differentiated integrals
 C
       use symmet_mod, only: ISYMAX, PT
-      use maxaqn_mod, only: MXAQN, MXQN
       use twocom_mod
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dirprt_mod, only: ICNTDR, NCNTDR, NOATMS
       use doxyz_mod, only: DOXYZ
       use expcom_mod, only: ICENT1, ICENT2, ICENT3, ICENT4, THRCEN,
@@ -936,7 +932,6 @@ C  /* Deck derout */
       use dcbgrd_mod, only: GRADEE
 #endif
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use expcom_mod, only: DERONE, DERTWO, ICENT1, ICENT2, ICENT3,
      &  ICENT4, THRCEN, TWOCEN
       use nuclei_mod, only: NUCDEP
@@ -1437,7 +1432,6 @@ C
 !              equivalent to DALTON's DROUTG
       subroutine droutg(deriv, expval, nintyp, iprint)
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use expcom_mod, only: DERONE, ICENT1, ICENT2, ICENT3, ICENT4,
      &  THRCEN, TWOCEN
       use nuclei_mod, only: NUCDEP
@@ -1619,13 +1613,10 @@ C
 C     tuh Nov 24 92
 C
       use dcbsusc_mod, only: SUS2EL
-      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
       use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
      &  CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0
       use symmet_mod, only: IPTAX, ISYMAX, PT
-      use maxaqn_mod, only: MXAQN, MXQN
 !      use suscpt_mod, only: SUS2EL
 #include "implicit.h"
       INTEGER :: I
@@ -1736,13 +1727,10 @@ C  /* Deck lndgc1 */
 C
 C     K.Ruud, May 2007, based on LNDOUT
 C
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use symmet_mod, only: IPTAX, ISYMAX, PT
-      use maxaqn_mod, only: MXAQN, MXQN
       use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
      &  CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0
-      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
@@ -1809,13 +1797,10 @@ C  /* Deck lndgc2 */
 C
 C     K.Ruud, May 2007, based on LNDOUT
 C
-      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
       use symmet_mod, only: IPTAX, ISYMAX, PT
-      use maxaqn_mod, only: MXAQN, MXQN
       use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
      &  CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0
-      use maxorb_mod, only: MXCORB
 #include "implicit.h"
       INTEGER :: I
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
@@ -1924,9 +1909,6 @@ C  /* Deck pblock */
      &                  NHKTA,NHKTB,NHKTC,NHKTD,
      &                  KHKTA,KHKTB,KHKTC,MULA,MULB,MULC,MULD,
      &                  NORBA,NORBB,NORBC,NORBD,ISYMR,ISYMS,ISYMT)
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXCENT
       use symmet_mod, only: ISYMAO, MAXREP, MULT, PT
 #include "implicit.h"
 C
@@ -1997,7 +1979,6 @@ C
 C  /* Deck pprim */
       SUBROUTINE PPRIM(PAO,PUNC,WORK,LWORK,NORBA,NORBB,NORBC,NORBD,
      &                 NUCA,NUCB,NUCC,NUCD,TPRIAB,TPRICD)
-      use maxaqn_mod, only: MXQN
       use twosta_mod, only: LWTOT, MWPPRI, MWTOT
 #include "implicit.h"
       LOGICAL TPRIAB,TPRICD
@@ -2130,13 +2111,10 @@ C
 C  MI: It's TEC's routine for implementation of London orbitals.
 C   Odense, 2002,2003
 C
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: ISYMAX, PT
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: NBASIS
-      use maxorb_mod, only: MXCORB
       use dcbham_mod, only: HFXFAC
-      use maxaqn_mod, only: MXAQN, MXQN
       use twocom_mod
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2476,11 +2454,8 @@ C      for making the dirac output of magnetizabilities
 C      the same as is in the older brother dalton
 
       use dorps_mod, only: DOREPS
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
       use codata_mod, only: DEBYE, XTANG
       use inirep_mod, only: IREPPI, NREPPI
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use chrxyz_mod, only: CHRXYZ
       use symmet_mod, only: IPTAX, ISYMAX

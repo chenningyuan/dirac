@@ -35,14 +35,10 @@ C*****************************************************************************
      &  MWFCCD, MWHCIN, MWHRIN, MWHRND, MWHRSQ, MWPSO, MWRJ00, MWSOIN,
      &  MWTOT
       use symmet_mod, only: MAXOPR
-      use aovec_mod, only: MXAOVC
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT
       use blocks_mod, only: ISTBSH, KHKTSH, NHKTSH, NORBSH, NSETSH,
      &  NUCOSH, SEGMSH, SPHRSH
       use twocom_mod
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 C
 C
@@ -547,14 +543,10 @@ C  Print out integral types and count the use of the memmory.
 C
 C
 C***********************************************************************
-      use maxaqn_mod, only: MXQN
       use twosta_mod, only: MWTOT, MXHERMEM
-      use maxorb_mod, only: MXCORB, MXSHEL
       use nuclei_mod, only: NAMN
       use twocom_mod
       use blocks_mod, only: LCLASH, MAXSHL, NCNTSH, NHKTSH, NLRGBL
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use aovec_mod, only: MXAOVC
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C

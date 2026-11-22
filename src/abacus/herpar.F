@@ -567,8 +567,6 @@ C  /* Deck sdinit */
 C
 C     Written by Henrik Koch and Paal Dahle
 C
-      use aovec_mod, only: MXAOVC
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #if defined (PRG_DIRAC)
       use dcbham_mod, only: ECPCALC, LEVYLE, NONREL
 #if defined (VAR_MPI)
@@ -581,10 +579,8 @@ C
 #if defined (VAR_MPI)
       use infpar_mod, only: MPARID
 #endif
-      use maxorb_mod, only: MXCORB, MXSHEL
       use nuclei_mod, only: NUCDEG
       use symmet_mod, only: MAXREP
-      use maxaqn_mod, only: MXAQN, MXQN
       use parint_mod, only: parint_t
 #if defined (VAR_MPI)
       use parint_mod, only: parint_bcast
@@ -914,7 +910,6 @@ C
 #ifdef PRG_DIRAC
       use dcbgrd_mod, only: GRADEE
 #endif
-      use mxcent_mod, only: MXCOOR
       use priunit_mod, only: LUPRI
       use infpar_mod, only: ICOUNT
 #if defined (VAR_MPI)
@@ -1149,7 +1144,6 @@ C     Written by Henrik Koch and Paal Dahle Nov-1993
 #if defined (VAR_MPI)
       use infpar_mod, only: IPRPAR, NODE
 #endif
-      use mxcent_mod, only: MXCOOR
       use interface_to_mpi
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1452,10 +1446,8 @@ C
       use infpar_mod, only: MPARID
 #endif
       use symmet_mod, only: MAXREP
-      use maxorb_mod, only: MXCORB
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMDEP, NAMDPX, NAMEX,
      &  NAMN, NATOMS, NUCDEP, NUCIND
-      use maxaqn_mod, only: MXAQN, MXQN
 #if defined (PRG_DIRAC)
       use dcbham_mod, only: ECPCALC, LEVYLE, NONREL
 #if defined (VAR_MPI)
@@ -1463,7 +1455,7 @@ C
      &  SMLV1C, SPINFR
 #endif
 #endif
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
       use parint_mod, only: parint_t
 #if defined (VAR_MPI)
@@ -1762,21 +1754,17 @@ CMI changes from TEC for LAO
 #endif
 #endif
       use dummy_mod, only: DUMMY, IDUMMY
-      use maxorb_mod, only: MXCORB, MXSHEL
       use nuclei_mod, only: NUCDEP
 #ifdef PRG_DIRAC
       use dcbgrd_mod, only: GRADEE, GRADNN
 #endif
       use priunit_mod, only: LUPRI
       use twocom_mod
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: MULT
-      use maxaqn_mod, only: MXAQN, MXQN
       use infpar_mod, only: ICOUNT
 #if defined (VAR_MPI)
       use infpar_mod, only: MPARID, MYTID, NTASK, TIMING
 #endif
-      use aovec_mod, only: MXAOVC
       use taymol_mod, only: GRDMOL, HESMOL
       use taysol_mod, only: GSOLNN, GSOLTT
       use blocks_mod
@@ -2189,7 +2177,6 @@ C
 #if defined (PRG_DIRAC) && defined (VAR_MPI)
       use dcbgrd_mod, only: GRADEE
 #endif
-      use mxcent_mod, only: MXCOOR
 #if defined (VAR_MPI)
       use infpar_mod, only: ICOUNT, IPRPAR, MPARID, TIMING
 #endif
@@ -2471,9 +2458,7 @@ C*****************************************************************************
 #endif
       use blocks_mod, only: KHKTSH, LCLASH, MAXSHL, NCNTSH, NLRGBL,
      &  NORBSH
-      use maxorb_mod, only: MXCORB, MXSHEL
       use priunit_mod, only: LUPRI
-      use aovec_mod, only: MXAOVC
 #include "implicit.h"
 C
       INTEGER  NPOS(*)

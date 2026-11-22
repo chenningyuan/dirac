@@ -339,9 +339,6 @@ C
 C  /* Deck sether */
       SUBROUTINE SETHER(JPRINT,NEWGEO,RELCAL,WORK,LWORK)
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXCENT
       use symmet_mod, only: MAXREP, NAOS
       use cbirea_mod, only: IPREAD, LUMLCL
       use inforb_mod, only: NBAS, NSYM
@@ -407,9 +404,7 @@ C  /* Deck aindex */
 #else /* PRG_DIRAC */
       SUBROUTINE AINDEX(ISHELA,NAINTS,INDEXA,DOINDX,IORBSH,IPRINT)
 #endif /* PRG_DIRAC */
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXSHEL
       use priunit_mod, only: LUPRI
       use aovec_mod, only: MXAOVC
       use symmet_mod, only: IPTSYM, ISYMAO, MAXREP
@@ -474,12 +469,9 @@ C
 C     Generate INFORB for DIRAC
 C
 C*****************************************************************************
-      use maxorb_mod, only: MXCORB
       use nuclei_mod, only: NBASIS
       use symmet_mod, only: ICOS, MAXREP, NAOS
       use inforb_mod, only: IBAS, N2BASX, NBAS, NBAST, NSYM
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 C
       INTEGER :: I

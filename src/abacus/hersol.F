@@ -21,9 +21,6 @@ C     Symmetry of RLM integrals
 C
 C     tuh 01.02.90
 C
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
       use symmet_mod, only: ISYMAX
 #include "implicit.h"
       INTEGER :: I,J
@@ -101,12 +98,9 @@ C
 C interface to SOLNUC for Hermit
 C
       use cbisol_mod, only: LCAVMX, LMNTOT, LMTOT
-      use maxorb_mod, only: MXCORB
       use hrunit_mod, only: LUSOL
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
       use orgcom_mod, only: CAVORG
-      use mxcent_mod, only: MXCENT
       use dummy_mod, only: DUMMY
       use symmet_mod, only: MAXREP, NAOS
       use kinds_mod, only: dp
@@ -234,10 +228,8 @@ C
       use orgcom_mod, only: CAVORG
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEP, NUCIND
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCOOR
       use cbisol_mod, only: LCAVMX, LMNTOT, NCNTCV
       use taysol_mod, only: GSOLNN
       use kinds_mod, only: dp
@@ -686,7 +678,6 @@ C
       use priunit_mod, only: LUPRI
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
-      use maxaqn_mod, only: MXAQN
       use cbisol_mod, only: LCAVMX, LMNTOT
       use orgcom_mod, only: CAVORG
       use kinds_mod, only: dp
@@ -999,12 +990,10 @@ C           SUM(pq) Dpq(tpq)c =
 C             SUM(pq) Dpq*(-2Sum(lm) gl Tlm (Rlm)c):
 C     MAY 92
 C     Corrections(counters are being stepped)kvm+hjaaj
-      use mxcent_mod, only: MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCOOR
       use cbisol_mod, only: LCAVMX, LMNTOT, NCNTCV
       use priunit_mod, only: LUPRI
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
-      use maxaqn_mod, only: MXAQN, MXQN
       use onecom_mod, only: KCKTAB, NCENTA, NCENTB, ONECEN, SIGNBX,
      &  SIGNBY, SIGNBZ
       use taysol_mod, only: ESOLTT, GSOLTT

@@ -33,10 +33,7 @@ C*****************************************************************************
       use cbirea_mod, only: DIRAC, IPREAD
       use symmet_mod, only: FMULT, IPTAX, IPTXYZ, ISYMAX, MAXREP, MULT,
      &  NAXREP, PT
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I,J,K
 C
@@ -175,11 +172,8 @@ C                           Modified activation of LSYMOP
 C                           GROUPS and SYMOP are initialized in BLOCK DATA
 C
 C*****************************************************************************
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
       use argoscomch_mod, only: ITYPAG
       use priunit_mod, only: LUPRI
-      use maxaqn_mod, only: MXAQN, MXQN
       use argoscom_mod, only: IGRPAG, NDPTAG, NDPTAGS
       use cbirea_mod, only: IPREAD
       use symmet_mod, only: IPAR, IXVAL, JSOP, MAXREP, NINVC, NREFL,
@@ -435,12 +429,9 @@ C     Sep 24 1996 - tsaue: Updated version
 C     Febr.2007, M.Ilias - added operator type 20
 C
 C*****************************************************************************
-      use maxaqn_mod, only: MXAQN, MXQN
       use cbirea_mod, only: IPREAD
-      use mxcent_mod, only: MXCENT
       use dgroup_mod
       use symmet_mod, only: ISYMAX, MAXREP, NINVC
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use pgroup_mod, only: REP
       use quaternion_algebra
@@ -913,10 +904,7 @@ C
 C     Define generic one-electron operators
 C
 C***********************************************************************
-      use maxorb_mod, only: MXCORB
       use symmet_mod, only: ISYMAX
-      use mxcent_mod, only: MXCENT
-      use maxaqn_mod, only: MXAQN, MXQN
       use dgroup_mod, only: JCOM, JM4, JM4POS, JM4REP, JM4TIM, MCMP
 #include "implicit.h"
 C
@@ -1337,9 +1325,6 @@ C     Written by T. Saue April 10 2013
 C
 C***********************************************************************
       use symmet_mod, only: ISYMAX
-      use maxaqn_mod, only: MXAQN, MXQN
-      use maxorb_mod, only: MXCORB
-      use mxcent_mod, only: MXCENT
       use dgroup_mod, only: IPQTOQ, IQMAP, JFSYM
 #include "implicit.h"
 C

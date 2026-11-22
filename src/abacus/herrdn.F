@@ -237,7 +237,6 @@ C
       use ccom_mod, only: THRS
       use cbirea_mod
       use numder_mod, only: NOMOVE
-      use maxaqn_mod, only: MXQN
 #include "implicit.h"
       LOGICAL RELCAL, TSTINP
 Caspg adding numder to set NOMOVE
@@ -312,7 +311,7 @@ C******************************************************************************
       use molinp_mod, only: MLINE, NMLINE
       use nuclei_mod, only: NUCDEP
       use dummy_mod, only: IDUMMY
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM
       use maxorb_mod, only: MXSHEL
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUCMD, LUPRI
@@ -507,9 +506,8 @@ C******************************************************************************
       use molinp_mod, only: MLINE, NMLAU, NMLINE
       use nuclei_mod, only: NONT, NONTYP
       use symmet_mod, only: MAXREP
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT
+      use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
       USE RECP_NTR
       use ccom_mod, only: DOCART, DOSPHE, THRS
@@ -844,9 +842,6 @@ C***********************************************************************
       use ccom_mod, only: KHK, NHKOFF, NHTYP
       use nuclei_mod, only: ISTBNU, NUCIND
       use symmet_mod, only: MAXOPR
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 C
 C
@@ -904,8 +899,7 @@ C***********************************************************************
      &  NONT, NONTYP, NOORBT, NUCIND
       use gencon_mod, only: DIRCON
       use dummy_mod, only: IDUMMY
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXSHEL
+      use mxcent_mod, only: MXBSETS
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
@@ -1951,8 +1945,8 @@ C*****************************************************************************
       use argoscom_mod, only: ECPNUC
       use nuclei_mod, only: CHARGE, CORD, GAUNUC, GNUEXP, ISOTOP,
      &  IZATOM, NAMEX, NAMN, NUCIND
-      use consts_mod, only: D0, D8
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use consts_mod, only: D0
+      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER (CORMAX = 1.D5)
@@ -2094,11 +2088,10 @@ C
       use shells_mod, only: KMAX, NLRGSH, NORBS, NSMLSH
       use symmet_mod, only: ISYMAX
       use primit_mod, only: NPLSH, NPSHEL, NPSSH, PRIEXP
-      use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXCORB_FIT, MXPRIM_FIT,
      &  MXSHEL, MXSHEL_FIT
-      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
@@ -2338,8 +2331,7 @@ C*****************************************************************************
       use nuclei_mod
       use symmet_mod, only: MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       DIMENSION WORK(LWORK)
@@ -2726,7 +2718,6 @@ C  /* Deck gtoinp */
       use dcbham_mod, only: ECPCALC
       use cbirea_mod, only: DIRAC, INPTST
       use molinp_mod, only: MLINE, NMLINE
-      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER (DSM=1.0D-30)
@@ -3024,7 +3015,6 @@ C  /* Deck famcopy */
       SUBROUTINE FAMCOPY(LUINFO,NUCIJ,NRCIJ,ALPHA,CPRIMU,KPRIM,IC)
       use cbirea_mod, only: FAMEXP, INPTST, MXFAMEXP, NFAMEXP
       use molinp_mod, only: MLINE, NMLINE
-      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER(D1 = 1.0D0)
@@ -3245,7 +3235,6 @@ C  /* Deck acporb */
       SUBROUTINE ACPORB(LUINFO,FRMT,NUCIJ,NRCIJ,ALPHA,CPRIMU,KPRIM)
       use cbirea_mod, only: INPTST
       use molinp_mod, only: MLINE, NMLINE
-      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER(D1 = 1.0D0)
@@ -3482,9 +3471,6 @@ C******************************************************************************
       use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP,
      &                      ensure_primitives, resize_primitives
       use aovec_mod, only: MXCONT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXSHEL
-      use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
       use ccom_mod, only: KCK, KHK, SPH
 #ifdef PRG_DIRAC
@@ -3633,9 +3619,7 @@ C******************************************************************************
       use fitshells_mod
       use nuclei_mod, only: CORD, ISTBNU, NONT, NONTYP, NUCDEG
       use aovec_mod, only: MXCONT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB_FIT, MXPRIM_FIT, MXSHEL_FIT
-      use maxaqn_mod, only: MXQN
+      use maxorb_mod, only: MXCORB_FIT, MXSHEL_FIT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0)
@@ -3751,10 +3735,6 @@ C  /* Deck orbout */
       use nuclei_mod, only: NAMN, NLARGE, NONT, NONTYP, NPLRG,
      &  NPLRG_FIT, NUCDEG
       use primit_mod, only: NPLSH, PRICCF, PRIEXP
-      use aovec_mod, only: MXCONT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXPRIM, MXPRIM_FIT
-      use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0)
@@ -3987,8 +3967,6 @@ C******************************************************************************
       use nuclei_mod
       use symmet_mod, only: MAXREP, MULT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
@@ -4163,9 +4141,8 @@ C*************************************************************************
       use symmet_mod, only: I2COSX, ICLASS, ICOS, IPTSYM, ISYMAO,
      &  ISYMAX, MAXREP, MULT, NAOS, NCOS, NPARNU, NPARSU, PT,
      &  alloc_symmet_orbitals
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN
       use priunit_mod, only: LUPRI
       USE RECP_NTR
 #include "implicit.h"
@@ -4402,9 +4379,6 @@ C*****************************************************************************
       use nuclei_mod, only: NAMN, NFLOAT, NUCDEG
       use shells_mod, only: NORBS
       use symmet_mod, only: ICLASS, IPTSYM, ISYMAX, MAXREP, NAOS, NCOS
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
@@ -4481,9 +4455,6 @@ C     **********************************************************
       use nuclei_mod, only: ISTBNU, NAMN, NUCDEP, NUCIND
       use chrxyz_mod, only: CHRXYZ
       use symmet_mod, only: IPTCNT, IPTNUC, ISYMAX, MAXREP
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
@@ -4606,9 +4577,6 @@ C
       use chrxyz_mod, only: CHRXYZ
       use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, MULT,
      &  NCRREP, PT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
@@ -4990,9 +4958,7 @@ C
       use nuclei_mod, only: ISTBNU, NUCIND, NUCNUM
       use shells_mod, only: ISTBAO, KHKT, KMAX, NCENT
       use symmet_mod, only: MAXREP
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB, MXSHEL
-      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
@@ -5057,9 +5023,6 @@ C     prints the center of each SO
 C
       use shells_mod, only: ISTBAO, KHKT, KMAX, NCENT, NHKT
       use symmet_mod, only: ISYMAO, MAXREP
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXSHEL
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
@@ -5092,9 +5055,6 @@ C
       use nuclei_mod, only: ISTBNU, NAMEX, NUCIND, NUCNUM
       use chrxyz_mod, only: CHRXYZ
       use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, PT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
@@ -5163,9 +5123,6 @@ C     Cartesian coordinate. Extracted from old TRACOR routine by
 C     K.Ruud, Dec-96
 C
       use symmet_mod, only: IPTCNT, IPTCOR, MAXREP
-      use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 C
 C
@@ -5252,7 +5209,6 @@ C=======================================================================
       use cbirea_mod, only: IPREAD
       use molinp_mod, only: MLINE, NMLINE
       use sphtrm_mod, only: CSP, ISPADR, NCSP
-      use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
       implicit none
@@ -5363,7 +5319,6 @@ C
 C  /* Deck rdcsp */
       SUBROUTINE RDCSP(LUINFO,CSP,GTOTYP,KHKI,KCKI)
       use molinp_mod, only: MLINE, NMLINE
-      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       integer, intent(in) :: LUINFO
@@ -5395,7 +5350,6 @@ C     or if default - kinetic balance - should be used.)
 C
       use infpar_mod, only: MYTID
       use molinp_mod, only: KMLINE, MLINE, NMLINE
-      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 
@@ -5480,8 +5434,8 @@ C
       use dummy_mod, only: DUMMY, IDUMMY
       use shells_mod, only: ISTBAO, KMAX, NCENT, NHKT
       use symmet_mod, only: ISYMAO, ISYMAX, MAXREP, NAOS, PT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB, MXSHEL
+      use mxcent_mod, only: MXCENT
+      use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 C
@@ -5607,9 +5561,8 @@ C  /* Deck reapri */
       use nuclei_mod
       use shells_mod
       use symmet_mod
-      use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
+      use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
@@ -5694,7 +5647,7 @@ C   SPECIFIED BY INTERNAL COORDINATES.
 C
       use molinp_mod, only: MLINE, NCLINE, NMLINE
       use nuclei_mod, only: CHARGE, NAMEX, NAMN, NONT, NUCIND
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0)
@@ -6173,9 +6126,6 @@ C***********************************************************************
 #endif
       use nuclei_mod, only: CORD, ISTBNU, NOORBT, NUCIND
       use symmet_mod, only: FMULT, ISYMAX, MAXREP, PT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
-      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
@@ -6448,7 +6398,6 @@ C
 C***********************************************************************
       use cbirea_mod, only: FAMEXP, FAMPAR, INPTST, MXFAMEXP, NFAMEXP
       use molinp_mod, only: MLINE, NMLINE
-      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
@@ -6667,10 +6616,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use ccom_mod, only: NHKOFF
       use nuclei_mod, only: CHARGE, NONT, NONTYP, NUCDEG
       use primit_mod, only: PRIEXP
-      use aovec_mod, only: MXCONT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXPRIM
-      use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 
@@ -6904,7 +6849,6 @@ C     Written by Lucas Visscher, 26-6-2007
 C
 C***********************************************************************
       use ccom_mod, only: KHK
-      use maxaqn_mod, only: MXQN
       INTEGER DELTA_L
       IF (L+DELTA_L.GT.0) THEN
          KHK_SC = KHK(L+DELTA_L)
@@ -6932,8 +6876,6 @@ C******************************************************************************
       use cbirea_mod, only: MAXPRD
       use nuclei_mod, only: NONT, NONTYP, NUCDEG
       use pi_mod, only: PI
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0, DP5 = 0.50D0,

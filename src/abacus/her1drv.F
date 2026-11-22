@@ -178,11 +178,8 @@ C  /* Deck onedrv */
 C
       use nuclei_mod, only: NUCDEP
       use symmet_mod, only: MAXREP
-      use maxorb_mod, only: MXCORB, MXSHEL
       use shells_mod, only: ISTBAO, KHKT, KMAX
       use cbisol_mod, only: LMNTOT, SOLVNT
-      use maxaqn_mod, only: MXAQN, MXQN
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use iratdef_mod, only: IRAT
 #include "implicit.h"
 C
@@ -259,7 +256,6 @@ C     1983.
 C
 C     Symmetry included  880406  TUH & PRT
 C
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, MULT,
      &  PT
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
@@ -276,9 +272,8 @@ C
       use dipole_mod, only: DDIPE, DDIPS
       use cbisol_mod, only: EPDIEL, LCAVMX, LMNTOT, LMTOT, RCAV, SOLVNT
       use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
-      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN
       use dorps_mod, only: DOREPS
-      use maxorb_mod, only: MXCORB, MXSHEL
       use kinds_mod, only: dp
       use ccom_mod, only: THRS
 #ifndef PRG_DIRAC
@@ -969,11 +964,8 @@ C
 C     1985 tuh
 C     symmetry Dec 1988 tuh
 C
-      use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: FMULT, IPTAX, IPTCNT, ISYMAX, MAXREP, NAXREP
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEP, NUCIND
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB
       use dipole_mod, only: DDIPN, DIPMN
       use dorps_mod, only: DOREPS
       use orgcom_mod, only: DIPORG
@@ -1031,7 +1023,6 @@ C
       END
 C  /* Deck tlmwrt */
       SUBROUTINE TLMWRT(TLMD,FCM,WORK,LWORK,IPRINT)
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: NUCDEP
 #include "implicit.h"
       DIMENSION TLMD(*), FCM(*), WORK(LWORK)
@@ -1054,7 +1045,6 @@ C  /* Deck tlmwr1 */
       use taysol_mod, only: GSOLNN, GSOLTT
       use nuclei_mod, only: NUCDEP
       use iratdef_mod, only: IRAT
-      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER (DM1 = -1.0D00, THRSH = 1.0D-07)
