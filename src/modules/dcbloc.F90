@@ -35,7 +35,6 @@
 !              False - if the number of negative eigenvalues equals zero
 !     LGCHCK - works with HESLOC = COMB option
 !              True  - only one calculation of the full hessian will be performed
-!#include <dcblab.h>
    module dcbloc_mod
    implicit none
    real*8 :: THFULL, THDIAG, THGRAD, THXVEC

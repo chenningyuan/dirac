@@ -40,17 +40,15 @@ C***********************************************************************
       use nuclei_mod, only: NAMN, NUCDEG
       use symmet_mod, only: ICOS, MAXREP
       use dcbibt_mod, only: IPACK
-!      use dcblab_mod, only: IPLAB, MAXLAB, NPLAB, PLABEL
+      use dcblab_mod, only: IATTR, IPLAB, MAXLAB, NPLAB, PLABEL
       use aosotr_mod, only: IPCEN, IPTYP
       use dgroup_mod, only: NBSYM
       use ccom_mod, only: GTOTYP, KHK, NHKOFF
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
       use dcbbas_mod, only: IBBAS, NBBAS
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcblab.h"
       CHARACTER CLS(2)*1,DEG*2
       integer, allocatable :: kp(:)
 C
@@ -492,15 +490,13 @@ C     Last revision: Jan 7 1998 - jth LINUX
 C
 C***********************************************************************
       use dcbbas_mod, only: N2BBASX, NTBAS
-      use maxorb_mod, only: MXCORB
-!      use dcblab_mod, only: IATTR, IPLAB
+      use dcblab_mod, only: IATTR, IPLAB
       use dgroup_mod, only: IPQTOQ, IQPH, JQBAS, NZ
       use dcbibt_mod, only: IGET, JGET
       use quaternion_algebra
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "dcblab.h"
 C  Used from COMMON blocks:
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
@@ -534,16 +530,14 @@ C     Written by Trond Saue
 C     Last revision: Jan 7 1998 -jth LINUX
 C
 C***********************************************************************
-!      use dcblab_mod, only: IATTR, IPLAB
+      use dcblab_mod, only: IATTR, IPLAB
       use dgroup_mod, only: IPQTOQ, IQPH, JQBAS, NZ
-      use maxorb_mod, only: MXCORB
       use dcbibt_mod, only: IGET, JGET
       use dcbbas_mod, only: N2BBASX, NTBAS
       use quaternion_algebra
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "dcblab.h"
 C  Used from COMMON blocks:
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
@@ -578,14 +572,12 @@ C
 C***********************************************************************
       use dgroup_mod, only: IPQTOQ, IQPH, JQBAS, NZ
       use dcbbas_mod, only: N2BBASX, NTBAS
-      use maxorb_mod, only: MXCORB
-!      use dcblab_mod, only: IATTR, IPLAB
+      use dcblab_mod, only: IATTR, IPLAB
       use dcbibt_mod, only: IGET, JGET
       use quaternion_algebra
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "dcblab.h"
 C  Used from COMMON blocks:
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
@@ -620,16 +612,14 @@ C     Written by Trond Saue
 C     Last revision: Jan 7 1998 - jth LINUX
 C
 C***********************************************************************
-!      use dcblab_mod, only: IATTR, IPLAB
+      use dcblab_mod, only: IATTR, IPLAB
       use dcbbas_mod, only: N2BBASX, NTBAS
       use dcbibt_mod, only: IGET, JGET
-      use maxorb_mod, only: MXCORB
       use dgroup_mod, only: IPQTOQ, IQPH, JQBAS, NZ
       use quaternion_algebra
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "dcblab.h"
 C  Used from COMMON blocks:
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
@@ -3574,19 +3564,17 @@ C     Written by T.Saue March 12 2001
 C
 C***********************************************************************
       use dcbbas_mod, only: IBBAS
-!      use dcblab_mod, only: IATTR, IPLAB, NPLAB, PLABEL
+      use dcblab_mod, only: IATTR, IPLAB, NPLAB, PLABEL
       use nuclei_mod, only: NBASIS, NUCDEG
       use dcbibt_mod, only: IGET, JGET, KGET
       use pgroup_mod, only: REP
       use aosotr_mod, only: CTRAN
       use symmet_mod, only: ICOS, MAXREP, NAOS, NCOS
       use chrsgn_mod, only: CHRSGN
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,II,K
 C
-#include "dcblab.h"
       DIMENSION ILAB(2,*)
 C
 C     Scan SO-labels

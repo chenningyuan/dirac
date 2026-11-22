@@ -2,12 +2,12 @@
      &                      dALPHAdR,dGPRIMEdR,dTHETAdR,wrk,lwrk)
       !ajt jan09 Reduced from nw to 1 frequency (thus several calls instead)
       !          Removed negative signs on all the tensors
+      use cbilnr_mod, only: FRVAL, MXFR, NFRVAL
       use moldip_mod, only: DIPFLT
       use cbivib_mod, only: HESFIL, IPRINT, NINTCM
       use abainf_mod, only: DIPDER, DOSYM, NUMHES, RAMAN, VROA
       use mxcent_mod, only: MXCENT, MXCOOR
 #include "implicit.h"
-#include "cbilnr.h"
       dimension ALPHA(3,3),GPRIME(3,3),THETA(3,6)
       dimension DIPGRAD(3,nc),dALPHAdR(3,3,nc)
       dimension dGPRIMEdR(3,3,nc),dTHETAdR(3,6,nc),wrk(lwrk)
@@ -62,7 +62,6 @@ C * change lunit to -1
       use abainf_mod, only: DIPDER, DOSYM, NUMHES, RAMAN
       use mxcent_mod, only: MXCENT, MXCOOR
 #include "implicit.h"
-#include "cbilnr.h"
       dimension DIPGRAD(3,nc)
       dimension wrk(*)
 

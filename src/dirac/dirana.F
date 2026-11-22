@@ -143,8 +143,8 @@ C***********************************************************************
 !      use dcborb_mod, only: NOCC, NPSH
       use dgroup_mod, only: NFSYM
       use dcbbas_mod, only: N2BBASX, NTBAS
-      use maxorb_mod, only: MXCORB
-!      use dcbpop_mod, only: DONETP, DO_SCFPOP, ILABDF, IPRPOP, LABDEF, NPOPLAB, VECPOP, VECPOP_SAVE
+      use dcbpop_mod, only: DONETP, DO_SCFPOP, ILABDF, IPRPOP, LABDEF,
+     &  NPOPLAB, VECPOP, VECPOP_SAVE
 #include "implicit.h"
       INTEGER :: I
 C
@@ -152,7 +152,6 @@ C Used from COMMON blocks:
 C  DCBBAS: N2BBASX
 C  LABELS: NLAB
 #include "dcborb.h"
-#include "dcbpop.h"
 C
       DIMENSION CMO(*), EIG(*), IBEIG(*), WORK(LWORK)
       LOGICAL   DONETP_M,LABDEF_M
@@ -241,10 +240,10 @@ C     Written by T.Saue - Sep 11 1995
 C     Last revision: April 27 1996 - tsaue
 C
 C***********************************************************************
-!      use dcbpop_mod, only: ADDSML, DONETP, DO_SCFPOP, ILABDF, IPRPOP, LABDEF, NPOPLAB, VECPOP, VECPOP_SAVE
+      use dcbpop_mod, only: ADDSML, DONETP, DO_SCFPOP, ILABDF, IPRPOP,
+     &  LABDEF, NPOPLAB, VECPOP, VECPOP_SAVE
       use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
       use dcbgen_mod, only: LUKRMC
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: NESH, NESHT, NOCC, NORBT, NPSH
@@ -258,7 +257,6 @@ C Used from COMMON blocks:
 C  DCBBAS: N2BBASX
 C  LABELS: NLAB
 #include "dcborb.h"
-#include "dcbpop.h"
 C
       LOGICAL TOBE,TOBEK,DONETP_M,ADDSML_M,LABDEF_M
       LOGICAL FNDLAB,CINATORB
@@ -481,10 +479,11 @@ C     Written by T.Saue July 24 1994
 C     LAST VERSION: Jan 9 1997
 C
 C***********************************************************************
+      use dcblab_mod, only: IPLAB
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: N2BBASX, NFBAS, NTBAS
-!      use dcbpop_mod, only: DONETP, DO_SCFPOP, ILABDF, IPOPLAB, IPRPOP, NPOPLAB, POPLAB
-      use maxorb_mod, only: MXCORB
+      use dcbpop_mod, only: CHRGNUC, DONETP, DO_SCFPOP, ILABDF, IPOPLAB,
+     &  IPRPOP, NPOPLAB, POPLAB, VECPOP
       use dcbham_mod, only: SSMTRC
       use dgroup_mod, only: FREP, NBSYM, NFSYM
 !      use dcborb_mod, only: NORB, NORBT, NPSH
@@ -498,7 +497,6 @@ C  DCBORB: NSPH
 C  DCBBAS:
 C  DGROUP: NZ
 C
-#include "dcbpop.h"
 #include "dcborb.h"
 C
       DIMENSION PMAT(NPOPLAB,NPOPLAB,2),SMAT(*),CMO(*),
@@ -640,11 +638,10 @@ C     Last revision : Aug 20 2002 - jkp (take fractional occ. into
 C                                        account)
 C***********************************************************************
 !      use dcborb_mod, only: NISH, NPSH
-!      use dcbpop_mod, only: DONETP, IPRPOP, NPOPLAB, POPLAB
+      use dcbpop_mod, only: DONETP, IPRPOP, NPOPLAB, POPLAB
       use dcbham_mod, only: SPINFR
       use dgroup_mod, only: ATOMIC, FREP, LINEAR, NFSYM, NZ
       use dcbbas_mod, only: NTBAS
-      use maxorb_mod, only: MXCORB
       use pgroup_mod, only: REP
       use priunit_mod, only: LUPRI
 !      use dcbdhf_mod, only: DF, NOPEN
@@ -658,7 +655,6 @@ C  DCBBAS:
 C  DGROUP: NZ
 C  DCBDHF: NOPEN
 C
-#include "dcbpop.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 C
@@ -917,8 +913,7 @@ C     Written by T.Saue Oct 9 1995
 C     Last revision: Jan 7 1998 - jth LINUX
 C
 C***********************************************************************
-      use maxorb_mod, only: MXCORB
-!      use dcbpop_mod, only: ILABDF
+      use dcbpop_mod, only: ILABDF
       use dcbbas_mod, only: IBAS, N2BBASX, NFBAS, NTBAS
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
@@ -930,7 +925,6 @@ C Used from COMMON blocks
 C  DCBBAS: NTBAS,NFBAS
 C  DCBORB: NORB
 C  DGROUP: NZ
-#include "dcbpop.h"
 C
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),PBUF(NTBAS(0),NTBAS(0),*)
       DIMENSION PMAT(NGLAB,NGLAB,2),CMO(NCBAS,NVECS,4),IGLAB(*)
@@ -1065,8 +1059,7 @@ C     Written by T.Saue - Oct 11 1995
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbpop_mod, only: POP_DTOL
-      use maxorb_mod, only: MXCORB
+      use dcbpop_mod, only: POP_DTOL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -1075,7 +1068,6 @@ C***********************************************************************
       DIMENSION POPG(NLAB,2),IEFF(*)
 
 ! dcbpop.h : POP_DTOL
-#include "dcbpop.h"
 C
 C     Find nonzero contributions
 C     ==========================
@@ -1182,9 +1174,8 @@ C     Written by T.Saue Oct 11 1995
 C     Last revision Oct 11 1995
 C
 C***********************************************************************
-!      use dcbpop_mod, only: POP_DTOL
+      use dcbpop_mod, only: POP_DTOL
       use priunit_mod, only: LUPRI
-      use maxorb_mod, only: MXCORB
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
@@ -1193,7 +1184,6 @@ C***********************************************************************
       DIMENSION PMAT(NLAB,NLAB),POPG(NLAB),IEFF(NLAB)
 
 ! dcbpop.h : POP_DTOL
-#include "dcbpop.h"
 C
 C     Find nonzero contributions
 C     ==========================
@@ -1251,10 +1241,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck anaprj */
       SUBROUTINE ANAPRJ(WORK,LWORK)
+      use dcbprj_mod, only: MAXREF, PATOMS
 #include "implicit.h"
 C
-!      use dcbprj_mod, only: MAXREF, PATOMS, VECREF
-#include "dcbprj.h"
       DIMENSION NVECS(2,0:2),KVEC(2,0:MAXREF),NSTR(2,0:2,0:MAXREF)
       DIMENSION WORK(LWORK)
       KWORK = 1
@@ -1313,7 +1302,8 @@ C     Written by T.Saue March 26 1999
 C
 C***********************************************************************
 !      use dcborb_mod, only: NORBT, NPSH
-!      use dcbprj_mod, only: C1READ, IPRPRJ, MAXREF, NPROJNUC, NREFS, OWNBAS, REFFIL, VECREF
+      use dcbprj_mod, only: C1READ, IPRPRJ, MAXREF, NPROJNUC, NREFS,
+     &  OWNBAS, REFFIL, VECPRJ, VECREF
       use dgroup_mod, only: NFSYM, NZ
       use dcbbas_mod, only: N2BBASXQ, NFBAS
       use priunit_mod, only: LUPRI
@@ -1323,7 +1313,6 @@ C***********************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, DM1=-1.0D0, D1=1.0D0
 C
-#include "dcbprj.h"
 #include "dcborb.h"
 C
       DIMENSION WORK(*)
@@ -1466,14 +1455,14 @@ C
 C    Written by T.Saue March 26 1999
 C
 C***********************************************************************
-!      use dcbprj_mod, only: IPRPRJ, MAXREF, NREFS, POLREF, PROTHR, REFFIL, VECREF
+      use dcbprj_mod, only: IPRPRJ, MAXREF, NREFS, POLREF, PROTHR,
+     &  REFFIL
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, DC=1.0D-2, D2=2.0D0, D1=1.0D0,
      &                       DM1=-1.0D0
 C
-#include "dcbprj.h"
 C
       CHARACTER*3 FREP(2)
       DIMENSION GROSS(2,0:2,MAXREF)
@@ -1679,11 +1668,10 @@ C
 C     Wrintten by T.Saue March 31 1999
 C
 C***********************************************************************
-!      use dcbprj_mod, only: MAXREF, VECREF
+      use dcbprj_mod, only: MAXREF
 #include "implicit.h"
 C
       INTEGER :: J
-#include "dcbprj.h"
       DIMENSION JREF(3,*),NSTR(2,0:2,0:MAXREF),KREF(*)
       IFLAG = IFRAG
       IF(IFRAG.EQ.0) IFLAG = IND
@@ -1736,7 +1724,8 @@ C                                    MCSCF-NO coefficients, occupation
 C                                    numbers (and mj-values)
 C
 C***********************************************************************
-!      use dcbprj_mod, only: IPRPRJ, LWGPOP, MAXREF, NREFS, PROTHR, VECREF
+      use dcbprj_mod, only: IPRPRJ, LWGPOP, MAXREF, NREFS, PROTHR,
+     &  REFFIL
       use dcbham_mod, only: SPINFR
       use dgroup_mod, only: FREP, LINEAR
       use priunit_mod, only: LUPRI
@@ -1747,7 +1736,6 @@ C***********************************************************************
       INTEGER :: I,J,K
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0
 C
-#include "dcbprj.h"
 C
       integer, intent(in)    :: ntot, nref, nmol, nzp, iopt
       integer, intent(in)    :: krmc_flg
@@ -1967,15 +1955,15 @@ C     Written by Trond Saue May 1996
 C     Last revision: tsaue - May 2 1996
 C
 C***********************************************************************
+      use dcblab_mod, only: IATTR, NPLAB, PLABEL
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: CHARGE, NAMDEP, NOORBT, NUCDEP, NUCPRE
-!      use dcbpop_mod, only: ADD_ALL, ADDSML, DO_SCFPOP, ILABDF, IPOPLAB, LABDEF, NPOPLAB, POPLAB
+      use dcbpop_mod, only: ADDSML, ADD_ALL, CHRGNUC, DO_SCFPOP, ILABDF,
+     &  IPOPLAB, LABDEF, NPOPLAB, POPLAB
       use dcbibt_mod, only: JGET, KGET
-      use maxorb_mod, only: MXCORB
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "dcbpop.h"
 C
 C
 C
@@ -2185,9 +2173,8 @@ C
 C     Written by T.Saue - Oct 11 1995
 C
 C***********************************************************************
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
-!      use dcbpop_mod, only: POP_DTOL
+      use dcbpop_mod, only: POP_DTOL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -2196,7 +2183,6 @@ C***********************************************************************
       DIMENSION POPG(NLAB),IEFF(*)
 
 ! dcbpop.h : POP_DTOL
-#include "dcbpop.h"
 C
 C     Find nonzero contributions
 C     ==========================
@@ -2906,7 +2892,7 @@ C      Do Loewdin symmetric orthonormalization
 C      Written by T. Saue Oct 2004
 C
 C***********************************************************************
-!      use dcbprj_mod, only: IPRPRJ, NREFS, REFFIL, VECREF
+      use dcbprj_mod, only: IPRPRJ, NREFS, REFFIL
       use dgroup_mod, only: IPQTOQ, NZ
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
@@ -2914,7 +2900,6 @@ C***********************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0
 C
-#include "dcbprj.h"
       CHARACTER OTYP(2)*1
       DIMENSION AMAT(NTOT,NTOT,NZ),BVEC(NTOT,NMOL,NZ),
      &          JREF(3,*),EREF(*),PSUM(NREFS),WORK(*)
@@ -3083,7 +3068,7 @@ C     Written by T. Saue Sep 2013
 C
 C***********************************************************************
 !      use dcborb_mod, only: NPSH
-!      use dcbprj_mod, only: IPRPRJ, NPROJNUC, NREFS, REFFIL, VECREF
+      use dcbprj_mod, only: IPRPRJ, NPROJNUC, NREFS, REFFIL, VECPRJ
       use dcbham_mod, only: SSMTRC
       use dgroup_mod, only: NFSYM, NZ
       use dcbbas_mod, only: N2BAST, N2BBASXQ, NFBAS
@@ -3095,7 +3080,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
 #include "dcborb.h"
-#include "dcbprj.h"
       LOGICAL TOBE
       CHARACTER TEXT*74,FMT*6,MXFORM*6
       DIMENSION WORK(*)
@@ -3831,8 +3815,8 @@ C                   label NEWORB on file KRMCSCF
 C     KRMC_FLG = 0  Orbitals read from CHECKPOINT
 C
 C***********************************************************************
-!      use dcbprj_mod, only: IPRPRJ, MAXREF, NREFS, PATOMS, REFFIL, VECREF
 !      use dcborb_mod, only: IOCC
+      use dcbprj_mod, only: IPRPRJ, MAXREF, NREFS, PATOMS, REFFIL
       use dcbham_mod, only: SSMTRC
       use dgroup_mod, only: FREP, IPQTOQ, IQDEF, NFSYM, NZ, NZC1
       use dcbbas_mod, only: N2BAS, N2BAST, N2BBASX, NFBAS, NTBAS
@@ -3843,7 +3827,6 @@ C***********************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0
 C
-#include "dcbprj.h"
 #include "dcborb.h"
       DIMENSION NVECS(2,0:2),KVEC(2,0:MAXREF),NSTR(2,0:2,0:MAXREF),
      &          CSEL(*),ESEL(*),IBSEL(*),BVEC(*),
@@ -4375,8 +4358,8 @@ C
 C     Written by T.Saue May 14 2012
 C
 C***********************************************************************
-!      use dcbprj_mod, only: IPRPRJ, MAXREF, REFFIL, VECREF
 !      use dcborb_mod, only: NORBT, NPSH
+      use dcbprj_mod, only: IPRPRJ, MAXREF, REFFIL, VECPRJ, VECREF
       use dgroup_mod, only: IPQTOQ, IQDEF, NFSYM, NZ, NZC1
       use dcbbas_mod, only: N2BBASXQ, NFBAS, NTBAS
       use nuclei_mod, only: NONT, NONTYP, NOORBT, NUCDEG
@@ -4387,7 +4370,6 @@ C***********************************************************************
       INTEGER :: J
 C
 C
-#include "dcbprj.h"
 #include "dcborb.h"
       DIMENSION NVECS(2,0:2),KVEC(2,0:MAXREF),NSTR(2,0:2,0:MAXREF),
      &          NAO(MAXREF),WORK(*),IDIM(3)

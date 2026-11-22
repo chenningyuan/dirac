@@ -10,6 +10,7 @@ set(MODULE_SOURCES
     cbiher.F90
     cbihr1.F90
     cbihr2.F90
+    cbilnr.F90
     cbinuc.F90
     cbione.F90
     cbirea.F90
@@ -40,12 +41,14 @@ set(MODULE_SOURCES
     dcbkrci.F90
     dcbkrmc.F90
     dcbkrmc_itinfo.F90
+    dcblab.F90
     dcblap.F90
     dcbloc.F90
     dcbmp2.F90
     dcbmp2no.F90
     dcbnmr.F90
     dcbnrt.F90
+    dcbprj.F90
     dcbsusc.F90
     dcbwav.F90
     dcbwt1.F90

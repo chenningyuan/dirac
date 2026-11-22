@@ -93,8 +93,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use dcbham_mod, only: LEVYLE, MC, SSMTRC
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NFBAS, NTBAS
       use dgroup_mod, only: NFSYM
-      use maxorb_mod, only: MXCORB
-!      use dcblab_mod, only: IATTR, IPLAB, PLABEL
+      use dcblab_mod, only: IATTR, IPLAB, PLABEL
       use symmet_mod, only: MAXREP, NCOS
          use dft_cfg
       use memory_allocator
@@ -114,7 +113,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DOUBLE PRECISION ERRAV,ERRAB,RMS,ERRMX,MAXS,MAXP,MAXD,MAXF,
      &     RERRAV,RERRAB,RERRMX,SMATDF, SMATAN, SMATFR
 
-#include "dcblab.h"
 
       DIMENSION SMAT(NTBAS(0),NTBAS(0),2),ICLAB(NTBAS(0))
 

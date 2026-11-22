@@ -1943,13 +1943,12 @@ C
 C     Written by T. Saue, Oct 21 2003
 C
 C***********************************************************************
-!      use dcbprj_mod, only: NREFS
+      use dcbprj_mod, only: NREFS
       use dgroup_mod, only: NFSYM, NZ
       use dcbbas_mod, only: NFBAS
 #include "implicit.h"
 C
       INTEGER :: I
-#include "dcbprj.h"
       DIMENSION NR(NREFS,NFSYM),NP(2,0:2),WORK(*)
       NCDIM = 0
       NBDIM = 0

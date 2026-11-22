@@ -467,7 +467,7 @@ C
       use cbisol_mod, only: SOLVNT
       use codata_mod, only: XFAMU, XTANG, XTKAYS, XTKMML
       use iratdef_mod, only: IRAT
-!      use cbilnr_mod, only: NFRVAL
+      use cbilnr_mod, only: NFRVAL
       use gnrinf_mod, only: OPTWLK
       use symmet_mod, only: MAXREP, NCRREP
       use priunit_mod, only: LUPRI
@@ -482,7 +482,6 @@ C
      &          EVAL(NCORD), EVEC(NCORD,NCORD), DGRAD(3,NCORD),
      &          VINRTI(3,3), CAAT(3,NCORD), WRK(LWRK)
 C
-#include "cbilnr.h"
 C
       DIMENSION NMASS(36)
 C
@@ -2579,13 +2578,12 @@ C  /* Deck vibroa */
       SUBROUTINE VIBROA(EVEC,FREQ,ROAAFQ,ROAGNQ,ROAGLQ,ROAAQ,WORK,LWORK,
      &                  NCORD,NUMMOD)
       use mxcent_mod, only: MXCOOR
+      use cbilnr_mod, only: MXFR, NFRVAL
 #include "implicit.h"
-!      use cbilnr_mod, only: MXFR, NFRVAL
       DIMENSION EVEC(NCORD,NCORD), FREQ(NCORD),
      &          ROAAFQ(3,3,NFRVAL,NCORD), ROAGNQ(3,3,NFRVAL,NCORD),
      &          ROAGLQ(3,3,NFRVAL,NCORD), ROAAQ(3,3,3,NFRVAL,NCORD)
       DIMENSION WORK(LWORK)
-#include "cbilnr.h"
       KBAL   = 1
       KBGML  = KBAL   + NCORD
       KBGMNL = KBGML  + NCORD
@@ -2651,7 +2649,7 @@ C  /* Deck vibro1 */
       use nuctap_mod, only: LUWLK
       use cbivib_mod, only: IPRINT
       use priunit_mod, only: LUPRI
-!      use cbilnr_mod, only: FRVAL, MXFR, NFRVAL
+      use cbilnr_mod, only: FRVAL, MXFR, NFRVAL
       use dummy_mod, only: IDUMMY
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2661,7 +2659,6 @@ C     for Raman vibrational intensities and VROA
 C     Calculation of the final properties and output modified
 C     by G.Hangartner 20.11.1996
 C
-#include "cbilnr.h"
 C
       INTEGER F
       REAL(dp), PARAMETER :: DE3=1.0D3, DE13 = 1.0D13, D2=2.0D0,
@@ -3144,6 +3141,7 @@ C     This subroutine calculates vibrationally averaged molecular
 C     properties assuming that the calculation is performed at the effective
 C     geometry. K.Ruud, San Diego, March 1999
 C
+      use cbilnr_mod, only: ALFA, FRVAL, MXFR, NFRVAL
       use codata_mod, only: ALPHA2, AUTK, PMASS, XFAMU, XFMOL, XTANG,
      &  XTHZ, XTKAYS, XTNM
       use abainf_mod, only: MAGSUS, NQCC, POLAR, QUADRU, ROTG, SHIELD,
@@ -3160,7 +3158,6 @@ include "implicit.h"
 #include "thrzer.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4= 4.0D0, THRESH = 1.0D-5)
-#include "cbilnr.h"
       DIMENSION EVAL(NUMMOD), DIPM0(3), DIPMF(3,NUMMOD), SUSTO0(3,3),
      &          SUSTF(3,3,NUMMOD), SUSAV(3,3), GFAC0(3,3), GFACAV(3,3),
      &          GFACF(3,3,NUMMOD), QUAD0(3,3), QUADF(3,3,NUMMOD),

@@ -546,7 +546,7 @@ C***********************************************************************
       use dcbgen_mod, only: LUCOEF
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 !      use dcbdhf_mod, only: AOC, DF
-!      use dcbprj_mod, only: NREFS
+      use dcbprj_mod, only: NREFS
 #include "implicit.h"
       INTEGER :: I, J
       PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16,D2=2.0D0)      
@@ -555,7 +555,6 @@ C
 #include "dcbexp.h"
 #include "dcbxpr.h"
 #include "dcbdhf.h"
-#include "dcbprj.h"
       LOGICAL LEXPST(2,*),FILEX,FIRST(NZ)
       DIMENSION EXPVAL(*),CMO(*),DMAT(N2BBASXQ,*),PRPAO(N2BBASXQ),
      &          EIG(*),WORK(*),NP(2,0:2)
@@ -1095,14 +1094,13 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use dgroup_mod, only: NFSYM, NZ
-!      use dcbprj_mod, only: NREFS, REFFIL
+      use dcbprj_mod, only: NREFS, REFFIL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, II, J
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1=1.0D0, D2=2.0D0
 C
 !#include "dcbxpr.h"
-#include "dcbprj.h"
 C
       DIMENSION PFO(*),DFO(*),NCNT(*),NMO(*),BVEC(*),IBUF(*),PBUF(*),
      &          NR(NREFS,NFSYM),FMAT(NTOT,NTOT),PM(NTOT),INDX(2,*),
@@ -1219,14 +1217,13 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use dgroup_mod, only: FREP, NZ
 !      use dcbxpr_mod, only: PRPNAM
-!      use dcbprj_mod, only: REFFIL
+      use dcbprj_mod, only: REFFIL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, II, J, JJ
       REAL(dp), PARAMETER :: D2=2.0D0, D0=0.0D0, DTOL=1.0D-8
 C
 #include "dcbxpr.h"
-#include "dcbprj.h"
       DIMENSION PFO(NCNT,NCNT,NZ),DFO(NCNT,NCNT,NZ),PTRI(*),
      &          NR(*),PBUF(*),IBUF(*),FMAT(NTOT,NTOT),PM(NTOT),INDX(2,*)
 C
@@ -1314,14 +1311,13 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcborb_mod, only: NESH, NPSH
-!      use dcbprj_mod, only: VECPRJ
+      use dcbprj_mod, only: VECPRJ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: K
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1=1.0D0, D2=2.0D0
 C
 #include "dcborb.h"
-#include "dcbprj.h"      
       DIMENSION DFO(*),NFO(*),NMO(*),BVEC(*),WORK(*)
       DIMENSION NSTR(2,0:2,0:0),IQ(4)
       integer, allocatable :: JMOL(:,:)

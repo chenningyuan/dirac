@@ -26,6 +26,8 @@ C     Purpose: To enable calculations of frequency dependent second
 C     order response properties in ABACUS. In particular polariza-
 C     bilities and vibrational raman optical activity (VROA).
 C
+      use cbilnr_mod, only: ALFA, FRVAL, IPRLNR, MXFR, NFRVAL, ROAA,
+     &  ROAG, THCLNR
       use abainf_mod, only: IPRDEF, NODIFC, RAMAN, VROA
       use symmet_mod, only: ISYMAX
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -34,7 +36,6 @@ C
       use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
 #include "cbiexc.h"
-#include "cbilnr.h"
 #include "anrinf.h"
 #include "absorp.h"
 C
@@ -240,10 +241,10 @@ C  /* Deck lnrini */
 C
 C     Initialize /LNREXC/
 C
+      use cbilnr_mod, only: ALFA, FRVAL, IPRLNR, NFRVAL, THCLNR
       use abainf_mod, only: IPRDEF
 #include "implicit.h"
 #include "cbiexc.h"
-#include "cbilnr.h"
 C
       IPR1IN   = IPRDEF
       IPRLNR   = IPRDEF
@@ -261,6 +262,8 @@ C
       END
 C  /* Deck lnraba */
       SUBROUTINE LNRABA(POLDD,POLDQ,POLDL,POLDA,WORK,LWORK,PASS)
+      use cbilnr_mod, only: ALFA, FRVAL, IPRLNR, MXFR, NFRVAL, ROAA,
+     &  ROAG, THCLNR
       use infdim_mod, only: LCINDX
       use inforb_mod, only: N2ASHX, NASHT, NCMOT, NORBT, NSYM
       use inftap_mod, only: LUSIFC
@@ -271,7 +274,6 @@ C  /* Deck lnraba */
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "cbilnr.h"
       LOGICAL PASS
       LOGICAL CICLC, HFCLC, TRIPLE, EXECLC, FOUND, CONV
       DIMENSION WORK(LWORK),SNDPRP(2)
@@ -1047,6 +1049,7 @@ C
 C  /* Deck lnrout */
       SUBROUTINE LNROUT(POLDD,POLDL,POLDA,IPRINT)
 C
+      use cbilnr_mod, only: ALFA, FRVAL, MXFR, NFRVAL, ROAG
       use codata_mod, only: XFMOL, XTANG, XTKAYS, XTNM
       use inforb_mod, only: NSYM
       use nuclei_mod, only: ISOTOP, ISTBNU, IZATOM, NOORBT, NUCIND
@@ -1060,7 +1063,6 @@ C
 #include "absorp.h"
       PARAMETER ( D3 = 3.0D0)
       PARAMETER ( CM_TO_AU = 4.556333D-6, AU_TO_EV=27.2114 )
-#include "cbilnr.h"
       DIMENSION POLDD(2,3,3,MXFR), POLDL(2,3,3,MXFR), POLDA(2,3,3,MXFR),
      &          BETANL(2), BETAL(2), ALPHNL(2), ALPHAL(2)
       DOUBLE PRECISION FACTOR

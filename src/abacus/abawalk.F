@@ -568,6 +568,7 @@ C
       END
 C  /* Deck wlkdrv */
       SUBROUTINE WLKDRV(POLDD,POLDQ,POLDL,POLDA,SPNTOT,WORK,LWORK)
+      use cbilnr_mod, only: MXFR
       use prkoor_mod, only: NPRREP
       use cbisol_mod, only: SOLVNT
       use trkoor_mod, only: NTRREP
@@ -583,7 +584,6 @@ C
      &          WORK(LWORK)
 C
 #include "cbiwlk.h"
-#include "cbilnr.h"
 C
       CALL QENTER('WLKDRV')
       IF (IPRWLK .GT. 3) CALL TIMER ('START ',TIMEIN,TIMOUT)
@@ -2192,6 +2192,7 @@ C  /* Deck wlkrea */
      &                  FMATF,VIBAVE,SUSTO0,SUSTF,GFAC0,GFACF,QUAD0,
      &                  QUADF,SIGMA0,SIGMAF,SRC0,SRCF,POLAR0,POLARF,
      &                  EFG0,EFGF,SSJ0,SSJF,NUMMOD,IPRINT)
+      use cbilnr_mod, only: FRVAL, MXFR, NFRVAL
       use nuclei_mod, only: NUCIND
       use dummy_mod, only: IDUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -2212,7 +2213,6 @@ C
      &          EFG0(3,3,MXCENT), EFGF(3,3,MXCENT,NCART), 
      &          SSJ0(MXCOOR,MXCOOR), SSJF(MXCOOR,MXCOOR,NCART)
 C
-#include "cbilnr.h"
       DIMENSION ROAAFD(3,3,MXFR,MXCOOR), ROAGND(3,3,MXFR,MXCOOR), 
      &          ROAGLD(3,3,MXFR,MXCOOR), ROAAD(3,3,3,MXFR,MXCOOR),
      &          ROAAFU(3,3,MXFR), ROAGNU(3,3,MXFR), 
@@ -2282,6 +2282,7 @@ C  /* Deck wlkwrt */
      &                  FMATF,VIBAVE,SUSTO0,SUSTF,GFAC0,GFACF,QUAD0,
      &                  QUADF,SIGMA0,SIGMAF,SRC0,SRCF,POLAR0,POLARF,
      &                  EFG0,EFGF,SSJ0,SSJF,NUMMOD,WORK,LWORK)
+      use cbilnr_mod, only: FRVAL, MXFR, NFRVAL
       use nuclei_mod, only: NUCIND
       use dummy_mod, only: DUMMY, IDUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -2304,7 +2305,6 @@ C
      &          SSJ0(MXCOOR,MXCOOR), SSJF(MXCOOR,MXCOOR,NCART),
      &          WORK(LWORK)
 C
-#include "cbilnr.h"
       DIMENSION ROAAFD(3,3,MXFR,MXCOOR), ROAGND(3,3,MXFR,MXCOOR), 
      &          ROAGLD(3,3,MXFR,MXCOOR), ROAAD(3,3,3,MXFR,MXCOOR),
      &          ROAAFU(3,3,MXFR), ROAGNU(3,3,MXFR), 
@@ -3632,6 +3632,7 @@ C     coordinates of the molecule at the effective molecular geometry.
 C
 C     K.Ruud, San Diego March 1999
 C
+      use cbilnr_mod, only: ALFA, FRVAL, MXFR, NFRVAL
       use moldip_mod, only: DIP0, POLARS
       use spinro_mod, only: GTRANT
       use codata_mod, only: ALPHA2, PMASS, XFAMU, XTHZ
@@ -3650,7 +3651,6 @@ C
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, DM1 = -1.0D0)
 C
       LOGICAL FINAL
-#include "cbilnr.h"
       DIMENSION GRDCAR(NCRTOT), HESCAR(NCART,NCART), GRAD0(NCRTOT),
      &          HESS0(NCART,NCART), DIPM0(3), EVAL(NCART),
      &          DIPMF(3,NCART), SUSTO0(3,3), SUSTF(3,3,NCART),
@@ -6977,6 +6977,7 @@ C  /* Deck wlkroa */
 C
 C     Numerical differentiation for Raman properties
 C
+      use cbilnr_mod, only: FRVAL, MXFR, NFRVAL
       use codata_mod, only: ALPHAC, XTANG, XTNM
       use abainf_mod, only: RAMAN, VROA
       use chrsgn_mod, only: CHRSGN
@@ -6996,7 +6997,6 @@ C
       DIMENSION WORK(LWORK)
       DOUBLE PRECISION XFRAIN,XFOAIN
 C
-#include "cbilnr.h"
 C
       DIMENSION ROAAFU(3,3,MXFR),  ROAAFP(3,3,MXFR),
      &          ROAAFD(3,3,MXFR,MXCOOR),

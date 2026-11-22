@@ -331,8 +331,7 @@ C
 C     Written by T.Saue May 6 1996
 C
 C***********************************************************************
-      use maxorb_mod, only: MXCORB
-!      use dcblab_mod, only: IPLAB, PLABEL
+      use dcblab_mod, only: IPLAB, PLABEL
       use symmet_mod, only: ICOS
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NTBAS
 !      use dcborb_mod, only: NESH, NPSH
@@ -343,7 +342,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0, DM10 = 1.0D-10, DM1 = -1.0D0
       INTEGER :: I,II,J,JJ
 C
-#include "dcblab.h"
 #include "dcborb.h"
       LOGICAL LBIT
       CHARACTER FMT*6,MXFORM*6
@@ -1964,14 +1962,12 @@ C
 C     Written by T.Saue Sep 25 2000
 C
 C***********************************************************************
-!      use dcblab_mod, only: IATTR, IPLAB
+      use dcblab_mod, only: IATTR, IPLAB
       use dcbbas_mod, only: IBAS, NFBAS
       use dcbibt_mod, only: JGET
-      use maxorb_mod, only: MXCORB
 #include "implicit.h"
       INTEGER :: I,II,J,K
 C
-#include "dcblab.h"
       DIMENSION JBAS(*)
 C
       NSBAS = 0
@@ -1997,15 +1993,13 @@ C
 C     Written by T. Saue Oct 25 2003
 C
 C***********************************************************************
-      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
-!      use dcblab_mod, only: IPLAB, PLABEL
+      use dcblab_mod, only: IPLAB, PLABEL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D0=0.0D0, DTOL = 1.0D-5
 C
-#include "dcblab.h"
       CHARACTER FMT*6,MXFORM*6
       DIMENSION CPOL(LRPOL,LCPOL,NZ),EPOL(NPOL)
 C

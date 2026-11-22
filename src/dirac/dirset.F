@@ -968,15 +968,13 @@ C
 C***********************************************************************
 
       use dcbibt_mod, only: JGET
-      use maxorb_mod, only: MXCORB
       use dgroup_mod, only: JBTOF, NFSYM
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NFBAS, NTBAS
       use symmet_mod, only: MAXREP
-!      use dcblab_mod, only: IATTR, IPLAB
+      use dcblab_mod, only: IATTR, IPLAB
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "dcblab.h"
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
       DIMENSION ICLAB(*),GROSS(*),SCQ(*)
 C
@@ -1084,8 +1082,7 @@ C     Written by Jesper K. Pedersen Aug. 2001
 C     (based on SCDENS by O. Fossgaard)
 C     
 C***********************************************************************
-      use maxorb_mod, only: MXCORB
-!      use dcblab_mod, only: IATTR, IPLAB
+      use dcblab_mod, only: IATTR, IPLAB
       use dgroup_mod, only: JBTOF, NFSYM
       use symmet_mod, only: MAXREP
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NFBAS, NTBAS
@@ -1093,7 +1090,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dcblab.h"
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
       DIMENSION ICLAB(*),GROSS(*),QLC(*)
 
@@ -1324,8 +1320,7 @@ C
 C***********************************************************************
 
       use nuclei_mod, only: NUCIND, NUCNUM
-      use maxorb_mod, only: MXCORB
-!      use dcblab_mod, only: IATTR, IPLAB
+      use dcblab_mod, only: IATTR, IPLAB
       use dgroup_mod, only: NBSYM
       use dcbbas_mod, only: NTBAS
       use dcbibt_mod, only: JGET, KGET
@@ -1333,7 +1328,6 @@ C***********************************************************************
 C
       INTEGER :: I
 C
-#include "dcblab.h"
       DIMENSION ICLAB(*)
       integer, allocatable :: IDEGN(:,:)
       allocate(IDEGN(NUCIND,NBSYM))

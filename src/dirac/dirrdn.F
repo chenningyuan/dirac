@@ -4533,20 +4533,20 @@ C     Written by T.Saue - April 1996
 C     Last revision: April 27 - 1996
 C
 C***********************************************************************
+      use dcblab_mod, only: MAXLAB
       use dummy_mod, only: IDUMMY
       use dcbana_mod, only: DOPOP
 !      use dcborb_mod, only: NOCC
-      use maxorb_mod, only: MXCORB
       use dcbmp2no_mod, only: MP2NATPOP
       use priunit_mod, only: LUCMD, LUPRI
       use dgroup_mod, only: FREP, NFSYM
-!      use dcbpop_mod, only: ADD_ALL, ADDSML, DONETP, ILABDF, IPOPLAB, IPRPOP, LABDEF, MAXLAB, NPOPLAB, POP_DTOL, POPLAB, VECPOP
+      use dcbpop_mod, only: ADDSML, ADD_ALL, DONETP, ILABDF, IPOPLAB,
+     &  IPRPOP, LABDEF, NPOPLAB, POPLAB, POP_DTOL, VECPOP
       use dcbbas_mod, only: NFBAS
 #include "implicit.h"
       INTEGER :: I
       PARAMETER (NTABLE = 8)
 C
-#include "dcbpop.h"
 #include "dcborb.h"
 C
       LOGICAL   SET, NEWDEF,ORBDEF, RESET
@@ -4752,13 +4752,12 @@ C***********************************************************************
       use dgroup_mod, only: FREP, NFSYM
 !      use dcborb_mod, only: NOCC
       use dcbbas_mod, only: NFBAS
-!      use dcbprj_mod, only: C1READ, IPRPRJ, IREFADJ, LWGPOP, MAXREF, MAYER, NPROJNUC, NREFS, OWNBAS, PATOMS, POLNRM, POLREF, PRJADJ, PROTHR, REFFIL, VECPRJ, VECREF
+      use dcbprj_mod
       use dcbana_mod, only: DOPRJ
 #include "implicit.h"
       INTEGER :: I,J
       PARAMETER (NTABLE = 12)
 C
-#include "dcbprj.h"
 #include "dcborb.h"
 C
 !#include "dcbxpr.h"
@@ -7739,12 +7738,10 @@ C***********************************************************************
       use ccom_mod, only: KHK, NHTYP
       use maxaqn_mod, only: MXQN
       use dcbibt_mod, only: IGET, IPACK, JGET, KGET, LGET
-!      use dcblab_mod, only: IATTR, NPLAB
-      use maxorb_mod, only: MXCORB
+      use dcblab_mod, only: IATTR, NPLAB, PLABEL
 #include"implicit.h"
       INTEGER :: I,J,K
 C
-#include "dcblab.h"
       CHARACTER LAB(*)*12,SPDCAR*1
       DIMENSION ILAB(*)
       integer, allocatable              :: ibuf(:),ibuf2(:)
@@ -8661,7 +8658,8 @@ C***********************************************************************
      &  LGFULL, LGGRAD, PRJLOC, SELMOS, THDIAG, THFULL, THGRAD, THXVEC
       use dummy_mod, only: IDUMMY
       use dcbana_mod, only: DOLOC
-!      use dcbprj_mod, only: C1READ, MAXREF, NREFS, OWNBAS, REFFIL, VECPRJ, VECREF
+      use dcbprj_mod, only: C1READ, MAXREF, NREFS, OWNBAS, REFFIL,
+     &  VECPRJ, VECREF
       use dgroup_mod, only: FREP, NFSYM
       use nuclei_mod, only: NAMDEP
       use dcbbas_mod, only: NFBAS
@@ -8669,7 +8667,6 @@ C***********************************************************************
       INTEGER :: I,J
       PARAMETER (NTABLE = 16)
 C
-#include "dcbprj.h"
 C
       LOGICAL SET, NEWDEF,ORBDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,LINE*72
