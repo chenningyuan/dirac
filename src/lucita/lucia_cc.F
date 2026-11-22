@@ -311,6 +311,7 @@ C?   &                    I,J,K,L,IJKL
       SUBROUTINE OPTIM_CC(CC_AMP,VEC1,VEC2)
 *
 * Optimize CC wave function
+      use cecore_lucita_mod, only: ECORE, ECORE_H
       use luci_wrkspc
 *
 * Initial version,Sept 98
@@ -336,7 +337,6 @@ C?   &                    I,J,K,L,IJKL
 #include "glbbas.inc"
 #include "orbinp.inc"
 #include "lucinp.inc"
-#include "cecore.inc"
 #include "clunit.inc"
 *. Scratch : 2 vector blocks for CI
       DIMENSION VEC1(*),VEC2(*)
@@ -2084,6 +2084,7 @@ C            WRT_CC_VEC(CC,LU)
       RETURN
       END
       SUBROUTINE LUCIA_CC(ISM,ISPC,IPRNT,ECC,II_RESTRT_CC,I_TRANS_WF)
+      use cecore_lucita_mod, only: ECORE
       use cc_exc_mod, only: ICC_EXC
       use luci_wrkspc
 *
@@ -2098,7 +2099,6 @@ C            WRT_CC_VEC(CC,LU)
 #include "glbbas.inc"
 #include "cands.inc"
 #include "clunit.inc"
-#include "cecore.inc"
 *
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'LUC_CC')
       WRITE(6,*)

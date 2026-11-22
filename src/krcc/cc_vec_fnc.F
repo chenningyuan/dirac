@@ -80,7 +80,6 @@
 #include "ctcc.inc"
 #include "ctccp.inc"
 #include "cgas.inc"
-#include "cecore.inc"
 #include "interm.inc"
 *
       LBLK = -1

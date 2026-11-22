@@ -1189,6 +1189,7 @@ C        .. we do not accept user input of less than 100 000 !
 *                                                                     *
 ***********************************************************************
       SUBROUTINE DMPINT(LUINT)
+      use cecore_lucita_mod, only: ECORE_ORIG
       use luci_wrkspc
 *
 * Dump integrals in WORK(KINT1),WORK(KINT2) on file LUINT
@@ -1198,7 +1199,6 @@ C        .. we do not accept user input of less than 100 000 !
 #include "glbbas.inc"
 *
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
-      COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
 *
       CALL REWINE(LUINT,-1)
 *.1 : One-electron integrals
@@ -4023,6 +4023,7 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE INTIM(IPRNT)
+      use cecore_lucita_mod, only: ECORE, ECORE_HEX, ECORE_ORIG
       use luci_wrkspc
 *
 * Interface to external integrals
@@ -4044,7 +4045,6 @@ C
 *./CINTFO/
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
 *./CECORE/
-      COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
 
 *. : Pointers for symmetry blocks of integrals
 *
@@ -7305,13 +7305,13 @@ c     call XFLUSH(6)
      &                       NIRREP,NGSSH,NGAS,NSTR,
      &                       IPGTYP,INVERSM,NFSYM,IPRINT)
 *
+      use cecore_lucita_mod, only: ECORE
       use interface_to_mpi
       implicit real*8 (A-H,O-Z)
 *
 #include "mxpdim.inc"
 #include "parluci.h"
 *
-      COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
 *
       character*7 DIRACONE
       character*14 DUMCHA(MXPIRR)

@@ -1,2 +1,0 @@
-      COMMON/KRCC_ECORE/ECORE,ECORE_ORIG,ECORE_H,
-     &              ECORE_AB,E_TEMP

@@ -138,7 +138,8 @@ C***********************************************************************
       use dcbham_mod, only: HFXFAC, HFXMU
 !      use dcborb_mod, only: NORBT
 !      use dcbopt_mod, only: IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ITRINT, IPROPT, JTRLVL, KZCONF, NZCONF, NZCONFQ, OPT_CNVINT, OPT_INTTYP, OPT_NOPFQ
-!      use dcbesr_mod, only: IPRESR, THRPCI_ESR, THR_CIESR, THR_CVEC_ESR, USE_KRAMERS_CONJ
+      use dcbesr_mod, only: IPRESR, THRPCI_ESR, THR_CIESR, THR_CVEC_ESR,
+     &  USE_KRAMERS_CONJ
 !      use dcbgascip_mod, only: IMK2, MAXMK2, MINMK2, NMK2
       use dgroup_mod, only: NZ_IN_CI
       use kinds_mod, only: dp
@@ -152,7 +153,6 @@ C dcbesr.h : THR_CIESR, THR_CVEC_ESR
 C dcbgascip.h : IMK2(), NMK2(), MINMK2, MAXMK2
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dcbesr.h"
 #include "dcbgascip.h"
 C
       DIMENSION CMO(*), WORK(*)

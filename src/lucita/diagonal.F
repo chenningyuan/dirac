@@ -637,6 +637,7 @@ C    &                  IBLOCK,NBLOCK,ITASK,FACTOR,I0CHK,I0BLK)
 ***********************************************************************
       SUBROUTINE DIATERM_GAS(FACTOR,ITASK,VEC,NBLOCK,IBLOCK,IOFF,
      &                       JPERT,I0CHK,I0BLK)
+      use cecore_lucita_mod, only: ECORE, ECORE_ORIG
       use luci_wrkspc
 *
 * Obtain VEC = (DIAGONAL + FACTOR) ** -1 VEC (ITASK = 1)
@@ -667,7 +668,6 @@ C    &                  IBLOCK,NBLOCK,ITASK,FACTOR,I0CHK,I0BLK)
 #include "oper.inc"
 *
 C     COMMON/CECORE/ECORE,ECORE_ORIG
-#include "cecore.inc"
 *
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
 *

@@ -5372,6 +5372,7 @@ C              NDIM_1EL_MAT(IHSM,NRPSM,NCPSM,IPACK)
 ***********************************************************************
 *
       SUBROUTINE PERTCTL(ISM,ISPC,EREF)
+      use cecore_lucita_mod, only: ECORE, ECORE_H, ECORE_HEX
       use luci_wrkspc
 *
 * Master routine for perturbation calculations
@@ -5407,7 +5408,6 @@ C              NDIM_1EL_MAT(IHSM,NRPSM,NCPSM,IPACK)
      &              MINOP,MAXOP,NTYP,NDPCNT(MXPCTP),NCPCNT(MXPCTP),
      &              NCNATS(MXPCTP,MXPCSM),NDTASM(MXPCSM),NCSASM(MXPCSM),
      &              NCNASM(MXPCSM)
-      COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
       DIMENSION EN(1000)
 *

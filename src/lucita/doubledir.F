@@ -21,6 +21,7 @@
 ***********************************************************************
       SUBROUTINE DIRDIR(INSPC,IUTSPC,ISM,LUIN,LEVEL,E0,LUSCR,LUSCR2,
      &                  LU1)
+      use cecore_lucita_mod, only: ECORE, ECORE_H
       use luci_wrkspc
 
 
@@ -54,7 +55,6 @@
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
 C     COMMON/CECORE/ECORE,ECORE_ORIG
 C     COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H
-#include "cecore.inc"
 *
       IDUM  = 0
       CALL MEMMAN(IDUM,IDUM,'MARK ',IDUM,'DIRDI')

@@ -14,6 +14,16 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
+!-----------------------------------------
+! Module with variables previously defined
+! at src/dirac/dcbind.h include file (COMMON /INDPCK/)
+!-----------------------------------------
+!*** Parameters for index packing ***
+      module dcbind_mod
+      implicit none
+      integer :: NBITS, NIBUF, NBIT1, NBIT2, IBIT1, IBIT2
+      end module dcbind_mod
+
 ! define task symbols for CALL DIRAC_PARCTL( task )
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -275,13 +285,12 @@ C
 C     Written by T.Saue Sep 30 1996
 C
 C*****************************************************************************
-!      use dcbind_mod, only: IBIT1, IBIT2, NBIT1, NBIT2, NBITS, NIBUF
+      use dcbind_mod, only: IBIT1, IBIT2, NBIT1, NBIT2, NBITS, NIBUF
       use dcbbas_mod, only: NTBAS
       use cbihr2_mod, only: IPRTWO
       use hrunit_mod, only: LUDASP, LUINTA, LUSOL, LUSUPM
 #include "implicit.h"
 C
-#include "dcbind.h"
       DIMENSION WORK(LWORK)
       LUINTA = 11
         LUSUPM = 17
@@ -331,14 +340,13 @@ C		Class Ba and Bb placed in matrices of dimension NDIM2
 C		Class A placed in array of length NDIM
 C
 C*****************************************************************************
-!      use dcbind_mod, only: NIBUF
+      use dcbind_mod, only: NIBUF
       use dgroup_mod, only: NBSYM
       use dcbbas_mod, only: N2BBASX, NTBAS
 #include "implicit.h"
 C
 C
       INTEGER :: I
-#include "dcbind.h"
       CHARACTER FILNAM*6
       DIMENSION	WORK(LWORK),IREPA(N2BBASX),LUINT(0:8)
       CALL QENTER('TWOSRT')
@@ -645,13 +653,12 @@ C
 C
 C************************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbind_mod, only: IBIT1, NBITS, NIBUF
+      use dcbind_mod, only: IBIT1, NBITS, NIBUF
       use pgroup_mod, only: REP
       use symmet_mod, only: MAXREP
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "dcbind.h"
       DIMENSION LTFIL(0:8),ICOUNT(0:7,0:1),NINTS(0:7,0:1)
       DIMENSION IBUF(NCHUNK,NIBUF),BUF(NCHUNK),IND(2,NCHUNK)
       DIMENSION TWOMAT(MAXBUF,0:MAXREP,0:1),
@@ -801,14 +808,13 @@ C         which are defined in statement function statements
 C
 C
 C************************************************************************
-!      use dcbind_mod, only: IBIT1, NBITS, NIBUF
+      use dcbind_mod, only: IBIT1, NBITS, NIBUF
       use priunit_mod, only: LUPRI
       use symmet_mod, only: MAXREP
       use pgroup_mod, only: REP
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "dcbind.h"
       DIMENSION LTFIL(0:8),ICOUNT(0:7,0:1),NINTS(0:7,0:1)
       DIMENSION IBUF(NCHUNK,NIBUF),BUF(NCHUNK),IND(2,NCHUNK)
       DIMENSION TWOMAT(MAXBUF,0:MAXREP,0:1),
@@ -987,13 +993,12 @@ C     Written by T.Saue Feb 27 1995
 C     Last revision: Feb 27 1995
 C*****************************************************************************
       use pgroup_mod, only: REP
-!      use dcbind_mod, only: IBIT1, NBIT1, NBIT2, NBITS, NIBUF
+      use dcbind_mod, only: IBIT1, NBIT1, NBIT2, NBITS, NIBUF
       use priunit_mod, only: LUPRI
       use symmet_mod, only: MAXREP
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "dcbind.h"
       DIMENSION BUF(MAXBUF),IBUF(MAXBUF,NIBUF),IND(4,MAXBUF),
      &          CMAT(MAXBUF,2),ICMAT(MAXBUF,NIBUF,2),
      &          BMAT(NNDIM,4)  ,IBMAT(NNDIM,4),
@@ -1340,11 +1345,10 @@ C************************************************************************
       use symmet_mod, only: MAXREP
       use pgroup_mod, only: REP
       use priunit_mod, only: LUPRI
-!      use dcbind_mod, only: IBIT1, NBIT1, NBIT2, NBITS, NIBUF
+      use dcbind_mod, only: IBIT1, NBIT1, NBIT2, NBITS, NIBUF
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "dcbind.h"
       DIMENSION BUF(MAXBUF),IBUF(MAXBUF,NIBUF),IND(4,MAXBUF),
      &          AMAT(NSLDIM),IAMAT(NSLDIM),
      &          BCMAT(MAXBUF,2),IBCMAT(MAXBUF,NIBUF,2),
@@ -1847,13 +1851,12 @@ C     Last revision: Jan 7 1998 - jth (Linux cheat)
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbind_mod, only: IBIT1, NBITS, NIBUF
+      use dcbind_mod, only: IBIT1, NBITS, NIBUF
       use dcbbas_mod, only: N2BBASX, NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D4 = 4.0D0, D2 = 2.0D0
-#include "dcbind.h"
 C
       DIMENSION FMAT(NTBAS(0),NTBAS(0),*),DMAT(NTBAS(0),NTBAS(0),*) 
       DIMENSION BUF(N2BBASX),IBUF(N2BBASX,NIBUF),IND(4,N2BBASX),
@@ -2072,14 +2075,13 @@ C     Written by T.Saue Mar 4 1995
 C     Last revision Mar 4 1995
 C
 C*****************************************************************************
-!      use dcbind_mod, only: IBIT1, NBITS, NIBUF
+      use dcbind_mod, only: IBIT1, NBITS, NIBUF
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: N2BBASX, NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D2 = 2.0D0, D4 = 4.0D0
-#include "dcbind.h"
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
      &          DMAT(NTBAS(0),NTBAS(0),NDMAT) 
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
@@ -2294,14 +2296,13 @@ C     Written by T.Saue Mar 4 1995
 C     Last revision Mar 4 1995
 C
 C*****************************************************************************
-!      use dcbind_mod, only: IBIT1, NBITS, NIBUF
+      use dcbind_mod, only: IBIT1, NBITS, NIBUF
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: N2BBASX, NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D2 = 2.0D0
-#include "dcbind.h"
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
      &          DMAT(NTBAS(0),NTBAS(0),NDMAT)
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
@@ -2497,14 +2498,13 @@ C     Written by T.Saue Mar 5 1995
 C     Last revision: tsaue Mar 5 1995
 C
 C*****************************************************************************
-!      use dcbind_mod, only: IBIT1, NBITS
+      use dcbind_mod, only: IBIT1, NBITS
       use dcbbas_mod, only: NTBAS
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D4 = 4.0D0, D2 = 2.0D0
-#include "dcbind.h"
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
      &          DMAT(NTBAS(0),NTBAS(0),NDMAT)
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
@@ -2674,14 +2674,13 @@ C     Written by T.Saue Mar 5 1995
 C     Last revision: tsaue Mar 5 1995
 C
 C*****************************************************************************
-!      use dcbind_mod, only: IBIT1, NBITS
+      use dcbind_mod, only: IBIT1, NBITS
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D4 = 4.0D0, D2 = 2.0D0
-#include "dcbind.h"
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
      &          DMAT(NTBAS(0),NTBAS(0),NDMAT)
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
@@ -2845,7 +2844,7 @@ C     Written by T.Saue Mar 5 1995
 C     Sep 3 1996 - tsaue   Generalize to IFCTYP
 C
 C*****************************************************************************
-!      use dcbind_mod, only: IBIT1, NBITS
+      use dcbind_mod, only: IBIT1, NBITS
       use priunit_mod, only: LUPRI
       use dcbbas_mod, only: NTBAS
       use kinds_mod, only: dp
@@ -2853,7 +2852,6 @@ C*****************************************************************************
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D4 = 4.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &                       DP5 = 0.5D0
-#include "dcbind.h"
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
      &          DMAT(NTBAS(0),NTBAS(0),NDMAT)
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
@@ -3573,7 +3571,7 @@ C     Written by T.Saue July 2 1995
 C     Sep 2 1996 tsaue - Allocate buffer IND for unpacking of indices
 C
 C*****************************************************************************
-!      use dcbind_mod, only: NIBUF
+      use dcbind_mod, only: NIBUF
       use dgroup_mod, only: NZ
       use dcbbas_mod, only: N2BBASX
 #include "implicit.h"
@@ -3582,7 +3580,6 @@ C Used from COMMON blocks:
 C   DHFIOU: LUINT
 C   INDPCK: NIBUF
 C
-#include "dcbind.h"
       DIMENSION FSO(*),DSO(*),
      &          IFCKOP(NFMAT),ISYMOP(NFMAT),IHRMOP(NFMAT),
      &          WORK(LWORK)

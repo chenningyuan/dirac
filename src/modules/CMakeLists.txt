@@ -31,6 +31,7 @@ set(MODULE_SOURCES
     dcbbas.F90
     dcbbos.F90
     dcbcls.F90
+    dcbesr.F90
     dcbgen.F90
     dcbgrd.F90
     dcbham.F90
@@ -125,7 +126,6 @@ set(MODULE_SOURCES
     typesz_mpi2.F90
     xyzpow.F90
     # drafts, not migrated yet
-    #dcbesr.F90
 )
 
 # Create TARGET

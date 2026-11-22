@@ -23,6 +23,7 @@
 *
       SUBROUTINE GASCI(ISM,ISPC,IPRNT,EREF,LUWRTOUT,IPROCLIST,
      &                 IGROUPLIST)
+      use cecore_lucita_mod, only: ECORE, ECORE_ORIG
       use cc_exc_mod, only: ICC_EXC
       use comjep_mod, only: MXAADST, MXACIJ, MXACJ
       use intform_mod, only: IH1FORM, IH2FORM
@@ -71,7 +72,6 @@ C    &              KICTS(MXCNSM),KSCTS(MXCNSM),KCNFCN(MXCNSM)
      &              NCNATS(MXPCTP,MXPCSM),NDTASM(MXPCSM),NCSASM(MXPCSM),
      &              NCNASM(MXPCSM)
 *./CECORE/
-      COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
 *
       DIMENSION ISYMS(MXPIRR),IPROCLIST(NMPROC), IGROUPLIST(NMPROC)
 *
@@ -1585,6 +1585,7 @@ C
 *
 * Jeppe Olsen,Spring of 1991
 *
+      use cecore_lucita_mod, only: ECORE
       use machine_mod, only: MACHINE
       IMPLICIT REAL*8(A-H,O-Z)
 *
@@ -1636,7 +1637,6 @@ C
 #include "oper.inc"
 #include "parluci.h"
 *./CECORE/
-      COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
       CHARACTER IN_MPINN*7
       CHARACTER*11 NNIN_MPI
       INTEGER IN_MPILL

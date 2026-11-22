@@ -272,6 +272,7 @@ C       WRITE(6,*)  ' ICREA21,IANNI21 ', ICREA21,IANNI21
 *                                                                     *
 ***********************************************************************
       SUBROUTINE EN_FROM_DENS(E,I12)
+      use cecore_lucita_mod, only: ECORE
       use luci_wrkspc
 *
 * Obtain energy from densities and integrals
@@ -291,7 +292,6 @@ C       WRITE(6,*)  ' ICREA21,IANNI21 ', ICREA21,IANNI21
 #include "orbinp.inc"
 #include "cgas.inc"
 *
-      COMMON/CECORE/ECORE
 *
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
 *

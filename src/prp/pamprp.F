@@ -166,7 +166,7 @@ C***********************************************************************
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: DOESR, DOEXCPRP, DOEXP, DOSTEX, DOTPA, DOXLR, DOXPP, DOXQR, HDF5IO, MGRAD
 !      use dcbexp_mod, only: NEXPP
-!      use dcbesr_mod, only: IPRESR, MULTIPESR, NESRP
+      use dcbesr_mod, only: IPRESR, MULTIPESR, NESRP
 !      use dcbpsi_mod, only: DOCCM, DOEXACC
       use memory_allocator
       use dirac_cfg
@@ -176,7 +176,6 @@ C***********************************************************************
 C
 #include "dcbprp.h"
 #include "dcbexp.h"
-#include "dcbesr.h"
 #include "dcbpsi.h"
 C
       real(8), allocatable :: WORK(:)
@@ -4027,9 +4026,9 @@ C   2002,2003/MI&HJAaJ - added TEC's changes for London atomic orbitals
 C
 C***********************************************************************
 !      use dcbprp_mod, only: DOESR, DOEXP, ESRGTENS, ESR_HFCC, IPESR, IPRNST, IPSHIELD, LONDON, NNSTIN, SHIELD
-!      use dcbesr_mod, only: IPSIGMA, LESRP, MAXESR, NESRP
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
 !      use dcbexp_mod, only: LEXPP, MAXEXP, NEXPP
+      use dcbesr_mod, only: IPSIGMA, LESRP, MAXESR, NESRP
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
@@ -4045,7 +4044,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 #include "dcbprp.h"
-#include "dcbesr.h"
 #include "dcbxlr.h"
 #include "dcbexp.h"
 
@@ -5165,7 +5163,6 @@ C=======================================================================
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C-----------------------------------------------------------------------
 #include "dcbprp.h"
-!#include "dcbesr.h"
 #include "dcbxlr.h"
 !#include "dcbexp.h"
 C
@@ -9867,7 +9864,6 @@ C
       PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
      &          DI2 = +0.5D00,DM1 = - 1.0D0)
 #include "dcbprp.h"
-!#include "dcbesr.h"
 !#include "dcbxlr.h"
 !#include "dcbexp.h"
       CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4,chcomp*1

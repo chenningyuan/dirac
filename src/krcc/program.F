@@ -136,6 +136,7 @@ C
 * Now master routine for general relativistic mr coupled cluster
 *
 *
+      use cecore_krcc_mod, only: ECORE
       use dgroup_mod, only: NZ
 #include "implicit.h"
       REAL*8 INPRDD
@@ -149,7 +150,6 @@ C
 #include "cands.inc"
 #include "crun.inc"
 #include "clunit.inc"
-#include "cecore.inc"
 #include "cstate.inc"
 #include "csm.inc"
 #include "ctcc.inc"

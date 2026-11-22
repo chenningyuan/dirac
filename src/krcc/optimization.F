@@ -22,6 +22,7 @@
 *
 * CCVEC1 : Complete CC vector
 *
+      use cecore_krcc_mod, only: ECORE, ECORE_AB, ECORE_H, ECORE_ORIG
       IMPLICIT REAL*8(A-H,O-Z)
       REAL*8 INPROD
 #include "mxpdim.inc"
@@ -30,7 +31,6 @@
 #include "glbbas.inc"
 #include "orbinp.inc"
 #include "lucinp.inc"
-#include "cecore.inc"
 #include "clunit.inc"
 #include "ctcc.inc"
 #include "ctccp.inc"
@@ -433,9 +433,9 @@ C     CALL MEMMAR(IDUMMY,IDUMMY,'FLUSM ',IDUMMY,'CC_OPT')
 
       SUBROUTINE GET_ECC(ECC)
 C FOR DIRTY FIX
+      use cecore_krcc_mod, only: ECORE, E_TEMP
 #include "implicit.h"
 #include "dcbdhf.h"
-#include "cecore.inc"
       ECC=DHFERG
       print*,'ECC in GET_ECC',ECC
       print*,'ECORE,E_TEMP',ECORE,E_TEMP

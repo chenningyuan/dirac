@@ -2007,7 +2007,6 @@ C          HPQTV(NP1,NP2,NQ,PHP,PHQ,QHQ,VECIN,VECUT)
 #include "ctcc.inc"
 #include "ctccp.inc"
 #include "cgas.inc"
-#include "cecore.inc"
 #include "interm.inc"
 *
       LBLK = -1
@@ -2543,7 +2542,6 @@ C     E_CC = CC_VEC(N_CC_AMP+1) IF IDENTITY WAS LAST BUT MINE IS FIRST
 #include "ctcc.inc"
 #include "ctccp.inc"
 #include "cgas.inc"
-#include "cecore.inc"
 #include "interm.inc"
 *
       LBLK = -1
