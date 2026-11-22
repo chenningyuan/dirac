@@ -205,14 +205,13 @@ C***********************************************************************
       use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
       use dcbham_mod, only: SPINFR
-!      use dcbpsi_mod, only: DOKRMC
+      use dcbpsi_mod, only: DOKRMC
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: DM1 = -1.0D0
 C
 #include "dcborb.h"
 #include "dcbxpr.h"
-#include "dcbpsi.h"
 C
       DIMENSION GPOE(*),GPOP(*),JXOPE(*),JXOPP(*),
      &          PRPMO(NORBT,NORBT,NZ),CMO(*),IBEIG(*),WORK(*)
@@ -676,13 +675,12 @@ C***********************************************************************
       use dgroup_mod, only: IPQTOQ, JBTOF, NZ
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
       use dcbbas_mod, only: N2BBASXQ
-!      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
+      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: DM1 = -1.0D0
 C
 #include "dcbxpr.h"
-#include "dcbibn.h"
        LOGICAL ONFILE
        DIMENSION GP(*),CMO(*),IBEIG(*),JXPAR(*),PRPINT(*),WORK(*)
 C

@@ -22,7 +22,7 @@ C***********************************************************************
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
       use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL,
      &  PDOINT, PRPLBL
-!      use dcbibn_mod, only: JBENDX, JBPNDX
+      use dcbibn_mod, only: JBENDX, JBPNDX
       use dcbwav_mod, only: WAVEVEC
       use orbital_rotation_indices
 C     
@@ -33,7 +33,6 @@ C
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "dcbxpr.h"
-#include "dcbibn.h"
       LOGICAL DOINT(2,2)
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
       DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),OSCBED(MAXEXC),
@@ -466,7 +465,7 @@ C***********************************************************************
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
       use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL,
      &  PDOINT, PRPLBL
-!      use dcbibn_mod, only: JBENDX, JBPNDX
+      use dcbibn_mod, only: JBENDX, JBPNDX
       use orbital_rotation_indices
 C     
       use kinds_mod, only: dp
@@ -477,7 +476,6 @@ C
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "dcbxpr.h"
-#include "dcbibn.h"
       LOGICAL DOINT(2,2)
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
       DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),WORK(*)
@@ -716,7 +714,7 @@ C***********************************************************************
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
       use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL,
      &  PDOINT, PRPLBL
-!      use dcbibn_mod, only: JBENDX, JBPNDX
+      use dcbibn_mod, only: JBENDX, JBPNDX
       use orbital_rotation_indices
 C     
       use kinds_mod, only: dp
@@ -727,7 +725,6 @@ C
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "dcbxpr.h"
-#include "dcbibn.h"
       LOGICAL DOINT(2,2)
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
       DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),WORK(*)
@@ -987,7 +984,7 @@ C***********************************************************************
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
       use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL,
      &  PDOINT, PRPLBL
-!      use dcbibn_mod, only: JBENDX, JBPNDX
+      use dcbibn_mod, only: JBENDX, JBPNDX
       use dcbwav_mod, only: WAVEVEC
 #if defined (VAR_MPI)
       use infpar_mod, only: MPARID, TOTWAL
@@ -1007,7 +1004,6 @@ C
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "dcbxpr.h"
-#include "dcbibn.h"
 !#include "dcbidx.h"
 #if defined (VAR_MPI)
 #include "mpif.h"

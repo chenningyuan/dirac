@@ -47,7 +47,6 @@ interface
    end subroutine
 end interface
 
-#include "dcbpsi.h"
 
 
   real(kind=8), allocatable :: memory(:)

@@ -1,8 +1,10 @@
-!
-! file: dcbpsi.h -- Dirac Common Block for PSI (selection of wave functions)
+!-----------------------------------------
+! Module with variables previously defined
+! at dcbpsi.h include file (COMMON /DCLPSI/)
+!-----------------------------------------
+! Dirac Common Block for PSI (selection of wave functions)
 !
 ! *** Wave function module ***
-!
 !  DOMP2    - perform direct second-order Moeller-Plesset calculation
 !  L1ORBM   - orbital pre-modifications (reordering, rotations)
 !  L2ORBM   - orbital post-modifications (reordering, phase adjustment)
@@ -28,18 +30,9 @@
 !  DOIVO    - perform IVO calculation
 !  DOCASCI  - perform CASCI calculation
 !  DOCASPT2 - perform CASPT2 calculation
-
-      LOGICAL                      DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
-     &        DOHSCC, DOHSFS, DOLUCT, DOKRMC, DOLUCIAR, DOMP2NO,        &
-     &        L1ORBM, L2ORBM, PHCOEF, DOCOSCI, DOADC, DOKRCI, DOKRCC,   &
-     &        DOGASCIP, DOARDUC, DOPOLPRP, DOLAPLCE, DOEXACC, DOIVO,    &
-     &        DOCASCI, DOCASPT2, DOROSE
- 
-      COMMON /DCLPSI/                                                   &
-     &                             DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
-     &        DOHSCC, DOHSFS, DOLUCT, DOKRMC, DOLUCIAR, DOMP2NO,        &
-     &        L1ORBM, L2ORBM, PHCOEF, DOCOSCI, DOADC, DOKRCI, DOKRCC,   &
-     &        DOGASCIP, DOARDUC, DOPOLPRP, DOLAPLCE, DOEXACC, DOIVO,    &
-     &        DOCASCI, DOCASPT2, DOROSE
-
-! --- end of dcbpsi.h ---
+   module dcbpsi_mod
+   implicit none
+   logical :: DOMP2, DOMVO, DORES, DOCCM, DOCIM, DOHSCC, DOHSFS, DOLUCT, DOKRMC, DOLUCIAR, &
+              DOMP2NO, L1ORBM, L2ORBM, PHCOEF, DOCOSCI, DOADC, DOKRCI, DOKRCC, DOGASCIP, &
+              DOARDUC, DOPOLPRP, DOLAPLCE, DOEXACC, DOIVO, DOCASCI, DOCASPT2, DOROSE
+   end module dcbpsi_mod

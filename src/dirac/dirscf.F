@@ -237,8 +237,8 @@ C
 C*****************************************************************************
 
 !      use dcborb_mod, only: I2ORBT, ICMOQ, NELECT, NESH, NISH, NISHT, NORB, NPSH, NSSH
-!      use dcbpsi_mod, only: PHCOEF
 !      use dcbdhf_mod, only: AOC, ATHUCK, ATOMST, CACC, DHFCONV, DHFERG, DHFEXIT, DHF_INTTYP, DOLEVEL, ERGVAL, ESOLVE, ESOLVN, EVCVAL, FCKVAL, FIXDIF, I2TMOT, IFCKOP, IHRMOP, INIOCC, INTFLG, IPRSCF, ISYMOP, LUCMOS, LUCYCL, LUDENS, LUEVEC, LUFCK1, LUFCK2, LUFCKT, LUFOCK, MXDIIS, MXOPEN, N2TMOTQ, NACSH, NELECT_DHF, NESHMF, NFMAT, NISH_BOS, NITER, NOCCMF, NOPEN, NTMO, SCFPOP, TDF2, TRIFCK, TRIVEC
+      use dcbpsi_mod, only: PHCOEF
       use dcbham_mod, only: CONT2C, DO4C2C, IPRHAM, IPRSOL, ONECAP,
      &  ONESYS, RESTFCK, SMLV1C, SOLVEN, SPINFR
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
@@ -272,7 +272,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D1 = 1.0D0, DM1 = -1.0D0, D0 = 0.0D0,
      &                       D4 = 4.00D00, D2 = 2.0D0, DP5=0.5D0
 C
-#include "dcbpsi.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
       type(fde_import) :: itmp
@@ -5102,8 +5101,8 @@ C
 C     Written by Trond Saue, July 10 2006
 C
 C**********************************************************************
-!      use dcbpsi_mod, only: L1ORBM
 !      use dcborb_mod, only: I2ORBT, NISH, NPSH, NSSH
+      use dcbpsi_mod, only: L1ORBM
       use dcbbas_mod, only: I2TMT, N2TMT, NFBAS, NZT
       use dcbgen_mod, only: LUTMAT
       use priunit_mod, only: LUPRI
@@ -5113,7 +5112,6 @@ C**********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
-#include "dcbpsi.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
       LOGICAL DOSEL,TOBE

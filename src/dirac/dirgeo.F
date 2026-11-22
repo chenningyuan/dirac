@@ -26,14 +26,14 @@ C     Written by Joern Thyssen 1997/06/17
 C     Last revision : 1997/06/17 jth
 C
 C*****************************************************************************
-!      use dcbpsi_mod, only: DOCCM, DOCIM, DOKRMC, DOLUCIAR, DOLUCT, DOMP2, DORES
+      use dcbpsi_mod, only: DOCCM, DOCIM, DOKRMC, DOLUCIAR, DOLUCT,
+     &  DOMP2, DORES
       use dcbham_mod, only: BSS, LEVYLE, SPINFR, ZORA
       use dcbgrd_mod, only: DONGRD
       use priunit_mod, only: LUPRI
          use dirac_cfg
 #include "implicit.h"
 C
-#include "dcbpsi.h"
 C
       LOGICAL NOGRAD
 C

@@ -40,7 +40,7 @@ C
       use priunit_mod, only: LUCMD, LUPRI
       use dgroup_mod, only: NZ
       use dcbham_mod, only: CAP, LEVYLE, SPINFR
-!      use dcbpsi_mod, only: DOMP2NO
+      use dcbpsi_mod, only: DOMP2NO
       use dcbmp2no_mod, only: IAOMOSCHEME, MP2_DENRUN, RUN_CCMOD
 #if defined (VAR_MPI)
       use infpar_mod, only: MPARID, MYTID, NUMNOD
@@ -51,7 +51,6 @@ C
 
 #include "implicit.h"
       INTEGER :: I
-#include "dcbpsi.h"
 #include "ccpar.inc"
 #include "files.inc"
 C

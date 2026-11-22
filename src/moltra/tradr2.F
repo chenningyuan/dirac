@@ -33,7 +33,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use dgroup_mod, only: NFSYM
       use blocks_mod, only: MAXSHL, NSYMBL
 !      use dcbtra_mod, only: SCRTRA
-!      use dcbtr3_mod, only: ICMOQR, NDMOQR
+      use dcbtr3_mod, only: ICMOQR, NDMOQR
       use interface_to_mpi
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -43,7 +43,6 @@ C
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "dcbtra.h"
-#include "dcbtr3.h"
       LOGICAL ANTIS,LMP2
       DIMENSION NSTRT(4),KQ(2,4),KE(2,4),KIBE(2,4)
       DIMENSION NSTR(2,0:2,4),NDMOBF(2,2,4)
@@ -2563,7 +2562,7 @@ C***********************************************************************
       use dirac_partask_mod, only: EXIT_NODEMENU, MOLTRA_PAR
       use priunit_mod, only: LUPRI
       use infpar_mod, only: MPARID, NODE, NODES
-!      use dcbtr3_mod, only: ICMOQR
+      use dcbtr3_mod, only: ICMOQR
       use dcbmp2_mod, only: CMMNFO, SRTSHL, TPRI44
       use interface_to_mpi
       use kinds_mod, only: dp
@@ -2573,7 +2572,6 @@ C
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 !#include "dcborb.h"
 !#include "dcbtra.h"
-#include "dcbtr3.h"
       DIMENSION KQ(2,4), KE(2,2), KIBE(2,4), ICMOIJ(2,4),
      &     NSTR(2,0:2,4), NSTRT(4), NSTRIJ(2,0:2,4), NSTTIJ(4),
      &     WORK(*), IDSLST(6,NDSLST), TIMDIS(NDSLST),DINTSKP(8),
@@ -2903,7 +2901,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use infpar_mod, only: MPARID, MYTID
 !      use dcbtra_mod, only: SCRTRA
-!      use dcbtr3_mod, only: ICMOQR, NDMOQR
+      use dcbtr3_mod, only: ICMOQR, NDMOQR
       use dcbmp2_mod, only: CMMNFO, TPRI34, TPRI44
       use interface_to_mpi
       use kinds_mod, only: dp
@@ -2912,7 +2910,6 @@ C***********************************************************************
 C
 !#include "dcborb.h"
 #include "dcbtra.h"
-#include "dcbtr3.h"
       LOGICAL ANTIS, LMP2, L2TYP(0:3), TRIAN(2), MP2FIN
       DIMENSION KQ(2,4), KE(2,2), NSTR(2,0:2,4), NSTRT(4), KIBE(2,4),
      &     WORK(*), TIM1(7), DINTSKP(8), IDSNFO(6), IBTNFO(2),
@@ -3133,7 +3130,7 @@ C
 C     Written by T.Saue Sep 17 1998
 C
 C***********************************************************************
-!      use dcbtr3_mod, only: ICMOQR, NDMOQR
+      use dcbtr3_mod, only: ICMOQR, NDMOQR
       use infpar_mod, only: MPARID
       use dgroup_mod, only: NFSYM
       use interface_to_mpi
@@ -3143,7 +3140,6 @@ C***********************************************************************
 C
 !#include "dcborb.h"
 !#include "dcbtra.h"
-#include "dcbtr3.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,2),NSTR(2,0:2,4),NSTRT(4),KIBE(2,4)
       DIMENSION NSTRIJ(2,0:2,4),ICMOIJ(2,4)

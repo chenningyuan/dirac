@@ -19,8 +19,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamprp */
       SUBROUTINE PAMPRP()
-!      use dcbpsi_mod, only: DOEXACC
 !      use dcbprp_mod, only: DOESR, NPRP_WF, PRP_WF
+      use dcbpsi_mod, only: DOEXACC
       use eom_driver , only: number_of_states
 C***********************************************************************
 C
@@ -41,7 +41,6 @@ C
 C Used in common blocks:
 C dcbprp.h: NPRP_WF, PRP_WF(*)
 C
-#include "dcbpsi.h"
 #include "dcbprp.h"
 C
       CHARACTER WF*4, WFlabel*6
@@ -167,7 +166,7 @@ C***********************************************************************
 !      use dcbprp_mod, only: DOESR, DOEXCPRP, DOEXP, DOSTEX, DOTPA, DOXLR, DOXPP, DOXQR, HDF5IO, MGRAD
 !      use dcbexp_mod, only: NEXPP
       use dcbesr_mod, only: IPRESR, MULTIPESR, NESRP
-!      use dcbpsi_mod, only: DOCCM, DOEXACC
+      use dcbpsi_mod, only: DOCCM, DOEXACC
       use memory_allocator
       use dirac_cfg
       use fde_mod
@@ -176,7 +175,6 @@ C***********************************************************************
 C
 #include "dcbprp.h"
 #include "dcbexp.h"
-#include "dcbpsi.h"
 C
       real(8), allocatable :: WORK(:)
       CHARACTER WF*4

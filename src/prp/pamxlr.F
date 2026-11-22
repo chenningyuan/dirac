@@ -1448,8 +1448,8 @@ C
 C***********************************************************************
 !      use dcbxrs_mod, only: NCSIM, NDAMP, NESIM, NEVEC, NFREQ, NPSIM, NSTAT, NZCONF, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcbxlr_mod, only: IPRXLR, NCLS_XLR, NLRAPT, NLRBPT, XLRANA, XLR_INDSTR
-!      use dcbibn_mod, only: JBENDX, JBPNDX
 !      use dcborb_mod, only: NCMOTQ, NORBT
+      use dcbibn_mod, only: JBENDX, JBPNDX
       use dcbham_mod, only: SPINFR
       use dgroup_mod, only: NFSYM
       use dcbbas_mod, only: NTBAS
@@ -1461,7 +1461,6 @@ C***********************************************************************
 C
 #include "dcbxrs.h"
 #include "dcbxlr.h"
-#include "dcbibn.h"
 #include "dcborb.h"
       LOGICAL FIRST
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(*),
@@ -1641,10 +1640,10 @@ C
 C     Written by T.Saue Oct 22 1996
 C
 C***********************************************************************
-!      use dcbibn_mod, only: JBENDX, JBPNDX
 !      use dcbxrs_mod, only: BVTYP, IMX, INTXRS, IPEP, IPPP, IPX, JSYMOP, JTIMOP, LUBOE, LUBOP, LUXVC, NDAMP, NERED, NEVEC, NFREQ, NPRED, RSPLAB, STATIC
 !      use dcbxlr_mod, only: ALLCMB, INDBP, IPRXLR, JLRAP, LLAPSU, LLRAPU, LLRBPU, NLRAP, NLRAPT, NLRBPT, XLRANA, XLR_ANATHR
 !      use dcbxpr_mod, only: IPRPTIM
+      use dcbibn_mod, only: JBENDX, JBPNDX
       use dgroup_mod, only: FREP, NZ
 #ifdef MOD_LAO_REARRANGED
       use london_helper
@@ -1657,7 +1656,6 @@ C***********************************************************************
       INTEGER :: I, J, JJ
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D00
 C
-#include "dcbibn.h"
 #include "dcbxrs.h"
 #include "dcbxlr.h"
 #include "dcbxpr.h"

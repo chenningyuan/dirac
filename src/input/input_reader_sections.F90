@@ -3274,7 +3274,7 @@
 
       subroutine read_input_rose(word, kw_section)
 
-!      use dcbpsi_mod, only: DOROSE
+      use dcbpsi_mod, only: DOROSE
       use rose_input_data
       use input_reader
       use jagged_array
@@ -3289,7 +3289,6 @@
       integer           :: i_frag, n_orbitals
       integer, allocatable :: orbital_indices(:)
 
-#include "dcbpsi.h"
 
       dorose = .true.
 

@@ -1816,11 +1816,10 @@ C     Written by T.Saue and H.J.Aa.Jensen Oct 16 1996
 C
 C***********************************************************************
 !      use dcbxrs_mod, only: NCRED, NERED, NPRED, NZCONF, NZCONFQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
-!      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
+      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
 #include "implicit.h"
 C
 #include "dcbxrs.h"
-#include "dcbibn.h"
       DIMENSION XEVEC(*),XPVEC(*),XCVEC(*),IBTYP(2,*),
      &          IBCVC(*),IBEVC(*),IBPVC(*),EVECR(*),
      &          BEBUF(*),BPBUF(*),BCBUF(*),WORK(*)
@@ -1868,12 +1867,11 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: DAMPFREQ, LUBCI, LUBOE, LUBOP, NCRED, NERED, NEVEC, NPRED, NZCONFQ, NZXOPEQ, NZXOPPQ
-!      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
+      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
       use kinds_mod, only: dp
 #include "implicit.h"
 C
 #include "dcbxrs.h"
-#include "dcbibn.h"
       REAL(dp), PARAMETER :: DTOL=1.0D-10, D0=0.0D0
 C
       DIMENSION XVEC(*),EVECR(NEVEC,MFREQ),
@@ -1992,7 +1990,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
 #include "dcbxrs.h"
-!#include "dcbibn.h"
       DIMENSION BEPVC(NZXOPEQ,*),BEMVC(NZXOPEQ,*),BEBUF(NZXOPEQ,NDAMP),
      &    BPPVC(max(1,NZXOPPQ),*),BPMVC(max(1,NZXOPPQ),*),
      &    BPBUF(max(1,NZXOPPQ),NDAMP),
@@ -2101,11 +2098,10 @@ C     Written by T.Saue Oct 17 1996
 C
 C***********************************************************************
 !      use dcbxrs_mod, only: NZCONF, NZXOPE, NZXOPP
-!      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
+      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
 #include "implicit.h"
 C
 #include "dcbxrs.h"
-#include "dcbibn.h"
       DIMENSION BEVEC(*),BPVEC(*),BCVEC(*),IBTYP(2,*),
      &          EVECR(*),BEBUF(*),BPBUF(*),BCBUF(*),WORK(*)
 C
@@ -2145,13 +2141,12 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: DAMPFREQ, LUSCI, LUSOE, LUSOP, NEVEC, NZCONFQ, NZRED, NZXOPEQ, NZXOPPQ
-!      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
+      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
       use kinds_mod, only: dp
 #include "implicit.h"
 C
       REAL(dp), PARAMETER :: D0=0.0D0
 #include "dcbxrs.h"
-#include "dcbibn.h"
       DIMENSION BVEC(*),EVECR(NEVEC,MFREQ),
      &               IBTYP(2,*),BVBUF(*)
 C
@@ -2248,14 +2243,13 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: BVTYP, DAMPFREQ, FKRMC, IMX, IPCM, IPCP, IPEM, IPEP, IPPM, IPPP, IPRXRS, IPX, ITMIC, LINEQ, NCRED, NCSIM, NDAMP, NERED, NESIM, NEVEC, NFREQ, NPRED, NPSIM, NREDM, NSTAT, NTSIM, NVPAR, NZCONF, NZCONFQ, NZRED, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, STATIC
-!      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
+      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0
 C
 #include "dcbxrs.h"
-#include "dcbibn.h"
       DIMENSION BEVEC(*),BPVEC(*),BCVEC(*),EVALR(*),
      &          EVECR(NEVEC,*),GPOE(*),GPOP(*),GPCI(*),
      &          IBTYP(2,NREDM),IBCVC(NREDM),IBEVC(NREDM),IBPVC(NREDM),
@@ -3015,7 +3009,7 @@ C***********************************************************************
 
       use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: BVTYP, CNVINT, DAMPFREQ, DIAGHE, FKRMC, GPTNRM, INTBUF, INTDEF, INTFLG, IPCM, IPCP, IPEM, IPEP, IPPM, IPPP, ITMIC, ITRINT, KCONV, LINEQ, MAXITR, NCRED, NCSIM, NDAMP, NERED, NESIM, NPRED, NPSIM, NREDM, NTSIM, NVPAR, NZCONF, NZCONFQ, NZRED, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, RESFAC, STATIC, THCXRS, XRS_INTTYP
-!      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
+      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
       use dirac_cfg
 
       use kinds_mod, only: dp
@@ -3024,7 +3018,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D5=5.0D0
 C
 #include "dcbxrs.h"
-#include "dcbibn.h"
       LOGICAL   USEXVC
       DIMENSION BEVEC(NZXOPEQ,*),BEBUF(*),IBEVC(NREDM),
      &          BPVEC(NZXOPPQ,*),BPBUF(*),IBPVC(NREDM),
@@ -3391,13 +3384,12 @@ C
 C     Written by T.saue Dec 1 1996
 C
 C***********************************************************************
-!      use dcbibn_mod, only: JBCNDX
 !      use dcbxrs_mod, only: DAMPFREQ, DIAGHE, FKRMC, IMFREQ, IMX, IPX, NDAMP, STATIC
+      use dcbibn_mod, only: JBCNDX
       use thrzer_mod, only: THRZER
       use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "dcbibn.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0
       REAL(dp), PARAMETER :: DLIM = 1.0D-6

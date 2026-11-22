@@ -29,7 +29,7 @@
       use dummy_mod, only: DUMMY, IDUMMY
 !      use maxash_mod, only: MAXASH
       use dcbgen_mod, only: DOLVC, INTGEN, IPRGEN, LVNEW
-!      use dcbpsi_mod, only: DOKRMC
+      use dcbpsi_mod, only: DOKRMC
       use dcbham_mod, only: BSS, FREEPJ, LEVYLE, SPINFR, VEXTPJ, X2C,
      &  ZORA, ZORA4
 !      use dcborb_mod, only: MXGAS
@@ -52,7 +52,6 @@
       CHARACTER CTEMP*72, LINE*80, TEXT*20, REPA(8)*4
       DIMENSION WORK(LWORK)
 !
-#include "dcbpsi.h"
 #include "dcborb.h"
 #include "krciprop.h"
 C

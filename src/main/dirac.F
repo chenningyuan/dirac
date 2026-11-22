@@ -228,7 +228,7 @@ C
 C     Written by T. Saue - November 1994
 C     Last revision : Sep 11 1995 - tsaue
 C***********************************************************************
-!      use dcbpsi_mod, only: DOKRMC
+      use dcbpsi_mod, only: DOKRMC
       use dcbgen_mod, only: DOANA, DOPRP, DOPSI
       use fde_mod
       use dirac_cfg
@@ -236,7 +236,6 @@ C***********************************************************************
 
 #include "implicit.h"
 C
-#include "dcbpsi.h"
 C
       CALL QENTER('PAMDRV')
 C
@@ -294,7 +293,7 @@ C***********************************************************************
       use dcbham_mod, only: HFXMU
       use dcbgen_mod, only: DOACIN, DOACUT, DOANA, DOPSI, DOPUT,
      &  DORKBIMP, DOTRA, IPRGEN
-!      use dcbpsi_mod, only: DOADC, DOCASCI, DOCASPT2, DOCCM, DOCIM, DOCOSCI, DOEXACC, DOHSCC, DOHSFS, DOIVO, DOKRCC, DOKRCI, DOKRMC, DOLAPLCE, DOLUCT, DOMP2, DOMP2NO, DOMVO, DOPOLPRP, DORES, DOROSE, L1ORBM, L2ORBM
+      use dcbpsi_mod
 !      use dcbdhf_mod, only: MAXITR, MAXITR2, NOQCDHF
       use dcbimp_mod, only: DOIMPMOS
       use dirac_cfg
@@ -302,7 +301,6 @@ C***********************************************************************
 C
       LOGICAL   WFCONV
 C
-#include "dcbpsi.h"
 #include "dcbdhf.h"
 C
       CALL QENTER('PAMPSI')

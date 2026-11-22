@@ -3014,13 +3014,12 @@ C     Cartesian coordinates.
 C
       use pi_mod, only: PI
       use priunit_mod, only: LUPRI
-!      use cbiwlk_mod, only: IMODE, ZERGRD
+      use cbiwlk_mod, only: IMODE, ZERGRD
       use optinf_mod
       use mxcent_mod, only: MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "cbiwlk.h"
       DIMENSION SCLVEC(MXCOOR)
       DIMENSION HESINT(MXRCRD,MXRCRD),EVEC(MX2CRD,MX2CRD)
       DIMENSION TMPMAT(MX2CRD*MX2CRD), TMPMT2(MX2CRD*MX2CRD)
@@ -3818,7 +3817,7 @@ C
       use mxcent_mod, only: MXCENT, MXCOOR
       use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, NAXREP,
      &  NCRREP, PT
-!      use cbiwlk_mod, only: START, ZERGRD
+      use cbiwlk_mod, only: START, ZERGRD
       use optinf_mod
       use cbirea_mod, only: BASIS
 #ifdef PRG_DIRAC
@@ -3826,7 +3825,6 @@ C
 #endif
 #include "implicit.h"
       INTEGER :: I,II,J
-#include "cbiwlk.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS
       CHARACTER FILENM*10, TMPLN*80
       DIMENSION GEINFO(0:ITRMAX,6), NONTVC(MXCENT)

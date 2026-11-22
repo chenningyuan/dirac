@@ -117,13 +117,12 @@ end subroutine IVO_MAIN
 
 subroutine sync_input_variables
 #ifdef HAVE_MPI
+   use dcbpsi_mod, only: DOCASCI, DOCASPT2, DOIVO
    use module_mpi, only: bcast_wrapper
 #endif
    use module_global_variables
    implicit none
-#include "dcbpsi.h"
 #ifdef HAVE_MPI
-!      use dcbpsi_mod, only: DOCASCI, DOCASPT2, DOIVO
    ! Essential variables
    call bcast_wrapper(ninact, 0)
    call bcast_wrapper(nact, 0)

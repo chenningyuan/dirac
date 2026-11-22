@@ -1353,12 +1353,11 @@ C***********************************************************************
 !      use dcborb_mod, only: IORB, NORBT, NPSH
 !      use dcbdhf_mod, only: NASH_DHF, NISH_DHF
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
-!      use dcbtr3_mod, only: NDMOQC
+      use dcbtr3_mod, only: NDMOQC
 #include "implicit.h"
       INTEGER :: I
 #include "dcborb.h"
 #include "dcbdhf.h"
-#include "../moltra/dcbtr3.h"
 C
       DIMENSION DMO(NORBT,NORBT,*)
       LOGICAL NOZG

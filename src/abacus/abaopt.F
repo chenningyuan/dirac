@@ -23,11 +23,11 @@ C                  It uses both the old cbiwlk.h and the new optinf.h
 C
 C  /* Deck opinpu */
       SUBROUTINE OPINPU(WORD)
-!      use cbiwlk_mod, only: ZERGRD
+      use cbiwlk_mod, only: ZERGRD
 #ifdef PRG_DIRAC
       use dcbgrd_mod, only: DONGRD, DOTRCK, IGRD_INTFLG, IPRGRD, SCRGRD
 #endif
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUCMD, LUPRI
       use kinds_mod, only: dp
 #ifndef PRG_DIRAC
@@ -38,7 +38,6 @@ C  /* Deck opinpu */
       use dcbgen_mod, only: NEWSYM, OPTIMI
 #endif
 #include "implicit.h"
-#include "cbiwlk.h"
       INTEGER, PARAMETER :: NTABLE = 68, ITRMX = 25, MXREJ = 3
       REAL(dp), PARAMETER :: D0 = 0.0D0, DEFTHE = 1.0D-6,
      &                       DEFTH2 = 1.0D-4, DEFDSP = 1.0D-3
@@ -1356,11 +1355,10 @@ C  /* Deck runopt */
       use optinf_mod
       use mxcent_mod, only: MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use cbiwlk_mod, only: IPRWLK, THRLDP, TOLST
+      use cbiwlk_mod, only: IPRWLK, THRLDP, TOLST
       use codata_mod, only: XKJMOL
       use memory_allocator
 #include "implicit.h"
-#include "cbiwlk.h"
       LOGICAL EXHER, EXSIR, EXABA, MINEND, INDXOK, STATPO, ACTIVE
       LOGICAL REJGEO, TRU, FAL, TMPLOG, NEWSTP, COND1
       CHARACTER TMPLIN*80, WRDRSP*7
@@ -2252,9 +2250,9 @@ C     Retreives the energy of the current geometry
 C     (by running HERMIT and SIRIUS).
 C
 !      use infinp_mod, only: THRGRD
-!      use dcbpsi_mod, only: DOCCM, DOCIM, DOMP2
 !      use dcbdhf_mod, only: DHFERG, EVCCNV, FCKCNV, SCFCNV
 #ifdef PRG_DIRAC
+      use dcbpsi_mod, only: DOCCM, DOCIM, DOMP2
       use dcbmp2_mod, only: EMP2
 #if defined (HAS_PCMSOLVER)
       use dcbham_mod, only: BSS, X2C
@@ -2281,7 +2279,6 @@ C
 #include "implicit.h"
 #ifdef PRG_DIRAC
 #include "dcbdhf.h"
-#include "dcbpsi.h"
 #endif /* PRG_DIRAC */
       LOGICAL EXHER, EXSIR, EXABA
       CALL QENTER('GTNRGY')
@@ -4743,14 +4740,10 @@ C
 C     Calls WLKCGH to do some transformations.
 C
       SUBROUTINE MINCGH(EGRAD,EHESS,ALLHES,WORK,LWORK)
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use optinf_mod, only: DELINT, IPRINT, NCART, NCRTOT, REDINT
+      use cbiwlk_mod, only: DOREPW
 #include "implicit.h"
-!      use cbiwlk_mod, only: DOREPW
-#if defined (PRG_DIRAC)
-#else
-#endif
-#include "cbiwlk.h"
       LOGICAL TRU, FAL
       DIMENSION WORK(LWORK)
       DIMENSION EGRAD(MXCOOR)
@@ -4783,15 +4776,13 @@ C
 C     Counts the coordinates of all symmetries.
 C
       SUBROUTINE CNTCRD
+      use cbiwlk_mod, only: DOREPW
       use prkoor_mod, only: NPRREP
       use optinf_mod, only: IPRINT, NCART, NCRTOT, NPROJ, NTMAT
       use trkoor_mod, only: NTRREP
       use symmet_mod, only: MAXREP, NCRREP
-      use mxcent_mod, only: MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "cbiwlk.h"
-!      use cbiwlk_mod, only: DOREPW
       NCRTOT = 0
       NTMAT = 0
       NCART = NCRREP(0,1)
@@ -4864,14 +4855,13 @@ C
 
 C  /* Deck projgh */
       SUBROUTINE PROJGH(EGRAD,EHESS,ALLHES,TMAT,TMPMAT,TMPMT2,PROJOP)
+      use cbiwlk_mod, only: DOREPW, THRLDP
       use prkoor_mod, only: NPRREP
       use optinf_mod, only: IPRINT, NCART, NCRTOT, NTMAT
       use symmet_mod, only: MAXREP, NCRREP
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "cbiwlk.h"
-!      use cbiwlk_mod, only: THRLDP
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT), TMAT(NTMAT)
       DIMENSION TMPMAT(MXCOOR,MXCOOR), TMPMT2(MXCOOR)
@@ -4980,14 +4970,13 @@ C
       use symmet_mod, only: MAXREP, NCRREP
       use optinf_mod, only: CNDHES, EVAL, GRDDIA, INDHES, INDTOT,
      &  IPRINT, NCART, NCRTOT, NTMAT, RATFUN, SADDLE
-      use mxcent_mod, only: MXCENT, MXCOOR
-!      use cbiwlk_mod, only: DOREPW, IZEROG, NZEROG, THRLDP
+      use mxcent_mod, only: MXCOOR
+      use cbiwlk_mod, only: DOREPW, IZEROG, NZEROG, THRLDP
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       REAL(dp), PARAMETER :: D0 = 0.0D0
-#include "cbiwlk.h"
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT), TMAT(NTMAT)
       DIMENSION EVEC(MX2CRD,MX2CRD), EVCTMP(NCRDHS*NCRDHS)
@@ -5758,13 +5747,12 @@ C     This routine calculates the step that should be taken to obtain
 C     the next geometry.
 C
       use trkoor_mod, only: NTRREP
-      use mxcent_mod, only: MXCENT, MXCOOR
-!      use cbiwlk_mod, only: IMODE, ZERGRD
+      use mxcent_mod, only: MXCOOR
+      use cbiwlk_mod, only: IMODE, ZERGRD
       use optinf_mod
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "cbiwlk.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D0
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
@@ -6250,7 +6238,7 @@ C
       use priunit_mod, only: LUPRI
       use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, MAXREP,
      &  NAXREP, NCRREP, PT
-!      use cbiwlk_mod, only: START, ZERGRD
+      use cbiwlk_mod, only: DOREPW, START, ZERGRD
       use optinf_mod
       use nuclei_mod, only: CORD, ISTBNU, NONT, NONTYP, NUCIND, NUCNUM
       use molinp_mod, only: MLINE, NCLINE, NMLAU, NMLINE
@@ -6259,7 +6247,6 @@ C
 #endif
       use trkoor_mod, only: NTRREP
 #include "implicit.h"
-#include "cbiwlk.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS
       CHARACTER FILENM*10, TMPLN*80
       DIMENSION GEINFO(0:ITRMAX,6)
@@ -7371,6 +7358,7 @@ C     no need to run without symmetry).
 C
 C
 #ifdef PRG_DIRAC
+      use dcbpsi_mod, only: DOCCM, DOMP2
       use dcbmp2_mod, only: EMP2
          use dirac_cfg
          use hermodules, only: unit_conversion
@@ -7402,7 +7390,6 @@ C numder.h : NOMOVE
 C
 #ifdef PRG_DIRAC
 #include "dcbdhf.h"
-#include "dcbpsi.h"
 #endif
       real(8), allocatable :: STPSYM1(:),STPCAR1(:)
       real(8), allocatable :: COOR(:,:)

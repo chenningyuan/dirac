@@ -748,7 +748,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use dummy_mod, only: DUMMY
 !      use dcbtra_mod, only: IPRTRA, ISAME, ITRA_INTFL4, NOPAIR, TRA4_INDSTR, TRA_ANTIS
-!      use dcbtr3_mod, only: ICMOQR, NDMOQR
+      use dcbtr3_mod, only: ICMOQR, NDMOQR
       use dcbbas_mod, only: NFBAS
 !      use dcborb_mod, only: ICMOQ, IORB, NESH, NORB, NORBT, NPSH
       use dgroup_mod, only: NFSYM, NZ
@@ -758,7 +758,6 @@ C***********************************************************************
       INTEGER :: I, J
 C
 #include "../moltra/dcbtra.h"
-#include "../moltra/dcbtr3.h"
 #include "dcborb.h"
 #include "dcbopt.h"
       CHARACTER DAYTID*24, SECTID*12, CPUTID*12, WALLTID*12

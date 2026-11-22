@@ -131,8 +131,8 @@ C
 C***********************************************************************
 
 !      use dcbtra_mod, only: IPRTRA, ISAME, ISTRAT, ITRA_INTFL4, MOFILE_TRAINP, NCORE2, NO2IND, NO4IND, NOMDCINT, NOMDCINT_TRAINP, NOPAIR, NQQCLASS, PRPSYA, PRPTRA, RCORBS, TRA4_INDSTR, TRA_ANTIS, TRA_CORSTR, TRA_CORSTR2, TRA_EXACORR
-!      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
 !      use dcborb_mod, only: ICMOQ, IORB, NAOCC, NAOCCT, NAVIR, NAVIRT, NCMOTQ, NESH, NIOCC, NIOCCT, NIVIR, NIVIRT, NOCC, NORB, NORBT, NPSH
+      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
       use dcbham_mod, only: SPINFR
       use dgroup_mod, only: ATOMIC, LINEAR, NBSYM, NFSYM, NZ
       Use memory_allocator
@@ -149,7 +149,6 @@ C***********************************************************************
       INTEGER :: I, J, K
 C
 #include "dcbtra.h"
-#include "dcbtr3.h"
 #include "dcborb.h"
 
 ! until the KRMCSCF/KRMCOLD issue with IBEIG has been fixed...
@@ -1004,7 +1003,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: IPRTRA, ISAME, ITRA_INTFL4, NO4IND, NOPAIR, NQQCLASS, RCORBS, TRA_ANTIS
-!      use dcbtr3_mod, only: ICMOQR, NDMOQR
+      use dcbtr3_mod, only: ICMOQR, NDMOQR
       use dcbbas_mod, only: N2BBASXQ, NFBAS
 !      use dcborb_mod, only: ICMOQ, IORB, NAVIR, NCMOTQ, NESH, NIOCC, NOCC, NORB, NORBT, NPSH, NSSH
       use dgroup_mod, only: ATOMIC, NBSYM, NFSYM, NZ
@@ -1014,7 +1013,6 @@ C***********************************************************************
       INTEGER :: I
 C
 #include "dcbtra.h"
-#include "dcbtr3.h"
 #include "dcborb.h"
       CHARACTER*24 DAYTID
       LOGICAL TOBE,TRASAM,ACTIVE
@@ -3857,7 +3855,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use dummy_mod, only: DUMMY
 !      use dcbtra_mod, only: IPRTRA, ISAME, ISTRAT, NOPAIR, NQQCLASS, SCRTRA, THROUT
-!      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
+      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
       use dcbbas_mod, only: N2BBASXQ, NFBAS
 !      use dcborb_mod, only: ICMOQ, IORB, NAELEC, NASH, NGAS_DC, NISH, NORB, NORBT, NPSH
       use dgroup_mod, only: ATOMIC, NBSYM, NFSYM, NZ
@@ -3871,7 +3869,6 @@ C***********************************************************************
       INTEGER :: I
 C
 #include "dcbtra.h"
-#include "dcbtr3.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
       CHARACTER DAYTID*24,SECTID*12,CPUTID*12
@@ -4192,7 +4189,7 @@ C***********************************************************************
 
       use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: IPRTRA, ISAME, ISTRAT, NOPAIR, NQQCLASS, SCRTRA, THROUT
-!      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
+      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
       use dcbbas_mod, only: N2BBASXQ, NFBAS
 !      use dcborb_mod, only: NAELEC, NASH, NISH, NORBT
       use dgroup_mod, only: ATOMIC, NBSYM, NFSYM, NZ
@@ -4206,7 +4203,6 @@ C***********************************************************************
       INTEGER :: I
 C
 #include "dcbtra.h"
-#include "dcbtr3.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 !
@@ -4736,7 +4732,7 @@ C
 !      use dcborb_mod, only: I1_DCBORB, I2_DCBORB
 !      use dcbtra_mod, only: IPRTRA, ISAME, NDCBTRI, NDCBTRL, NDCBTRR, SCRTRA, THROUT, TRA_ANTIS
       use comdis_mod, only: ISPCK, NSPCK
-!      use dcbtr3_mod, only: ICMOQR, NDMOQR
+      use dcbtr3_mod, only: ICMOQR, NDMOQR
       use dcbmp2_mod, only: CMMNFO, TPRI34, TPRI44
       use dcbmpt_mod, only: TESTLS, TESTSL
       use dcbbas_mod
@@ -4755,7 +4751,6 @@ C
 C
 #include "dcborb.h"
 #include "dcbtra.h"
-#include "dcbtr3.h"
 C
       LOGICAL ANTIS,LMP2,NSAME
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
@@ -5088,7 +5083,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C
 #include "dcbtra.h"
-!#include "dcbtr3.h"
       LOGICAL   ANTIS,LMP2
       INTEGER   NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
       REAL(8)   DINTSKP(8),TIM1(7)

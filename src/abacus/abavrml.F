@@ -28,9 +28,8 @@ C
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
       use optinf_mod, only: EVAL, IPRINT, VRBOND, VRCORD, VREIGV
-!      use cbiwlk_mod, only: DOREPW
+      use cbiwlk_mod, only: DOREPW
 #include "implicit.h"
-#include "cbiwlk.h"
       LOGICAL LAST
       DIMENSION ATMARR(MXCENT,8), EVEC(IEDIM,IEDIM)
       DIMENSION EVC1(MXCOOR), EVC2(MXCOOR)

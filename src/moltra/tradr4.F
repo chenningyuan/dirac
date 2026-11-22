@@ -393,7 +393,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbtra_mod, only: LUTRA2, NFPCK12, NFPCK12T, NFPCK34T, SCRTRA
       use comdis_mod, only: ISHLA, ISHLB, ISPCK, KIGBUF, KLGBUF, KLGREC,
      &  KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS, NSPCK
-!      use dcbtr3_mod, only: IBAS1, IBAS2, IBAS3, IBAS4, IBBAS1, IBBAS2, IBBAS3, IBBAS4, ICMOQR, ICMOQS, ICMOQT, ISPCK12, ISPCK34, NBBAS1, NBBAS2, NBBAS3, NBBAS4, NDMOQR, NDMOQS, NDMOQT, NSPCK12, NSPCK34
+      use dcbtr3_mod
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dcborb_mod, only: NASHT
       use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
@@ -402,7 +402,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 C
 #include "dcbtra.h"
-#include "dcbtr3.h"
 #include "dcborb.h"
 C     MXGBFSZ determines direct access record lengths, can be used to tune I/O
       PARAMETER (MXGBFSZ=4096)

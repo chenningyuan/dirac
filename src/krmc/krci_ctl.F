@@ -1878,12 +1878,11 @@ C     Last revision :
 C
 C***********************************************************************
 !      use dcbdhf_mod, only: LUFCK1
-!      use dcbpsi_mod, only: DOKRMC
+      use dcbpsi_mod, only: DOKRMC
       use dcbgen_mod, only: DOTRA, LUITFO, LUKRM1, LUKRM2, LUKRM3,
      &  LUKRM4, LUKRM5
 #include "implicit.h"
 #include "dcbdhf.h"
-#include "dcbpsi.h"
 C
       LOGICAL EX
 C

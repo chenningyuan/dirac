@@ -1090,12 +1090,11 @@
 !*****************************************************************************
 !      use dcbxrs_mod, only: NCSIM, NESIM, NFREQ, NPSIM, NREDM, NSTAT, NZXOPE, NZXOPP
 !      use dcbxqr_mod, only: MZYEE, MZYEP
-!      use dcbibn_mod, only: JBENDX, JBPNDX
+      use dcbibn_mod, only: JBENDX, JBPNDX
       use dgroup_mod, only: NZ
 #include "implicit.h"
 #include "dcbxrs.h"
 #include "dcbxqr.h"
-#include "dcbibn.h"
 !
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),                           &
            IBPVC(*),EVALR(*),EVECR(NREDM,*)
@@ -1168,7 +1167,7 @@
       use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: JSYMOP, LUBOE, LUBOP, NERED, NFREQ, NPRED, NREDM
 !      use dcbxqr_mod, only: IPRXQR, LUQREE, LUQREP
-!      use dcbibn_mod, only: JBENDX, JBPNDX
+      use dcbibn_mod, only: JBENDX, JBPNDX
       use dgroup_mod, only: IPQTOQ, NZ
 !      use dcbxpr_mod, only: PRPNAM
       use kinds_mod, only: dp
@@ -1176,7 +1175,6 @@
       INTEGER :: I
 #include "dcbxrs.h"
 #include "dcbxqr.h"
-#include "dcbibn.h"
 !
 #include "dcbxpr.h"
 !

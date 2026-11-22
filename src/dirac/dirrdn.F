@@ -3080,7 +3080,7 @@ C       Written by Trond Saue, Tromsoe April 1996
 C       Last revision: April 27 1996 - tsaue
 C
 C***********************************************************************
-!      use dcbpsi_mod, only: DOADC, DOARDUC, DOCCM, DOCIM, DOCOSCI, DOEXACC, DOGASCIP, DOHSFS, DOKRCC, DOKRCI, DOKRMC, DOLAPLCE, DOLUCIAR, DOLUCT, DOMP2, DOMP2NO, DOMVO, DOPOLPRP, DORES, DOROSE, L1ORBM, L2ORBM, PHCOEF
+      use dcbpsi_mod
       use dcbrot_mod, only: ROTANG, ROTORB, VECROT
       use dcbreo_mod, only: IMOORD, IMOORF, IREORD, IREORF, LMOORD,
      &  LMOORF, MXREORD
@@ -3101,7 +3101,6 @@ C
      &          WORD1*7,CTEMP*90
       DIMENSION WORK(LWORK)
 C
-#include "dcbpsi.h"
 C
       DATA TABDIR /'*END OF','xxxxxxx','*MP2CAL','*LUCITA',
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
@@ -7825,7 +7824,7 @@ C     Written by T.Saue - June 1998
 C     Last revision: June 16 1998
 C
 C***********************************************************************
-!      use dcbpsi_mod, only: DOMVO
+      use dcbpsi_mod, only: DOMVO
       use dummy_mod, only: IDUMMY
       use priunit_mod, only: LUCMD, LUPRI
       use dcbgen_mod, only: INTGEN
@@ -7838,7 +7837,6 @@ C***********************************************************************
       INTEGER :: I,J
       PARAMETER (NTABLE = 8)
 C
-#include "dcbpsi.h"
 #include "dcborb.h"
 C
       LOGICAL SET, NEWDEF, RESET,LBIT
@@ -8040,7 +8038,7 @@ C
 C     Written by Luuk Visscher may 1999
 C
 C***********************************************************************
-!      use dcbpsi_mod, only: DOCCM, DOCIM, DOMP2, DORES
+      use dcbpsi_mod, only: DOCCM, DOCIM, DOMP2, DORES
       use dcbham_mod, only: BSS, DKH1, DKH2, GAUNT, LEVYLE, SPINFR,
      &  URKBAL, X2C, ZORA, ZORA4
       use dgroup_mod, only: NBSYM
@@ -8055,7 +8053,6 @@ C***********************************************************************
       INTEGER :: I,J
 C
 !#include "mxgas.h"
-#include "dcbpsi.h"
 #include "dcbprp.h"
       LOGICAL SS_COR, SS_COR_NEEDED
       logical is_2c_rel_run

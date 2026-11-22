@@ -41,7 +41,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
 #include "implicit.h"
       INTEGER :: I
-!#include "dcbpsi.h"
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/files.inc"
 !#include "../relccsd/complex.inc"

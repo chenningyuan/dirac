@@ -1070,14 +1070,13 @@ C     Written by H.J.Aa.Jensen and T.Saue 1996
 C     Last revision : July 30 1996 - tsaue
 C
 C***********************************************************************
-!      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
 !      use dcbxrs_mod, only: DIAGHE, KBCI, KBOE, KBOP, NCRED, NCSIM, NDAMP, NERED, NESIM, NPRED, NPSIM, NZCONF, NZRED, NZXOPE, NZXOPP
+      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
       use dgroup_mod, only: NZ, NZ_IN_CI
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
-#include "dcbibn.h"
 C
 #include "dcbxrs.h"
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),EVALR(*),EVECR(*),
@@ -1188,12 +1187,11 @@ C     Written by H.J.Aa.Jensen and T.Saue
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
+      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
       use thrldp_mod, only: THRLDP
 !      use dcbxrs_mod, only: LINEQ, LUBCI, LUBOE, LUBOP, NZCONFQ, NZXOPEQ, NZXOPPQ
 #include "implicit.h"
 C
-#include "dcbibn.h"
       DIMENSION BVECS(*),IBVEC(*),IBTYP(2,*),IVECS(*),WORK(*)
 C
 C
@@ -1277,7 +1275,7 @@ C***********************************************************************
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbibn_mod, only: JBCNDX
+      use dcbibn_mod, only: JBCNDX
 !      use dcbxrs_mod, only: IPRXRS, NREDM, TKNORM
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1285,7 +1283,6 @@ C***********************************************************************
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
       REAL(dp), PARAMETER :: T1MIN = 1.D-8, THRRND = 1.D-4
 C
-#include "dcbibn.h"
 #include "dcbxrs.h"
       DIMENSION BVECS(NBDIM,NBNEW),IBTYP(2,NREDM),IBVEC(NREDM),
      &     BVBUF(NBDIM),IVECS(NBNEW),BVNRM(NBNEW)
@@ -3009,12 +3006,11 @@ C     Written by T.Saue Nov 8 1996
 C
 C***********************************************************************
 !      use dcbxrs_mod, only: IPCM, IPCP, IPEM, IPEP, IPPM, IPPP, IPX, NVPAR
-!      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
+      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
 #include "implicit.h"
       INTEGER :: I
 C
 #include "dcbxrs.h"
-#include "dcbibn.h"
       DIMENSION IBTYP(2,*),ISIM(*)
 C
 C     Initialize
@@ -3679,7 +3675,7 @@ C     TYP='C' : NDIM = NZCONF, NZL = NZ_in_CI
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
+      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
 !      use dcborb_mod, only: NASHT
 !      use dcbxrs_mod, only: BVTYP, DIAGHE, E2CHEK, GPTNRM, IMFREQ, IMX, IPCP, IPEP, IPPP, IPRXRS, IPX, IXRSTB, LINEQ, LUBCI, LUBOE, LUBOP, LURST, NDAMP, NEVEC, NEXSTV, NFREQ, NSTAT, RSPLAB, RSREST, STATIC, UNCOUP
       use kinds_mod, only: dp
@@ -3687,7 +3683,6 @@ C***********************************************************************
       INTEGER :: I
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0, D2 = 2.0D0)
       REAL(dp), PARAMETER :: DLIM = 1.0D-6
-#include "dcbibn.h"
 C
 C Used from include files:
 C  dcborb.h : NASHT
@@ -4322,11 +4317,10 @@ C     Written by T. Saue Jan 2 2006
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
+      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
 !      use dcbxrs_mod, only: LUBCI, LUBOE, LUBOP
 #include "implicit.h"
 C
-#include "dcbibn.h"
 #include "dcbxrs.h"
       DIMENSION BVEC(NBDIM,*),IBTYP(2,*),IBVEC(*),IVEC(*),WORK(*)
 C
@@ -4472,13 +4466,12 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: IMX, INDSTR, IPRXRS, IPX, NPRED, NREDM, NSTAT, NZXOPE, NZXOPEQ, SKIPEE, SKIPEP, STATIC
       use dgroup_mod, only: FREP, NZ
-!      use dcbibn_mod, only: JBENDX
+      use dcbibn_mod, only: JBENDX
 !      use dcborb_mod, only: NORBT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, II, J, JJ
 #include "dcbxrs.h"
-#include "dcbibn.h"
 #include "dcborb.h"
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION REDE(LDA,N),EVEC(LDA,N),EIG(N),IBTYP(2,NREDM),

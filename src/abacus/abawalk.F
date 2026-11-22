@@ -31,6 +31,7 @@ C
 #ifndef PRG_DIRAC
 C  /* Deck wlkinp */
       SUBROUTINE WLKINP(WORD)
+      use cbiwlk_mod
       use abainf_mod, only: DOSYM, DOWALK, GDALL, IPRDEF
       use nuclei_mod, only: NUCDEP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -43,7 +44,6 @@ C
       LOGICAL NEWDEF, SETRAD
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, WRDTMP*4
       DIMENSION IDOREP(0:7), IWKVEC(NWKTYP), ISCVEC(NSCTYP)
-#include "cbiwlk.h"
 C
       DATA TABLE /'.RESTAR', '.PRINT ', '.INDEX ', '.TRUST ',
      &            '.ANHARM', '.DISPLA', '.SCALE ', '.MODE  ',
@@ -501,6 +501,7 @@ C  /* Deck wlkini */
 C
 C     Initialize /CBIWLK/
 C
+      use cbiwlk_mod
       use abainf_mod, only: DOSYM, DOWALK, GDALL, IPRDEF
 #ifndef PRG_DIRAC
       use gnrinf_mod, only: WLKREJ
@@ -508,7 +509,6 @@ C
       use nuclei_mod, only: ISOTOP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-#include "cbiwlk.h"
 C
       IF (DOWALK) THEN
          IWKTYP = 1
@@ -568,6 +568,7 @@ C
       END
 C  /* Deck wlkdrv */
       SUBROUTINE WLKDRV(POLDD,POLDQ,POLDL,POLDA,SPNTOT,WORK,LWORK)
+      use cbiwlk_mod, only: DOREPW, IPRWLK, V3CAL, VIBAVE
       use cbilnr_mod, only: MXFR
       use prkoor_mod, only: NPRREP
       use cbisol_mod, only: SOLVNT
@@ -583,7 +584,6 @@ C
       DIMENSION POLDD(*), POLDQ(*), POLDL(*), POLDA(*), SPNTOT(*),
      &          WORK(LWORK)
 C
-#include "cbiwlk.h"
 C
       CALL QENTER('WLKDRV')
       IF (IPRWLK .GT. 3) CALL TIMER ('START ',TIMEIN,TIMOUT)
@@ -752,6 +752,7 @@ C  /* Deck wlkdr1 */
      &                  CSTRA,SCTRA,SRC0,SRCF,POLAR0,POLARF,
      &                  EFG0,EFGF,SPNTOT,SSJ0,SSJF,WORK,LWORK,NCRIND,
      &                  NCRTOT,N2CRT,NTMAT,NCART)
+      use cbiwlk_mod
       use prkoor_mod, only: NPRREP
       use abainf_mod, only: DIPDER, RAMAN, VIB, VROA
       use taymol_mod, only: ERGMOL
@@ -787,7 +788,6 @@ C
      *          SRCF(*), POLAR0(*), POLARF(*),
      *          EFG0(*), EFGF(*), SPNTOT(*), SSJ0(*), SSJF(*)
 C
-#include "cbiwlk.h"
 C
 C
       IF (IPRWLK .GT. 5) CALL TITLER('Output from WLKDR1','*',103)
@@ -1775,6 +1775,8 @@ C  /* Deck wlkrad */
 C
 C     Update trust radius
 C
+      use cbiwlk_mod, only: IMAGE, IWKIND, IWKTYP, REJECT, REJMAX,
+     &  REJMIN, RTRGOD, RTRMIN, TRUMAX, TRUSTD, TRUSTI, TRUSTR
       use infinp_DALTON_mod, only: ISTATE
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -1783,7 +1785,6 @@ C
       PARAMETER (D1=1.0D0, D2=2.0D0, DP5 = 0.5D0, DP25=0.25D0,
      *           THDE=1.0D-10)
 C
-#include "cbiwlk.h"
 C
 C     ****************************************
 C     ***** Rejection specified in input *****
@@ -2912,6 +2913,8 @@ C
 C  /* Deck wlkend */
       LOGICAL FUNCTION WLKEND(GRDCAR,GRDNRM,NCART,INDHES,INDEX,
      *                        INDXOK,STATPO,ISTIND,IPOINT,NUMMOD)
+      use cbiwlk_mod, only: IMAGE, IPRWLK, IWKIND, IWKTYP, NMODIF,
+     &  START, TOLST, VIBAVE
 #ifndef PRG_DIRAC
       use gnrinf_mod, only: GEOCNV, GRADML, ITERMX
 #endif
@@ -2925,7 +2928,6 @@ C
       LOGICAL INDXOK, STATPO
       DIMENSION GRDCAR(NCART), INDHES(0:7)
 C
-#include "cbiwlk.h"
 C
       INDEX  = ISUM(MAXREP+1,INDHES(0),1)
       IF (START) ISTIND = INDHES(0)
@@ -3015,6 +3017,7 @@ C
 C     eu, Oslo 16.February 1989
 C     symmetrized tuh 13 April 90
 C
+      use cbiwlk_mod, only: IPART
       use codata_mod, only: XFAMU
       use nuclei_mod, only: CORD, ISTBNU, IZATOM, NUCIND
       use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, PT
@@ -3027,7 +3030,6 @@ C
       LOGICAL DOREL
       DIMENSION PMCAR(NCART), SCAL(NCART), AM(2), QCM(3,2), PCM(3,2),
      *          QCMDIF(3)
-#include "cbiwlk.h"
 C
 C
       IF (IPRINT .GT. 10) THEN
@@ -3632,6 +3634,7 @@ C     coordinates of the molecule at the effective molecular geometry.
 C
 C     K.Ruud, San Diego March 1999
 C
+      use cbiwlk_mod, only: DISPLC, ECKART
       use cbilnr_mod, only: ALFA, FRVAL, MXFR, NFRVAL
       use moldip_mod, only: DIP0, POLARS
       use spinro_mod, only: GTRANT
@@ -3668,7 +3671,6 @@ C
 C
 #include "quadru.h"
 #include "sigma.h"
-#include "cbiwlk.h"
 C
       FACTOR = 1.D6*ALPHA2
       AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PMASS*PMASS)*XTHZ
@@ -5851,6 +5853,7 @@ C  /* Deck wlksav */
 C
 C     Save second-order MC prediction for found step
 C
+      use cbiwlk_mod, only: IPRWLK, NOORTH, REJECT, REJMAX, REJMIN
       use infvar_mod, only: NCONF, NWOPT
       use infopt_mod, only: DEPRED, EACTIV, EMCOLD, EMCSCF, EMY, EPOT,
      &  NREDL, REJWMA, REJWMI
@@ -5876,7 +5879,6 @@ C   INFVAR : NCONF,NWOPT,NVAR
 C   INFORB : N2BAST,NCMOT
 C   INFOPT : EMCSCF,EMCOLD,DEPRED,REJWMI,REJWMA, NREDL
 C
-#include "cbiwlk.h"
 C
 C     kludge to avoid tranformation to natural orbitals
 C     I must talk to HJJ / tuh Jun 92
@@ -6133,6 +6135,7 @@ C  a) calculate second order prediction for energy change.
 C  b) if WFPRED, calculate first order prediction for change
 C     in MC wave function.
 C
+      use cbiwlk_mod, only: IPRWLK, TRUSTR, WFPRED
       use infvar_mod, only: NCONF, NVAR, NWOPT
       use infdim_mod, only: NVARMA
       use abainf_mod, only: GDALL
@@ -6159,7 +6162,6 @@ C  INFVAR: NCONF,NWOPT,NVAR
 C  INFDIM: NVARMA
 C
 #include "inflin.h"
-#include "cbiwlk.h"
 #include "anrinf.h"
 C
       CHARACTER*1 CXYZ(3)
@@ -6349,6 +6351,7 @@ C  /* Deck wlktay */
 C  /* Deck wlkdan */
       SUBROUTINE WLKDAN(PMCARX,NCART,WORK,LWORK,IPRINT)
 C
+      use cbiwlk_mod, only: IPART
       use nuclei_mod, only: NUCDEP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -6357,7 +6360,6 @@ C
 #include "implicit.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0)
       DIMENSION PMCARX(NCART), WORK(LWORK)
-#include "cbiwlk.h"
 C
 C
       IF (IPRINT .GT. 10) THEN
@@ -6411,6 +6413,7 @@ C  /* Deck wlkda1 */
      &                  AMASS,ACOR,AVEL,ACORR,AVELR,AVLROT,
      &                  BMASS,BCOR,BVEL,BCORR,BVELR,BVLROT)
 C
+      use cbiwlk_mod, only: IPART
       use codata_mod, only: XFAMU
       use nuclei_mod, only: CORD, ISTBNU, IZATOM, NUCIND
       use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, PT
@@ -6438,7 +6441,6 @@ C
      &          BCMXYZ(3), BVLXYZ(3), BVBANG(3),
      &          BLXYZ(3), BOMEGA(3), BINERT(3,3),
      &          VECTOR(3)
-#include "cbiwlk.h"
 C
 C
       NEXT1(I) = MOD(I,3) + 1
@@ -7264,6 +7266,7 @@ C  /* Deck wlkor1 */
      &                  S11MO,S12MO,S22MO,HALF,HALFMO,S12INV,S22INV,
      &                  IWRK,AWRK,WSW,WSWPCK,WSWDIA,EIGVEC,WSWSQR,
      &                  TMAT,OMO,S22OMO,COR1,COR2,WORK,LWORK,IPRINT)
+      use cbiwlk_mod, only: NATCON
       use inforb_mod, only: IBAS, IORB, N2ORBX, NBAS, NBAST, NNORBX,
      &  NORB, NORBT, NSYM
       use dummy_mod, only: DUMMY, IDUMMY
@@ -7289,7 +7292,6 @@ C  /* Deck wlkor1 */
      &          WSWSQR(NORBT,NORBT), TMAT(NORBT,NORBT),
      &          OMO(NBAST,NORBT), S22OMO(NORBT,NORBT),
      &          WORK(LWORK), CMXYZ(3)
-#include "cbiwlk.h"
       INTPRI = MAX(0,IPRINT - 6)
 C
 C     Get unmodified MO's (UMO's)

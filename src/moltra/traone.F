@@ -29,13 +29,12 @@ C***********************************************************************
       use dirac_partask_mod, only: EXIT_NODEMENU, HERFCK_PAR
       use dummy_mod, only: DUMMY
 !      use dcbtra_mod, only: IPRTRA, ITRA_INTFL2
-!      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
+      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
       use dcbbas_mod, only: N2BBASXQ
       use dcbgen_mod, only: PARCAL
 #include "implicit.h"
 C
 #include "dcbtra.h"
-#include "dcbtr3.h"
       LOGICAL TOBE,TRASAM
       real*8, intent(in) :: toterg
       DIMENSION WORK(*),NSTR(2,0:2,2),NSTRT(2),KQ(2,2),
@@ -188,7 +187,7 @@ C     Miro Ilias,2016: for DFT-COSCI, add xcint contribution based of DMAT/DMATf
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbpsi_mod, only: DORES
+      use dcbpsi_mod, only: DORES
 !      use dcbdhf_mod, only: IFCKOP, IHRMOP, INTFLG, ISYMOP, NFMAT, NOPEN
       use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
@@ -201,7 +200,6 @@ C*****************************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
-#include "dcbpsi.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
       LOGICAL TOBE
@@ -1319,7 +1317,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0=0.D0, DM1=-1.D0, D1 = 1.0D0
 C
 #include "dcborb.h"
-!#include "dcbtr3.h"
 C
       LOGICAL FORWARD
       DIMENSION FMO(NORBT,NORBT,NZ)
@@ -1540,10 +1537,9 @@ C     or virtual ('particle') orbital of fermion irrep IFSYM
 C
 C***********************************************************************
 !      use dcborb_mod, only: IORB, NOCC, NPSH
-!      use dcbtr3_mod, only: NDMOQC
+      use dcbtr3_mod, only: NDMOQC
 #include "implicit.h"
 #include "dcborb.h"
-#include "dcbtr3.h"
 C
       CHARACTER*(*) ORBTYP
 C
@@ -1611,13 +1607,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !   one-to-one on the active orbitals of the fermion irrep.
 !------------------------------------------------------------------
 !      use dcborb_mod, only: IORB, NAOCC, NAVIR, NOCC, NORBT, NPSH
-!      use dcbtr3_mod, only: NDMOQC
+      use dcbtr3_mod, only: NDMOQC
       use dcbham_mod, only: SPINFR
       use dgroup_mod, only: LINEAR, NBSYM, NFSYM
 #include "implicit.h"
       INTEGER :: I, J, K
 #include "dcborb.h"
-#include "dcbtr3.h"
    
       integer, intent(in) :: nrep
       integer, intent(in)    :: orb_dim(nrep) 

@@ -76,7 +76,7 @@ C     Written by T.Saue Feb 1997
 C
 C*****************************************************************************
 
-!      use dcbpsi_mod, only: DOKRCC, DOKRCI, DOKRMC
+      use dcbpsi_mod, only: DOKRCC, DOKRCI, DOKRMC
       use dgroup_mod, only: NFSYM
       use dcbgen_mod, only: LUCOEF, LUKRMC
       use priunit_mod, only: LUPRI
@@ -88,7 +88,6 @@ C*****************************************************************************
 
 #include "implicit.h"
       INTEGER :: I,J
-#include "dcbpsi.h"
 #include "dcborb.h"
 C
       real(8), allocatable :: CMO(:),EIG(:)
@@ -217,15 +216,14 @@ C     Written by T.Saue Feb 1997
 C
 C*****************************************************************************
 
-!      use dcbpsi_mod, only: DOKRCC, DOKRCI, DOKRMC
 !      use dcborb_mod, only: NCMOTQ, NORBT
+      use dcbpsi_mod, only: DOKRCC, DOKRCI, DOKRMC
       use dcbgen_mod, only: LUCOEF, LUKRMC
       use priunit_mod, only: LUPRI
       use dgroup_mod, only: ATOMIC, NZ
       use memory_allocator
 
 #include "implicit.h"
-#include "dcbpsi.h"
 #include "dcborb.h"
 C
       real(8), allocatable :: CMO(:),EIG(:)
@@ -2355,7 +2353,7 @@ C
       contains
 
       subroutine pstor1 (cmo,eig,ibeig,read_mcscf)
-!      use dcbpsi_mod, only: PHCOEF
+      use dcbpsi_mod, only: PHCOEF
       use dcbreo_mod, only: IMOORF, IREORF, LMOORF, MXREORD
       use dcbbas_mod, only: NFBAS
       use dircmo
@@ -2367,7 +2365,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 C
-#include "dcbpsi.h"
       real(8)             :: CMO(:),EIG(:)
       integer             :: IBEIG(:)
       logical             :: read_mcscf

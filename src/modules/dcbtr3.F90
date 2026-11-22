@@ -1,4 +1,7 @@
-!C FILE: moltra/dcbtr3.h
+!-----------------------------------------
+! Module with variables previously defined
+! at dcbtr3.h include file (COMMON /DCBTR3/)
+!-----------------------------------------
 !C
 !C*** Symmetry packing information for 4-index transformation program **
 !C
@@ -19,15 +22,11 @@
 !C     NDMOQS and NDMOQT: as NDMOQR but for reduced coefficient spaces for
 !C              index 3 and 4 when more than one pass is needed (see moltra/tradr4.F)
 !C
-      COMMON/DCBTR3/NSPCK12(0:7,0:3),  NSPCK34(0:7,0:3),                &
-     &              ISPCK12(0:7,0:7,3),ISPCK34(0:7,0:7,3),              &
-     &              NBBAS1(0:7,0:2),NBBAS2(0:7,0:2),                    &
-     &              NBBAS3(0:7,0:2),NBBAS4(0:7,0:2),                    &
-     &              IBBAS1(0:7,0:2),IBBAS2(0:7,0:2),                    &
-     &              IBBAS3(0:7,0:2),IBBAS4(0:7,0:2),                    &
-     &              IBAS1(2),IBAS2(2),IBAS3(2),IBAS4(2),                &
-     &              NDMOQC(2,2,2),ICMOQC(2,2),                          &
-     &              NDMOQR(2,2,4),ICMOQR(2,4),                          &
-     &              NDMOQS(2,2,4),ICMOQS(2,4),                          &
-     &              NDMOQT(2,2,4),ICMOQT(2,4)                 
-!C -- end ofmoltra/dcbtr3.h
+   module dcbtr3_mod
+   implicit none
+   integer :: NSPCK12(0:7,0:3), NSPCK34(0:7,0:3), ISPCK12(0:7,0:7,3), ISPCK34(0:7,0:7,3), &
+              NBBAS1(0:7,0:2), NBBAS2(0:7,0:2), NBBAS3(0:7,0:2), NBBAS4(0:7,0:2), &
+              IBBAS1(0:7,0:2), IBBAS2(0:7,0:2), IBBAS3(0:7,0:2), IBBAS4(0:7,0:2), IBAS1(2), &
+              IBAS2(2), IBAS3(2), IBAS4(2), NDMOQC(2,2,2), ICMOQC(2,2), NDMOQR(2,2,4), &
+              ICMOQR(2,4), NDMOQS(2,2,4), ICMOQS(2,4), NDMOQT(2,2,4), ICMOQT(2,4)
+   end module dcbtr3_mod

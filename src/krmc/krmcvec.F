@@ -27,13 +27,12 @@ C     Modified by jth Nov 24 1998: write to LUKRMC instead.
 C
 C*****************************************************************************
 !      use dcbxrs_mod, only: JTIMOP, LUBCI, LUBOE, LUBOP, NFREQ, NREDM, NZCONF, NZCONFQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZXOPTQ
-!      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
+      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
       use dcbgen_mod, only: LUKRM1
 #include "implicit.h"
 C
 C
 #include "dcbxrs.h"
-#include "dcbibn.h"
 C
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),
      &     IBPVC(*),EVALR(*),EVECR(NREDM,*),DKAPPA(*)
@@ -124,11 +123,10 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: IPRXRS, JTIMOP, LUBOE, LUBOP, LUSCI, NCRED, NERED, NFREQ, NPRED, NREDM, NZCONF, NZXOPE, NZXOPP
-!      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
+      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
       use dgroup_mod, only: NZ
 #include "implicit.h"
 #include "dcbxrs.h"
-#include "dcbibn.h"
 C
       CHARACTER FILNAM*6,FILRSP*8,TYP*1,RSPTYP*5
       DIMENSION IBTYP(2,*),IBVEC(*),EVALR(*),EVECR(NREDM,*),

@@ -9,11 +9,10 @@ module read_input_module
     use module_essential_input
     use module_global_variables, only: rank, len_convert_int_to_chr
     use module_error, only: stop_with_errorcode
-!    use dcbpsi_mod, only: DOCASCI, DOCASPT2, DOIVO
+      use dcbpsi_mod, only: DOCASCI, DOCASPT2, DOIVO
     implicit none
     private
     public read_input, check_substring, ras_read, lowercase, uppercase
-#include "dcbpsi.h"
     logical is_end, set_caspt2_ciroots
     integer, parameter :: input_intmax = 10**9, max_str_length = 500
     type(essential_inputs_container) :: container

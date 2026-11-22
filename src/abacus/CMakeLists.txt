@@ -59,6 +59,7 @@ set(FIXED_ABACUS_FORTRAN_SOURCES
 )
 
 set(FREE_ABACUS_FORTRAN_SOURCES
+    cbiwlk.F90
     infvar.F90
     molde.F90
     prkoor.F90

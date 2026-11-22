@@ -844,7 +844,7 @@ C  /* Deck vibana */
       use mxcent_mod, only: MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use pgroup_mod, only: REP
-!      use cbiwlk_mod, only: IMODE, NMODIF, V3CAL
+      use cbiwlk_mod, only: IMODE, NMODIF, V3CAL
       use gnrinf_mod, only: OPTNEW
       use taymol_mod, only: ERGMOL
       use symmet_mod, only: MAXREP
@@ -873,7 +873,6 @@ C
      &          DGRAD(3,NCORD), CAAT(3,NCORD), WORK(LWORK),
      &          ROAAFQ(*), ROAGNQ(*), ROAGLQ(*), ROAAQ(*)
 C
-#include "cbiwlk.h"
 C
       LOGICAL  INTENS, NEWSPC, ACTIVE, CNTAIN, LINEAR
       DIMENSION DMYLAB(3), DMYMOL(3), AATMOL(3), NUMODX(8)
@@ -2235,9 +2234,9 @@ C
 C  /* Deck vibv3 */
       SUBROUTINE VIBV3(EVEC,FREQAU,FMATF,FMATT,CORR,
      &                 POS,AMASS,WORK,LWORK,NCORD,NUMMOD)
-!      use cbiwlk_mod, only: DOCENT, DOTEMP, NMODIF, NTEMP
+      use cbiwlk_mod, only: DOCENT, DOTEMP, NMODIF, NTEMP, TEMP
       use nuclei_mod, only: CORD, ISTBNU, NAMDEP, NUCDEP, NUCIND
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
       use codata_mod, only: AUTK, XFAMU
       use cbivib_mod, only: IPRINT
       use symmet_mod, only: ISYMAX, MAXOPR, PT
@@ -2256,7 +2255,6 @@ C  /* Deck vibv3 */
      &          FMATT(NCORD,NCORD,NCORD),
      &          POS(3,NCORD/3), AMASS(*), WORK(LWORK)
 C
-#include "cbiwlk.h"
 C
       luwlk = 0
       CALL GPOPEN(LUWLK,'DALTON.WLK','OLD',
@@ -3140,6 +3138,7 @@ C     This subroutine calculates vibrationally averaged molecular
 C     properties assuming that the calculation is performed at the effective
 C     geometry. K.Ruud, San Diego, March 1999
 C
+      use cbiwlk_mod, only: DOTEMP, IMODE, NTEMP, TEMP
       use thrzer_mod, only: THRZER
       use cbilnr_mod, only: ALFA, FRVAL, MXFR, NFRVAL
       use codata_mod, only: ALPHA2, AUTK, PMASS, XFAMU, XFMOL, XTANG,
@@ -3175,7 +3174,6 @@ include "implicit.h"
      &          CSTRA(*), SCTRA(*)
       DOUBLE PRECISION FAC, FACTOR, PREFAC
 C
-#include "cbiwlk.h"
 C
       FAC = ALPHA2/(PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
       FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4)

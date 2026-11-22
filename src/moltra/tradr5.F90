@@ -86,7 +86,7 @@
 !      use dcborb_mod, only: NAOCCT, NAVIRT, NCMOTQ, NORBT
 !      use dcbtra_mod, only: ISAME, SCRTRA
       use comdis_mod, only: ISHLA
-!      use dcbtr3_mod, only: ICMOQR, NDMOQR
+      use dcbtr3_mod, only: ICMOQR, NDMOQR
       use dgroup_mod, only: NZ
       use interface_to_mpi
       use kinds_mod, only: dp
@@ -97,7 +97,6 @@
 #endif
 #include "dcborb.h"
 #include "dcbtra.h"
-#include "dcbtr3.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION TMATRX1(*),TMATRX2(*)
       DIMENSION XMO(*)
@@ -224,13 +223,12 @@
       use iratdef_mod, only: IRAT
 !      use dcbtra_mod, only: LUTRA2, NFPCK12, SCRTRA
       use comdis_mod, only: ISHLA, ISHLB, ISPCK, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS, NSPCK
-!      use dcbtr3_mod, only: IBAS1, IBAS2, IBBAS1, IBBAS2, ISPCK12, NBBAS1, NBBAS2, NSPCK12
+      use dcbtr3_mod, only: IBAS1, IBAS2, IBBAS1, IBBAS2, ISPCK12, NBBAS1, NBBAS2, NSPCK12
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NTBAS
 !      use dcborb_mod, only: NASHT
       use dgroup_mod, only: JBTOF, NBSYM, NZ
 #include "implicit.h"
 #include "dcbtra.h"
-#include "dcbtr3.h"
 #include "dcborb.h"
       LOGICAL NOPV, NODV, TRIAN(2)
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
@@ -511,7 +509,7 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbtra_mod, only: NFPCK12
-!      use dcbtr3_mod, only: ICMOQR, NDMOQR
+      use dcbtr3_mod, only: ICMOQR, NDMOQR
       use dgroup_mod, only: JBTOF, NBSYM, NZ
       use comdis_mod, only: LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS
       use kinds_mod, only: dp
@@ -531,7 +529,6 @@
       DIMENSION IHM(0:7)
 !
 #include "dcbtra.h"
-#include "dcbtr3.h"
 !
       CALL QENTER('MS3IN1')
       KFRSAV = KFREE
@@ -623,14 +620,13 @@
 !      use dcborb_mod, only: NAOCC, NAVIR, NCMOTQ
       use dcbbas_mod, only: IBAS, IBBAS
       use symmet_mod, only: ICOS, ISYMAX
-!      use dcbtr3_mod, only: ICMOQR, NDMOQR
+      use dcbtr3_mod, only: ICMOQR, NDMOQR
       use mp1stpr_mod, only: IOFFTM1, IOFFTM2
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, K
 #include "dcbtra.h"
 #include "dcborb.h"
-#include "dcbtr3.h"
 !
       REAL(dp), PARAMETER :: D0 = 0.0D00, D1=1.0D00
       DIMENSION NSTR3(2)

@@ -28,7 +28,7 @@ C*****************************************************************************
       use priunit_mod, only: LUCMD, LUPRI
       use dummy_mod, only: DUMMY, IDUMMY
       use dcbgen_mod, only: INTGEN, MP2ORG
-!      use dcbpsi_mod, only: DOMP2
+      use dcbpsi_mod, only: DOMP2
 !      use dcborb_mod, only: NOCC
       use dcbbas_mod, only: NFBAS
       use dgroup_mod, only: FREP, NFSYM
@@ -47,7 +47,6 @@ C
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*2 WS
 C
-#include "dcbpsi.h"
 #include "dcborb.h"
       DIMENSION WORK(LWORK),IR(2,2)
 C
@@ -439,7 +438,7 @@ C*****************************************************************************
       use priunit_mod, only: LUCMD, LUPRI
       use dummy_mod, only: IDUMMY
       use dcbgen_mod, only: INTGEN, PARCAL
-!      use dcbpsi_mod, only: DOHSCC
+      use dcbpsi_mod, only: DOHSCC
       use dcbbas_mod, only: NFBAS
       use dgroup_mod, only: FREP, NFSYM
 !      use dcbtra_mod, only: DO_FINESORT, IPAR4BS, IPRTRA, ISTRAT, ITRA_INTFL2, ITRA_INTFL4, ITRA_INTFLG, MDCSCAT, MOFILE_TRAINP, NCORE2, NO2IND, NO4IND, NOMDCINT, NOMDCINT_TRAINP, NOPAIR, PRPSYA, PRPTRA, RCORBS, SCRTRA, SET_AUTO_FINESORT, THROUT, TH_CHOLESKY, TRA2_INDSTR, TRA4_INDSTR, TRA_ANTIS, TRA_ASCII, TRA_CORSTR, TRA_CORSTR2, TRA_EXACORR, TRA_INDSTR
@@ -457,7 +456,6 @@ C
       CHARACTER*7 LINE
       DIMENSION WORK(LWORK),IR(2,2),NTVEC(4)
 C
-#include "dcbpsi.h"
 #include "dcbtra.h"
 
 C
@@ -1382,7 +1380,7 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUCMD, LUPRI
       use dcbgen_mod, only: INTGEN, PARCAL
-!      use dcbpsi_mod, only: DORES
+      use dcbpsi_mod, only: DORES
       use dcbres_mod, only: COREDENS, INTRES, IPRRES, ISTRES, NOVXC,
      &  RESOUT, SCRRES
       use dcbham_mod, only: BSS, DO4C2C, LEVYLE, X2C
@@ -1398,7 +1396,6 @@ C
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*2 WS
 C
-#include "dcbpsi.h"
       DIMENSION WORK(LWORK),IR(2,2)
 C
       SAVE SET

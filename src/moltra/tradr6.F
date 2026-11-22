@@ -61,7 +61,7 @@ C***********************************************************************
       use infpar_mod, only: MPARID, MYTID
       use dcbgen_mod, only: PARCAL
 !      use dcbtra_mod, only: NFPCK12, NFPCK12T, NFPCK34T, NOMDCINT, SCRTRA
-!      use dcbtr3_mod, only: ICMOQR, NDMOQR
+      use dcbtr3_mod, only: ICMOQR, NDMOQR
       use dgroup_mod, only: NFSYM
       use interface_to_mpi
       use kinds_mod, only: dp
@@ -71,7 +71,6 @@ C***********************************************************************
       DIMENSION IBUFMPI(5)
 #endif
 #include "dcbtra.h"
-#include "dcbtr3.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION NSTR(2,0:2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
@@ -743,12 +742,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbtra_mod, only: LUTRA2, NFPCK12T, SCRTRA
       use comdis_mod, only: ISHLA, ISHLB, ISPCK, KIGBUF, KLGBUF, KLGREC,
      &  KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS, NSPCK
-!      use dcbtr3_mod, only: IBAS1, IBAS2, IBBAS1, IBBAS2, ISPCK12, NBBAS1, NBBAS2, NSPCK12
+      use dcbtr3_mod, only: IBAS1, IBAS2, IBBAS1, IBBAS2, ISPCK12,
+     &  NBBAS1, NBBAS2, NSPCK12
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dcborb_mod, only: NASHT
 #include "implicit.h"
 #include "dcbtra.h"
-#include "dcbtr3.h"
 #include "dcborb.h"
       LOGICAL NOPV, NODV, TRIAN(2)
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
@@ -990,7 +989,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use symmet_mod, only: ICOS, ISYMAX
 !      use dcbtra_mod, only: IFPCK12, NFPCK12, NFPCK12T
       use comdis_mod, only: ISPCK, LGFIL, NGBFSZ, NPASS, NSPCK
-!      use dcbtr3_mod, only: ICMOQR, NDMOQR
+      use dcbtr3_mod, only: ICMOQR, NDMOQR
       use dcbbas_mod, only: IBAS, IBBAS, NBBAS
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1012,7 +1011,6 @@ C
       DIMENSION LGREC(NPASS)
 C
 #include "dcbtra.h"
-#include "dcbtr3.h"
 C
       CALL QENTER('MS6IN1')
       KFRSAV = KFREE

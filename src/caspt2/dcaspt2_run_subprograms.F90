@@ -1,4 +1,5 @@
 subroutine dcaspt2_run_subprograms(ivo_mode)
+      use dcbpsi_mod, only: DOCASCI, DOCASPT2, DOIVO
     use dcaspt2_restart_file, only: read_and_validate_restart_file
     use module_file_manager, only: open_formatted_file
     use module_global_variables
@@ -9,14 +10,12 @@ subroutine dcaspt2_run_subprograms(ivo_mode)
     use module_validation, only: validate_ndet
     use read_input_module, only: read_input
     implicit none
-#include "dcbpsi.h"
     logical, intent(in) :: ivo_mode
     integer :: unit_input, i
     integer :: ciroots_size_1, ciroots_size_2, max_selectroot_list_size
     character(:), allocatable :: filename
 
     ! Read MRCONEE file (orbital energies, symmetries and multiplication tables)
-!      use dcbpsi_mod, only: DOCASCI, DOCASPT2, DOIVO
     if (rank == 0) then
         print *, ' '
         print *, 'Reading MRCONEE (1-e integrals)'

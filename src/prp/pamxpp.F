@@ -1104,8 +1104,8 @@ C
 C*****************************************************************************
 !      use dcbxrs_mod, only: JSYMOP, NCSIM, NESIM, NEXCNV, NPSIM, NREDM, NZCONF, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcbxpp_mod, only: BEDECD, DOBED, MAXEXC, NBED, NCLS_XPP, NPPAPT, ORBXPP, ORIENTED
-!      use dcbibn_mod, only: JBENDX, JBPNDX
 !      use dcborb_mod, only: NCMOTQ
+      use dcbibn_mod, only: JBENDX, JBPNDX
       use dgroup_mod, only: NBSYM, NFSYM
       use dcbbas_mod, only: NTBAS
       use orbital_rotation_indices
@@ -1118,7 +1118,6 @@ C
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 Chj: MAXRM, MXLOAD
-#include "dcbibn.h"
 #include "dcborb.h"
       LOGICAL FIRST
       DIMENSION ATMPPF(MAXEXC,max(1,NPPAPT),NBSYM,*),
@@ -1270,7 +1269,7 @@ C     Written by H.J.Aa. Jensen 2000, based on GETLR1
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbibn_mod, only: JBENDX, JBPNDX
+      use dcbibn_mod, only: JBENDX, JBPNDX
 !      use dcbxrs_mod, only: BVTYP, IMX, INTXRS, IPEP, IPPP, IPX, JSYMOP, JTIMOP, LUBOE, LUBOP, LUXVC, NERED, NEXCNV, NPRED, NREDM, RSPLAB
 !      use dcbxpp_mod, only: GCLEAN, GCLEAN_FAC, GNOISE, GNOISE_FAC, IPRXPP, JPPAP, LPPAPS, LPPAPU, MAXEXC, NPPAP, NPPAPT, ORBXPP
       use dcbham_mod, only: SPINFR
@@ -1284,7 +1283,6 @@ C*****************************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D00
 C
-#include "dcbibn.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "dcborb.h"

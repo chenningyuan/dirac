@@ -27,7 +27,7 @@ C
 C     Written by S.Knecht and H.J.Aa. Jensen - March 2008
 C
 C***********************************************************************
-!      use dcbpsi_mod, only: DOMP2NO
+      use dcbpsi_mod, only: DOMP2NO
       use dcbmp2no_mod, only: IAOMOSCHEME, IF2MP2NO, INTMP2NO, IPRMP2NO,
      &  MP2NATPOP, MP2NATPOP2, SELPOPNAT, VECMP2NO, VECNOSEL
       use dgroup_mod, only: FREP, NFSYM
@@ -36,7 +36,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "dcbpsi.h"
 C
       PARAMETER (NTABLE = 8)
       LOGICAL SET, NEWDEF, RESET,LBIT
@@ -562,6 +561,7 @@ C     written by S. Knecht - June 2008, Odense
 C
 C***********************************************************************
 !      use dcbdhf_mod, only: NASH_DHF, NFRO_DHF, NISH_DHF, NOPEN
+      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
       use freeze_mod, only: IFROZ_SET_IN_INPUT
       use dgroup_mod, only: NBSYM, NFSYM, NZ
       use dcbbas_mod, only: N2BBASXQ, NFBAS
@@ -582,7 +582,6 @@ C
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "../moltra/dcbtra.h"
-#include "../moltra/dcbtr3.h"
 C
 
       CHARACTER DAYTID*24, VECMP2NO_occ(2)*400, TEMP_TRA4_INDSTR*400

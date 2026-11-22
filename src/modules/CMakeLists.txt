@@ -40,6 +40,7 @@ set(MODULE_SOURCES
     dcbgen.F90
     dcbgrd.F90
     dcbham.F90
+    dcbibn.F90
     dcbibt.F90
     dcbimp.F90
     dcbkrci.F90
@@ -54,7 +55,9 @@ set(MODULE_SOURCES
     dcbnrt.F90
     dcbprj.F90
     dcbprl.F90
+    dcbpsi.F90
     dcbsusc.F90
+    dcbtr3.F90
     dcbwav.F90
     dcbwt1.F90
     derzer.F90

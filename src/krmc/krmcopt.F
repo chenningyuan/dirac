@@ -4597,7 +4597,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbopt_mod, only: DEPRED, IPROPT, STPLCI, STPLEE, STPLEN, STPLEP
-!      use dcbibn_mod, only: JBCNDX, JBENDX
+      use dcbibn_mod, only: JBCNDX, JBENDX
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
@@ -4605,7 +4605,6 @@ C
       REAL(dp), PARAMETER :: DP5 = 0.50D00, DP25 = 0.25D00
 C
 #include "dcbopt.h"
-#include "dcbibn.h"
 C
       DIMENSION REDGP(NREDM),REDE(NREDM,NREDM),EVECR(NREDM)
       DIMENSION IBTYP(2,*)
@@ -4802,7 +4801,7 @@ C***********************************************************************
       use consts_mod, only: DP5
 !      use dcbopt_mod, only: DLVLSH, DONR, IOPT_STATE, IPROPT, JHESSIAN, RBETA, RTRUST, RTTOL
       use dcbkrmc_itinfo_mod, only: DINFO, IINFO
-!      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
+      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -4810,7 +4809,6 @@ C
       REAL(dp), PARAMETER :: DLVLSTEP = 0.2D0
 C
 #include "dcbopt.h"
-#include "dcbibn.h"
 C
       DIMENSION REDE(NREDM,NREDM), REDS(NREDM,NREDM)
       DIMENSION REDGP(NREDM), EVECR(NREDM)
