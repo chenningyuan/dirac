@@ -56,9 +56,8 @@ C     Last revision April 2022 - cchibueze
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT
 !      use dcborb_mod, only: NESH
-!      use dcbexp_mod, only: LEXPP, NEXPP
+      use dcbexp_mod, only: LEXPP, NEXPP
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
       use dcbprl_mod, only: IPRLTYP
       use dcbham_mod, only: NONREL, X2C
@@ -71,7 +70,6 @@ C***********************************************************************
       PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16,D2=2.0D0) 
 C
 #include "dcborb.h"
-#include "dcbexp.h"
 #include "dcbxpr.h"
       DIMENSION EXPVAL(*)
       CHARACTER MXFORM*6,FMT*6
@@ -469,8 +467,7 @@ C     Written by Trond Saue May 27 1996
 C     Last revision May 27 1996 - tsaue
 C
 C***********************************************************************
-      use mxcent_mod, only: MXCENT
-!      use dcbexp_mod, only: NEXPP
+      use dcbexp_mod, only: NEXPP
       use dcbbas_mod, only: N2BBASXQ
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NORBT
       use dgroup_mod, only: NZ
@@ -481,7 +478,6 @@ C
       INTEGER, OPTIONAL :: state 
       INTEGER :: state_local 
 C
-#include "dcbexp.h"
 #include "dcborb.h"
 C
       CALL QENTER('PRPEXP')
@@ -537,11 +533,10 @@ C     Last modifications: M.Ilias, March2006, Strasbourg
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT
       use dgroup_mod, only: FREP, IPQTOQ, NFSYM, NZ
 !      use dcborb_mod, only: I2ORBX, ICMOQ, NASHT, NCMOTQ, NOCC, NORB, NORBT
       use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
-!      use dcbexp_mod, only: IPREXP, LEXPP, NEXPP, ORBANA, PRJANA, PRPCAN
+      use dcbexp_mod, only: IPREXP, LEXPP, NEXPP, ORBANA, PRJANA, PRPCAN
       use dcbgen_mod, only: LUCOEF
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 !      use dcbdhf_mod, only: AOC, DF
@@ -551,7 +546,6 @@ C***********************************************************************
       PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16,D2=2.0D0)      
 C
 #include "dcborb.h"
-#include "dcbexp.h"
 #include "dcbxpr.h"
 #include "dcbdhf.h"
       LOGICAL LEXPST(2,*),FILEX,FIRST(NZ)
@@ -852,9 +846,8 @@ C                   Strasbourg/March 2006 - Miro ILIAS
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-      use mxcent_mod, only: MXCENT
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
-!      use dcbexp_mod, only: PRJANA
+      use dcbexp_mod, only: PRJANA
       use dcbbas_mod, only: N2BBASX
       use dgroup_mod, only: NZ
       use kinds_mod, only: dp
@@ -862,7 +855,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1=1.0D0
 C
 #include "dcbxpr.h"
-#include "dcbexp.h"
 C
 !     radovan:                    ONLY_TS: allow only totally symmetric
       LOGICAL FIRST(NZ),LEXPST(2),ONLY_TS

@@ -718,9 +718,9 @@
 !***********************************************************************
       use cbiher_mod, only: QUADRU
       use priunit_mod, only: LUCMD, LUPRI
-      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: DIPOLE, DOEXP, EFG, EFN, EFT, EFTNTL, NQCC, PVC, QUADRU
-!      use dcbexp_mod, only: IPREXP, LEXPP, MAXEXP, NEXPP, ORBANA, PRJANA, PRPCAN
+      use dcbexp_mod, only: IPREXP, LEXPP, MAXEXP, NEXPP, ORBANA, PRJANA, PRPCAN
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -729,7 +729,6 @@
       REAL(dp), PARAMETER :: DM1 = -1.0D00, D0 = 0.0D00
 !
 #include "dcbprp.h"
-#include "dcbexp.h"
 !#include "dcbxpr.h"
 !
       LOGICAL SET, NEWDEF, RESET

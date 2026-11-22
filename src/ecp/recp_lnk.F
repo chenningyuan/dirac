@@ -267,12 +267,19 @@
       END
 
       SUBROUTINE RECP_LNK_IRREP(MAXREP)
-!      use inc_geninp_mod, only: IRTAB
       use argoscom_mod, only: IGRPAG, NDPTAG
       use argoscomch_mod, only: ITYPAG
       USE RECP_NTR
       IMPLICIT NONE
-#include "inc_geninp.h"
+      CHARACTER*3, PARAMETER :: IRTAB(0:79) = (/
+     &  "A1 ","   ","   ","   ","   ","   ","   ","   ","   ","C1 ",
+     &  "Ag ","Au ","   ","   ","   ","   ","   ","   ","   ","Ci ",
+     &  "A' ","A''","   ","   ","   ","   ","   ","   ","   ","Cs ",
+     &  "A  ","B  ","   ","   ","   ","   ","   ","   ","   ","C2 ",
+     &  "A1 ","B1 ","B2 ","B3 ","   ","   ","   ","   ","   ","D2 ",
+     &  "A1 ","A2 ","B1 ","B2 ","   ","   ","   ","   ","   ","C2v",
+     &  "Ag ","Bg ","Au ","Bu ","   ","   ","   ","   ","   ","C2h",
+     &  "Ag ","B1g","B2g","B3g","Au ","B1u","B2u","B3u","   ","D2h" /)
       INTEGER I,J,RECPIN1,MAXREP,ND(8)
       RECPIN1 = 51
 

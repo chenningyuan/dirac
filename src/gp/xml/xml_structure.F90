@@ -15,12 +15,12 @@
 !dirac_copyright_end
 
 module xml_structure
+      use xml_settings_mod, only: ATTR_LEN, DATA_LEN, NAME_LEN, REAL_KIND
   implicit none
   private
   public next_node, get_node, add_child, get_child, add_attr, get_attr, add_data, del_children
   public xml_tag,xml_tag_ref
 
-#include "xml_settings.h"
   
    type xml_tag
      character(len=name_len)          :: name

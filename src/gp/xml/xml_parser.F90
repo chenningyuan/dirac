@@ -15,6 +15,7 @@
 !dirac_copyright_end
 
 module xml_parser
+      use xml_settings_mod, only: ATTR_LEN, DATA_LEN, NAME_LEN, REAL_FMT, REAL_KIND, TAB_DEFAULT
   use xml_structure
   implicit none
 
@@ -60,7 +61,6 @@ module xml_parser
   
 ! A type for the enduser in which the data structure is hidden.
   
-#include "xml_settings.h"
 
   type(xml_tag),pointer,save     :: xml_documents(:)
   type(xml_tag),pointer,save     :: xml_index

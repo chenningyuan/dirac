@@ -87,6 +87,7 @@ set(FREE_GP_FORTRAN_SOURCES
     vector_functions.F90
     xmlout.F90
     xml/xml_file.F90
+    xml/xml_settings.F90
     xml/xml_structure.F90
     xml/xml_parser.F90
     labeled_storage.F90
