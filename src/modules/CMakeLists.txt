@@ -25,6 +25,7 @@ set(MODULE_SOURCES
     codata.F90
     comdis.F90
     consts.F90
+    cossya.F90
     cotabs.F90
     crossd.F90
     crsdir.F90
@@ -33,6 +34,7 @@ set(MODULE_SOURCES
     dcbbos.F90
     dcbcls.F90
     dcbesr.F90
+    dcbgascip.F90
     dcbgen.F90
     dcbgrd.F90
     dcbham.F90
@@ -112,6 +114,7 @@ set(MODULE_SOURCES
     precision.F90
     primit.F90
     priunit.F90
+    results.F90
     rotg.F90
     shells.F90
     siripc.F90

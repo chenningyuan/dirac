@@ -9257,7 +9257,9 @@ C
 !     Called by: DIRCTL->PAMINP->PSIINP->COSCI_INP
 !
 !***********************************************************************
-!      use cossya_mod, only: KCOSINP, SYA_ACTIV, SYA_GASO, SYA_IELC, SYA_INACT, SYA_KTRDMAT, SYA_MAXE, SYA_MINE, SYA_NOPEN, SYA_NREP, SYA_NTRDM, SYA_PRINT
+      use cossya_mod, only: KCOSINP, SYA_ACTIV, SYA_GASO, SYA_IELC,
+     &  SYA_INACT, SYA_KTRDMAT, SYA_MAXE, SYA_MINE, SYA_NOPEN, SYA_NREP,
+     &  SYA_NTRDM, SYA_PRINT
       use priunit_mod, only: LUCMD, LUPRI
       use dgroup_mod, only: NFSYM
 #include "implicit.h"
@@ -9275,7 +9277,6 @@ C
 !
 !     ...for NFSYM
 !
-#include "cossya.h"
 !
       INTEGER ISETKW(NTABLE)
 !

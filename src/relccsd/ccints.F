@@ -26,10 +26,10 @@ C
 !      use symm_mod, only: IOOOOTT, IVOOOT, IVOVO, IVOVVT, IVVOOTT, IVVVVTT, NE, NOOT, NV1, NV2, NV3, NV4, NV5, NV6, NVO, NVVT, SPFR
 !      use eqns_mod, only: EQNS
 !      use complex_mod, only: CARITH, IRW, RCW
-!      use results_mod, only: ECORE, ESCF, ETOT, IMSTAT
 !      use files_mod, only: ITAPT, IW, MDINT
 !      use ccpar_mod, only: IDIST, MASTER, MYPROC, NMPROC, NV5PAR, NV6PAR
 !      use inpt_mod, only: NORECMP, USEOE
+      use results_mod, only: ECORE, ESCF, ETOT, IMSTAT
       use waio_mod, only: NWORDS_ON_RECORD, NWORDS_ON_RECORD8
       use dcbgen_mod, only: LUCOEF
       use interface_to_mpi
@@ -54,7 +54,6 @@ C
 #include "symm.inc"
 #include "eqns.inc"
 #include "complex.inc"
-#include "results.inc"
 #include "files.inc"
 #include "ccpar.inc"
 #include "inpt.inc"

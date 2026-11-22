@@ -208,7 +208,7 @@ C     ==========================================================
 !     Called by :  SY_GOSRES
 !----------------------------------------------------------------------
 !      use goscom_mod, only: BREIT, IPRNT, NDET, NDETMX, NELACT, NREP, NSPACT, REPNA
-!      use cossya_mod, only: KCOSINP, SYA_KTRDMAT, SYA_PRINT
+      use cossya_mod, only: KCOSINP, SYA_KTRDMAT, SYA_PRINT
 #include "implicit.h"
 C
 #include "goscom.h"
@@ -225,7 +225,6 @@ C
       EXTERNAL INIT
 !
 !.s/sya,2007.01.30
-#include "cossya.h"
 !.q
 !----------------------------------------------------------------------
       CALL DAYTIME(DATEX,TIMEX)
@@ -1187,7 +1186,7 @@ C     ==========================
 !     Last-update: S. Yamamoto - 2007.09.14 chukyo-u
 !----------------------------------------------------------------------
 !      use goscom_mod, only: BREIT, D, DEGEN, ECORE, EPS, IN_FCIDUMP, IPRNT, IREF, IREFE, IRPAMO, MAXPOP, MULTB, N1, NELACT, NREP, NSPACT, ONEI, ONER, REALAR, REPNA, SELPOP, THRESH
-!      use cossya_mod, only: SYA_ACTIV, SYA_IELC, SYA_MAXE, SYA_NOPEN
+      use cossya_mod, only: SYA_ACTIV, SYA_IELC, SYA_MAXE, SYA_NOPEN
 #include "implicit.h"
       INTEGER :: I, J
 C
@@ -1197,7 +1196,6 @@ C
 !.q
 !
 !.s/sya,2007.06.09
-#include "cossya.h"
 !.q
 C
       CHARACTER*14 REPN(16)
@@ -1691,11 +1689,10 @@ C
 !     Called by:  SY_PAMGOS
 !
 !***********************************************************************
-!      use cossya_mod, only: SYA_GASO, SYA_MAXE, SYA_NOPEN, SYA_NREP
 !      use goscom_mod, only: NREP
+      use cossya_mod, only: SYA_GASO, SYA_MAXE, SYA_NOPEN, SYA_NREP
 #include "implicit.h"
       INTEGER :: I, J
-#include "cossya.h"
 !
 !     ...for NREP
 #include "goscom.h"
@@ -1775,12 +1772,11 @@ C
 !     Called by:   SY_PAMGOS
 !***********************************************************************
 !      use goscom_mod, only: NDETMX, NREP, NSPACT
-!      use cossya_mod, only: MSTATE, SYA_NTRDM
+      use cossya_mod, only: MSTATE, SYA_NTRDM
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
 #include "goscom.h"
-#include "cossya.h"
 !
 !     ...for NZ
 !
@@ -1861,14 +1857,13 @@ C
 !     irreps.
 !***********************************************************************
 !      use goscom_mod, only: NDETMX, NELACT, NREP, NSPACT
-!      use cossya_mod, only: MSTATE, SYA_NTRDM
+      use cossya_mod, only: MSTATE, SYA_NTRDM
       use dgroup_mod, only: NZ
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "goscom.h"
 !
 !     ...for MSTATE
-#include "cossya.h"
       DIMENSION CL(NDETMX,NRIVEC,MSTATE)
       DIMENSION CR(NDETMX,NRIVEC,MSTATE)
       INTEGER DET_I(NDETMX),DET_J(NDETMX)
@@ -2078,10 +2073,9 @@ C
 !     Determinant !DET_I> is now an integer variable named "ID".
 !***********************************************************************
 !      use goscom_mod, only: NDETMX, NSPACT
-!      use cossya_mod, only: MSTATE
+      use cossya_mod, only: MSTATE
 #include "implicit.h"
 #include "goscom.h"
-#include "cossya.h"
 !
 !     ...for NZ
       DIMENSION CL(NDETMX,NRIVEC,MSTATE),CR(NDETMX,NRIVEC,MSTATE)
@@ -2271,14 +2265,13 @@ C
 !***********************************************************************
       use priunit_mod, only: LUPRI
 !      use goscom_mod, only: NSPACT, REPNA
-!      use cossya_mod, only: MSTATE
+      use cossya_mod, only: MSTATE
       use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: K
 #include "goscom.h"
 !
 !     ...for MSTATE
-#include "cossya.h"
 !.s/sya,2007.0911
 !#    DIMENSION TRDM(NSPACT,NSPACT,NZ,MSTATE,MSTATE)
       DIMENSION TRDM(NSPACT,NSPACT,NRIVEC,MSTATE,MSTATE)
@@ -2338,11 +2331,10 @@ C
 !     Called by:  CALTRDM
 !***********************************************************************
 !      use goscom_mod, only: NSPACT
-!      use cossya_mod, only: MSTATE
+      use cossya_mod, only: MSTATE
 #include "implicit.h"
       INTEGER :: I, J
 #include "goscom.h"
-#include "cossya.h"
 !
 !.s/sya,2007.0911
 !#    DIMENSION TRDM(NSPACT,NSPACT,NZ,MSTATE,MSTATE)
@@ -2392,12 +2384,11 @@ C
 !     Last-update: S. Yamamoto - 2007.09.17, chukyo-u
 !     Called by:   CALTRDM
 !***********************************************************************
-!      use cossya_mod, only: MSTATE
+      use cossya_mod, only: MSTATE
       use dgroup_mod, only: NZ
 #include "implicit.h"
 !
 !     ...for MSTATE
-#include "cossya.h"
 !
 !     ...for NZ
 !     CHARACTER*6 TRDFIL/'TRDMSQ'/
@@ -2523,11 +2514,10 @@ C
 !     Called by: CALTMOM1
 !     Written by: S. Yamamoto - 2007.04.27, chukyo-u
 !***********************************************************************
-!      use cossya_mod, only: MSTATE
+      use cossya_mod, only: MSTATE
 #include "implicit.h"
 !
 !     ...for MSTATE
-#include "cossya.h"
 !     CHARACTER*6 TRDFIL/'TRDMSQ'/
       CHARACTER*6 TRDFIL
       DATA KTDINF/5/
@@ -2695,13 +2685,12 @@ C
 !
 !***********************************************************************
 !      use goscom_mod, only: NREP, NSPACT
-!      use cossya_mod, only: SYA_ACTIV, SYA_INACT
+      use cossya_mod, only: SYA_ACTIV, SYA_INACT
       use dgroup_mod, only: NFSYM
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
 #include "goscom.h"
-#include "cossya.h"
 !
 !     ...for NORB
 c#include "dcborb.h" 
@@ -3021,7 +3010,7 @@ c#include "dcborb.h"
 !       IOFFSP(1)=0
 !       IOFFSP(2)=10
 !----------------------------------------------------------------------
-!      use cossya_mod, only: SYA_ACTIV, SYA_INACT
+      use cossya_mod, only: SYA_ACTIV, SYA_INACT
       use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: K
@@ -3029,7 +3018,6 @@ c#include "dcborb.h"
 !     ...for NFSYM
 !
 !     ...for SYA_INACT,SYA_ACTIV
-#include "cossya.h"
       DIMENSION DIPSP(NOCCSP,NOCCSP,NRIVEC,N3DIM)
       DIMENSION IOCCMO(NFSYM)
       DIMENSION IOFFSP(NFSYM)
@@ -3221,7 +3209,7 @@ c#include "dcborb.h"
 !                                                             IC2CA
 !----------------------------------------------------------------------
 !      use goscom_mod, only: NSPACT
-!      use cossya_mod, only: SYA_ACTIV, SYA_INACT
+      use cossya_mod, only: SYA_ACTIV, SYA_INACT
       use dgroup_mod, only: NFSYM
 #include "implicit.h"
 !
@@ -3231,7 +3219,6 @@ c#include "dcborb.h"
 #include "goscom.h"
 !
 !     ...for SYA_INACT,SYA_ACTIV
-#include "cossya.h" 
 !
       integer IA2CA(NSPACT)
       integer IC2CA(NCORSP)
@@ -3289,7 +3276,6 @@ c#include "dcborb.h"
 !     ...for NZ
 !
 !     ...for MSTATE
-!#include "cossya.h"
 !
 !     ...for NSPACT
 #include "goscom.h"

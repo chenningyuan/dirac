@@ -166,13 +166,13 @@ C
       END
 C  /* Deck rgetccsd */
       FUNCTION RGETCCSD()
+      use results_mod, only: EFS, ETOT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
 C     Get energy from RELCCSD
 C
       CHARACTER CENERGY*50
-#include "../relccsd/results.inc" 
 #include "../relccsd/inpt.inc" 
       IF (DOCCSDT) THEN
          CENERGY = 'CCSD(T) energy from RELCCSD'

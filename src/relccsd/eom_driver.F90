@@ -1782,12 +1782,11 @@ subroutine eom_calculate_store_density_matrices(B, davResultsL, davResultsR)
 !      use inpt_mod, only: IPRNT
 !      use complex_mod, only: RCW
 !      use symm_mod, only: NREP, REPNA
-!      use results_mod, only: ECCSD, ECCSDIM, ESCF
 !      use files_mod, only: IN, IW
+      use results_mod, only: ECCSD, ECCSDIM, ESCF
 #include "inpt.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "results.inc"
 #include "files.inc"
 
 !---------------Calling variables--------------------------------------
@@ -2483,12 +2482,11 @@ subroutine eom_analysis_allirreps(davResults, eps)
 !      use symm_mod, only: NREP, REPNA
 !      use complex_mod, only: RCW
 !      use files_mod, only: IW
-!      use results_mod, only: ECCSD, ECCSDIM, ESCF
+      use results_mod, only: ECCSD, ECCSDIM, ESCF
     use davidson
 #include "symm.inc"
 #include "complex.inc"
 #include "files.inc"
-#include "results.inc"
 !--------------------------------------------------
    type(davidson_results), intent(inout) :: davResults(nrep)
    real(kind=8)                          :: eps(*)

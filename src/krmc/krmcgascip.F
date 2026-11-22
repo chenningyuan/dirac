@@ -33,6 +33,49 @@
 !   DIRAC_NODE receives var GASCIP_PAR -> GASCIP_NODE, receives common block info + itask
 !   itask=1) -> GASCIP_NODE_CISIG
 
+C
+C     Field-by-field MPI broadcast of COMMON /DCI_GASCIP/ (dcbgascip_mod),
+C     which was sent as one block of integers from I1_DCI_GASCIP to
+C     I2_DCI_GASCIP. /DCC_GASCIP/ and /DC_GASCIP_ORB/ were never sent.
+C     Master and slaves call the same routine, so the order always matches.
+C
+      module dcbgascip_bcast_mod
+      implicit none
+      private
+#if defined (VAR_MPI)
+      public :: dcbgascip_bcast
+      contains
+      subroutine dcbgascip_bcast(ROOT)
+      use dcbgascip_mod, only: IRRP, IRP, NREP, MULTB, MK2DEL, MK2REF,
+     &                         MINMK2, MAXMK2, IRPAMO, NEL_STR_T,
+     &                         IEL_STR, NEL_STR, IMK2, NMK2, IPTA2O,
+     &                         IPTB2O, IPTO2A, IPTO2B
+      use interface_to_mpi, only: interface_mpi_bcast,
+     &                            global_communicator
+      integer, intent(in) :: ROOT
+      integer, parameter :: COMM = global_communicator
+      call interface_mpi_bcast(IRRP, 1, ROOT, COMM)
+      call interface_mpi_bcast(IRP, 1, ROOT, COMM)
+      call interface_mpi_bcast(NREP, 1, ROOT, COMM)
+      call interface_mpi_bcast(MULTB, size(MULTB), ROOT, COMM)
+      call interface_mpi_bcast(MK2DEL, 1, ROOT, COMM)
+      call interface_mpi_bcast(MK2REF, 1, ROOT, COMM)
+      call interface_mpi_bcast(MINMK2, 1, ROOT, COMM)
+      call interface_mpi_bcast(MAXMK2, 1, ROOT, COMM)
+      call interface_mpi_bcast(IRPAMO, size(IRPAMO), ROOT, COMM)
+      call interface_mpi_bcast(NEL_STR_T, 1, ROOT, COMM)
+      call interface_mpi_bcast(IEL_STR, size(IEL_STR), ROOT, COMM)
+      call interface_mpi_bcast(NEL_STR, size(NEL_STR), ROOT, COMM)
+      call interface_mpi_bcast(IMK2, size(IMK2), ROOT, COMM)
+      call interface_mpi_bcast(NMK2, size(NMK2), ROOT, COMM)
+      call interface_mpi_bcast(IPTA2O, size(IPTA2O), ROOT, COMM)
+      call interface_mpi_bcast(IPTB2O, size(IPTB2O), ROOT, COMM)
+      call interface_mpi_bcast(IPTO2A, size(IPTO2A), ROOT, COMM)
+      call interface_mpi_bcast(IPTO2B, size(IPTO2B), ROOT, COMM)
+      end subroutine dcbgascip_bcast
+#endif
+      end module dcbgascip_bcast_mod
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GASCIP_SETUP(UCIBOS,ICIREP,IPRINT_in)
 C***********************************************************************
@@ -57,7 +100,7 @@ C***********************************************************************
       use dcbham_mod, only: LEVYLE, SPINFR
 !      use dcbopt_mod, only: IOPT_MAXMK2, IOPT_MINMK2, IOPT_MK2DEL, IOPT_MK2REF
 !      use dcborb_mod, only: IASH, NAELEC, NASH, NASHT
-!      use dcbgascip_mod, only: IPTA2O, IPTB2O, IPTO2A, IPTO2B, IRP, IRPAMO, IRRP, MAXASH_GASCIP, MAXMK2, MINMK2, MK2DEL, MK2REF, MULTB, NREP, REPNA
+      use dcbgascip_mod
       use pgroup_mod, only: REP
 #include "implicit.h"
       INTEGER :: I, II, J
@@ -73,7 +116,6 @@ C
 #include "dcbidx.h"
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "dcbgascip.h"
 C
 C
       CALL QENTER('GASCIP_SETUP')
@@ -289,7 +331,8 @@ C     Last revisions : Aug. 2015/May 2017 hjaaj
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbgascip_mod, only: IEL_STR, IMK2, IRP, IRRP, MAXASH_GASCIP, MAXMK2, MINMK2, NEL_STR, NEL_STR_T, NMK2, REPNA
+      use dcbgascip_mod, only: IEL_STR, IMK2, IRP, IRRP, MAXASH_GASCIP,
+     &  MAXMK2, MINMK2, NEL_STR, NEL_STR_T, NMK2, REPNA
 !      use dcborb_mod, only: MXGAS, NAELEC, NASH, NASHT, NGASSP, NGAS_DC, NGSH, NISH
       use pgroup_mod, only: REP
       use dgroup_mod, only: NFSYM
@@ -300,7 +343,6 @@ C Used from include files:
 C  dcbgascip.h : NGAS_DC
 C  dcborb.h : NAELEC,NASHT, NGSH(), ?
 C
-#include "dcbgascip.h"
 #include "dcborb.h"
 C
       INTEGER   NA(MAXASH_GASCIP), NB(MAXASH_GASCIP)
@@ -742,7 +784,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 
       use priunit_mod, only: LUPRI
-!      use dcbgascip_mod, only: IEL_STR, IMK2, IRP, IRRP, MAXMK2, MINMK2, MULTB, N5, NEL_STR, NEL_STR_T, NMK2, NREP
+      use dcbgascip_mod, only: IEL_STR, IMK2, IRP, IRRP, MAXMK2, MINMK2,
+     &  MULTB, N5, NEL_STR, NEL_STR_T, NMK2, NREP
 !      use dcborb_mod, only: MXGAS, NASH, NASHT, NGASSP, NGAS_DC, NGSH
       implicit none
       LOGICAL RESTART_OK
@@ -755,7 +798,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !               MINMK2, MAXMK2, IMK2(), NMK2(),
 !               IPTA2O(), IPTB2O(), IPTO2A(), IPTO2B()
 ! dcborb.h :    NASHT, NASH(2), NGAS_DC
-#include "dcbgascip.h"
 #include "dcborb.h"
 
       LOGICAL LU_NOT_USED ! logical function
@@ -868,7 +910,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! The saved information is restored, when compatible, in GASCIP_GENDET_RESTORE.
 
       use priunit_mod, only: LUPRI
-!      use dcbgascip_mod, only: IEL_STR, IMK2, IRP, IRRP, MAXMK2, MINMK2, MULTB, N5, NEL_STR, NEL_STR_T, NMK2, NREP
+      use dcbgascip_mod, only: IEL_STR, IMK2, IRP, IRRP, MAXMK2, MINMK2,
+     &  MULTB, N5, NEL_STR, NEL_STR_T, NMK2, NREP
 !      use dcborb_mod, only: NASH, NASHT, NCMOTQ, NGASSP, NGAS_DC, NGSH
       use dgroup_mod, only: NZ_IN_CI
       implicit none
@@ -882,7 +925,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !               IPTA2O(), IPTB2O(), IPTO2A(), IPTO2B()
 ! dcborb.h :    NASHT, NASH(2), NCMOTQ
 ! dgroup.h :    NZ_in_CI
-#include "dcbgascip.h"
 #include "dcborb.h"
 
       LOGICAL is_open, file_exists
@@ -1094,7 +1136,7 @@ C     hjaaj May 2017, based on code by J. Thyssen 2001
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbgascip_mod, only: IPTA2O, IPTB2O, IRPAMO, MULTB, NREP
+      use dcbgascip_mod, only: IPTA2O, IPTB2O, IRPAMO, MULTB, NREP
 !      use dcborb_mod, only: NASHT
 #include "implicit.h"
       INTEGER :: I, J
@@ -1104,7 +1146,6 @@ C***********************************************************************
 C
 C dcbgascip.h : IRRP, MULTB, NREP, ?
 C    dcborb.h : NASHT
-#include "dcbgascip.h"
 #include "dcborb.h"
 
 #if GASCIP_DEBUG > 4
@@ -1166,7 +1207,7 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbgascip_mod, only: IRP, IRRP, MULTB
+      use dcbgascip_mod, only: IRP, IRRP, MULTB
 #include "implicit.h"
 C
       INTEGER   IREPA, IREPB, IREPAB
@@ -1174,7 +1215,6 @@ C
 C
 C dcbgascip.h : IRP, IRRP, A
 C    dcborb.h : NASHT
-#include "dcbgascip.h"
 C
       IF (IRP .LE. 0) THEN
 C        ... include all symmetries
@@ -1747,7 +1787,7 @@ C     Last revision :
 C
 C***********************************************************************
 !      use dcborb_mod, only: NAELEC, NASHT
-!      use dcbgascip_mod, only: MAXASH_GASCIP
+      use dcbgascip_mod, only: MAXASH_GASCIP
 #include "implicit.h"
       INTEGER :: I, II, J, JJ, K
 C
@@ -1755,7 +1795,6 @@ C Used from include files:
 C  dcborb.h: NAELEC, NASHT, ?
 
 #include "dcborb.h"
-#include "dcbgascip.h"
 C
       LOGICAL   DOPV, DOIMAG
       DIMENSION IOCCI(2*MAXASH_GASCIP), JOCCI(2*MAXASH_GASCIP)
@@ -1911,13 +1950,12 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbgascip_mod, only: IPTA2O, IPTB2O, MAXASH_GASCIP
+      use dcbgascip_mod, only: IPTA2O, IPTB2O, MAXASH_GASCIP
 !      use dcborb_mod, only: NAELEC, NASHT
       use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I, II, J, K
 C
-#include "dcbgascip.h"
 #include "dcborb.h"
 C
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
@@ -2147,7 +2185,6 @@ C***********************************************************************
 C
 ! dcborb.h : NASHT, ?
 ! dcbgen.h : PARCAL, ?
-!#include "dcbgascip.h"
 #include "dcborb.h"
 C
 !     output
@@ -2350,12 +2387,11 @@ C     Written by H. J. Aa. Jensen & J. Thyssen - Dec 30 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use dcbgascip_mod, only: MAXASH_GASCIP
 !      use dcborb_mod, only: NAELEC, NASHT
+      use dcbgascip_mod, only: MAXASH_GASCIP
 #include "implicit.h"
       INTEGER :: I, II, J, JJ, K
 C
-#include "dcbgascip.h"
 #include "dcborb.h"
 C
       LOGICAL   DO2EL,DOIMAG
@@ -3935,7 +3971,6 @@ C***********************************************************************
 !      use dcborb_mod, only: NASHT
       implicit none
 C
-!include "dcbgascip.h"
 #include "dcborb.h"
 C
       INTEGER*8 :: IA, IB
@@ -3980,13 +4015,12 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use dgroup_mod, only: NZ_IN_CI
-!      use dcbgascip_mod, only: IMK2, MAXASH_GASCIP, MAXMK2, MINMK2, NMK2
+      use dcbgascip_mod, only: IMK2, MAXASH_GASCIP, MAXMK2, MINMK2, NMK2
 #include "implicit.h"
       INTEGER :: I, J, K
 C
 C Used from include files:
 C
-#include "dcbgascip.h"
 C
       REAL*8    CVEC(NDET,*), THR_PCI_in, WORK(*)
       INTEGER*8 IDET(2,*)
@@ -4200,7 +4234,6 @@ C
 #include "dcborb.h"
 !from dcborb.h NAELEC, NGAS_DC, NGSHT(:), NGASSP(2,:)
 
-!#include "dcbgascip.h"
 C
       INTEGER*8 JSTR(*), MSKGAS(*)
 C
@@ -4307,7 +4340,8 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use thrzer_mod, only: THRZER
-!      use dcbgascip_mod, only: IMK2, IPTA2O, IPTB2O, MAXASH_GASCIP, MAXMK2, MINMK2, NMK2
+      use dcbgascip_mod, only: IMK2, IPTA2O, IPTB2O, MAXASH_GASCIP,
+     &  MAXMK2, MINMK2, NMK2
 !      use dcborb_mod, only: NAELEC, NASHT
       use dgroup_mod, only: NZ, NZ_IN_CI
 #include "implicit.h"
@@ -4316,7 +4350,6 @@ C***********************************************************************
 C
 C Used from include files:
 C
-#include "dcbgascip.h"
 #include "dcborb.h"
 C
       DIMENSION DIAG(*)
@@ -4848,7 +4881,8 @@ C     Last revision : July 2002/Sep 2003/Aug 2014 hjaaj
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dcbgascip_mod, only: IMK2, IPTA2O, IPTB2O, MAXASH_GASCIP, MAXMK2, MINMK2, NMK2
+      use dcbgascip_mod, only: IMK2, IPTA2O, IPTB2O, MAXASH_GASCIP,
+     &  MAXMK2, MINMK2, NMK2
 !      use dcborb_mod, only: NAELEC, NASHT
       use infpar_mod, only: MYTID, NUMNOD
       use dgroup_mod, only: NZ, NZ_IN_CI
@@ -4858,7 +4892,6 @@ C
 C Used from include files:
 C  infpar.h : MYTID
 C
-#include "dcbgascip.h"
 #include "dcborb.h"
 C
       DIMENSION SVEC(NDET,*), BVEC(NDET,*)
@@ -5169,7 +5202,7 @@ C
       use dgroup_mod, only: NBSYM, NFSYM, NZ
       use pgroup_mod, only: REP
 !      use dcborb_mod, only: MXGAS
-!      use dcbgascip_mod, only: GASCIP_UCIBOS, IGASCIP_MAXMK2, IGASCIP_MINMK2, IGASCIP_MK2DEL, IGASCIP_MK2REF, IGASCIP_NAELEC, IGASCIP_NASH, IGASCIP_NASHT, IGASCIP_NGAS, IGASCIP_NGASSP, IGASCIP_NGSH, IGASCIP_NISH, IGASCIP_REP, IGASCIP_STATE, IRRP, MAXASH_GASCIP, NREP, REPNA
+      use dcbgascip_mod
 #include "implicit.h"
       INTEGER :: I, J
 !
@@ -5181,7 +5214,6 @@ C
       DIMENSION MULTB_TMP(64,64)
 !
 #include "dcborb.h"
-#include "dcbgascip.h"
 !
 !     ...The variable "SET" must have save attribute.
       SAVE SET
@@ -5546,14 +5578,16 @@ C     Called by: GASCIP_INP
 C
 C***********************************************************************
 !      use mxgas_mod, only: MXGAS
-!      use dcbgascip_mod, only: GASCIP_UCIBOS, IGASCIP_MAXMK2, IGASCIP_MINMK2, IGASCIP_MK2DEL, IGASCIP_MK2REF, IGASCIP_NAELEC, IGASCIP_NASH, IGASCIP_NGAS, IGASCIP_NGASSP, IGASCIP_NGSH, IGASCIP_NISH, IGASCIP_REP
+      use dcbgascip_mod, only: GASCIP_UCIBOS, IGASCIP_MAXMK2,
+     &  IGASCIP_MINMK2, IGASCIP_MK2DEL, IGASCIP_MK2REF, IGASCIP_NAELEC,
+     &  IGASCIP_NASH, IGASCIP_NGAS, IGASCIP_NGASSP, IGASCIP_NGSH,
+     &  IGASCIP_NISH, IGASCIP_REP
       use dcbkrmc_mod
       use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I, J
 #include "mxgas.h"
 C
-#include "dcbgascip.h"
 C
 C
       return ! we try ...
@@ -5623,19 +5657,18 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use dcbgen_mod, only: PARCAL
       use infpar_mod, only: MPARID
 #endif
-!      use dcbgascip_mod, only: I1_DCI_GASCIP, I2_DCI_GASCIP
 !      use dcborb_mod, only: I1_DCBORB, I2_DCBORB
 #ifdef VAR_MPI
 
       use interface_to_mpi
       use dgroup_bcast_mod, only: dgroup_bcast
+      use dcbgascip_bcast_mod, only: dcbgascip_bcast
 
 #include "implicit.h"
 C
 C
 C send info to slaves with MPI_BCAST from these common blocks:
 C
-#include "dcbgascip.h"
 #include "dcborb.h"
 
       IF (.NOT.PARCAL) RETURN
@@ -5654,12 +5687,11 @@ C
 C     Send essential common block information
 C     ==============================================
 C
-C     dcbgascip.h
-C     --------
+C     dcbgascip_mod: sent field by field (module variables are not
+C     contiguous like the old COMMON /DCI_GASCIP/)
+C     -------------
 C
-      NUMELM = ICOMMSIZE(I1_DCI_GASCIP,I2_DCI_GASCIP)
-      call interface_MPI_BCAST(I1_DCI_GASCIP,NUMELM,MPARID,
-     &                         global_communicator)
+      call dcbgascip_bcast(MPARID)
 C
 C     dcborb.h
 C     --------
@@ -5929,7 +5961,6 @@ C     Slave node driver for GASCIP
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-!      use dcbgascip_mod, only: I1_DCI_GASCIP, I2_DCI_GASCIP
 !      use dcborb_mod, only: I1_DCBORB, I2_DCBORB
 #ifdef VAR_MPI
       use infpar_mod, only: MPARID
@@ -5939,13 +5970,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
       use interface_to_mpi
       use dgroup_bcast_mod, only: dgroup_bcast
+      use dcbgascip_bcast_mod, only: dcbgascip_bcast
 
 #include "implicit.h"
 C
 C
 C common blocks to receive info from MPI_BCAST:
 C
-#include "dcbgascip.h"
 #include "dcborb.h"
 C
       real(8), allocatable :: WORK(:)
@@ -5969,12 +6000,11 @@ C
 C     Receive essential common block information
 C     ==============================================
 C
-C     dcbgascip.h
-C     --------
+C     dcbgascip_mod: sent field by field (module variables are not
+C     contiguous like the old COMMON /DCI_GASCIP/)
+C     -------------
 C
-      NUMELM = ICOMMSIZE(I1_DCI_GASCIP,I2_DCI_GASCIP)
-      call interface_MPI_BCAST(I1_DCI_GASCIP,NUMELM,MPARID,
-     &                         global_communicator)
+      call dcbgascip_bcast(MPARID)
 C
 C     dcborb.h
 C     --------
@@ -6041,7 +6071,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! dcbgascip.h :
 ! dcborb.h    :
 ! dgroup.h    : NZ_in_CI
-!#include "dcbgascip.h"
 #include "dcborb.h"
 C
       LOGICAL   DO2EL

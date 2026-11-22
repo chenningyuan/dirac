@@ -2332,6 +2332,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCENER (ICALC,MXCORR,EPS)
+      use results_mod, only: ECCSD, EMP2, ESCF, ET1, ET2, ET3, IMSTAT
       use diis_mod, only: MAXDIM, MAXIT
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
@@ -2366,7 +2367,6 @@ C
 #include "inpt.inc"
 #include "symm.inc"
 #include "eqns.inc"
-#include "results.inc"
 #include "complex.inc"
 ! ccpar.inc not needed, because there is no parallelization in this subroutine
 ! include "ccpar.inc"
@@ -3645,6 +3645,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCFSPC (ICALC,MXCORR,EPS1,EPS,NSP,IREPSP,IREPSPI)
 C
+      use results_mod, only: IMSTAT
       use ihm_mod, only: DOIH, ER_IH
       use diis_mod, only: MAXDIM, MAXIT
       use memory_allocator
@@ -3678,7 +3679,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
 #include "eqns.inc"
-#include "results.inc"
 #include "inpt.inc"
 #include "symm.inc"
 #include "complex.inc"
@@ -4020,6 +4020,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDINI(do_restart)
 C
+      use results_mod, only: ETOT, IMSTAT, NSTATS
       IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
@@ -4044,7 +4045,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "results.inc"
 #include "inpt.inc"
 #include "param.inc"
 #include "ccpar.inc"
@@ -4269,6 +4269,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDUMP
 C
+      use results_mod, only: ETOT, IMSTAT
       IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
@@ -4287,7 +4288,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "results.inc"
 #include "inpt.inc"
 C
 C---------------Local variables--------------------------------------
@@ -4322,6 +4322,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCSUMM
 C
+      use results_mod, only: ECCSD, EMP2, ESCF, ET1, ET2, ET3, ETOT,
+     &  IMSTAT
       IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
@@ -4339,7 +4341,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "results.inc"
 #include "inpt.inc"
 C
 C---------------Local variables--------------------------------------
@@ -4454,6 +4455,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RDSYMI (NSP,EPS1,IREPSP,ncore_elec)
 C
+      use results_mod, only: ECORE
       use interface_to_mpi
       IMPLICIT NONE
 C
@@ -4477,7 +4479,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "results.inc"
 #include "symm.inc"
 #include "inpt.inc"
 #include "ccpar.inc"

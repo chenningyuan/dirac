@@ -2,7 +2,7 @@
 C
 !      use files_mod, only: IW
 !      use symm_mod, only: NDIMT1
-!      use results_mod, only: EMP2, ESCF, ETOT
+      use results_mod, only: EMP2, ESCF, ETOT
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -25,7 +25,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
 #include "symm.inc"
-#include "results.inc"
 C
 C---------------Local variables--------------------------------------
 C

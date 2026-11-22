@@ -29,6 +29,31 @@
      &    IPARM(3), NEXPND
       end module relscf_v10_mod
 
+!-----------------------------------------
+! Module with variables previously defined
+! at relscf_dim.h include file (COMMON /DIMI/, /DIMR/, /NONDIMI/, /NONDIMR/)
+!-----------------------------------------
+!----------------------------------------------------------------------------------------
+!            Common block for the relscf program. Note that it can not be used
+!  in the DIRAC due to overlapping with its variables.
+! Some parameters:
+!          MXXTRP - maximum number of iterations
+!----------------------------------------------------------------------------------------
+      module relscf_dim_mod
+      implicit none
+      real*8 :: FACTO(16), FATT(21), AJMN(24), OCCUCS(4), OCCUP(4),
+     &    RADINC(10), ZN, BIAS, DGATH, SCFAT, EXPMN, DMNXP, RMNED,
+     &    RMXED, ENERG, POT, CIN, VIR, THRSCF, THRSH, ENORM, RED,
+     &    ZETDIF, CON1, CON2, ENCOR
+      integer :: NSIZE(10), NOSH(4), NCSH(4), NBCON(4), NBAS(4),
+     &    NSAVF(4), N1(6), NBAS1, NVAR, NBAST, NBVAR1, NDIAG, NXTRP,
+     &    MXXTRP, NBLOCK, NSYM, NUMVAR, NRUN, NITSCF, NITSC1, NITSC2,
+     &    NCONV, NALARM, N0, NSTEP, IIII, NSHT, NOSHT, NPRINT, NBASM,
+     &    MXVAR, MVAR, NEXTRA, IEX, NEWBAS, N1T, NSVD, IDATA, NDIMPQ,
+     &    NORBIT, MXBF, MXCC, NPVEFA, NPOEFA, NPENFA, NPBAFI, NPCOFI,
+     &    IPRINT
+      end module relscf_dim_mod
+
 C
 C
 C NOTE: The previous  value of NDIMPQ was 500000. 
@@ -67,11 +92,10 @@ C statuses (nonconvergence, divergence etc...)
 C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use relscf_dim_mod, only: DGATH, DMNXP, EXPMN, FACTO, IIII, MXBF, MXXTRP, N0, NALARM, NBVAR1, NITSCF, OCCUP, RED, RMNED, RMXED, SCFAT, THRSCF, ZETDIF
 !      use amfi_if_mod, only: IPR_RELSCF
+      use relscf_dim_mod
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "relscf_dim.h"
 #include "amfi_if.h"
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
      *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
@@ -383,14 +407,13 @@ C   Called from INPUT_AT34.
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use amfi_if_mod, only: IPR_RELSCF
-!      use relscf_dim_mod, only: FACTO, MXBF, OCCUP
+      use relscf_dim_mod, only: MXBF
       use relscf_v10_mod, only: LPQ, LQM, MX100, NOR
       use relscf_ijpair_mod, only: IDK
       use scfarr_mod, only: LDIMC, MXB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
-#include "relscf_dim.h"
 C
 Cvec  VERSION INCLUDING IDK ARRAY
 C
@@ -743,10 +766,10 @@ C
 CMI - removed S from param.list
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use relscf_dim_mod, only: FACTO, MXBF, NBAS, NBAS1, NCSH, NOSH, NSTEP, NSYM, OCCUCS, OCCUP
+      use relscf_dim_mod, only: MXBF, NBAS, NBAS1, NCSH, NOSH, NSTEP,
+     &  NSYM, OCCUCS, OCCUP
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "relscf_dim.h"
       DIMENSION P(*),Q(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
      *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,*),CM2SCF(MXBF,*),
      *CSAV1(MXBF,*),CSAV2(MXBF,*),GMIN(*),SMIN(*),THRE(*),EPS(*),
@@ -936,13 +959,13 @@ C     LENGTH N1
 C     NO DEFINE THE COLUMN CORRESPONDING TO THE VECTOR C IN A MATRIX C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use relscf_dim_mod, only: DGATH, ENORM, FACTO, MXBF, N0, NALARM, NBAS1, NDIAG, NSTEP, OCCUP
+      use relscf_dim_mod, only: DGATH, ENORM, MXBF, N0, NALARM, NBAS1,
+     &  NDIAG, NSTEP
       use relscf_v10_mod, only: LPQ
       use priunit_mod, only: LUPRI
 !      use amfi_if_mod, only: IPR_RELSCF
 #include "implicit.h"
 #include "amfi_if.h"
-#include "relscf_dim.h"
       INTEGER :: I,J,K
 CMI   DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(2),PCAP(2),
@@ -1132,11 +1155,11 @@ C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use amfi_if_mod, only: IPR_RELSCF
-!      use relscf_dim_mod, only: CIN, ENERG, FACTO, IDATA, MXBF, N1T, NBVAR1, NDIMPQ, NITSCF, NUMVAR, OCCUP, POT, VIR, ZN
+      use relscf_dim_mod, only: CIN, ENERG, IDATA, MXBF, N1T, NBVAR1,
+     &  NDIMPQ, NITSCF, NUMVAR, POT, VIR, ZN
       use priunit_mod, only: LUPRI
       use scfarr_mod, only: NDIMPQPAR
 #include "implicit.h"
-#include "relscf_dim.h"
 #include "amfi_if.h"
       INTEGER :: I,J
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
@@ -1413,11 +1436,10 @@ C   CM1SCF(MXBF,1) --> CM1SCF(MXBF,*)
 C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use relscf_dim_mod, only: BIAS, ENORM, FACTO, MXBF, MXXTRP, N1, NALARM, NBAS, NBAS1, NCONV, NCSH, NITSC1, NITSC2, NITSCF, NOSH, NSHT, NSTEP, NSVD, NSYM, NXTRP, OCCUP, SCFAT, THRSCF
+      use relscf_dim_mod
       use relscf_v10_mod, only: LPQ
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "relscf_dim.h"
       DIMENSION SCR(*),
 C    *          P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
      *          P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
@@ -1813,10 +1835,9 @@ CMI  ...  for array 'w', upper bound of dimension 1 exceeded
 
 C     EXPONENTIATIONS REMOVED
       FUNCTION GINY(NY,NAB,NCD,ZAB,ZCD)
+      use relscf_dim_mod, only: FACTO
 #include "implicit.h"
-!      use relscf_dim_mod, only: FACTO, OCCUP
       INTEGER :: I
-#include "relscf_dim.h"
 C
 C     CALCULATES THE INTEGRAL I(NY) NEEDED FOR THE SUPERMATRICES P AND Q
 C     WHEN A GAUSSIAN BASIS SET IS USED
@@ -1934,10 +1955,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
       use scfarr_mod, only: NDIMPQPAR
-!      use relscf_dim_mod, only: FACTO, IDATA, MXBF, N1, N1T, NBAS, NBAS1, NCSH, NDIMPQ, NOSH, NSTEP, NSYM, OCCUP, ZN
+      use relscf_dim_mod, only: IDATA, MXBF, N1, N1T, NBAS, NBAS1, NCSH,
+     &  NDIMPQ, NOSH, NSTEP, NSYM, OCCUCS, OCCUP, ZN
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "relscf_dim.h"
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
      *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
      *CSAV1(MXBF,1),CSAV2(MXBF,1),                THRE(*),EPS(2),
@@ -2107,10 +2128,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use scfarr_mod, only: LDIMC, MXB
       use priunit_mod, only: LUPRI
       use relscf_v10_mod, only: IPARM, LPQ, MX100, NOR
-!      use relscf_dim_mod, only: AJMN, BIAS, DMNXP, ENERG, EXPMN, FACTO, FATT, IEX, IIII, MVAR, MXBF, MXVAR, N0, N1, NALARM, NBAS, NBAS1, NBVAR1, NCONV, NCSH, NDIMPQ, NEXTRA, NITSC1, NITSC2, NITSCF, NOSH, NRUN, NSAVF, NSHT, NSTEP, NSVD, NSYM, NUMVAR, NVAR, OCCUP, RED, RMNED, RMXED, ZETDIF
+      use relscf_dim_mod
 #include "implicit.h"
       INTEGER :: I,J
-#include "relscf_dim.h"
 
 CMI   DIMENSION P(LQM),Q(LQM),S(LPQ),U(LPQ),T(LPQ),DT(LPQ,2),
 CMI   DIMENSION P(LQM),Q(LQM),S(LPQ),U(*),T(LPQ),DT(LPQ,*),
@@ -2769,10 +2789,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
 !      use amfi_if_mod, only: IPR_RELSCF, IRELSCF_INFO, MXRELSCF_INFO, MXXTRP_INP, RELSCFLABI, RELSCFLABX
       use scfarr_mod, only: LDIMC, MXB, MXO, NDIMPQPAR
-!      use relscf_dim_mod, only: AJMN, BIAS, CON1, CON2, DGATH, DMNXP, EXPMN, FACTO, IDATA, IPRINT, MXBF, MXCC, MXVAR, MXXTRP, NBAS, NBAS1, NBASM, NBAST, NBLOCK, NCSH, NDIAG, NDIMPQ, NEXTRA, NORBIT, NOSH, NOSHT, NPBAFI, NPCOFI, NPENFA, NPOEFA, NPRINT, NPVEFA, NSAVF, NSHT, NSIZE, NSVD, NSYM, NVAR, NXTRP, OCCUP, RADINC, RMNED, RMXED, SCFAT, ZN
+      use relscf_dim_mod
 #include "implicit.h"
       INTEGER :: I,II,J,K
-#include "relscf_dim.h"
 C***********************************************************************
 C     ARRAYS SIZES:
 C     C: NOR*MXBF*NSYM AND  CTRAN,ITRAN: MXBAS*MXOCC     *
@@ -2790,9 +2809,9 @@ C
 C
       COMMON/WIGXXX/A1,A2,EXP1,EXP2,UP(MXB),DOWN(MXB),IUP(4),NGAUSS
 C
-      DIMENSION NOOC(5),VCC(24),TITLE(12)
+      DIMENSION NOOC(5),TITLE(12)
       CHARACTER*8 OPER(3)
-      EQUIVALENCE (AJMN(1),VCC(1)),(TITLE(1),NAME(1))
+      EQUIVALENCE (TITLE(1),NAME(1))
 #include "amfi_if.h"
 C
 C     SET DEFAULT VALUES
@@ -3704,12 +3723,12 @@ C   U(2)  -> U(*)
 C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use relscf_dim_mod, only: FACTO, MXBF, NBAS, NBAS1, NCSH, NOSH, NSTEP, NSYM, OCCUP, THRSH
+      use relscf_dim_mod, only: MXBF, N1, NBAS, NBAS1, NCSH, NOSH,
+     &  NSTEP, NSYM, THRSH
       use relscf_v10_mod, only: LPQ
       use relscf_ijpair_mod, only: IDK
 #include "implicit.h"
       INTEGER :: I,J,JJ,K
-#include "relscf_dim.h"
 CMI   DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),V(2),PCAP(2),
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),V(*),PCAP(*),
 CMI  *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
@@ -4010,11 +4029,11 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
       use relscf_v10_mod, only: ISIZE, MX100, NEXPND, TRHI, TRLO
-!      use relscf_dim_mod, only: FACTO, MXBF, NBAS, NBAS1, NSTEP, NSYM, OCCUP, ZN
+      use relscf_dim_mod, only: FACTO, MXBF, NBAS, NBAS1, NSTEP, NSYM,
+     &  ZN
 #include "implicit.h"
       INTEGER :: I,J,K
 #include "amfi_if.h"
-#include "relscf_dim.h"
 C
       DIMENSION P(*),Q(*),S(*),U(*),T(*),
      &          DT(*),DOS(*),PCAP(*),QCAP(*),FC(*),FO(*),
@@ -4255,7 +4274,7 @@ C  P(2)      -> P(*)
 C  U(2)       --> U(*)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use relscf_dim_mod, only: AJMN, CIN, ENCOR, ENERG, ENORM, FACTO, IDATA, MXBF, MXCC, N1T, NALARM, NBAS, NBAS1, NBASM, NBCON, NBLOCK, NCSH, NDIMPQ, NEWBAS, NITSCF, NORBIT, NOSH, NPBAFI, NPCOFI, NPOEFA, NPRINT, NSAVF, NSHT, NSIZE, NSVD, NSYM, OCCUP, POT, RADINC, THRSCF, THRSH, VIR, ZN
+      use relscf_dim_mod
       use relscf_v10_mod, only: LPQ, LQM
       use scfarr_mod, only: LDIMC, MXB, NDIMPQPAR
       use dummy_mod, only: DUMMY
@@ -4263,7 +4282,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use amfi_if_mod, only: IPR_RELSCF, IRELSCF_INFO, MXRELSCF_INFO, RELSCFLABI, RELSCFLABX
 #include "implicit.h"
       INTEGER :: I,II,J,JJ,K,KK
-#include "relscf_dim.h"
 
 CMI   DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
@@ -4929,10 +4947,10 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use amfi_if_mod, only: IPR_RELSCF
       use priunit_mod, only: LUPRI
-!      use relscf_dim_mod, only: CIN, ENERG, FACTO, MXBF, N1T, NITSCF, OCCUP, POT, VIR, ZN
+      use relscf_dim_mod, only: CIN, ENERG, MXBF, N1T, NITSCF, POT, VIR,
+     &  ZN
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "relscf_dim.h"
 CMI   DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
      *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,*),CM2SCF(MXBF,*),
@@ -5231,10 +5249,9 @@ C
       END
 
       FUNCTION SINY(NY,NAB,NCD,ZAB,ZCD)
+      use relscf_dim_mod, only: FATT
 #include "implicit.h"
-!      use relscf_dim_mod, only: FACTO, FATT, OCCUP
       INTEGER :: I
-#include "relscf_dim.h"
 C
 C     CALCULATES THE INTEGRAL I(NY) NEEDED FOR THE SUPERMATRICES P AND Q
 C     WHEN A SLATER BASIS SET IS USED
@@ -5571,10 +5588,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use relscf_dim_mod, only: ENERG, FACTO, IEX, MVAR, MXBF, MXVAR, NBAST, NBVAR1, NEXTRA, NVAR, OCCUP, VIR
+      use relscf_dim_mod, only: ENERG, IEX, MVAR, MXBF, MXVAR, NBAST,
+     &  NBVAR1, NEXTRA, NVAR, VIR
 #include "implicit.h"
       INTEGER :: I
-#include "relscf_dim.h"
 C     DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
 CMI  *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),

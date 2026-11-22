@@ -376,14 +376,13 @@ module sigma_eom
 !      use ccpar_mod, only: MYPROC, NMPROC
 !      use files_mod, only: IN, IW
 !      use inpt_mod, only: IPRNT
-!      use results_mod, only: IMSTAT
+      use results_mod, only: IMSTAT
 #include "symm.inc"
 #include "param.inc"
 #include "complex.inc"
 #include "ccpar.inc"
 #include "files.inc"
 #include "inpt.inc"
-#include "results.inc"
 
 !-----------------------------------------------------------------------------   
 !  In this routine we calculate all the intermediates required for a specific
@@ -571,14 +570,13 @@ integer :: ierr
 !      use ccpar_mod, only: MYPROC, NMPROC
 !      use files_mod, only: IN, IW
 !      use inpt_mod, only: IPRNT
-!      use results_mod, only: IMSTAT
+      use results_mod, only: IMSTAT
 #include "symm.inc"
 #include "param.inc"
 #include "complex.inc"
 #include "ccpar.inc"
 #include "files.inc"
 #include "inpt.inc"
-#include "results.inc"
 
 !-----------------------------------------------------------------------------   
 !  In this routine we calculate all the intermediates required for a specific

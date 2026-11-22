@@ -891,7 +891,6 @@ C
 #include "maxash.h"
 #include "dcborb.h"
 #include "dcbopt.h"
-!#include "dcbgascip.h"
 #include "dcbdhf.h"
       integer :: nasht_tmp, igas_tmp, accum_act(2)
 C
@@ -1080,7 +1079,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-!#include "dcbgascip.h"
 #include "dcbdhf.h"
 C
       CALL QENTER('TKRCIORB')
@@ -1803,7 +1801,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dcbopt.h"
-!#include "dcbgascip.h"
 C Scratch
       INTEGER NKRCCISH(NFSYM),NKRCCASH(NFSYM),NKRCCGSH(2,MXGAS)
       INTEGER NKRCCSSH(NFSYM),NKRCCFRO(NFSYM),NKRCCGSP(2,MXGAS)

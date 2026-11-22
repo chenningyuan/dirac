@@ -4199,7 +4199,7 @@ C***********************************************************************
       use dcbres_mod, only: IPRRES, ISTRES, RESOUT, SCRRES
       use dcbgen_mod, only: LUCOEF
 !      use dcbdhf_mod, only: NACSH, NOPEN
-!      use cossya_mod, only: SYA_IELC, SYA_MAXE, SYA_NOPEN
+      use cossya_mod, only: SYA_IELC, SYA_MAXE, SYA_NOPEN
       use memory_allocator
 
 #include "implicit.h"
@@ -4211,7 +4211,6 @@ C
 #include "dcbdhf.h"
 !
 !     ...SYA_MAXE
-#include "cossya.h"
       CHARACTER DAYTID*24,SECTID*12,CPUTID*12
       LOGICAL   TOBE,TRANOP,SKPONE,SKPTWO
       DIMENSION NSTR(2,0:2,4),NSTRT(2),NSPC(2,0:2),
@@ -5480,7 +5479,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: LUMLF1
 !      use dcbdhf_mod, only: NAELEC_DHF, NOPEN
-!      use cossya_mod, only: SYA_NOPEN
+      use cossya_mod, only: SYA_NOPEN
 #include "implicit.h"
 C
       PARAMETER (NORDER=16)
@@ -5488,7 +5487,6 @@ C
 #include "dcbtra.h"
 #include "dcbdhf.h"
 !.s/sya,2007.02.02
-#include "cossya.h"
 !.q  
       DIMENSION WORK(LWORK)
       KWORK = 1
@@ -5564,7 +5562,7 @@ C***********************************************************************
 !      use dcbtra_mod, only: LUMLF1
       use dgroup_mod, only: NFSYM
 !      use dcbdhf_mod, only: DF, NACSH, NASH_DHF, NOPEN
-!      use cossya_mod, only: KCOSINP, SYA_GASO, SYA_IELC, SYA_NOPEN
+      use cossya_mod, only: KCOSINP, SYA_GASO, SYA_IELC, SYA_NOPEN
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
@@ -5573,7 +5571,6 @@ C***********************************************************************
 #include "dcbtra.h"
 #include "dcbdhf.h"
 !.s/sya,2007.02.01
-#include "cossya.h"
 !.q
       DIMENSION IRPAMO(*),NGASO(NREP,*),IELC(*),WORK(LWORK)
 !----------------------------------------------------------------------

@@ -4,9 +4,9 @@ C
 !      use param_mod, only: A0, A1, D0, LFA
 !      use files_mod, only: IW
 !      use symm_mod, only: IIOOT, IIVO, IIVV, IIVVT, IO, IV, IVO, IVOOOT, IVVOOT, IVVOOTT, IVVVT, JVVVT, KT3VVVOT, LLOVVT, LLT3VVVT, LOVVOT, MULTB, NDIMT2, NO, NOOT, NOVVT, NREP, NT3VVT, NT3VVVT, NV, NVO, NVV, NVVOT, NVVT
-!      use results_mod, only: ECCSD, ESCF, ET1, ET2, ET3, ETOT
 !      use complex_mod, only: CARITH, RCW
 !      use ccpar_mod, only: IDIST, MASTER, MYPROC, NMPROC
+      use results_mod, only: ECCSD, ESCF, ET1, ET2, ET3, ETOT
       use interface_to_mpi
       implicit none
 C
@@ -39,7 +39,6 @@ C
 #include "param.inc"
 #include "files.inc"
 #include "symm.inc"
-#include "results.inc"
 #include "complex.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)

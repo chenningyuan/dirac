@@ -8,7 +8,7 @@
 !      use symm_mod, only: NDIMT1, NDIMT2
 !      use eqns_mod, only: EQNS, ICURFSS
 !      use inpt_mod, only: IPRNT, NOCCD, NOCCS
-!      use results_mod, only: ECCSD, ECCSDIM
+      use results_mod, only: ECCSD, ECCSDIM
       implicit none
 C
 C     Intermediaries etc.
@@ -31,7 +31,6 @@ C---------------Common Blocks--------------------------------------
 #include "symm.inc"
 #include "eqns.inc"
 #include "inpt.inc"
-#include "results.inc"
 !#if defined (VAR_MPI)
 !      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 !#endif

@@ -696,8 +696,8 @@ C
 !      use inpt_mod, only: IPRNT, STATE_E_FSCC
 !      use complex_mod, only: RCW
 !      use symm_mod, only: IFS_HE, MXREP, NE, NFS_HE, NREP, REPNA
-!      use results_mod, only: ECCSD, ECCSDIM, EFS, ESCF
 !      use files_mod, only: IW
+      use results_mod, only: ECCSD, ECCSDIM, EFS, ESCF
       implicit none
 C---------------Description--------------------------------------------
 C
@@ -709,7 +709,6 @@ C
 #include "inpt.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "results.inc"
 #include "files.inc"
 C
 C---------------Calling variables--------------------------------------
