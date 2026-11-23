@@ -2,6 +2,8 @@
 .TITLE
  DEBUG KRMCSCF
 .WAVE FUNCTION
+**GENERAL                                                                                           
+.ACMOUT                                                                                             
 **HAMILTONIAN
 .DOSSSS
 .X2C

@@ -4,6 +4,10 @@
 .WAVE FUNCTION
 **GENERAL                                                                                           
 .ACMOUT                                                                                             
+**INTEGRALS                                                                                         
+*TWOINT                                                                                             
+.SCREEN                                                                                             
+-1.0D0                                                                                              
 **HAMILTONIAN
 .DOSSSS
 .X2C
