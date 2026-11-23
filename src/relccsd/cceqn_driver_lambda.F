@@ -3,8 +3,12 @@
      &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,CONV,
      &                 NBUF2,NBUF3)
 
-!      use files_mod, only: IW
-!      use symm_mod, only: IOVOOT, IVOVVT, NDIMT1, NDIMT2, NFOO, NFVV, NO, NOOT, NREP, NV, NV5, NVVT
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: IOVOOT, NDIMT1, NDIMT2, NFOO, NFVV,
+     &  NO, NOOT, NREP, NV, NV5, NVVT
+#if defined (VAR_MPI)
+      use symm_relccsd_mod, only: IVOVVT
+#endif
       use inpt_mod, only: IPRNT
       use ccpar_mod, only: MYPROC
 #if defined (VAR_MPI)
@@ -46,8 +50,6 @@ C     for diis ...
 
 C---------------Common Blocks--------------------------------------
 
-#include "files.inc"
-#include "symm.inc"
 #if defined (VAR_MPI)
       integer ISTAT(df_MPI_STATUS_SIZE)
 #endif

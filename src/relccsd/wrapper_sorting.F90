@@ -641,7 +641,7 @@
 !---------------------------------
 
 !--------------calling variables---------------
-!      use symm_mod, only: MULTB, NREP
+      use symm_relccsd_mod, only: MULTB, NREP
       use complex_mod, only: RCW
     integer,intent(in)                    :: Sort_Type 
     character(2),intent(in)               :: orb_array(:)
@@ -662,7 +662,6 @@
     integer      :: i,j,k,l 
     integer      :: sort_type_dummy,AllocateStatus,total_dim
 
-#include "symm.inc"
 
     type(sorting_list)     :: a
     type(middle_indices)   :: c(-14:5)!,e  
@@ -1060,7 +1059,7 @@
 
 
 !------------------------------
-!      use symm_mod, only: NCONT, NO, NREP, NV
+      use symm_relccsd_mod, only: NCONT, NO, NREP, NV
    character(*),dimension(:),intent(in)  :: array1,array2,array3 ! follows the same instruction as it is in the align_array.
    character(*),intent(out)              :: trans_1b
    character(2),optional,intent(out)     :: FreeIndx(size(array1))
@@ -1070,7 +1069,6 @@
    integer,dimension(2)                  :: bit_reordered
    integer                               :: i
 !------------------------------
-#include "symm.inc"
 
   call align_array(array1,array2,array3,reorder_array)   
 
@@ -1232,8 +1230,7 @@
   end subroutine
 
   subroutine input_index(orb_array,a,b)
-!      use symm_mod, only: NCONT, NO, NREP, NV
-#include "symm.inc"
+      use symm_relccsd_mod, only: NCONT, NO, NREP, NV
 ! This subroutine identifies the dimension of each individual
 ! orbital-type (i.e, hole, particle, continuous, active etc.) 
 
@@ -1402,8 +1399,7 @@
 
   function sorted_dimension(generic_array)
 
-!      use symm_mod, only: JOOOO, JOOOV, JVOVO, JVVOV, NREP
-#include "symm.inc"
+      use symm_relccsd_mod, only: JOOOO, JOOOV, JVOVO, JVVOV, NREP
 
     character(*),intent(in) :: generic_array(:)
     integer :: sorted_dimension

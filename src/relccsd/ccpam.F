@@ -37,6 +37,7 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
+      use files_relccsd_mod, only: IN, IW
       use priunit_mod, only: LUCMD, LUPRI
       use dgroup_mod, only: NZ
       use dcbham_mod, only: CAP, LEVYLE, SPINFR
@@ -46,12 +47,10 @@ C
       use infpar_mod, only: MPARID, MYTID, NUMNOD
 #endif
       use ccpar_mod, only: MASTER, MYPROC, NMPROC
-!      use files_mod, only: IN, IW
       use interface_to_mpi
 
 #include "implicit.h"
       INTEGER :: I
-#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -200,18 +199,17 @@ C     Written by Luuk Visscher, August 1997
 C     The slave RELCCSD routine (DIRAC interface)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use files_relccsd_mod, only: CCBASF, CCFILN, LCCFIL, MSLVOUT
       use dcbmp2no_mod, only: IAOMOSCHEME, MP2_DENRUN
       use infpar_mod, only: MPARID, MYTID, NUMNOD
       use priunit_mod, only: LUCMD
       use ccpar_mod, only: MASTER, MYPROC, NMPROC
-!      use files_mod, only: CCBASF, CCFILN, LCCFIL, MSLVOUT
       use interface_to_mpi
 
 #include "implicit.h"
 #if defined (VAR_MPI)
       integer   istat(df_mpi_status_size)
 #endif
-#include "files.inc"
       CHARACTER*10 INTFCE, MP2NOF
       LOGICAL CA,CCEND
 C

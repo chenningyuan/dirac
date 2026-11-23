@@ -1,7 +1,7 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BUILD_X_MAIN (daibj,eps,dimphph)
 !
-!      use symm_mod, only: IVOVO, IVVOOTT, J2VOVO, JJOO, JJVO, JJVV, JVOVO, KKVVOT, KVVOOT, LLVOOT, LVVOOT, MULTB, MVO, NE, NFOO, NFVV, NO, NOOT, NREP, NV, NVOOT, NVVOT, NVVT
+      use symm_relccsd_mod
       use complex_mod, only: CARITH, RCW
       use param_relccsd_mod, only: A0, A1, AP5, LFA, LTR
       IMPLICIT INTEGER (A-Z)
@@ -21,7 +21,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Common Blocks, symmetry arrays from CCSETI --------
 !
-#include  "../relccsd/symm.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -291,7 +290,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BWEAVERR(bphph,eps,bab,dij,ic6,ic2,ic4)
 !
-!      use symm_mod, only: IO, IOO, IV, IVOVO, IVV, MULTB, NE, NO, NREP, NV
+      use symm_relccsd_mod, only: IO, IOO, IV, IVOVO, IVV, MULTB, NO,
+     &  NREP, NV
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -309,7 +309,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Common Blocks--------------------------------------
 !
-#include  "../relccsd/symm.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -382,7 +381,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BWEAVERC(bphph,eps,bab,dij,ic6,ic2,ic4)
 !
-!      use symm_mod, only: IO, IOO, IV, IVOVO, IVV, MULTB, NE, NO, NREP, NV
+      use symm_relccsd_mod, only: IO, IOO, IV, IVOVO, IVV, MULTB, NO,
+     &  NREP, NV
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -401,7 +401,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Common Blocks--------------------------------------
 !
-#include  "../relccsd/symm.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -474,7 +473,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SOLVE_PHPH_R(daibj,n,iounit)
 !
-!      use symm_mod, only: IO, IV, JVOVO, JVOXX, MULTB, MVO, NE, NO, NREP, NV, REPNA
+      use symm_relccsd_mod, only: IO, IV, JVOVO, JVOXX, MULTB, MVO, NO,
+     &  NREP, NV, REPNA
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -489,7 +489,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       integer                     :: n,iounit
 !---------------Common Blocks--------------------------------------
 !
-#include  "../relccsd/symm.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -665,7 +664,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SOLVE_PHPH_C(daibj,nele,iounit)
 !
-!      use symm_mod, only: IO, IV, JVOVO, JVOXX, MULTB, MVO, NE, NO, NREP, NV, REPNA
+      use symm_relccsd_mod, only: IO, IV, JVOVO, JVOXX, MULTB, MVO, NO,
+     &  NREP, NV, REPNA
       use complex_mod, only: RCW
       IMPLICIT INTEGER (A-Z)
 !
@@ -689,7 +689,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Common Blocks--------------------------------------
 !
-#include  "../relccsd/symm.inc"
 !
 !---------------Local variables--------------------------------------
 !

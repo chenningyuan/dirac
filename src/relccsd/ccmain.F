@@ -18,6 +18,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       PROGRAM RELCCSD
 C
+      use files_relccsd_mod, only: IN, IW
       use ccpar_mod, only: MASTER, MYPROC, NMPROC
       use interface_to_mpi
       implicit none
@@ -37,7 +38,6 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C

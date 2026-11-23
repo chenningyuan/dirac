@@ -78,6 +78,7 @@ set(MODULE_SOURCES
     eqns.F90
     exeinf.F90
     expcom.F90
+    files_relccsd.F90
     frame.F90
     freeze.F90
     gamcom.F90
@@ -140,6 +141,7 @@ set(MODULE_SOURCES
     spinro.F90
     subdir.F90
     symind.F90
+    symm_relccsd.F90
     symmet.F90
     taymol.F90
     taysol.F90

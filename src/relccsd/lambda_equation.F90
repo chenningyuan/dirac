@@ -28,7 +28,7 @@
 
       subroutine lambda_equation_mp2 (eps,fvo,t1,s1,t2,s2)
 
-!      use symm_mod, only: NDIMT1, NDIMT2
+      use symm_relccsd_mod, only: NDIMT1, NDIMT2
       implicit none
 
 !---------------Description--------------------------------------------
@@ -49,7 +49,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "symm.inc"
 
 !---------------Local variables--------------------------------------
 
@@ -86,8 +85,8 @@
      &             w_voov,w_oooo,int_wooop,w_v_temp,G_oo,G_vv,buf1,buf2, &
      &             buf3,nbuf3,resL2,iprnt,niter)
 
-!      use symm_mod, only: IVOOV, NDIMT1, NDIMT2, NFOO, NFVO, NFVV, NOOT, NREP, NV1, NVVT
-!      use files_mod, only: IN, IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: IVOOV, NDIMT1, NDIMT2, NFOO, NFVO, NFVV, NOOT, NREP, NV1, NVVT
       use ccpar_mod, only: IDIST, NMPROC
 #if defined (VAR_MPI)
       use ccpar_mod, only: MYPROC
@@ -107,8 +106,6 @@
 !--------------------------------------
 
 !---------------Common Blocks--------------------------------------
-#include "symm.inc"
-#include "files.inc"
 
 !       calling variables
 !       -----------------
@@ -338,10 +335,9 @@
 
 !---------------Common Blocks----------------------------------------
 
-!      use symm_mod, only: IVO, MULTB, NDIMT1, NDIMT2, NE, NFVO, NO, NREP, NV
+      use symm_relccsd_mod, only: IVO, MULTB, NDIMT1, NDIMT2, NFVO, NO, NREP, NV
       use complex_mod, only: CARITH, RCW
       implicit none
-#include "symm.inc"
 !---------------Calling variables--------------------------------------
 
       real*8, intent(in)    :: l1(ndimt1*rcw),f_bar(nfvo*rcw)
@@ -428,8 +424,7 @@
 
       subroutine symm_index_outofcore_sorter(istart,x)
 
-!      use symm_mod, only: MULTB, NO, NREP
-#include "symm.inc"
+      use symm_relccsd_mod, only: MULTB, NO, NREP
 !------------------------------------------------
         integer, intent(in) :: istart
         integer, intent(out) :: x(nrep,nrep)
@@ -458,8 +453,8 @@
      &               w_vvvo,w_v_temp,int_wooop,G_oo,G_vv,buf1,buf2,buf3, &
      &               nbuf2,nbuf3,ResL1,iprnt)
 
-!      use symm_mod, only: IOVOOT, IVOOV, NDIMT1, NDIMT2, NFOO, NFVO, NFVV, NREP, NV5
-!      use files_mod, only: IN, IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: IOVOOT, IVOOV, NDIMT1, NDIMT2, NFOO, NFVO, NFVV, NREP, NV5
       use complex_mod, only: RCW
        implicit none
 
@@ -482,8 +477,6 @@
 
 !   common blocks
 !   -------------
-#include "symm.inc"
-#include "files.inc"
 
 !       calling variables
 !       -----------------

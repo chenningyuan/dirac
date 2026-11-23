@@ -980,9 +980,8 @@
       subroutine cntrct_new (transa,transb,mdim,ndim,kdim,alpha,a,b, &
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
-!      use symm_mod, only: MULTB, NREP
+      use symm_relccsd_mod, only: MULTB, NREP
       use complex_mod, only: RCW
-#include "symm.inc"
 !---------------description--------------------------------------------
 !     generalization of cntrct routine by Luuk. the previous routine was
 !     applicable only for the tensors of totally symmetric irrep.
@@ -1081,9 +1080,8 @@
       subroutine cntrct_1 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
-!      use symm_mod, only: MULTB, NREP
+      use symm_relccsd_mod, only: MULTB, NREP
       use complex_mod, only: RCW
-#include "symm.inc"
 !---------------description--------------------------------------------
 !     generalization of cntrct routine by Luuk. the previous routine was
 !     applicable only for the tensors of totally symmetric irrep.
@@ -1181,9 +1179,8 @@
       subroutine cntrct_2 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
-!      use symm_mod, only: MULTB, NREP
+      use symm_relccsd_mod, only: MULTB, NREP
       use complex_mod, only: RCW
-#include "symm.inc"
 !---------------description--------------------------------------------
 !     generalization of cntrct routine by Luuk. the previous routine was
 !     applicable only for the tensors of totally symmetric irrep.
@@ -1282,9 +1279,8 @@
       subroutine cntrct_3 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
-!      use symm_mod, only: MULTB, NREP
+      use symm_relccsd_mod, only: MULTB, NREP
       use complex_mod, only: RCW
-#include "symm.inc"
 !---------------description--------------------------------------------
 !     generalization of cntrct routine by Luuk. the previous routine was
 !     applicable only for the tensors of totally symmetric irrep.
@@ -1383,9 +1379,8 @@
         subroutine cntrct_4 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
-!      use symm_mod, only: MULTB, NREP
+      use symm_relccsd_mod, only: MULTB, NREP
       use complex_mod, only: RCW
-#include "symm.inc"
 !---------------description--------------------------------------------
 !  C = A*B operation, where A is a matrix and B is a vector
 !  We will use dgemm for this operation as well..
@@ -1492,9 +1487,8 @@
       subroutine cntrct_5 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
-!      use symm_mod, only: MULTB, NREP
+      use symm_relccsd_mod, only: MULTB, NREP
       use complex_mod, only: RCW
-#include "symm.inc"
 !---------------description--------------------------------------------
 !  C = A*B operation, where A is a matrix and B is a vector
 !  We will use dgemm for this operation as well..
@@ -1586,9 +1580,8 @@
       subroutine cntrct_6 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
-!      use symm_mod, only: MULTB, NREP
+      use symm_relccsd_mod, only: MULTB, NREP
       use complex_mod, only: RCW
-#include "symm.inc"
 !---------------description--------------------------------------------
 !     generalization of cntrct routine by Luuk. the previous routine was
 !     applicable only for the tensors of totally symmetric irrep.
@@ -1675,9 +1668,8 @@
       subroutine cntrct_7 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
-!      use symm_mod, only: MULTB, NREP
+      use symm_relccsd_mod, only: MULTB, NREP
       use complex_mod, only: RCW
-#include "symm.inc"
 !---------------description--------------------------------------------
 !     generalization of cntrct routine by Luuk. the previous routine was
 !     applicable only for the tensors of totally symmetric irrep.

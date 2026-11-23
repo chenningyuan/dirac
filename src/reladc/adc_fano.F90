@@ -12,7 +12,7 @@ CONTAINS
 !
 !  Author:  Elke Fasshauer
 
-!      use symm_mod, only: NO, NVOOT
+      use symm_relccsd_mod, only: NO, NVOOT
     use adc_cfg
     use adc_mat
     use adc_fano_real_routines
@@ -27,7 +27,6 @@ CONTAINS
 !
 !  Common Blocks
 !
-#include "../relccsd/symm.inc"
 
 !
 !  Data dictionary: Calling Variables
@@ -217,7 +216,7 @@ CONTAINS
 !
 !  Author:  Elke Fasshauer
 
-!      use symm_mod, only: NO, NVOOT
+      use symm_relccsd_mod, only: NO, NVOOT
     use adc_cfg
     use adc_mat
     use adc_fano_complex_routines
@@ -232,7 +231,6 @@ CONTAINS
 !
 !  Common Blocks
 !
-#include "../relccsd/symm.inc"
 
 !
 !  Data dictionary: Calling Variables

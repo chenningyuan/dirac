@@ -11,9 +11,8 @@ module trial_vectors_eom
  contains
 
    subroutine trial_vectors_ee (r1,Fbar_mi,Fbar_ae,W_mbej)
-!      use symm_mod, only: NREP
+      use symm_relccsd_mod, only: NREP
       use inpt_mod, only: IPRNT
-#include "symm.inc"
 !---------------Description--------------------------------------------
 !     generating R1 trial vectors by diagonalizing HBar_SS matrix.
 !-----------------------------------------------------------------------
@@ -96,9 +95,8 @@ module trial_vectors_eom
 
 
    subroutine trial_vectors_ip (r1,Fbar_mi)
-!      use symm_mod, only: NREP
+      use symm_relccsd_mod, only: NREP
       use inpt_mod, only: IPRNT
-#include "symm.inc"
 !---------------Description--------------------------------------------
 !     generating R1 trial vectors by diagonalizing HBar_SS matrix.
 !-----------------------------------------------------------------------
@@ -163,9 +161,8 @@ module trial_vectors_eom
  end subroutine
 
    subroutine trial_vectors_EA (r1,Fbar_ae)
-!      use symm_mod, only: NREP
+      use symm_relccsd_mod, only: NREP
       use inpt_mod, only: IPRNT
-#include "symm.inc"
 
 !---------------Description--------------------------------------------
 !     generating R1 trial vectors by diagonalizing HBar_SS matrix.

@@ -2,7 +2,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE mpi_master_vvvv_complete(vvvv,idi)
 !
-!      use symm_mod, only: NREP
+      use symm_relccsd_mod, only: NREP
       use ccpar_mod, only: MASTER, NMPROC
       use interface_to_mpi
 !
@@ -30,7 +30,6 @@
 !---------------Common Blocks--------------------------------------
 !
 #include  "polprp_servercodes.h"
-#include  "../relccsd/symm.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -79,7 +78,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE mpi_master_vovv_complete(vovv,idi)
 !
-!      use symm_mod, only: NREP
+      use symm_relccsd_mod, only: NREP
       use ccpar_mod, only: MASTER, NMPROC
       use interface_to_mpi
 !
@@ -107,7 +106,6 @@
 !---------------Common Blocks--------------------------------------
 !
 #include  "polprp_servercodes.h"
-#include  "../relccsd/symm.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -164,7 +162,8 @@
      &                      IOCH,
      &                      IW)
 !
-!      use symm_mod, only: IVOOOT, IVOVVT, JVOVO, MULTB, MVO, NE, NO, NREP, NV
+      use symm_relccsd_mod, only: IVOOOT, IVOVVT, JVOVO, MULTB, MVO, NO,
+     &  NREP, NV
       IMPLICIT NONE
 !
 !---------------Description--------------------------------------------
@@ -190,7 +189,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include  "../relccsd/symm.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -493,7 +491,8 @@
      &                      IOCH,
      &                      IW)
 !
-!      use symm_mod, only: IVOOOT, IVOVVT, JVOVO, MULTB, MVO, NE, NO, NREP, NV
+      use symm_relccsd_mod, only: IVOOOT, IVOVVT, JVOVO, MULTB, MVO, NO,
+     &  NREP, NV
       use complex_mod, only: RCW
       IMPLICIT NONE
 !
@@ -520,7 +519,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include  "../relccsd/symm.inc"
 !
 !---------------Local variables--------------------------------------
 !

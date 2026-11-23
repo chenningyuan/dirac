@@ -20,8 +20,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &  EPS,EFREQ,AVO,AOV,BVO,BOV,X1,X2,Y1,Y2,DG,BUF1,BUF2,CC1,BB1,BB2,
      &  CONV,IPRNT,DEBUG,TIMING)
 C
-!      use files_mod, only: IW
-!      use symm_mod, only: NDIMX
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: NDIMX
       use complex_mod, only: CARITH, RCW
       use param_relccsd_mod, only: A0, A1, D0, LTR
       implicit none
@@ -57,8 +57,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -264,8 +262,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                FREQR,FREQI,FREQD,NEX,IEXREP,CONV,
      &                IPRNT,DEBUG,TIMING)
 C
-!      use files_mod, only: IOAMPL, IOAMPS, IW
-!      use symm_mod, only: JVOXX, MVO, NDIMX, NE
+      use files_relccsd_mod, only: IOAMPL, IOAMPS, IW
+      use symm_relccsd_mod, only: JVOXX, MVO, NDIMX
       use complex_mod, only: CARITH, RCW
       use param_relccsd_mod, only: A0, A1, D0, LFA
       use waio_mod, only: NWORDS_ON_RECORD
@@ -301,8 +299,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -440,7 +436,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DOAX(AA,DG,X1,BUF1,X2,LINRES)
 C
-!      use symm_mod, only: JJVO, JVOVO, JVOXX, MULTB, MVO, NO, NREP, NV
+      use symm_relccsd_mod, only: JJVO, JVOVO, JVOXX, MULTB, MVO, NO,
+     &  NREP, NV
       use complex_mod, only: RCW
       use param_relccsd_mod, only: A0, A1, LFA
       implicit none
@@ -468,7 +465,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -518,7 +514,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DOBY(BB,Y1,BUF1,X2)
 C
-!      use symm_mod, only: J2VOVO, JJVO, JVOXX, MULTB, MVO, NO, NREP, NV
+      use symm_relccsd_mod, only: J2VOVO, JJVO, JVOXX, MULTB, MVO, NO,
+     &  NREP, NV
       use complex_mod, only: RCW
       use param_relccsd_mod, only: A1, LFA
       implicit none
@@ -542,7 +539,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -640,7 +636,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRECD (EFREQ,DG,X1,Y1)
 C
-!      use symm_mod, only: NDIMX, NE
+      use symm_relccsd_mod, only: NDIMX
       use complex_mod, only: CARITH
       implicit none
 C
@@ -661,7 +657,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -695,7 +690,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE REDEQ(MAXDIM,NDIMX,DG,X1,X2,Y1,Y2,IT,CC,HH,ITC,
      &                 SS,HH1,SS1,FREQR,FREQI,FREQD,EFREQ,CNV,NST1,NST2)
 C
-!      use files_mod, only: IOAMPL, IOAMPS
+      use files_relccsd_mod, only: IOAMPL, IOAMPS
       use complex_mod, only: CARITH, RCW
       use param_relccsd_mod, only: A0, A1, ACCUR, AR0, D0
       implicit none
@@ -720,7 +715,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc" 
 C
 C---------------Local variables--------------------------------------
 C 
@@ -1127,7 +1121,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RPAVAL (X1,Y1,AVO,AOV,APHASE,BPHASE,CERPA)
 C
-!      use symm_mod, only: NDIMX
+      use symm_relccsd_mod, only: NDIMX
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1150,7 +1144,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1276,7 +1269,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETDG(EPS,AA,BUF1,DG)
 C
-!      use symm_mod, only: IO, IV, JJVO, JVOVO, JVOXX, MULTB, MVO, NO, NREP, NV
+      use symm_relccsd_mod, only: IO, IV, JJVO, JVOVO, JVOXX, MULTB,
+     &  MVO, NO, NREP, NV
       use complex_mod, only: RCW
       use param_relccsd_mod, only: LFA
       implicit none
@@ -1298,7 +1292,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1354,15 +1347,13 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRRPAB (TEXT,X1,Y1,TRESH)
 C
-!      use files_mod, only: IW
-!      use symm_mod, only: MVO, NREP, REPNA
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: MVO, NREP, REPNA
       use complex_mod, only: CARITH, RCW
       REAL*8 X1(*),Y1(*),THRESH
       CHARACTER*17 TEXT
       INTEGER OFF
 C 
-#include "files.inc"
-#include "symm.inc"
 C
       WRITE (*,1000) TEXT,'real',TRESH
 C

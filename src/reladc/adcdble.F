@@ -10,8 +10,8 @@ C                       AUTHOR: M.Pernpointner
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADCDBLE_MAIN (MXCORR,NSP,IREPSPI,EPS)
-!      use files_mod, only: ITAPADC, IW
-!      use symm_mod, only: IO, IOO, IOOOOTT, IV, IVOOOT, IVOVO, IVVOOTT, KVVOOT, LOVOOT, MULTB, MXREP, NE, NO, NOOT, NREP, NV1, NVVOT
+      use files_relccsd_mod, only: ITAPADC, IW
+      use symm_relccsd_mod
       use complex_mod, only: CARITH, RCW
       use adcinpt_mod, only: ADCTHR, DIPITER, DIPPRNT, DIPREPS,
      &  DOADCPOP, DOFULL, DOINCORE
@@ -36,8 +36,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "../relccsd/files.inc"
-#include  "../relccsd/symm.inc"
       COMMON/RDMATND/NBUFS
 C
 C
@@ -506,7 +504,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BUILD_2H2H (GIJKL,VVOO1,VVOO2,OOOO1,OOOO2,
      &                       AIK,EPS,EABLKKS,EIJKL)
 C
-!      use symm_mod, only: IOOOOTT, NO, NOO, NOOT, NREP, NV1, NV3, NVVT
+      use symm_relccsd_mod, only: IOOOOTT, NO, NOO, NOOT, NREP, NV1,
+     &  NV3, NVVT
       use complex_mod, only: CARITH, RCW
       use param_relccsd_mod, only: A0, A1
       IMPLICIT INTEGER (A-Z)
@@ -524,8 +523,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "../relccsd/symm.inc"
-!#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -639,8 +636,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                            VOOO1,VOOO2,COL,GIJKL,EPS,DESREP,
      &                            LEN_RKLM)
 C
-!      use symm_mod, only: IO, IOOOOTT, IV, LLVOOT, LOVOOT, MULTB, NE, NO, NOOT, NREP, NV, NVO, NVOOT
-!      use files_mod, only: ITAPADC, IW
+      use files_relccsd_mod, only: ITAPADC, IW
+      use symm_relccsd_mod, only: IO, IOOOOTT, IV, LLVOOT, LOVOOT,
+     &  MULTB, NO, NOOT, NREP, NV, NVO, NVOOT
       use param_relccsd_mod, only: LFA
       IMPLICIT INTEGER (A-Z)
 C
@@ -662,8 +660,6 @@ c  MAXOCCSP is the total number of occupied spinors over all ireps.
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "../relccsd/symm.inc"
-#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1020,8 +1016,9 @@ c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                           VOOO1,VOOO2,COL,ECOL,GIJKL,
      &                           EPS,DESREP,LEN_RKLM)
 C
-!      use symm_mod, only: IO, IOOOOTT, IV, LLVOOT, LOVOOT, MULTB, NE, NO, NOOT, NREP, NV, NVO, NVOOT
-!      use files_mod, only: ITAPADC, IW
+      use files_relccsd_mod, only: ITAPADC, IW
+      use symm_relccsd_mod, only: IO, IOOOOTT, IV, LLVOOT, LOVOOT,
+     &  MULTB, NO, NOOT, NREP, NV, NVO, NVOOT
       use param_relccsd_mod, only: LFA
       IMPLICIT INTEGER (A-Z)
 C
@@ -1044,8 +1041,6 @@ c  MAXOCCSP is the total number of occupied spinors over all ireps.
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "../relccsd/symm.inc"
-#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1409,8 +1404,8 @@ c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                       SATEV,IRCD,IRCDLEN,LTO,LTV,DESREP,
      &                       ADCTHR,IOI,IOJ,BUF,INTBUF)
 C
-!      use symm_mod, only: IV, MULTB, NE, NOOT, NREP, NV
-!      use files_mod, only: ITAPADC, IW
+      use files_relccsd_mod, only: ITAPADC, IW
+      use symm_relccsd_mod, only: IV, MULTB, NOOT, NREP, NV
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -1436,8 +1431,6 @@ c for the packed matrix output file
 c
 C---------------Common Blocks--------------------------------------
 C
-#include  "../relccsd/symm.inc"
-#include  "../relccsd/files.inc"
 
       COMMON/RDMATND/NBUFS
 C
@@ -1780,8 +1773,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                       SATEV,IRCD,IRCDLEN,LTO,LTV,DESREP,
      &                       ADCTHR,IOI,IOJ,BUF,INTBUF)
 C
-!      use symm_mod, only: IOOOOTT, IV, MULTB, NE, NOOT, NREP, NV
-!      use files_mod, only: ITAPADC, IW
+      use files_relccsd_mod, only: ITAPADC, IW
+      use symm_relccsd_mod, only: IOOOOTT, IV, MULTB, NOOT, NREP, NV
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -1807,8 +1800,6 @@ c for the packed matrix output file
 c
 C---------------Common Blocks--------------------------------------
 C
-#include  "../relccsd/symm.inc"
-#include  "../relccsd/files.inc"
 
       COMMON/RDMATND/NBUFS
 C
@@ -2158,7 +2149,7 @@ c
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MAKE_EIJKL (EPS,E)
 C
-!      use symm_mod, only: IO, IOOOOTT, MULTB, NE, NO, NREP
+      use symm_relccsd_mod, only: IO, IOOOOTT, MULTB, NO, NREP
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -2185,7 +2176,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "../relccsd/symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2240,7 +2230,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DENOMY (EPS,T2,CT2)
 C
-!      use symm_mod, only: IO, IV, MULTB, NO, NREP, NV
+      use symm_relccsd_mod, only: IO, IV, MULTB, NO, NREP, NV
       use complex_mod, only: CARITH
       IMPLICIT INTEGER (A-Z)
 C
@@ -2257,7 +2247,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "../relccsd/symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2311,7 +2300,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE AWEAVERR(EPS,G,A)
 C
-!      use symm_mod, only: IO, IOO, MULTB, NE, NO, NREP
+      use symm_relccsd_mod, only: IO, IOO, MULTB, NO, NREP
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -2339,7 +2328,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "../relccsd/symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2434,7 +2422,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE AWEAVERC(EPS,G,A)
 C
-!      use symm_mod, only: IO, IOO, MULTB, NE, NO, NREP
+      use symm_relccsd_mod, only: IO, IOO, MULTB, NO, NREP
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -2451,7 +2439,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "../relccsd/symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2587,7 +2574,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MAKE_AIK(AIK14,VVOO1,VVOO2,EPS,EABLKKS,KREP)
 C
-!      use symm_mod, only: KKVVOT, KVVOOT, MULTB, NO, NREP, NVVOT, NVVT
+      use symm_relccsd_mod, only: KKVVOT, KVVOOT, MULTB, NO, NREP,
+     &  NVVOT, NVVT
       use complex_mod, only: CARITH
       use param_relccsd_mod, only: A1, LFA
       IMPLICIT INTEGER (A-Z)
@@ -2603,8 +2591,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "../relccsd/symm.inc"
-!#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2647,7 +2633,7 @@ c
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MAKELOOKUPO(LT,LENLT)
 C
-!      use symm_mod, only: IO, IOOOOTT, MULTB, NE, NO, NREP
+      use symm_relccsd_mod, only: IO, IOOOOTT, MULTB, NO, NREP
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -2666,8 +2652,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "../relccsd/symm.inc"
-!#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2731,7 +2715,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MAKELOOKUPV(LT,LENLTO,LENLTV)
 C
-!      use symm_mod, only: IO, IV, IVOVO, MULTB, NE, NO, NREP, NV
+      use symm_relccsd_mod, only: IO, IV, IVOVO, MULTB, NO, NREP, NV
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -2750,8 +2734,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "../relccsd/symm.inc"
-!#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2809,7 +2791,7 @@ c     WRITE(IW,*) 'Preparing VOVO Lookup table...'
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MAKESPTRA(IROOO,ILENO)
 C
-!      use symm_mod, only: NE, NO, NREP
+      use symm_relccsd_mod, only: NO, NREP
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -2823,8 +2805,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "../relccsd/symm.inc"
-!#include  "../relccsd/files.inc"
 C
 C---------------Executable code--------------------------------------
 c

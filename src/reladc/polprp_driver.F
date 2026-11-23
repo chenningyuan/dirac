@@ -25,6 +25,7 @@
 !
 !---------------Common Blocks--------------------------------------
 !
+      use files_relccsd_mod, only: IN, IW
       use dirac_partask_mod, only: POLPRP_PAR, RELEASE_NODES
       use priunit_mod, only: LUCMD, LUPRI
       use dgroup_mod, only: NZ
@@ -36,12 +37,10 @@
       use infpar_mod, only: MPARID, MYTID, NODE
 #endif
       use ccpar_mod, only: MASTER, MYPROC, NMPROC
-!      use files_mod, only: IN, IW
       use interface_to_mpi
 #include "implicit.h"
       INTEGER :: I
 #include "../moltra/dcbtra.h"
-#include "../relccsd/files.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -141,12 +140,12 @@
 !  similar to CC_NOD due to identical requirements
 !
 !      use dcbtra_mod, only: ISTRAT
+      use files_relccsd_mod, only: CCBASF, CCFILN, LCCFIL, MSLVOUT
 #if defined (VAR_MPI)
       use infpar_mod, only: MPARID, MYTID, NUMNOD
 #endif
       use priunit_mod, only: LUCMD
       use ccpar_mod, only: MASTER, MYPROC, NMPROC
-!      use files_mod, only: CCBASF, CCFILN, LCCFIL, MSLVOUT
       use interface_to_mpi
 
 #include "implicit.h"
@@ -154,7 +153,6 @@
 #if defined (VAR_MPI)
       integer istat(df_mpi_status_size)
 #endif
-#include "../relccsd/files.inc"
       CHARACTER*10 INTFCE
       LOGICAL CA,CCEND
 C
@@ -252,6 +250,8 @@ C
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE POLPRP_MAIN (IN123,IW123,CA,INTFCE)
 
+      use files_relccsd_mod, only: IN, ITAPADC, ITAPT, IW
+      use symm_relccsd_mod, only: MXREP
       use inpt_mod, only: INTERFACE, IPRNT, NACT, NELEC, NELEC_F1,
      &  NELEC_F2, NFROZ, NINACT, NORECMP, USEOE
       use ccpar_mod, only: MYPROC, NMPROC
@@ -279,8 +279,6 @@ C
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "../relccsd/files.inc"
-#include "../relccsd/symm.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -546,6 +544,7 @@ C
 !
 ! executed in parallel or in serial from here.
 !
+      use symm_relccsd_mod, only: JVOVO, MVO, NREP, REPNA
 #if defined (VAR_MPI)
       use ccpar_mod, only: MASTER, MYPROC, NMPROC
 #endif
@@ -570,7 +569,6 @@ C
 !
 !---------------Common Blocks--------------------------------------
 !
-#include  "../relccsd/symm.inc"
 !LTR/LFA are defined here (true, false)
 #include "polprp_servercodes.h"
 #include "polprp_stacklines.h"

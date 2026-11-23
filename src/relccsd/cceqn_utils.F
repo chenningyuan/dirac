@@ -1,7 +1,8 @@
       SUBROUTINE BFLOPS(CPU4V,CPUH1,CPUH2,NIT)
 C
-!      use symm_mod, only: MVO, NO, NOOT, NREP, NV, NVO, NVOOT, NVVT
-!      use files_mod, only: IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: MVO, NO, NOOT, NREP, NV, NVO, NVOOT,
+     &  NVVT
       use complex_mod, only: RCW
       implicit none
 C
@@ -22,8 +23,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
-#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -110,8 +109,8 @@ C
       END
       SUBROUTINE CCENG(T1,T2,FVO,BUF1,BUF2,ECC,ECCIM)
 C
-!      use symm_mod, only: NDIMT1, NDIMT2, NFVO
-!      use files_mod, only: IN, IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: NDIMT1, NDIMT2, NFVO
       use complex_mod, only: CARITH
       use param_relccsd_mod, only: ACCUR
       implicit none
@@ -138,8 +137,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
-#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -187,7 +184,7 @@ C
       END
       SUBROUTINE DELFCK (CLASS,DODEL,FXX)
 C
-!      use symm_mod, only: MXREP, NE, NO, NREP, NSO, NSV, NV
+      use symm_relccsd_mod, only: MXREP, NO, NREP, NSO, NSV, NV
       use complex_mod, only: RCW
       use param_relccsd_mod, only: A0
       use eqns_mod, only: EQNS
@@ -229,7 +226,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -307,7 +303,7 @@ C
       END
       SUBROUTINE DELINT (CLASS,DODEL,VXXXX,IREPVV,ISTART,NINT)
 C
-!      use symm_mod, only: MULTB, MXREP, NE, NO, NREP, NSO, NSV, NV
+      use symm_relccsd_mod, only: MULTB, MXREP, NO, NREP, NSO, NSV, NV
       use complex_mod, only: RCW
       use param_relccsd_mod, only: A0
       use eqns_mod, only: EQNS
@@ -350,7 +346,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -531,7 +526,7 @@ C
 c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
       SUBROUTINE DENOM (EPS,T1,T2,CT1,CT2)
 C
-!      use symm_mod, only: IO, IV, MULTB, NO, NREP, NV
+      use symm_relccsd_mod, only: IO, IV, MULTB, NO, NREP, NV
       use complex_mod, only: CARITH
       use param_relccsd_mod, only: A0, AR0
       use relcc_cfg, only: relcc_ccener_dholu_limit
@@ -557,7 +552,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -691,7 +685,7 @@ c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE DENOM_L (EPS,T1,T2,CT1,CT2)
 C
-!      use symm_mod, only: IO, IV, MULTB, NO, NREP, NV
+      use symm_relccsd_mod, only: IO, IV, MULTB, NO, NREP, NV
       use complex_mod, only: CARITH
       use param_relccsd_mod, only: A0, AR0
       use relcc_cfg, only: relcc_ccener_dholu_limit
@@ -717,7 +711,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -845,7 +838,7 @@ c!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       SUBROUTINE DENOM_N (EPS,DINV_ONE,DINV_TWO)
 C
-!      use symm_mod, only: IO, IV, MULTB, NO, NREP, NV
+      use symm_relccsd_mod, only: IO, IV, MULTB, NO, NREP, NV
       use complex_mod, only: RCW
       use param_relccsd_mod, only: AR0, AR1
       use relcc_cfg, only: relcc_ccener_dholu_limit
@@ -868,7 +861,6 @@ C
 
 C---------------Common Blocks--------------------------------------
 
-#include "symm.inc"
 
 C---------------Local variables--------------------------------------
 
@@ -953,8 +945,8 @@ c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE PAIREN (T1,T2,FVO,BUF1,BUF2)
 C
-!      use symm_mod, only: MULTB, NDIMT1, NO, NREP, NV
-!      use files_mod, only: IN, IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: MULTB, NDIMT1, NO, NREP, NV
       use complex_mod, only: CARITH, RCW
       use param_relccsd_mod, only: AR0
       implicit none
@@ -979,8 +971,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
-#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1068,8 +1058,8 @@ C
       END
       SUBROUTINE PARTS(IMODE,RMS,T1,T2,BUF1,BUF2)
 C
-!      use symm_mod, only: NDIMT1, NDIMT2
 #if defined (VAR_MPI)
+      use symm_relccsd_mod, only: NDIMT1, NDIMT2
       use ccpar_mod, only: MASTER, MYPROC, NMPROC
       use complex_mod, only: RCW
 #endif
@@ -1099,7 +1089,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 #if defined (VAR_MPI)
       integer ISTAT(df_MPI_STATUS_SIZE)
 #endif
@@ -1130,7 +1119,7 @@ C
       END
       SUBROUTINE S1S2_ADDFO (FVO,BUF1,BUF2,S1,S2)
 C
-!      use symm_mod, only: NDIMT1, NDIMT2, NE
+      use symm_relccsd_mod, only: NDIMT1, NDIMT2
       use ccpar_mod, only: MASTER, MYPROC
       use param_relccsd_mod, only: A1
       use eqns_mod, only: EQNS
@@ -1153,7 +1142,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1184,7 +1172,7 @@ C
       END
       SUBROUTINE ZCORE(T1,T2)
 C
-!      use symm_mod, only: MULTB, NE, NO, NREP, NV, NVVT
+      use symm_relccsd_mod, only: MULTB, NO, NREP, NV, NVVT
       use complex_mod, only: RCW
       use param_relccsd_mod, only: A0
       use freeze_mod, only: IFROZ
@@ -1206,7 +1194,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1246,7 +1233,7 @@ C
       END
 
       SUBROUTINE FCORE(T1,T2,EPS)
-!      use symm_mod, only: NDIMT1, NDIMT2
+      use symm_relccsd_mod, only: NDIMT1, NDIMT2
       use complex_mod, only: CARITH
       use mfsolver_dirac_input
       use projectors 
@@ -1269,7 +1256,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1312,8 +1298,8 @@ C
 
       SUBROUTINE MP2ENG(T1,T2,FVO,BUF1,EMP2)
 C
-!      use symm_mod, only: NDIMT2, NFVO
-!      use files_mod, only: IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: NDIMT2, NFVO
       use complex_mod, only: CARITH
       use param_relccsd_mod, only: ACCUR
       implicit none
@@ -1339,8 +1325,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
-#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1371,7 +1355,7 @@ C
       END
       SUBROUTINE T1DIAG(DIAG,T1,BUF1)
 C
-!      use symm_mod, only: NDIMT1, NE, NREP
+      use symm_relccsd_mod, only: NDIMT1, NE, NREP
       use complex_mod, only: RCW
       implicit none
 C
@@ -1391,7 +1375,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1418,8 +1401,8 @@ C     &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE PRINT_AMPLITUDES (T1,T2,THRESHOLD)
 C
-!      use symm_mod, only: MULTB, NO, NREP, NV
-!      use files_mod, only: IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: MULTB, NO, NREP, NV
       use complex_mod, only: CARITH, RCW
       use param_relccsd_mod, only: AR0
       implicit none
@@ -1442,8 +1425,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
-#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C

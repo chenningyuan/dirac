@@ -1,7 +1,8 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE WCONDAT_X(LUN,FILENAME,IRECL,DESREP,RECCOUNT)
 !
-!      use symm_mod, only: IO, IV, MULTB, MVO, NE, NO, NREP, NV, REPNA
+      use symm_relccsd_mod, only: IO, IV, MULTB, MVO, NO, NREP, NV,
+     &  REPNA
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -22,8 +23,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-!#include "../relccsd/files.inc"
-#include "../relccsd/symm.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -132,7 +131,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DENOMVVOO_PP (EPS,T2)
 !
-!      use symm_mod, only: IO, IV, IVVOOTT, MULTB, NE, NO, NREP, NV
+      use symm_relccsd_mod, only: IO, IV, IVVOOTT, MULTB, NO, NREP, NV
       use complex_mod, only: CARITH
       IMPLICIT INTEGER (A-Z)
 !
@@ -149,7 +148,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include  "../relccsd/symm.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -209,7 +207,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EARR_VVOO (EPS,T2)
 !
-!      use symm_mod, only: IO, IV, JVOVO, MULTB, NE, NO, NREP, NV
+      use symm_relccsd_mod, only: IO, IV, JVOVO, MULTB, NO, NREP, NV
       use complex_mod, only: CARITH
       IMPLICIT INTEGER (A-Z)
 !
@@ -230,7 +228,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include  "../relccsd/symm.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -288,7 +285,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DENOMVOVO(EPS,T)
  
-!      use symm_mod, only: IO, IV, JVOVO, MULTB, NE, NO, NREP, NV
+      use symm_relccsd_mod, only: IO, IV, JVOVO, MULTB, NO, NREP, NV
       use complex_mod, only: CARITH
       IMPLICIT INTEGER (A-Z)
 !
@@ -305,7 +302,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "../relccsd/symm.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -367,7 +363,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DENOMVOTS(eps,aak)
  
-!      use symm_mod, only: IO, IV, MVO, NE, NO, NREP, NV
+      use symm_relccsd_mod, only: IO, IV, MVO, NO, NREP, NV
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -381,7 +377,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "../relccsd/symm.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -561,7 +556,10 @@ C
 !  single buffer, otherwise parallel execution is advised.
 !
 
-!      use symm_mod, only: IVVOOTT, IVVVVTT, NE, NOOT, NREP, NVVT
+      use symm_relccsd_mod, only: IVVOOTT, NREP
+#if !defined (VAR_MPI)
+      use symm_relccsd_mod, only: IVVVVTT, NOOT, NVVT
+#endif
 #if defined (VAR_MPI)
       use ccpar_mod, only: MASTER, NMPROC
 #endif
@@ -592,7 +590,6 @@ C
       logical                                  :: isthere
 
 
-#include  "../relccsd/symm.inc"
 #include  "polprp_servercodes.h"
 !
 !   function interfaces
@@ -717,7 +714,7 @@ C
       end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine do_partial_precon(vvoo_in,vvoo_ou)
-!      use symm_mod, only: IVVOOTT, NE, NOOT, NREP, NVVT
+      use symm_relccsd_mod, only: IVVOOTT, NOOT, NREP, NVVT
       use ccpar_mod, only: IDIST, MYPROC
       use complex_mod, only: RCW
       implicit none
@@ -725,7 +722,6 @@ C
       real*8,dimension (:)                :: vvoo_in, vvoo_ou
 
 #include  "polprp_servercodes.h"
-#include  "../relccsd/symm.inc"
 !
 ! local variables
 ! 

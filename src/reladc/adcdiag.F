@@ -1137,7 +1137,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                    P, T, R, DIAG, Z, AEV, BUF, OI, OJ, CEVL, 
      &                    CFLAG, INTBUF, IO_OFF, IO_DIA, IO_LAN)
 C
-!      use files_mod, only: IW
+      use files_relccsd_mod, only: IW
       IMPLICIT INTEGER (A-Z)
  
       INTEGER IRREP,LADC,NP,NITER,NEIGENV,IVX(2*NP+1)
@@ -1169,7 +1169,6 @@ C  matrix of purged eigenvectors from ZMAT.
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "../relccsd/files.inc"
 C
 C---------------Local variables and function definitions ------------
 C
@@ -1407,7 +1406,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                    P, T, R, DIAG, Z, AEV, BUF, OI, OJ, CEVL, 
      &                    CFLAG, INTBUF, IO_OFF, IO_DIA, IO_LAN)
 C
-!      use files_mod, only: IW
+      use files_relccsd_mod, only: IW
       IMPLICIT INTEGER (A-Z)
 
       INTEGER IRREP,LADC,NP,NITER,NEIGENV,IVX(2*NP+1)
@@ -1438,7 +1437,6 @@ C  matrix of purged eigenvectors from ZMAT.
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "../relccsd/files.inc"
 C
 C---------------Local variables and function definitions ------------
 C
@@ -1650,7 +1648,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                       CFLAG, INTBUF, IO_OFF, IO_DIA, IO_LAN,
      &                       NINCW,BUFC,OIC,OJC,IVALID)
 C
-!      use files_mod, only: IW
+      use files_relccsd_mod, only: IW
       IMPLICIT INTEGER (A-Z)
  
       INTEGER IRREP,LADC,NP,NITER,NEIGENV,IVX(2*NP+1)
@@ -1685,7 +1683,6 @@ C  matrix of purged eigenvectors from ZMAT.
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "../relccsd/files.inc"
 C
 C---------------Local variables and function definitions ------------
 C
@@ -1923,7 +1920,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                       CFLAG, INTBUF, IO_OFF, IO_DIA, IO_LAN,
      &                       NINCW,BUFC,OIC,OJC,IVALID)
 C
-!      use files_mod, only: IW
+      use files_relccsd_mod, only: IW
       IMPLICIT INTEGER (A-Z)
 
       INTEGER IRREP,LADC,NP,NITER,NEIGENV,IVX(2*NP+1)
@@ -1959,7 +1956,6 @@ C  matrix of purged eigenvectors from ZMAT.
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "../relccsd/files.inc"
 C
 C---------------Local variables and function definitions ------------
 C
@@ -2872,7 +2868,7 @@ c
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RBANDDIA(IOUNIT,N,NP,LDAB,NEIGENV,AB,EVL,Z,RWORK)
 C
-!      use files_mod, only: IW
+      use files_relccsd_mod, only: IW
       use adc_mat
       use memory_allocator
       use adc_fano_diag
@@ -2903,7 +2899,6 @@ C  L and deal with multitudes separately.
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3028,7 +3023,7 @@ c
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ZBANDDIA(IOUNIT,N,NP,LDAB,NEIGENV,AB,EVL,Z,WORK,RWORK)
 C
-!      use files_mod, only: IW
+      use files_relccsd_mod, only: IW
       use adc_mat
       use memory_allocator
       use adc_fano_diag
@@ -3051,7 +3046,6 @@ C  The Lanczos matrix T from the caller comes in the AB array.
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3426,7 +3420,6 @@ C  are necessarily real.
 C
 C---------------Common Blocks--------------------------------------
 C
-!#include "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3634,8 +3627,8 @@ c
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE WCONDAT_S(LUN,FILENAME,IRECL,DESREP,LENADCM)
 C
-!      use files_mod, only: IW
-!      use symm_mod, only: IO, IV, MULTB, NE, NO, NREP, NV, REPNA
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: IO, IV, MULTB, NO, NREP, NV, REPNA
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -3653,8 +3646,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "../relccsd/files.inc"
-#include "../relccsd/symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3762,8 +3753,8 @@ C|____________________________________________________________
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE WCONDAT_D(LUN,FILENAME,IRECL,DESREP,LENADCM)
 C
-!      use files_mod, only: IW
-!      use symm_mod, only: IO, MULTB, NE, NO, NOOT, NREP, NV, REPNA
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: IO, MULTB, NO, NOOT, NREP, NV, REPNA
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -3781,8 +3772,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "../relccsd/files.inc"
-#include "../relccsd/symm.inc"
 C
 C---------------Local variables--------------------------------------
 C

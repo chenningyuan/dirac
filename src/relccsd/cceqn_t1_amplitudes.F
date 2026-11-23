@@ -1,7 +1,8 @@
       SUBROUTINE amplitude_equation_T1 (FVO,T1,T2,
      &        HO,HV,HOV,BUF1,BUF2,BUF3,NBUF3,S1)
 C
-!      use symm_mod, only: JJVO, JVOVO, MULTB, MVO, NDIMT1, NFVO, NO, NREP, NV
+      use symm_relccsd_mod, only: JJVO, JVOVO, MULTB, MVO, NDIMT1, NFVO,
+     &  NO, NREP, NV
       use ccpar_mod, only: IDIST, MASTER, MYPROC
       use complex_mod, only: CARITH, RCW
       use param_relccsd_mod, only: A0, A1, A2, LFA, LTR
@@ -40,7 +41,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 
       interface

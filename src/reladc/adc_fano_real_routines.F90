@@ -67,7 +67,7 @@ CONTAINS
 !  Author: Elke Fasshauer
 !
 
-!      use symm_mod, only: NO, NVOOT
+      use symm_relccsd_mod, only: NO, NVOOT
     use adc_cfg
     use memory_allocator
 
@@ -76,7 +76,6 @@ CONTAINS
 !
 !  Common Blocks
 !
-#include "../relccsd/symm.inc"
 
 !
 !  Data dictionary: Calling Variables
@@ -251,7 +250,7 @@ CONTAINS
 !           different Fano matrices
 !
 
-!      use symm_mod, only: NO, NREP, NVOOT
+      use symm_relccsd_mod, only: NO, NREP, NVOOT
     use adc_cfg
     use memory_allocator
 
@@ -260,7 +259,6 @@ CONTAINS
 !
 !  Common Blocks
 !
-#include "../relccsd/symm.inc"
 
 !
 !  Data dictionary: Calling Variables
@@ -753,7 +751,7 @@ CONTAINS
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   FUNCTION fano_kcocc(IROW,JCOL,OOOO,VOVO,ICRA,najl,OOLT,MXNO)
 
-!      use symm_mod, only: IIOOT, IIVO, IOOOOTT, IVOVO, MULTB, NO, NOOT, NV, NVO
+      use symm_relccsd_mod, only: IIOOT, IIVO, IOOOOTT, IVOVO, MULTB, NO, NOOT, NV, NVO
      IMPLICIT NONE
 !
 !---------------Description--------------------------------------------
@@ -778,7 +776,6 @@ CONTAINS
 !
 !---------------Common Blocks--------------------------------------
 !
-#include  "../relccsd/symm.inc"
 !
 !---------------Local variables--------------------------------------
 !

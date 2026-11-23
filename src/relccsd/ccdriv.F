@@ -18,7 +18,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCHEADER
 C
-!      use files_mod, only: IW
+      use files_relccsd_mod, only: IW
       IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
@@ -37,7 +37,6 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -140,6 +139,7 @@ C--------------------------------------------------------------------
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCINPT (IN,IW)
+      use symm_relccsd_mod, only: LTSHFS
       use inpt_mod
       use ihm_mod, only: AIH, DOIH, ER_IH, IHSCHEME, NIH, SHIFT_IH
       use dcbham_mod, only: X2CMMF
@@ -171,7 +171,6 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 #include "dcbprp.h"
 C
 C---------------Local variables--------------------------------------
@@ -598,6 +597,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCMAIN (IUNIN,IUNUT,CA,INTFCE)
 c
+      use files_relccsd_mod, only: IN, ITAPT, IUHEFF, IW
+      use symm_relccsd_mod, only: MXREP
       use inpt_mod
       use ccpar_mod, only: MYPROC, NMPROC
       use complex_mod, only: CARITH, IRW, RCW
@@ -626,8 +627,6 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1066,6 +1065,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   NSP,EPS1,EPS,IREPSP,IREPSPI,
      &                   FOCKSP,REPORT,NELEC_F1,NELEC_F2)
 C
+      use files_relccsd_mod, only: IN, IW
+      use symm_relccsd_mod
       use ccpar_mod, only: IDIST
       use ihm_mod, only: DOIH, ER_IH, IPIORB, MAXSPIM
       use freeze_mod, only: IFROZ, IFROZ_SET_IN_INPUT, MAXFROZ, NFROZEN
@@ -1085,8 +1086,6 @@ C     Author : Luuk Visscher
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "symm.inc"
 C---------------Calling variables--------------------------------------
 C
       INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2)
@@ -2144,6 +2143,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCSETI (ICALC,MXCORR,EPS,NSP,IREPSP,IREPSPI)
 C
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: JOOOO, JVOOO, MXREP, NFOO, NFVO, NFVV,
+     &  NV1, NV2, NV3, NV4, NV5, NV6
       use inpt_mod, only: BREIT, DOCCSD, DOMP2GOLD, INTERFACE, IPRNT
       use complex_mod, only: IRW, RCW
       use eqns_mod, only: EQNS
@@ -2174,8 +2176,6 @@ C     Author : Luuk Visscher
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "symm.inc"
 C
 C---------------Calling variables--------------------------------------
 C
@@ -2332,6 +2332,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCENER (ICALC,MXCORR,EPS)
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod
       use inpt_mod, only: DOCCSD, DOCCSDT, DOEOMCCSD, DOEOMPT2, DOMP2,
      &  MXDIMCC, MXITCC, NTOLCC, RESTART_UNCONVERGED
       use complex_mod, only: RCW
@@ -2367,8 +2369,6 @@ C---------------Calling variables--------------------------------------
       integer icalc
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "symm.inc"
 ! ccpar.inc not needed, because there is no parallelization in this subroutine
 ! include "ccpar.inc"
 C
@@ -2738,6 +2738,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     CCFOPR - CC First Order PRoperties, aka gradients
 C
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod
       use inpt_mod, only: DOCCSDG, DOMP2G, DOMP2GOLD, DONATORB, IPRNT,
      &  MXDIMCC, MXDIMGR, MXITCC, MXITGR, NAMEE, NEOPER, NOZG, NTOLCC,
      &  NTOLGR
@@ -2784,8 +2786,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3328,6 +3328,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCHESS (ICALC,MXCORR,EPS,NSP,IREPSPI)
 C
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: JVOVO, JVVOO, NDIMX, NREP
       use inpt_mod, only: DEBUG, EFREQ, IPRNT, MAXOP, MXDIMRP, MXITRP,
      &  NAMEA, NAMEB, NAOPER, NBOPER, NFREQ, NTOLRP, TIMING
       use complex_mod, only: RCW
@@ -3365,8 +3367,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3501,6 +3501,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCEXC (ICALC,MXCORR,EPS,NSP,IREPSPI)
 C
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: JVOVO, JVVOO, NDIMX, NREP, REPNA
       use inpt_mod, only: DEBUG, IPRNT, MAXOP, MXDIMRP, MXITRP, NEXC,
      &  NTOLRP, TIMING
       use complex_mod, only: RCW
@@ -3536,8 +3538,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3653,6 +3653,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCFSPC (ICALC,MXCORR,EPS1,EPS,NSP,IREPSP,IREPSPI)
 C
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod
       use inpt_mod
       use complex_mod, only: RCW
       use eqns_mod, only: EQNS, ICURFSS
@@ -3688,8 +3690,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3967,6 +3967,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FS_PUTAMPT (ICURFSS,T1,T2,BUF1,BUF2)
 C
+      use symm_relccsd_mod, only: NDIMT1, NDIMT2
       use param_relccsd_mod, only: A1
       IMPLICIT NONE
 C
@@ -3988,7 +3989,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4028,6 +4028,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDINI(do_restart)
 C
+      use files_relccsd_mod, only: IRECEN, IRECIN, IRECST, IRECT1, IW,
+     &  LRSFIL, MCCRES, RSBASF, RSFILN, RSRCLEN
       use inpt_mod, only: DOCCSD, DOCCSDT, DOENER, DOFSPC, DOMP2,
      &  DOSORT, NACT, NELEC, NFROZ, NINACT, RESTART_IGNORE_CHECK,
      &  RESTART_REDO_CCSD, RESTART_REDO_SORT
@@ -4059,7 +4061,6 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4281,6 +4282,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDUMP
 C
+      use files_relccsd_mod, only: LRSFIL, MCCRES, RSFILN, RSRCLEN
       use inpt_mod, only: NACT, NELEC, NFROZ, NINACT
       use results_mod, only: ETOT, IMSTAT
       IMPLICIT NONE
@@ -4300,7 +4302,6 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4334,6 +4335,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCSUMM
 C
+      use files_relccsd_mod, only: IW, LRSFIL, MCCRES, RSFILN, RSRCLEN
       use inpt_mod, only: DOCCSD, DOCCSDT, DOFSPC, DOMP2
       use results_mod, only: ECCSD, EMP2, ESCF, ET1, ET2, ET3, ETOT,
      &  IMSTAT
@@ -4353,7 +4355,6 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4467,6 +4468,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RDSYMI (NSP,EPS1,IREPSP,ncore_elec)
 C
+      use files_relccsd_mod, only: IW, MRCONEE
+      use symm_relccsd_mod, only: MULTB, MXREP, NORBT, NREP, NSYMRP,
+     &  REPN, REPNA, SPFR
       use inpt_mod, only: BREIT, INTERFACE, NELEC
       use ccpar_mod, only: MASTER, MYPROC
 #if defined (VAR_MPI)
@@ -4495,8 +4499,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4711,6 +4713,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DISLIST
 C
+      use symm_relccsd_mod
       use ccpar_mod, only: IDIST, MYPROC, NMPROC, NV5PAR, NV6PAR
       use complex_mod, only: RCW
       IMPLICIT NONE
@@ -4732,7 +4735,6 @@ C     the block
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C

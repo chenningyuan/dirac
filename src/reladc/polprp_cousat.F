@@ -2,8 +2,9 @@
       SUBROUTINE BUILD_X_COUSAT_R (PHPH_BLOCK,EPS,DESREP,LENCOUPLBL,
      &                             INTBUF,NBUFS,DOXEXT,WTHR,IOCH)
 !
-!      use symm_mod, only: IVOOOT, IVOVVT, JVOVO, MULTB, MVO, NE, NO, NREP, NV
-!      use files_mod, only: IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: IVOOOT, IVOVVT, JVOVO, MULTB, MVO, NO,
+     &  NREP, NV
       IMPLICIT INTEGER (A-Z)
 !     IMPLICIT NONE
 !
@@ -24,8 +25,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include  "../relccsd/symm.inc"
-#include  "../relccsd/files.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -308,8 +307,9 @@
       SUBROUTINE BUILD_X_COUSAT_C (PHPH_BLOCK,EPS,DESREP,LENCOUPLBL,
      &                             INTBUF,NBUFS,DOXEXT,WTHR,IOCH)
 !
-!      use symm_mod, only: IVOOOT, IVOVVT, JVOVO, MULTB, MVO, NE, NO, NREP, NV
-!      use files_mod, only: IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: IVOOOT, IVOVVT, JVOVO, MULTB, MVO, NO,
+     &  NREP, NV
       use complex_mod, only: RCW
       IMPLICIT INTEGER (A-Z)
 !     IMPLICIT NONE
@@ -331,8 +331,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include  "../relccsd/symm.inc"
-#include  "../relccsd/files.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -628,7 +626,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION XCOLDET(desrep)
 !
-!      use symm_mod, only: MULTB, NO, NREP, NV
+      use symm_relccsd_mod, only: MULTB, NO, NREP, NV
       IMPLICIT INTEGER (A-Z)
 
       INTEGER                               :: XCOLDET
@@ -642,7 +640,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "../relccsd/symm.inc"
 !
 !---------------Executable code--------------------------------------
 !
@@ -679,7 +676,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE XKENEDIAG(desrep,eps)
 
-!      use symm_mod, only: IO, IV, MULTB, NE, NO, NREP, NV
+      use symm_relccsd_mod, only: IO, IV, MULTB, NO, NREP, NV
       use qstack
 !
       IMPLICIT INTEGER (A-Z)
@@ -713,7 +710,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "../relccsd/symm.inc"
 #include "polprp_stacklines.h"
 !
 !---------------Executable code--------------------------------------
@@ -777,7 +773,8 @@
      &                     voooz,vovvz,
      &                     oolt,vvlt)
 !
-!      use symm_mod, only: IIOOT, IIVO, IIVVT, IVOOOT, IVOVVT, MULTB, NE, NO, NREP, NV, NVO
+      use symm_relccsd_mod, only: IIOOT, IIVO, IIVVT, IVOOOT, IVOVVT,
+     &  MULTB, NO, NREP, NV, NVO
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -796,7 +793,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include  "../relccsd/symm.inc"
 !
 !---------------Executable code--------------------------------------
 !
@@ -934,7 +930,8 @@
      &                       mxno,mxnv,
      &                       voooz,vovvz,oolt,vvlt)
 !
-!      use symm_mod, only: IIOOT, IIVO, IIVVT, IVOOOT, IVOVVT, MULTB, NE, NO, NREP, NV, NVO
+      use symm_relccsd_mod, only: IIOOT, IIVO, IIVVT, IVOOOT, IVOVVT,
+     &  MULTB, NO, NREP, NV, NVO
       use complex_mod, only: RCW
       IMPLICIT INTEGER (A-Z)
 !
@@ -959,7 +956,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include  "../relccsd/symm.inc"
 !
 !---------------Executable code--------------------------------------
 !
@@ -1236,7 +1232,7 @@
       SUBROUTINE XSATMAKE(ioch,ibfp,nbufs,intbuf,desrep,wthr,
      &                    buf,ioi,ioj,eps,oolt,vvlt,dox)
 
-!      use symm_mod, only: IIOOT, IIVO, IIVVT, IO, IOOOOTT, IV, IVOVO, IVVVVTT, MULTB, MVO, NE, NO, NOOT, NREP, NV, NVO, NVVT
+      use symm_relccsd_mod
       use complex_mod, only: RCW
       use qstack
 !
@@ -1261,7 +1257,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include  "../relccsd/symm.inc"
 #include  "polprp_stacklines.h"
 !
 !---------------Local variables--------------------------------------
@@ -1745,7 +1740,7 @@
       SUBROUTINE XSATMAKE_C (ioch,ibfp,nbufs,intbuf,desrep,wthr,
      &                       buf,ioi,ioj,eps,oolt,vvlt,dox)
 
-!      use symm_mod, only: IIOOT, IIVO, IIVVT, IO, IOOOOTT, IV, IVOVO, IVVVVTT, MULTB, MVO, NE, NO, NOOT, NREP, NV, NVO, NVVT
+      use symm_relccsd_mod
       use complex_mod, only: RCW
       use qstack
 !
@@ -1770,7 +1765,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include  "../relccsd/symm.inc"
 #include  "polprp_stacklines.h"
 !
 !---------------Local variables--------------------------------------

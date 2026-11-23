@@ -1,7 +1,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE property_handler(ioch,ioch2,lavail,nsp,irepspi)
 
-!      use symm_mod, only: MOO, MOV, MVO, MVV, NE, NREP
+      use symm_relccsd_mod, only: MOO, MOV, MVO, MVV, NREP
       use complex_mod, only: RCW
       use polprp_cfg   !make some input variables available
 
@@ -23,7 +23,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include  "../relccsd/symm.inc"
 !provides MXREP,NXREP etc.
 !provides CARITH,RCW
 !
@@ -320,7 +319,7 @@
      &                           PROP,AOO,AOV,AVO,AVV,
      &                           printlevel)
 !
-!      use symm_mod, only: IO, IV, MULTB, MXREP, NE, NO, NREP, NV
+      use symm_relccsd_mod, only: IO, IV, MULTB, MXREP, NO, NREP, NV
       use ccpar_mod, only: MASTER, MYPROC
       use complex_mod, only: CARITH, RCW
       use param_relccsd_mod, only: ACCUR, D0, D1
@@ -365,7 +364,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "../relccsd/symm.inc"
 #include "polprp_stacklines.h"
 !
 !---------------Calling variables--------------------------------------
@@ -904,7 +902,7 @@ C
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE IDXCOVERAGE(IREPSPI,NSP,ok)
 
-!      use symm_mod, only: MULTB, MXREP, NE, NO, NREP, NV
+      use symm_relccsd_mod, only: MULTB, MXREP, NO, NREP, NV
       IMPLICIT none
 !     IMPLICIT INTEGER (A-Z)
 !
@@ -914,7 +912,6 @@ C
 !
 !----------------Common Blocks-----------------------------------------
 !
-#include "../relccsd/symm.inc"
 !provides MXREP and MULTB
 !
 !----------------Calling variables---------------------------------------------

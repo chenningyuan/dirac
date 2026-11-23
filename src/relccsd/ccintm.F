@@ -18,7 +18,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE AINTM(T1,T2,BUF1,BUF2,AZ)
 C
-!      use symm_mod, only: IOOOOTT, KKOOOT, KOOOOT, KOOOVT, MULTB, NO, NOOOT, NOOT, NREP, NV, NVO, NVVT
+      use symm_relccsd_mod, only: IOOOOTT, KKOOOT, KOOOOT, KOOOVT,
+     &  MULTB, NO, NOOOT, NOOT, NREP, NV, NVO, NVVT
       use complex_mod, only: CARITH
       use param_relccsd_mod, only: A0, A1, LFA, LTR
       implicit none
@@ -44,7 +45,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -91,7 +91,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GOINTM (FVO,T1,BUF1,BUF2,GO)
 C
-!      use symm_mod, only: JJOO, JJVO, JVOOO, MOO, MULTB, MVO, NFVO, NO, NREP, NV
+      use symm_relccsd_mod, only: JJOO, JJVO, JVOOO, MOO, MULTB, MVO,
+     &  NFVO, NO, NREP, NV
       use param_relccsd_mod, only: A1, LFA, LTR
       implicit none
 C
@@ -114,7 +115,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -146,7 +146,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GVINTM(FVO,T1,BUF3,NBUF3,BUF2,NBUF2,GV)
 C
-!      use symm_mod, only: JJVO, JJVV, JVVVO, MULTB, MVO, MVV, NFVO, NFVV, NO, NREP, NV, NVO
+      use symm_relccsd_mod, only: JJVO, JJVV, JVVVO, MULTB, MVO, MVV,
+     &  NFVO, NFVV, NO, NREP, NV, NVO
       use ccpar_mod, only: MASTER, MYPROC
       use param_relccsd_mod, only: A0, A1
       implicit none
@@ -171,7 +172,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -220,7 +220,7 @@ C------------------------------------
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HINTM(T1,T2,BUF1,BUF2,BUF3,NBUF3,H)
 C
-!      use symm_mod, only: IIVO, IVO, IVOVO, J2VOVO, JJVO, JVOVO, LLOVO, LOOVO, LVOVO, MULTB, MVO, NDIMT1, NDIMT2, NO, NOOT, NOVO, NREP, NV, NV3, NV4, NVO
+      use symm_relccsd_mod
       use ccpar_mod, only: IDIST, MASTER, MYPROC
 #if defined (VAR_MPI)
       use ccpar_mod, only: NMPROC
@@ -249,7 +249,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -477,7 +476,8 @@ C ... we collect the H array
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HOINTM(FOO,EPS,T1,T2,BUF1,BUF2,BUF3,HO)
 C
-!      use symm_mod, only: KKVVOT, KVVOOT, MULTB, NFOO, NO, NREP, NVVOT, NVVT
+      use symm_relccsd_mod, only: KKVVOT, KVVOOT, MULTB, NFOO, NO, NREP,
+     &  NVVOT, NVVT
       use complex_mod, only: RCW
       use param_relccsd_mod, only: A1, LFA
       implicit none
@@ -501,7 +501,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -547,7 +546,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HOVINTM(FVO,T1,BUF1,BUF2,HOV)
 C
-!      use symm_mod, only: JJVO, JVOVO, MULTB, MVO, NFVO, NO, NREP, NV
+      use symm_relccsd_mod, only: JJVO, JVOVO, MULTB, MVO, NFVO, NO,
+     &  NREP, NV
       use complex_mod, only: CARITH
       use param_relccsd_mod, only: A0, A1, LFA, LTR
       implicit none
@@ -571,7 +571,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -603,7 +602,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HVINTM(FVV,EPS,T1,T2,BUF1,BUF2,BUF3,HV)
 C
-!      use symm_mod, only: LLVOOT, LVVOOT, MULTB, NFVV, NO, NOOT, NREP, NV, NVOOT, NVVT
+      use symm_relccsd_mod, only: LLVOOT, LVVOOT, MULTB, NFVV, NO, NOOT,
+     &  NREP, NV, NVOOT, NVVT
       use complex_mod, only: RCW
       use param_relccsd_mod, only: A1, LFA
       implicit none
@@ -627,7 +627,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
       REAL*8 ddot
@@ -679,7 +678,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BINTM(T1,T2,BUF1,BUF2,BUF3,NBUF3,S2)
 C
-!      use symm_mod, only: IIOV, IVOOOT, LLVOOT, LOVOOT, LVVOOT, MULTB, NDIMT2, NO, NOOT, NREP, NV, NV2, NVO, NVOOT, NVVT
+      use symm_relccsd_mod
       use complex_mod, only: RCW
       use param_relccsd_mod, only: A0, A1, LFA, LTR
       use eqns_mod, only: EQNS
@@ -704,7 +703,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -827,7 +825,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETTAU (T1,T2,TAU)
 C
-!      use symm_mod, only: IVO, MULTB, NDIMT2, NE, NO, NREP, NV
+      use symm_relccsd_mod, only: IVO, MULTB, NDIMT2, NO, NREP, NV
       use complex_mod, only: CARITH, RCW
       implicit none
 C
@@ -850,7 +848,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -934,7 +931,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE GETTAU2 (S1,DL,TAU)
 C
-!      use symm_mod, only: IVO, MULTB, NDIMT1, NE, NIO, NO, NREP, NSO, NSV, NV
+      use symm_relccsd_mod, only: IVO, MULTB, NDIMT1, NIO, NO, NREP,
+     &  NSO, NSV, NV
       use complex_mod, only: CARITH, RCW
       use param_relccsd_mod, only: A0, D1
       implicit none
@@ -966,7 +964,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1062,7 +1059,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETTAU3 (T1,T2,TAU)
 C
-!      use symm_mod, only: IVO, MULTB, NDIMT2, NE, NO, NREP, NV
+      use symm_relccsd_mod, only: IVO, MULTB, NDIMT2, NO, NREP, NV
       use complex_mod, only: CARITH, RCW
       use param_relccsd_mod, only: ARP3
       implicit none
@@ -1086,7 +1083,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1233,7 +1229,7 @@ C
       SUBROUTINE CNTRCT_SP (TRANSA,TRANSB,MDIM,NDIM,KDIM,ALPHA,A,B,
      &                   BETA,C)
 C
-!      use symm_mod, only: MULTB, NREP
+      use symm_relccsd_mod, only: MULTB, NREP
       use complex_mod, only: RCW
       implicit none
 C
@@ -1249,7 +1245,6 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-#include "symm.inc"
       REAL*8 A(*),B(*),C(*)
       COMPLEX*16 ALPHA,BETA
       INTEGER MDIM(NREP),NDIM(NREP),KDIM(NREP)

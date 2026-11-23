@@ -1,4 +1,6 @@
   module eom_driver
+      use files_relccsd_mod, only: IN, IW
+      use symm_relccsd_mod
       use param_relccsd_mod, only: A0, A2, D0
       use ihm_mod, only: AIH, DOIH, IHSCHEME, IPIORB, NIH, SHIFT_IH
   use projectors
@@ -25,8 +27,7 @@
    contains
 
   subroutine set_continuous_orbital(active_irrep)
-!      use symm_mod, only: NCONT, NREP
-#include "symm.inc"
+      use symm_relccsd_mod, only: NCONT, NREP
     integer, intent(in) :: active_irrep
 
 !Assigning Dimension to the continuous orbital
@@ -37,10 +38,8 @@
   end subroutine
 
   subroutine verify_input()
-!      use symm_mod, only: NE, NO, NREP, NV, NVO, REPNA
-!      use files_mod, only: IW
-#include "symm.inc"
-#include "files.inc"
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: NO, NREP, NV, NVO, REPNA
     logical :: reset_roots_in_symmetry = .false.
     integer :: max_manifold = 0
     
@@ -142,14 +141,12 @@
   end subroutine
 
    subroutine input_processor_right(Fbar_HH,Fbar_PP,Vbar_SS,R1,R2,H_II)
-!      use symm_mod, only: IIOV, IIVO, IO, IOVVO, IV, MULTB, NCONT, NO, NOV, NREP, NV
-!      use files_mod, only: IN, IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: IIOV, IIVO, IO, IOVVO, IV, MULTB, NCONT, NO, NOV, NREP, NV
       use inpt_mod, only: IPRNT
       use complex_mod, only: RCW
       use davidson
 
-#include "symm.inc"
-#include "files.inc"
 
 !description
 !===========
@@ -891,13 +888,11 @@
 
    subroutine input_processor_left(Fbar_HH,Fbar_PP,Vbar_SS,eVectorsR,L1,L2,H_II)
 
-!      use symm_mod, only: IO, IV, MULTB, NCONT, NO, NOOT, NREP, NV, NVVT
-!      use files_mod, only: IN, IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: IO, IV, MULTB, NCONT, NO, NOOT, NREP, NV, NVVT
       use inpt_mod, only: IPRNT
       use complex_mod, only: RCW
   use symmetry_offset
-#include "symm.inc"
-#include "files.inc"
 
 
 !description
@@ -1288,8 +1283,8 @@
 
 
    subroutine eom_ee(icalc,mxcorr,eps)
-!      use symm_mod, only: IOVOOT, IOVVO, JOOOO, JOVVV, JVOOO, JVOVO, JVOVV, JVVOO, NDIMT1, NDIMT2, NFOO, NFVO, NFVV, NREP, NV1, NV5, NVVT
-!      use files_mod, only: IN, IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod
       use complex_mod, only: RCW
    use relcc_cfg
    use davidson
@@ -1298,8 +1293,6 @@
    use eom_density
    use symmetry_offset 
 
-#include "symm.inc"
-#include "files.inc"
 !--------------------------------------------------
  integer, intent(in)                   :: icalc
  integer(kind=klongint), intent(inout) :: mxcorr
@@ -1476,11 +1469,9 @@
 
    subroutine eom_check_left_right_roots(state_sym,davResultsL,davResultsR)
 ! calculate density matrices of sym target symmetry. which combinations of L and R ?
-!      use symm_mod, only: NREP
-!      use files_mod, only: IN, IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: NREP
       use davidson
-#include "symm.inc"
-#include "files.inc"
 !--------------------------------------------------
       integer :: iroot, i
       integer, intent(in) :: state_sym
@@ -1510,7 +1501,7 @@
 
 subroutine eom_renormalize_birthogonal(state_sym, davResultsL, davResultsR)
 ! calculate density matrices of sym target symmetry. which combinations of L and R ?
-!      use symm_mod, only: NCONT, NDIMT1, NDIMT2, NO, NOOT, NREP, NV, NVVT
+      use symm_relccsd_mod, only: NCONT, NDIMT1, NDIMT2, NO, NOOT, NREP, NV, NVVT
       use complex_mod, only: RCW
    use davidson
    use memory_allocator
@@ -1518,7 +1509,6 @@ subroutine eom_renormalize_birthogonal(state_sym, davResultsL, davResultsR)
    use eom_density
    use symmetry_offset
 
-#include "symm.inc"
 !--------------------------------------------------
    type(davidson_results), intent(inout) :: davResultsR(nrep), davResultsL(nrep)
    integer, intent(in) :: state_sym
@@ -1614,8 +1604,8 @@ subroutine eom_renormalize_birthogonal(state_sym, davResultsL, davResultsR)
 
 subroutine eom_calculate_store_density_matrices(B, davResultsL, davResultsR)
 ! calculate density matrices of sym target symmetry. which combinations of L and R ?
-!      use symm_mod, only: NCONT, NDIMT1, NDIMT2, NO, NOOT, NORBT, NREP, NV
-!      use files_mod, only: IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: NCONT, NDIMT1, NDIMT2, NO, NOOT, NORBT, NREP, NV
       use complex_mod, only: RCW
       use dgroup_mod, only: NZ
    use davidson
@@ -1624,8 +1614,6 @@ subroutine eom_calculate_store_density_matrices(B, davResultsL, davResultsR)
    use eom_density
    use symmetry_offset
 
-#include "symm.inc"
-#include "files.inc"
 !--------------------------------------------------
    type(davidson_results), intent(inout) :: davResultsR(nrep), davResultsL(nrep)
    type(intermediates), intent(inout) :: B
@@ -1710,8 +1698,7 @@ subroutine eom_calculate_store_density_matrices(B, davResultsL, davResultsR)
    end subroutine
 
    subroutine number_of_states(state)
-!      use symm_mod, only: NREP
-#include "symm.inc"
+      use symm_relccsd_mod, only: NREP
 
    integer, intent(out) :: state 
    integer              :: sym
@@ -1773,13 +1760,11 @@ subroutine eom_calculate_store_density_matrices(B, davResultsL, davResultsR)
 
 ! Analyse the R-vectors of EOM-IP,EE,EA. Based on FS_ANALYSIS1 routine by Luuk
 
-!      use symm_mod, only: NREP, REPNA
-!      use files_mod, only: IN, IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: NREP, REPNA
       use inpt_mod, only: IPRNT
       use complex_mod, only: RCW
       use results_mod, only: ECCSD, ECCSDIM, ESCF
-#include "symm.inc"
-#include "files.inc"
 
 !---------------Calling variables--------------------------------------
 
@@ -1869,10 +1854,9 @@ subroutine eom_calculate_store_density_matrices(B, davResultsL, davResultsR)
 !
 !---------------Calling variables--------------------------------------
 
-!      use symm_mod, only: IO, IV, MULTB, NCONT, NO, NREP, NV, REPNA
-!      use files_mod, only: IN, IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: IO, IV, MULTB, NCONT, NO, NREP, NV, REPNA
       use complex_mod, only: CARITH, RCW
-#include "symm.inc"
 
    real*8, intent(in) :: eps(*),e_off
    real*8, intent(in) :: ev_all(rcw,nroot),eigenvectors(rcw,*) 
@@ -1881,7 +1865,6 @@ subroutine eom_calculate_store_density_matrices(B, davResultsL, davResultsR)
 
 !---------------Common Blocks--------------------------------------
 
-#include "files.inc"
 
 !---------------Local variables--------------------------------------
 
@@ -2165,12 +2148,11 @@ subroutine eom_calculate_store_density_matrices(B, davResultsL, davResultsR)
 
 
 subroutine eom_set_davidson_mode_energies(left_vectors, right_vectors)
-!      use files_mod, only: IN, IW
+      use files_relccsd_mod, only: IW
       use complex_mod, only: RCW
    use davidson
    use allocator_parameters, only : klongint
    use symmetry_offset
-#include "files.inc"
    logical, intent(in) :: left_vectors
    logical, intent(in) :: right_vectors
    logical, save :: davidson_splash = .true.
@@ -2200,16 +2182,14 @@ subroutine eom_set_davidson_mode_energies(left_vectors, right_vectors)
 end subroutine
 
 subroutine eom_solve_for_left_or_right(state_sym, left_vectors, right_vectors, davResultsL, davResultsR, B, eps)
-!      use symm_mod, only: NCONT, NE, NO, NOOT, NREP, NV, NVVT, REPNA
-!      use files_mod, only: IN, IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: NCONT, NO, NOOT, NREP, NV, NVVT, REPNA
       use inpt_mod, only: IPRNT
       use complex_mod, only: RCW
    use davidson
    use allocator_parameters, only : klongint
    use symmetry_offset
 
-#include "symm.inc"
-#include "files.inc"
 !--------------------------------------------------
    integer, intent(in) :: state_sym
    type(davidson_results), intent(inout) :: davResultsL(nrep)
@@ -2466,13 +2446,11 @@ end subroutine
 
 
 subroutine eom_analysis_allirreps(davResults, eps)
-!      use symm_mod, only: NREP, REPNA
-!      use files_mod, only: IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: NREP, REPNA
       use complex_mod, only: RCW
       use results_mod, only: ECCSD, ECCSDIM, ESCF
     use davidson
-#include "symm.inc"
-#include "files.inc"
 !--------------------------------------------------
    type(davidson_results), intent(inout) :: davResults(nrep)
    real(kind=8)                          :: eps(*)
@@ -2560,8 +2538,6 @@ C
 C
 C---------------Common Blocks----------------------------------------
 C
-#include "symm.inc"
-#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C

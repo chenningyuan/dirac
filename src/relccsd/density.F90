@@ -17,11 +17,10 @@
 
     subroutine density_IP (l1,l2,r1,r2,t1,t2,dmo)
 
-!      use symm_mod, only: NCONT, NFOO, NFVO, NFVV, NREP, NV
+      use symm_relccsd_mod, only: NCONT, NFOO, NFVO, NFVV, NREP, NV
       use inpt_mod, only: IPRNT
       use complex_mod, only: CARITH, RCW
   use symmetry_offset
-#include "symm.inc"
 !----------------calling variables-------------------------
    real*8, intent(in),contiguous,target :: l1(:),l2(:),r1(:),r2(:)
    real*8, intent(in) :: t1(:),t2(:)
@@ -294,11 +293,10 @@
 
   subroutine density_EE (l1,l2,r1,r2,t1,t2,dmo)
 
-!      use symm_mod, only: NFOO, NFVO, NFVV, NREP
+      use symm_relccsd_mod, only: NFOO, NFVO, NFVV, NREP
       use inpt_mod, only: IPRNT
       use complex_mod, only: CARITH, RCW
   use symmetry_offset
-#include "symm.inc"
 !----------------calling variables-------------------------
    real*8, intent(in),contiguous,target :: l1(:),l2(:),r1(:),r2(:)
    real*8, intent(in) :: t1(:),t2(:)

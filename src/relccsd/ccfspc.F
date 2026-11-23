@@ -17,7 +17,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FOLDED (ICURFSS,T1,T2,EPS,FVO,
      &                   BUF1,BUF2,BUF3,S1,S2)
 C
-!      use symm_mod, only: IAOAO, IAVAV, JAOAVAOAV, JAOAVOV, JJAOAV, JJOV, KKVVOT, KVVOAVT, LAOVOOT, LLVOOT, MAOAV, MOV, MULTB, NAO, NAOAOT, NAOV, NAV, NAVAVT, NDIMT1, NDIMT2, NIO, NIV, NO, NOOT, NREP, NSO, NSOSOT, NSV, NSVSVT, NV, NVOOT, NVVOT, NVVT
+      use symm_relccsd_mod
       use complex_mod, only: RCW
       use param_relccsd_mod, only: A0, A1, LFA, LTR
       implicit none
@@ -51,7 +51,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 ! ccpar.inc not needed, because there is no parallelization in this subroutine
 ! include "ccpar.inc"
 C
@@ -277,7 +276,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                 NSP,IREPSPI)
 
 C
-!      use symm_mod, only: IAOAO, IAVAV, IFS_HE, IFS_HE2, JAOAVAOAV, JJAOAV, MAOAV, MULTB, MXREP, NAO, NAV, NDIMT1, NDIMT2, NE, NFS_HE, NREP
+      use symm_relccsd_mod
       use complex_mod, only: RCW
       use param_relccsd_mod, only: A0, A1, LFA
       use memory_allocator
@@ -297,7 +296,6 @@ C
       INTEGER ICURFSS,NSP,IREPSPI
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables -----------------------------------
       integer ndimh,ipr,eps,ind,indx_all,irp,irps_all,ndt_all,ndimh2
@@ -468,7 +466,7 @@ C        except for the 00 sector, obviously
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SOLVE_CG (NDT,H,EVEC_LEFT,EVEC_RIGHT,EV)
 !
-!      use files_mod, only: IW
+      use files_relccsd_mod, only: IW
       use inpt_mod, only: IPRNT
       use complex_mod, only: CARITH, RCW
       implicit none
@@ -488,7 +486,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "files.inc"
 !
 !---------------Calling variables--------------------------------------
 
@@ -591,8 +588,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DUMP_HEFF(ICURFSS,HEFF)
 C
-!      use symm_mod, only: IFS_HE2, NFS_HE, NREP
-!      use files_mod, only: IN, IUHEFF, IW
+      use files_relccsd_mod, only: IUHEFF, IW
+      use symm_relccsd_mod, only: IFS_HE2, NFS_HE, NREP
       use complex_mod, only: CARITH, RCW
       use ihm_mod, only: AIH, DOIH, IHSCHEME, NIH, SHIFT_IH
       implicit none
@@ -602,8 +599,6 @@ C     Write the effective Hamiltonian to file for post-processing
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
-#include "files.inc"
 
       integer, intent(in) :: icurfss
       real(8), intent(in) :: heff(*)
@@ -686,8 +681,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FS_ANALYSIS1(ICURFSS,EPS,EIGENVALUES,
      &  EIGENVECTORS_LEFT,EIGENVECTORS_RIGHT,NSP,IREPSPI)
 C
-!      use symm_mod, only: IFS_HE, MXREP, NE, NFS_HE, NREP, REPNA
-!      use files_mod, only: IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: IFS_HE, MXREP, NFS_HE, NREP, REPNA
       use inpt_mod, only: IPRNT, STATE_E_FSCC
       use complex_mod, only: RCW
       use results_mod, only: ECCSD, ECCSDIM, EFS, ESCF
@@ -699,8 +694,6 @@ C     compute oscilator strengths.
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
-#include "files.inc"
 C
 C---------------Calling variables--------------------------------------
 C
@@ -775,8 +768,9 @@ C     Detailed print-out including oscillator strengths
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DENOMF (EPS,T1,T2,CT1,CT2,OPTION)
 C
-!      use symm_mod, only: IO, IV, MULTB, NAO, NAV, NDIMT2, NE, NIO, NIV, NREP
-!      use files_mod, only: IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: IO, IV, MULTB, NAO, NAV, NDIMT2, NIO,
+     &  NIV, NREP
       use complex_mod, only: CARITH
       use param_relccsd_mod, only: A0
       use ihm_mod, only: AIH, DOIH, IHSCHEME, IPIORB, NIH, SHIFT_IH
@@ -815,8 +809,6 @@ C
 C
 C---------------Common Blocks----------------------------------------
 C
-#include "symm.inc"
-#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1387,7 +1379,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT1 (T1,FT1,ACVMIN,ACVMAX,ICOMIN,ICOMAX,DOINV)
 C
-!      use symm_mod, only: IVO, NAO, NAV, NIO, NIV, NREP, NV
+      use symm_relccsd_mod, only: IVO, NAO, NAV, NIO, NIV, NREP, NV
       use complex_mod, only: RCW
       use param_relccsd_mod, only: A1
       implicit none
@@ -1413,7 +1405,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1473,7 +1464,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT2R(T2,FT2,ABCVMIN,ABCVMAX,ICOMIN,ICOMAX,JCOMIN,
      &                   JCOMAX,DOINV)
 C
-!      use symm_mod, only: IIOOT, IIVVT, IVVOOTT, MULTB, NAO, NAV, NIO, NIV, NO, NREP, NV, NVVT
+      use symm_relccsd_mod, only: IIOOT, IIVVT, IVVOOTT, MULTB, NAO,
+     &  NAV, NIO, NIV, NO, NREP, NV, NVVT
       use complex_mod, only: RCW
       use param_relccsd_mod, only: A0, A1
       implicit none
@@ -1512,7 +1504,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1639,7 +1630,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT2L(T2,FT2,ACVMIN,ACVMAX,BCVMIN,BCVMAX,IJCOMIN,
      &                   IJCOMAX,DOINV)
 C
-!      use symm_mod, only: IIOOT, IIVVT, IO, IVVOOTT, MULTB, NAO, NAV, NIO, NIV, NO, NREP, NV, NVVT
+      use symm_relccsd_mod, only: IIOOT, IIVVT, IO, IVVOOTT, MULTB, NAO,
+     &  NAV, NIO, NIV, NO, NREP, NV, NVVT
       use complex_mod, only: CARITH, RCW
       use param_relccsd_mod, only: A0, A1
       implicit none
@@ -1678,7 +1670,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1809,8 +1800,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRAMPF (T1,T2,CT1,CT2,TRES)
 C
-!      use symm_mod, only: IO, IV, MULTB, NAO, NAV, NDIMT2, NE, NIO, NIV, NREP
-!      use files_mod, only: IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: IO, IV, MULTB, NAO, NAV, NDIMT2, NIO,
+     &  NIV, NREP
       use complex_mod, only: CARITH
       use eqns_mod, only: EQNS
       implicit none
@@ -1835,8 +1827,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
-#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2013,7 +2003,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT2T(T2,FT2,ABCVMIN,ABCVMAX,IJCOMIN,IJCOMAX,DOINV)
 C
-!      use symm_mod, only: IIOOT, IIVVT, IVVOOTT, MULTB, NAO, NAV, NIO, NIV, NO, NREP, NV, NVVT
+      use symm_relccsd_mod, only: IIOOT, IIVVT, IVVOOTT, MULTB, NAO,
+     &  NAV, NIO, NIV, NO, NREP, NV, NVVT
       use complex_mod, only: RCW
       use param_relccsd_mod, only: A1
       implicit none
@@ -2052,7 +2043,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2162,7 +2152,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT2S(T2,FT2,ACVMIN,ACVMAX,BCVMIN,BCVMAX,
      &                   ICOMIN,ICOMAX,JCOMIN,JCOMAX,DOINV)
 C
-!      use symm_mod, only: IIOOT, IIVVT, IVVOOTT, MULTB, NAO, NAV, NIO, NIV, NO, NREP, NV, NVVT
+      use symm_relccsd_mod, only: IIOOT, IIVVT, IVVOOTT, MULTB, NAO,
+     &  NAV, NIO, NIV, NO, NREP, NV, NVVT
       use complex_mod, only: CARITH, RCW
       use param_relccsd_mod, only: A0, A1
       implicit none
@@ -2201,7 +2192,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2342,7 +2332,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SCALE_S1 (S1)
 C
-!      use symm_mod, only: IVO, NAO, NAV, NIO, NIV, NREP, NV
+      use symm_relccsd_mod, only: IVO, NAO, NAV, NIO, NIV, NREP, NV
       use complex_mod, only: RCW
       use param_relccsd_mod, only: A1
       implicit none
@@ -2367,7 +2357,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
       integer ai,i,iend,irp,istart
@@ -2410,7 +2399,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_FSTAU (T1,T2,BUF1,BUF2,BUF3)
 C
-!      use symm_mod, only: NDIMT1, NDIMT2
+      use symm_relccsd_mod, only: NDIMT1, NDIMT2
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -2433,7 +2422,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 
       interface
          subroutine gettau(t1,t2,tau)
@@ -2462,8 +2450,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FS_ANALYSIS (ICURFSS,EPS,IPR,NDT_TOT,E_OFF,
      &                   EV_ALL,H_left,H,NSP,IREPSPI)
 C
-!      use symm_mod, only: MXREP, NFS_HE, NREP, REPNA
-!      use files_mod, only: IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: MXREP, NFS_HE, NREP, REPNA
       use complex_mod, only: CARITH, RCW
       implicit none
 C
@@ -2493,7 +2481,6 @@ CMI/July 2007 works only with real ECCSD
 C
 C---------------Calling variables--------------------------------------
 C
-#include "symm.inc"
       REAL*8 TRES,EPS(*),E_OFF
       REAL*8 EV_ALL(RCW,NDT_TOT),H(RCW,*) 
       real*8 H_left(RCW,*)
@@ -2502,7 +2489,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2590,8 +2576,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                EIGENVECTORS_RIGHT,NDT_TOT,IREPSPI,NSP,
      &                                 E_OFF,EV_ALL)
 c
-!      use symm_mod, only: IFS_HE2, MXREP, NE, NFS_HE, NREP, REPNA, SPFR
-!      use files_mod, only: IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: IFS_HE2, MXREP, NFS_HE, NREP, REPNA,
+     &  SPFR
       use inpt_mod, only: NAMEE
       use complex_mod, only: CARITH, RCW
       implicit none
@@ -2606,8 +2593,6 @@ C---------------Routines called--------------------------------------
 C---------------Last modified-----------------------------------------
 C---------------Common Blocks------------------------------------
 C
-#include "symm.inc"
-#include "files.inc"
 c
 c---------------Calling Variables-----------------------------------
 c 
@@ -2748,8 +2733,8 @@ c
 !C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE TRANSITION_EA_IP (ICURFSS,EOPER,PROP,EV_ALL,
      &         EIGENVECTORS_LEFT,EIGENVECTORS_RIGHT,NDT_TOT,IREPSPI,NSP)
-!      use symm_mod, only: IFS_HE2, MXREP, NFS_HE, NREP
-!      use files_mod, only: IW
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: IFS_HE2, MXREP, NFS_HE, NREP
       use inpt_mod, only: NAMEE
       use complex_mod, only: RCW
       use param_relccsd_mod, only: A0, A1
@@ -2759,8 +2744,6 @@ c     Contraction of dipole integrals with coefficients for sector (0,1) or (1,0
 c     Output is written directly here, as getting a nice human-readable output is
 c     difficult and post processing is usually necessary anyhow.
 c
-#include "symm.inc"
-#include "files.inc"
 c
 c-------------------Calling Variables-------------------------------------------------
 c
@@ -2879,13 +2862,12 @@ c
 !C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE TRANSITION_ONEONE (EOPER,PROP,TRANS_DIPOLE,
      &                       EIGENVECTORS,NDT_TOT,IREPSPI,NSP)
-!      use symm_mod, only: IFS_HE2, MXREP, NFS_HE, NREP
+      use symm_relccsd_mod, only: IFS_HE2, MXREP, NFS_HE, NREP
       use complex_mod, only: CARITH, RCW
       implicit none
 c
 c     Contraction of dipole integrals with coefficients for sector (1,1)
 c
-#include "symm.inc"
 c
 c-------------------Calling Variables-------------------------------------------------
 c
@@ -2946,7 +2928,7 @@ c     find  the position of the dipole_{av,ao} elements in the full array
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
        SUBROUTINE READ_PROP(DIPLEN,NSP,PROP)
 C
-!      use files_mod, only: IW, MDPROP
+      use files_relccsd_mod, only: IW, MDPROP
       use inpt_mod, only: IPRNT
       use complex_mod, only: CARITH, RCW
       use param_relccsd_mod, only: ACCUR, D0, D1
@@ -2954,7 +2936,6 @@ C
 C
 C This routine is analogous to RDPROP in relccsd/ccints.F (without the sorting).
 C
-#include "files.inc"
 C
 C---------------Calling variables------------------------------------
 C
@@ -3061,7 +3042,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PROP_SUB(ICURFSS,PROP,IREP,JREP,DIP_SUB,NDTL,NDTR,
      &                    IREPSPI,NSP)
 
-!      use symm_mod, only: MXREP, NAO, NAV, NIO
+      use symm_relccsd_mod, only: MXREP, NAO, NAV, NIO
       use complex_mod, only: RCW
       implicit none
 c
@@ -3069,7 +3050,6 @@ c Takes out symmetry block as needed in subroutine Transition_EA_IP
 c                                                      
 c----------------Common Blocks-----------------------------------------
 c 
-#include "symm.inc"
 c
 c----------------Calling variables---------------------------------------------
 c
@@ -3111,14 +3091,13 @@ c
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PROPINDEX(IND,IJREP,NDT,IREPSPI,NSP) 
 
-!      use symm_mod, only: MULTB, MXREP, NAO, NAV, NIO, NREP
+      use symm_relccsd_mod, only: MULTB, MXREP, NAO, NAV, NIO, NREP
       implicit none
 c
 c define offsets of property matrix needed in subroutine Transition_OneOne
 c                                                      
 c----------------Common Blocks-----------------------------------------
 c
-#include "symm.inc"
 c
 c----------------Calling variables---------------------------------------------
 c
@@ -3150,7 +3129,8 @@ c
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_FSLABEL (ICURFSS,EPS,LABEL,NDIMH)
 C
-!      use symm_mod, only: MULTB, MXREP, NAO, NAV, NIO, NREP, REPNA
+      use symm_relccsd_mod, only: MULTB, MXREP, NAO, NAV, NIO, NREP,
+     &  REPNA
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -3162,7 +3142,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Variables-----------------------------------------------
 C

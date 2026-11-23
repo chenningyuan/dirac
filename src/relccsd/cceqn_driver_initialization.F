@@ -3,8 +3,8 @@
      &                 NBUF2,NBUF3,RMS,FOCKSP,DELS1,DELS2)
 
                              
-!      use files_mod, only: IW
-!      use symm_mod, only: NDIMT1, NDIMT2
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: NDIMT1, NDIMT2
       use inpt_mod, only: IPRNT, NOCCD, NOCCS
       use param_relccsd_mod, only: A0
       use eqns_mod, only: EQNS, ICURFSS
@@ -26,8 +26,6 @@ C     for diis ...
       integer maxit,nbuf2,nbuf3
 
 C---------------Common Blocks--------------------------------------
-#include "files.inc"
-#include "symm.inc"
 !#if defined (VAR_MPI)
 !      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 !#endif

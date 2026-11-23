@@ -2,8 +2,8 @@
      &                 T1,S1,T2,S2,AZ,H,HO,HV,HOV,GO,GV,
      &                 BUF1,BUF2,BUF3,CONV,NBUF2,NBUF3)
 
-!      use files_mod, only: IW
-!      use symm_mod, only: NDIMT1, NDIMT2, NFOO, NFVV
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: NDIMT1, NDIMT2, NFOO, NFVV
       use inpt_mod, only: IPRNT, NOCCD, NOCCS, TIMING
       use param_relccsd_mod, only: A0
       use eqns_mod, only: ICURFSS
@@ -36,8 +36,6 @@ C     Pre-allocated arrays used for intermediaries etc.
 
 C---------------Common Blocks--------------------------------------
 
-#include "files.inc"
-#include "symm.inc"
 #if defined (VAR_MPI)
       integer ISTAT(df_MPI_STATUS_SIZE)
 #endif

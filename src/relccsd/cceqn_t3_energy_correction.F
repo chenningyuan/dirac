@@ -1,8 +1,8 @@
       SUBROUTINE T3CORR (FVO,EPS,T1,T2,T2S,T2T,BUF1,BUF2,BUF3,TAU3,
      &                   VVVO,VVOO,VOOO)
 C
-!      use files_mod, only: IW
-!      use symm_mod, only: IIOOT, IIVO, IIVV, IIVVT, IO, IV, IVO, IVOOOT, IVVOOT, IVVOOTT, IVVVT, JVVVT, KT3VVVOT, LLOVVT, LLT3VVVT, LOVVOT, MULTB, NDIMT2, NO, NOOT, NOVVT, NREP, NT3VVT, NT3VVVT, NV, NVO, NVV, NVVOT, NVVT
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod
       use ccpar_mod, only: IDIST, MASTER, MYPROC
 #if defined (VAR_MPI)
       use ccpar_mod, only: NMPROC
@@ -39,8 +39,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "symm.inc"
 #if defined (VAR_MPI)
       integer ISTAT(df_MPI_STATUS_SIZE)
 #endif

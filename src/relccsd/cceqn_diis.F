@@ -1,7 +1,7 @@
       SUBROUTINE DIISX (NDIMT1,NDIMT2,T1N,T2N,IT,
      &                  CC,BB,ITC,BB2,RMS)
 C
-!      use files_mod, only: ITAMPD, ITAMPL
+      use files_relccsd_mod, only: ITAMPD, ITAMPL
       use ccpar_mod, only: MASTER, MYPROC
       use complex_mod, only: CARITH, RCW
       use param_relccsd_mod, only: A0, A1, AR0, AR1
@@ -26,7 +26,6 @@ C
       INTEGER NDIMT1, NDIMT2, IT, ITC  
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
 C
 
       REAL*8 CC(MAXDIM),BB(MAXDIM+1,MAXDIM+2),BB2(MAXDIM+1,MAXDIM+2)

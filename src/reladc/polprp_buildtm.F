@@ -1,7 +1,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BUILD_TRAMO(desrep,ioch,eps)
 
-!      use symm_mod, only: IOOOOTT, IVOOOT, IVOVO, IVOVVT, IVVOO, IVVOOT, IVVOOTT, J2VOVO, JJOO, JJOV, JJVO, JJVV, JVOOV, JVOVO, KKVVOT, KVVOOT, LLOVVT, LLVOOT, LOOVVT, LOVOOT, LVOVVT, LVVOOT, MOO, MOV, MULTB, MVO, MVV, NE, NO, NOOT, NOVVT, NREP, NV, NVO, NVOOT, NVVOT, NVVT
+      use symm_relccsd_mod
       use complex_mod, only: CARITH, RCW
       use qstack
  
@@ -25,7 +25,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "../relccsd/symm.inc"
 #include  "polprp_stacklines.h"
 !
 !---------------Local variables--------------------------------------

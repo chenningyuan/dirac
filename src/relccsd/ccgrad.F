@@ -19,7 +19,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDENSC(IOPT,T1,S1,T2,S2,
      &                   BUF1,BUF2,BUF3,DOO,DVV,DVO,DOV,DMO)
 C
-!      use symm_mod, only: JJVO, JVOVO, KKVVOT, KVVOOT, LLVOOT, LVVOOT, MULTB, MVO, NDIMT1, NFOO, NFVO, NFVV, NO, NOOT, NREP, NV, NVOOT, NVVOT, NVVT
+      use symm_relccsd_mod
       use complex_mod, only: CARITH
       use param_relccsd_mod, only: A0, A1, LFA, LTR
       implicit none
@@ -51,7 +51,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -146,11 +145,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
        subroutine cc_density (l1,l2,t1,t2,doo,dvv,buf1,buf2,dmo)
 
-!      use symm_mod, only: NDIMT1, NDIMT2, NFOO, NFVO, NFVV, NREP
+      use symm_relccsd_mod, only: NDIMT1, NDIMT2, NFOO, NFVO, NFVV, NREP
       use complex_mod, only: CARITH, RCW
        use contraction
 
-#include "symm.inc"
 !-------------------------calling variables-------------------------
        real*8, intent(in)  :: l1(ndimt1*rcw),l2(ndimt2*rcw),
      &                        t1(ndimt1*rcw),t2(ndimt2*rcw)
@@ -340,9 +338,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 
       subroutine print_density_matrix(dm,block_type)
-!      use symm_mod, only: NO, NREP, NV
+      use symm_relccsd_mod, only: NO, NREP, NV
       use complex_mod, only: CARITH, RCW
-#include "symm.inc"
          real(kind=8), intent(in) :: dm(*)
          integer, intent(in) :: block_type ! 1 : oo, 2: vv, 3: ov, 4: vo
          integer :: pq, irep, p, q
@@ -412,7 +409,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE CONVDM(BUF1,BUF2,DOO,DVV,DVO,DOV,dmo)
 C
-!      use symm_mod, only: NFOO, NFVO, NFVV, NO, NORBT, NREP, NV
+      use symm_relccsd_mod, only: NFOO, NFVO, NFVV, NO, NORBT, NREP, NV
       use complex_mod, only: CARITH, RCW
       use param_relccsd_mod, only: A1, AP5
       use dgroup_mod, only: NZ
@@ -444,7 +441,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -701,7 +697,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   XVO,XOV,DOO,DVV,DVO,DOV,
      &                   EVO,EOV,D2VO,D2OV,DG,CC1,BB1,BB2,CONV)
 C
-!      use symm_mod, only: JJOO, JJVO, JJVV, JVOOO, JVVVO, MULTB, MVO, MVV, NDIMT2, NDIMX, NFOO, NFVO, NFVV, NO, NREP, NV, NVO
+      use symm_relccsd_mod
       use inpt_mod, only: DEBUG, IPRNT, MAXOP, MXITGR, NAMEE, NEOPER,
      &  TIMING
 #if defined (VAR_MPI)
@@ -741,7 +737,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -837,8 +832,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MP2ZVEC(T2,BUF1,BUF2,BUF3,NBUF3,XMO,DMO)
 C
-!      use files_mod, only: IW
-!      use symm_mod, only: J2VOVO, JJVO, MULTB, MVO, NO, NREP, NV
+      use files_relccsd_mod, only: IW
+      use symm_relccsd_mod, only: J2VOVO, JJVO, MULTB, MVO, NO, NREP, NV
       use complex_mod, only: RCW
       use param_relccsd_mod, only: LFA
       implicit none
@@ -866,8 +861,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -930,7 +923,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CONVXM(BUF1,BUF2,XVO,XMO)
 C
-!      use symm_mod, only: NFVO, NO, NORBT, NREP, NV
+      use symm_relccsd_mod, only: NFVO, NO, NORBT, NREP, NV
       use complex_mod, only: CARITH, RCW
       use dgroup_mod, only: NZ
       implicit none
@@ -955,7 +948,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1016,7 +1008,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXPVAL (DOO,DVV,DVO,DOV,EOO,EVV,EVO,EOV,EPHASE,CEXPA)
 C
-!      use symm_mod, only: NFOO, NFVO, NFVV, NO, NREP
+      use symm_relccsd_mod, only: NFOO, NFVO, NFVV, NO, NREP
       use complex_mod, only: RCW
       use param_relccsd_mod, only: A1
       implicit none
@@ -1041,7 +1033,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1398,7 +1389,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_CC_DENSITY (WF,BASIS,DMAT,IERR)
-!      use files_mod, only: MCCDENS
+      use files_relccsd_mod, only: MCCDENS
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ORBTQ, NORBT
       use dgroup_mod, only: NZ
@@ -1419,7 +1410,6 @@ C---------------Common Blocks--------------------------------------
 C
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "files.inc"
 #include "dcborb.h"
 C
 C---------------Calling variables--------------------------------------
@@ -1616,7 +1606,7 @@ C       The add_two routine scales by 2, scale back to the orginal afterwards
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE STORE_CC_DENSITY (WF,DMO,NMO,NZ)
-!      use files_mod, only: MCCDENS
+      use files_relccsd_mod, only: MCCDENS
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCOOR
 !      use dcbprp_mod, only: DOEXP, MXPRP_WF, NPRP_WF, PRP_WF
@@ -1639,7 +1629,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "implicit.h"
       INTEGER :: I
-#include "files.inc"
 #include "dcbprp.h"
 C
 C---------------Calling variables--------------------------------------

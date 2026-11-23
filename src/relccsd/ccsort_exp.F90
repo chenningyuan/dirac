@@ -2118,10 +2118,9 @@
 
       SUBROUTINE SRT1C1_exp (IRP_INPUT,SHIFT_BOSON,NPAIR1,NPAIR2,BUF1,BUF2, &
     &    IRREP_PROD_TYPE)
-!      use symm_mod, only: MULTB, NREP
+      use symm_relccsd_mod, only: MULTB, NREP
       use complex_mod, only: RCW
       IMPLICIT INTEGER (A-Z)
-#include "symm.inc"
 !---------------Description--------------------------------------------
 !
 !     Sort array BUF1(IJ,KL:KLREP) to array BUF2*(KL,IJ:KLREP)
@@ -2184,10 +2183,9 @@
 
 
      SUBROUTINE nvo_to_mvo (IRP_INPUT,DOINV,IFIE,JFIE,BUF1,BUF2)
-!      use symm_mod, only: MULTB, NREP
+      use symm_relccsd_mod, only: MULTB, NREP
       use complex_mod, only: RCW
       IMPLICIT INTEGER (A-Z)
-#include "symm.inc"
 
 !---------------Description--------------------------------------------
 !

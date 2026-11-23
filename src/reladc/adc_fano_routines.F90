@@ -19,13 +19,12 @@ CONTAINS
 !           LABS
 !
 
-!      use symm_mod, only: IO, IV, MULTB, NO, NREP, NV, NVOOT
+      use symm_relccsd_mod, only: IO, IV, MULTB, NO, NREP, NV, NVOOT
     IMPLICIT NONE
 
 !
 !  Common Blocks
 !
-#include "../relccsd/symm.inc"
 
 !
 !  Data dictionary: Calling Variables
@@ -118,7 +117,7 @@ CONTAINS
 !
 !  Purpose: Count the number of initial or final state configurations
 !
-!      use symm_mod, only: NVOOT
+      use symm_relccsd_mod, only: NVOOT
     use adc_cfg
 
     IMPLICIT NONE
@@ -126,7 +125,6 @@ CONTAINS
 !
 !  Common Blocks
 !
-#include "../relccsd/symm.inc"
 
 !
 !  Data dictionary: Calling Variables
@@ -235,7 +233,7 @@ CONTAINS
 !           "block" is telling the program which part of the matrix is
 !           currently being built.
 !
-!      use symm_mod, only: NVOOT
+      use symm_relccsd_mod, only: NVOOT
     use adc_cfg
 
     IMPLICIT NONE
@@ -243,7 +241,6 @@ CONTAINS
 !
 !  Common Blocks
 !
-#include "../relccsd/symm.inc"
 
 !
 !  Data dictionary: Calling Variables
@@ -314,7 +311,7 @@ CONTAINS
 !  Purpose: Create an array, that holds the positions of final state
 !           configurations within the 2h1p part
 !
-!      use symm_mod, only: NVOOT
+      use symm_relccsd_mod, only: NVOOT
     use adc_cfg
     use adc_fano_exchange
     use memory_allocator
@@ -324,7 +321,6 @@ CONTAINS
 !
 !  Common Blocks
 !
-#include "../relccsd/symm.inc"
 
 !
 !  Data dictionary: Calling Variables
