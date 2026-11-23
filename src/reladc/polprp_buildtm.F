@@ -1,8 +1,8 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BUILD_TRAMO(desrep,ioch,eps)
 
-!      use complex_mod, only: CARITH, RCW
 !      use symm_mod, only: IOOOOTT, IVOOOT, IVOVO, IVOVVT, IVVOO, IVVOOT, IVVOOTT, J2VOVO, JJOO, JJOV, JJVO, JJVV, JVOOV, JVOVO, KKVVOT, KVVOOT, LLOVVT, LLVOOT, LOOVVT, LOVOOT, LVOVVT, LVVOOT, MOO, MOV, MULTB, MVO, MVV, NE, NO, NOOT, NOVVT, NREP, NV, NVO, NVOOT, NVVOT, NVVT
+      use complex_mod, only: CARITH, RCW
       use qstack
  
 !     IMPLICIT INTEGER (A-Z)
@@ -25,7 +25,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "../relccsd/complex.inc"
 #include "../relccsd/symm.inc"
 #include  "polprp_stacklines.h"
 !
@@ -1886,7 +1885,7 @@
      &                  faitx,faity,faitz,
      &                  fabijtx,fabijty,fabijtz)
 
-!      use complex_mod, only: CARITH, RCW
+      use complex_mod, only: CARITH, RCW
       implicit none
 !
 !  this routine contracts the Davidson eigenvector with the 
@@ -1906,7 +1905,6 @@
 !
 !  includes
 !
-#include  "../relccsd/complex.inc"
 !
 !  locals
 !
@@ -2108,7 +2106,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE TM_OUT(desrep,phasex,phasey,phasez)
 
-!      use complex_mod, only: CARITH, RCW
+      use complex_mod, only: CARITH, RCW
       use qstack
  
       implicit none
@@ -2134,7 +2132,6 @@
 !
 !  includes
 !
-#include  "../relccsd/complex.inc"
 #include  "polprp_stacklines.h"
 !
 !  defines

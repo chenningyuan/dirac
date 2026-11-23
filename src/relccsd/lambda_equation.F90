@@ -86,11 +86,14 @@
      &             w_voov,w_oooo,int_wooop,w_v_temp,G_oo,G_vv,buf1,buf2, &
      &             buf3,nbuf3,resL2,iprnt,niter)
 
-!      use param_mod, only: A1, D0
-!      use complex_mod, only: RCW
 !      use symm_mod, only: IVOOV, NDIMT1, NDIMT2, NFOO, NFVO, NFVV, NOOT, NREP, NV1, NVVT
-!      use ccpar_mod, only: IDIST, MYPROC, NMPROC
 !      use files_mod, only: IN, IW
+      use ccpar_mod, only: IDIST, NMPROC
+#if defined (VAR_MPI)
+      use ccpar_mod, only: MYPROC
+#endif
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A1
       use contraction
 
       implicit none
@@ -104,10 +107,7 @@
 !--------------------------------------
 
 !---------------Common Blocks--------------------------------------
-#include "param.inc"
-#include "complex.inc"
 #include "symm.inc"
-#include "ccpar.inc"
 #include "files.inc"
 
 !       calling variables
@@ -339,10 +339,9 @@
 !---------------Common Blocks----------------------------------------
 
 !      use symm_mod, only: IVO, MULTB, NDIMT1, NDIMT2, NE, NFVO, NO, NREP, NV
-!      use complex_mod, only: CARITH, RCW
+      use complex_mod, only: CARITH, RCW
       implicit none
 #include "symm.inc"
-#include "complex.inc"
 !---------------Calling variables--------------------------------------
 
       real*8, intent(in)    :: l1(ndimt1*rcw),f_bar(nfvo*rcw)
@@ -460,8 +459,8 @@
      &               nbuf2,nbuf3,ResL1,iprnt)
 
 !      use symm_mod, only: IOVOOT, IVOOV, NDIMT1, NDIMT2, NFOO, NFVO, NFVV, NREP, NV5
-!      use complex_mod, only: RCW
 !      use files_mod, only: IN, IW
+      use complex_mod, only: RCW
        implicit none
 
 !       Description
@@ -484,7 +483,6 @@
 !   common blocks
 !   -------------
 #include "symm.inc"
-#include "complex.inc"
 #include "files.inc"
 
 !       calling variables

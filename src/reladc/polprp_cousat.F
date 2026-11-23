@@ -4,7 +4,6 @@
 !
 !      use symm_mod, only: IVOOOT, IVOVVT, JVOVO, MULTB, MVO, NE, NO, NREP, NV
 !      use files_mod, only: IW
-!      use param_mod, only: D0
       IMPLICIT INTEGER (A-Z)
 !     IMPLICIT NONE
 !
@@ -26,9 +25,7 @@
 !---------------Common Blocks--------------------------------------
 !
 #include  "../relccsd/symm.inc"
-!#include  "../relccsd/complex.inc"
 #include  "../relccsd/files.inc"
-#include  "../relccsd/param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -312,9 +309,8 @@
      &                             INTBUF,NBUFS,DOXEXT,WTHR,IOCH)
 !
 !      use symm_mod, only: IVOOOT, IVOVVT, JVOVO, MULTB, MVO, NE, NO, NREP, NV
-!      use complex_mod, only: RCW
 !      use files_mod, only: IW
-!      use param_mod, only: D0
+      use complex_mod, only: RCW
       IMPLICIT INTEGER (A-Z)
 !     IMPLICIT NONE
 !
@@ -336,9 +332,7 @@
 !---------------Common Blocks--------------------------------------
 !
 #include  "../relccsd/symm.inc"
-#include  "../relccsd/complex.inc"
 #include  "../relccsd/files.inc"
-#include  "../relccsd/param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -941,7 +935,7 @@
      &                       voooz,vovvz,oolt,vvlt)
 !
 !      use symm_mod, only: IIOOT, IIVO, IIVVT, IVOOOT, IVOVVT, MULTB, NE, NO, NREP, NV, NVO
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -966,7 +960,6 @@
 !---------------Common Blocks--------------------------------------
 !
 #include  "../relccsd/symm.inc"
-#include  "../relccsd/complex.inc"
 !
 !---------------Executable code--------------------------------------
 !
@@ -1244,7 +1237,7 @@
      &                    buf,ioi,ioj,eps,oolt,vvlt,dox)
 
 !      use symm_mod, only: IIOOT, IIVO, IIVVT, IO, IOOOOTT, IV, IVOVO, IVVVVTT, MULTB, MVO, NE, NO, NOOT, NREP, NV, NVO, NVVT
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
       use qstack
 !
       IMPLICIT INTEGER (A-Z)
@@ -1269,7 +1262,6 @@
 !---------------Common Blocks--------------------------------------
 !
 #include  "../relccsd/symm.inc"
-#include  "../relccsd/complex.inc"
 #include  "polprp_stacklines.h"
 !
 !---------------Local variables--------------------------------------
@@ -1754,7 +1746,7 @@
      &                       buf,ioi,ioj,eps,oolt,vvlt,dox)
 
 !      use symm_mod, only: IIOOT, IIVO, IIVVT, IO, IOOOOTT, IV, IVOVO, IVVVVTT, MULTB, MVO, NE, NO, NOOT, NREP, NV, NVO, NVVT
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
       use qstack
 !
       IMPLICIT INTEGER (A-Z)
@@ -1779,7 +1771,6 @@
 !---------------Common Blocks--------------------------------------
 !
 #include  "../relccsd/symm.inc"
-#include  "../relccsd/complex.inc"
 #include  "polprp_stacklines.h"
 !
 !---------------Local variables--------------------------------------

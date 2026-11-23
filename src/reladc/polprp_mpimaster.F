@@ -3,7 +3,7 @@
       SUBROUTINE mpi_master_vvvv_complete(vvvv,idi)
 !
 !      use symm_mod, only: NREP
-!      use ccpar_mod, only: MASTER, NMPROC
+      use ccpar_mod, only: MASTER, NMPROC
       use interface_to_mpi
 !
       IMPLICIT NONE
@@ -31,7 +31,6 @@
 !
 #include  "polprp_servercodes.h"
 #include  "../relccsd/symm.inc"
-#include  "../relccsd/ccpar.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -81,7 +80,7 @@
       SUBROUTINE mpi_master_vovv_complete(vovv,idi)
 !
 !      use symm_mod, only: NREP
-!      use ccpar_mod, only: MASTER, NMPROC
+      use ccpar_mod, only: MASTER, NMPROC
       use interface_to_mpi
 !
       IMPLICIT NONE
@@ -109,7 +108,6 @@
 !
 #include  "polprp_servercodes.h"
 #include  "../relccsd/symm.inc"
-#include  "../relccsd/ccpar.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -193,7 +191,6 @@
 !---------------Common Blocks--------------------------------------
 !
 #include  "../relccsd/symm.inc"
-!#include  "../relccsd/ccpar.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -497,7 +494,7 @@
      &                      IW)
 !
 !      use symm_mod, only: IVOOOT, IVOVVT, JVOVO, MULTB, MVO, NE, NO, NREP, NV
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
       IMPLICIT NONE
 !
 !---------------Description--------------------------------------------
@@ -524,8 +521,6 @@
 !---------------Common Blocks--------------------------------------
 !
 #include  "../relccsd/symm.inc"
-!#include  "../relccsd/ccpar.inc"
-#include  "../relccsd/complex.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -850,8 +845,8 @@
 !     In addition, master also extracts diagonal from the total ADC
 !     matrix and writes it to a file to be retrieved later on. 
 !
-!      use ccpar_mod, only: MASTER, MYPROC, NMPROC
-!      use complex_mod, only: CARITH
+      use ccpar_mod, only: MASTER, MYPROC, NMPROC
+      use complex_mod, only: CARITH
       use interface_to_mpi
 
       IMPLICIT NONE
@@ -868,8 +863,6 @@
 
 !-------------- common variables
 
-#include "../relccsd/ccpar.inc"
-#include "../relccsd/complex.inc"
 #include "polprp_servercodes.h"
 
 !-------------- local variables

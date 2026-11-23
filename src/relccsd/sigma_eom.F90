@@ -173,9 +173,8 @@ module sigma_eom
 
    function create_sigma_vector_left(A, r, old_sigma_vector,state_sym)
 !      use files_mod, only: IN, IW
-!      use inpt_mod, only: IPRNT
+      use inpt_mod, only: IPRNT
 #include "files.inc"
-#include "inpt.inc"
       real(kind=8), pointer :: create_sigma_vector_left(:,:)
       real(kind=8), pointer :: old_sigma_vector(:,:)
       type(intermediates) :: A
@@ -274,9 +273,8 @@ module sigma_eom
 
    function create_sigma_vector_right(A, r, old_sigma_vector, state_sym)
 !      use files_mod, only: IN, IW
-!      use inpt_mod, only: IPRNT
+      use inpt_mod, only: IPRNT
 #include "files.inc"
-#include "inpt.inc"
       real(kind=8), pointer :: create_sigma_vector_right(:,:)
       real(kind=8), pointer :: old_sigma_vector(:,:)
       type(intermediates) :: A
@@ -371,18 +369,17 @@ module sigma_eom
    subroutine IM_container_MBPT2(eomtype,A_MBPT2)
 
 !      use symm_mod, only: IVOVVT, NFOO, NFVO, NFVV, NREP, NV5
-!      use param_mod, only: A0, D0
-!      use complex_mod, only: RCW
-!      use ccpar_mod, only: MYPROC, NMPROC
 !      use files_mod, only: IN, IW
-!      use inpt_mod, only: IPRNT
+      use inpt_mod, only: IPRNT
+      use ccpar_mod, only: MYPROC
+#if defined (VAR_MPI)
+      use ccpar_mod, only: NMPROC
+#endif
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0
       use results_mod, only: IMSTAT
 #include "symm.inc"
-#include "param.inc"
-#include "complex.inc"
-#include "ccpar.inc"
 #include "files.inc"
-#include "inpt.inc"
 
 !-----------------------------------------------------------------------------   
 !  In this routine we calculate all the intermediates required for a specific
@@ -565,18 +562,17 @@ integer :: ierr
    subroutine IM_container(eomtype,A)
 
 !      use symm_mod, only: IVOVVT, NFOO, NFVO, NFVV, NREP, NV5
-!      use param_mod, only: A0, D0
-!      use complex_mod, only: RCW
-!      use ccpar_mod, only: MYPROC, NMPROC
 !      use files_mod, only: IN, IW
-!      use inpt_mod, only: IPRNT
+      use inpt_mod, only: IPRNT
+      use ccpar_mod, only: MYPROC
+#if defined (VAR_MPI)
+      use ccpar_mod, only: NMPROC
+#endif
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0
       use results_mod, only: IMSTAT
 #include "symm.inc"
-#include "param.inc"
-#include "complex.inc"
-#include "ccpar.inc"
 #include "files.inc"
-#include "inpt.inc"
 
 !-----------------------------------------------------------------------------   
 !  In this routine we calculate all the intermediates required for a specific
@@ -753,8 +749,7 @@ integer :: ierr
    end subroutine
 
    subroutine eom_intermediates_file_set_info(file_basename,file_unit)
-!      use ccpar_mod, only: MYPROC
-#include "ccpar.inc"
+      use ccpar_mod, only: MYPROC
       character(6), intent(in) :: file_basename 
       integer, intent(in) :: file_unit
 
@@ -955,20 +950,19 @@ integer :: ierr
  
    
    subroutine sigma_ee_1h1p(r1,r2,B,sigma1,sigma2,state_sym)
-!      use param_mod, only: A0, A1, D0
 !      use symm_mod, only: MULTB, NFOO, NFVO, NFVV, NO, NOOT, NREP, NV, NVVT
-!      use complex_mod, only: RCW
-!      use ccpar_mod, only: IDIST, MYPROC, NMPROC
 !      use files_mod, only: IN, IW
-!      use inpt_mod, only: DOEOMH0DD, IPRNT
+      use inpt_mod, only: DOEOMH0DD, IPRNT
+      use ccpar_mod, only: IDIST, MYPROC
+#if defined (VAR_MPI)
+      use ccpar_mod, only: NMPROC
+#endif
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
    use symmetry_offset
    use modified_sorting
-#include "param.inc"
 #include "symm.inc"
-#include "complex.inc"
-#include "ccpar.inc"
 #include "files.inc"
-#include "inpt.inc"
 
 !---------------Description--------------------------------------------
 !     Calculates 1h1p & 2h2p type sigma vectors for excitation energy
@@ -1366,16 +1360,14 @@ integer :: ierr
 
    subroutine sigma_IP(r1,r2,B,sigma1,sigma2)
 !      use symm_mod, only: NCONT, NFOO, NFVO, NFVV, NREP, NV
-!      use complex_mod, only: RCW
 !      use files_mod, only: IN, IW
-!      use inpt_mod, only: DOEOMH0DD, IPRNT
+      use inpt_mod, only: DOEOMH0DD, IPRNT
+      use complex_mod, only: RCW
    use symmetry_offset
    use modified_sorting
 
 #include "symm.inc"
-#include "complex.inc"
 #include "files.inc"
-#include "inpt.inc"
 
 !---------------Description--------------------------------------------
 !     Calculates 2h1p and 1h type sigma vectors for ionization energy
@@ -1638,21 +1630,20 @@ end if
 !==============================================================================================================================================================================================================
 
    subroutine sigma_EA(r1,r2,B,sigma1,sigma2)
-!      use param_mod, only: A0, A1, D0
 !      use symm_mod, only: NCONT, NFOO, NFVO, NFVV, NO, NREP, NVVT
-!      use complex_mod, only: RCW
-!      use ccpar_mod, only: IDIST, MYPROC, NMPROC
 !      use files_mod, only: IN, IW
-!      use inpt_mod, only: DOEOMH0DD, IPRNT
+      use inpt_mod, only: DOEOMH0DD, IPRNT
+      use ccpar_mod, only: IDIST, MYPROC
+#if defined (VAR_MPI)
+      use ccpar_mod, only: NMPROC
+#endif
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
    use symmetry_offset
    use modified_sorting
 
-#include "param.inc"
 #include "symm.inc"
-#include "complex.inc"
-#include "ccpar.inc"
 #include "files.inc"
-#include "inpt.inc"
 
 !---------------Description--------------------------------------------
 !     Calculates 1h2p and 1p type sigma vectors for ionization energy
@@ -1919,14 +1910,12 @@ end if
    subroutine Lambda_IP(l1,l2,B,lambda1,lambda2)
 
 !      use symm_mod, only: NCONT, NREP, NV
-!      use complex_mod, only: RCW
 !      use files_mod, only: IN, IW
-!      use inpt_mod, only: IPRNT
+      use inpt_mod, only: IPRNT
+      use complex_mod, only: RCW
   use symmetry_offset
 #include "symm.inc"
-#include "complex.inc"
 #include "files.inc"
-#include "inpt.inc"
 
 !---------------Description--------------------------------------------
 !     Calculates 2h1p and 1h type sigma vectors for ionization energy
@@ -2061,21 +2050,17 @@ end if
  end subroutine
 
    subroutine Lambda_EE(l1,l2,B,lambda1,lambda2,state_sym)
-!      use param_mod, only: A1, D0
 !      use symm_mod, only: IOO, NFOO, NFVV, NOOT, NREP, NVVT
-!      use complex_mod, only: RCW
 !      use files_mod, only: IN, IW
-!      use inpt_mod, only: IPRNT
-!      use ccpar_mod, only: IDIST
+      use inpt_mod, only: IPRNT
+      use ccpar_mod, only: IDIST
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A1
   use intermediates_1b_2b 
   use symmetry_offset
   use lambda_equation  
-#include "param.inc"
 #include "symm.inc"
-#include "complex.inc"
 #include "files.inc"
-#include "inpt.inc"
-#include "ccpar.inc"
 
 !---------------Description--------------------------------------------
 !     Calculates 2h2p and 1h1p type sigma vectors for Excitation energy
@@ -2355,11 +2340,10 @@ end if
 !Calculating the contribution from the disconnected piece in lambda2 of IP. 
 
 !      use symm_mod, only: IIVO, IVO, MULTB, NCONT, NE, NO, NREP, NV
-!      use complex_mod, only: CARITH, RCW
+      use complex_mod, only: CARITH, RCW
   use symmetry_offset
   implicit none
 #include "symm.inc"
-#include "complex.inc"
 !---------------Calling variables--------------------------------------
 
       real*8, intent(in)    :: l1(*),f_bar(:)

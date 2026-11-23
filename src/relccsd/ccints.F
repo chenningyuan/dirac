@@ -22,12 +22,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                  VVOVO,VVOVOA,VVOVV,VVOVVA,VVVVV,VVVVVA,
      &                  EPS,FOO,FVO,FVV,BREIT_LOC,SRTALL,INTERFACE_LOC)
 C
-!      use param_mod, only: A0, A1, D0
 !      use symm_mod, only: IOOOOTT, IVOOOT, IVOVO, IVOVVT, IVVOOTT, IVVVVTT, NE, NOOT, NV1, NV2, NV3, NV4, NV5, NV6, NVO, NVVT, SPFR
-!      use complex_mod, only: CARITH, IRW, RCW
 !      use files_mod, only: ITAPT, IW, MDINT
-!      use ccpar_mod, only: IDIST, MASTER, MYPROC, NMPROC, NV5PAR, NV6PAR
-!      use inpt_mod, only: NORECMP, USEOE
+      use inpt_mod, only: NORECMP, USEOE
+      use ccpar_mod, only: IDIST, MASTER, MYPROC, NMPROC, NV5PAR, NV6PAR
+      use complex_mod, only: CARITH, IRW, RCW
+      use param_relccsd_mod, only: A0, A1
       use eqns_mod, only: EQNS
       use results_mod, only: ECORE, ESCF, ETOT, IMSTAT
       use waio_mod, only: NWORDS_ON_RECORD, NWORDS_ON_RECORD8
@@ -50,12 +50,8 @@ C     Author : Luuk Visscher
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "symm.inc"
-#include "complex.inc"
 #include "files.inc"
-#include "ccpar.inc"
-#include "inpt.inc"
 C
 C---------------Calling variables--------------------------------------
 C
@@ -758,11 +754,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RDPROP(IPRNT,NAMEA,NSP,RDDIAG,PROP,IREPSPI,APHASE,
      &                  AVO,AOV,AOO,AVV)
 C
-!      use param_mod, only: ACCUR, D0, D1
 !      use symm_mod, only: MULTB, MXREP, NE, NO, NREP, NV
-!      use complex_mod, only: CARITH, RCW
 !      use files_mod, only: IW, MDPROP
-!      use ccpar_mod, only: MASTER, MYPROC, NMPROC
+      use ccpar_mod, only: MASTER, MYPROC
+#if defined (VAR_MPI)
+      use ccpar_mod, only: NMPROC
+#endif
+      use complex_mod, only: CARITH, RCW
+      use param_relccsd_mod, only: ACCUR, D0, D1
       use interface_to_mpi
       implicit none
 C
@@ -780,11 +779,8 @@ C     Author : Luuk Visscher
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "symm.inc"
-#include "complex.inc"
 #include "files.inc"
-#include "ccpar.inc"
 C
 C---------------Calling variables--------------------------------------
 C
@@ -959,10 +955,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET2INTS (MDINT,KR,NSP,ITRSGN,IATYP,INDK,INDL,
      &                     NONZR,NZE,CBUF,IBUF,MREADER,PERMSYM)
 C
-!      use complex_mod, only: CARITH, RCW
-!      use inpt_mod, only: INTERFACE
-!      use ccpar_mod, only: MYPROC, NMPROC
 !      use symm_mod, only: NE, SPFR
+      use inpt_mod, only: INTERFACE
+      use ccpar_mod, only: MYPROC
+#if defined (VAR_MPI)
+      use ccpar_mod, only: NMPROC
+#endif
+      use complex_mod, only: CARITH, RCW
       use eqns_mod, only: EQNS
       use dgroup_mod, only: NZ
       use interface_to_mpi
@@ -992,9 +991,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "complex.inc"
-#include "inpt.inc"
-#include "ccpar.inc"
 #include "symm.inc"
 ! This dependency on a DIRAC common block should go but otherwise NZ is not known.
 C
@@ -1410,11 +1406,14 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETFM (NSP,EPS,FOO,FVO,FVV,E0,E1)
 C
-!      use param_mod, only: A0, LTR
 !      use symm_mod, only: NFOO, NFVO, NFVV
-!      use inpt_mod, only: ADD_FINITE_FIELD, NORECMP, USEOE
-!      use complex_mod, only: RCW
-!      use ccpar_mod, only: MASTER, MYPROC, NMPROC
+      use inpt_mod, only: ADD_FINITE_FIELD, NORECMP, USEOE
+      use ccpar_mod, only: MASTER, MYPROC
+#if defined (VAR_MPI)
+      use ccpar_mod, only: NMPROC
+      use complex_mod, only: RCW
+#endif
+      use param_relccsd_mod, only: A0, LTR
       use eqns_mod, only: EQNS
       use interface_to_mpi
       implicit none
@@ -1439,11 +1438,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "symm.inc"
-#include "inpt.inc"
-#include "complex.inc"
-#include "ccpar.inc"
 C---------------Local variables--------------------------------------
 C
       LOGICAL FOCKSP
@@ -1521,9 +1516,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE WRITE_FM_OUTPUT (E0,E1,EPS,FOO,FVV)
 C
 !      use symm_mod, only: NAO, NAV, NIO, NIV, NO, NREP, NV, REPNA
-!      use inpt_mod, only: IPRNT, USEOE
-!      use complex_mod, only: RCW
 !      use files_mod, only: IW
+      use inpt_mod, only: IPRNT, USEOE
+      use complex_mod, only: RCW
       use eqns_mod, only: EQNS
       use ihm_mod, only: DOIH, ER_IH, IPIORB
       implicit none
@@ -1546,8 +1541,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "symm.inc"
-#include "inpt.inc"
-#include "complex.inc"
 #include "files.inc"
 C---------------Local variables--------------------------------------
 C
@@ -1675,8 +1668,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE INIT_1E_FM (FOCKSP,NSP,FOO,FVO,FVV)
-!      use complex_mod, only: CARITH, RCW
 !      use files_mod, only: MRCONEE
+      use complex_mod, only: CARITH, RCW
       use spinor_indexing
 C
       implicit none
@@ -1702,7 +1695,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "complex.inc"
 #include "files.inc"
 C---------------Local variables--------------------------------------
 C
@@ -1775,11 +1767,11 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADD_PERTURBATION (FOCKSP,NSP,FOO,FVO,FVV)
-!      use param_mod, only: A1
 !      use symm_mod, only: NE, NFOO, NFVO, NFVV
-!      use inpt_mod, only: FF_PROP_NAMES, FF_PROP_STRENGTHS, NFFOPER
-!      use complex_mod, only: CARITH, RCW
 !      use files_mod, only: IW
+      use inpt_mod, only: FF_PROP_NAMES, FF_PROP_STRENGTHS, NFFOPER
+      use complex_mod, only: CARITH, RCW
+      use param_relccsd_mod, only: A1
       use spinor_indexing
 C
       implicit none
@@ -1804,10 +1796,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "symm.inc"
-#include "inpt.inc"
-#include "complex.inc"
 #include "files.inc"
 C---------------Local variables--------------------------------------
 C
@@ -1896,9 +1885,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADD_2E_TO_FM (FOO,FVO,FVV)
 C
-!      use param_mod, only: A1, LFA, LTR
-!      use complex_mod, only: RCW
 !      use symm_mod, only: JJOO, JJVO, JJVV, JOOOO, JVOOO, JVVOO, MOO, MULTB, MVO, MVV, NE, NFOO, NFVO, NFVV, NO, NREP, NV, NV1, NV2, NV4
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A1, LFA, LTR
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1919,8 +1908,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
@@ -1998,9 +1985,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE COMPUTE_HF_ENERGY (FOO,E0,E1)
 C
-!      use param_mod, only: AR0, DP5, LFA, LTR
-!      use complex_mod, only: RCW
 !      use symm_mod, only: JJOO, JOOOO, MOO, MULTB, NE, NFOO, NO, NREP, NV1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: AR0, DP5, LFA, LTR
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -2022,8 +2009,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
@@ -2089,8 +2074,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADD_EPS_TO_FM (FOCKSP,EPS,FOO,FVO,FVV)
 C
-!      use complex_mod, only: RCW
 !      use symm_mod, only: IOO, IVO, NAO, NAV, NIO, NO, NREP, NSO, NSV, NV
+      use complex_mod, only: RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -2111,7 +2096,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
@@ -2183,8 +2167,8 @@ C           The (va,va) elements
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE COPY_DIAG_TO_EPS (EPS,FOO,FVV)
 C
-!      use complex_mod, only: RCW
 !      use symm_mod, only: NO, NREP, NV
+      use complex_mod, only: RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -2204,7 +2188,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
@@ -2239,8 +2222,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE REMOVE_F0 (EPS,FVO)
 C
-!      use complex_mod, only: RCW
 !      use symm_mod, only: IVO, NAO, NAV, NIO, NIV, NO, NREP, NV
+      use complex_mod, only: RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -2261,7 +2244,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------

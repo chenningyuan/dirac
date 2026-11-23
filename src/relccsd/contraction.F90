@@ -20,8 +20,8 @@
            &                   dia_factor,dia_sum_factor,nrep,irrep_left,irrep_right)
 
 !----------calling variables-----------------------------------
-!      use param_mod, only: A1, D0
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A1
     character(2), dimension(2), intent(in)   ::left_order,im_order,right_order
     real(8), intent(in)                      :: rightTensor(:),leftTensor(:)   
     integer, intent(in)                      :: nrep
@@ -39,8 +39,6 @@
     integer             :: irrep_left_loc,irrep_right_loc
     integer             :: irrep_target
 
-#include "param.inc"
-#include "complex.inc"
 
     if (.not.present(irrep_left)) then
        irrep_left_loc = 1
@@ -99,8 +97,8 @@
            &   dia_factor,dia_sum_factor,nrep,LeftTensor,RightTensor,irrep_left,irrep_right)
      
 !----------calling variables-----------------------------------
-!      use param_mod, only: A1, D0
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A1
     real(8), intent(in) ::  dia_sum_factor   !dia_factor = \alpha in DGEMM ; dia_sum_factor= \beta in DGEMM
     real(8), intent(in) ::  dia_factor        
     character(2),dimension(4), intent(in) :: left_order, right_order
@@ -126,8 +124,6 @@
     integer :: im_temp_size,  im_half_size_x,  im_half_size_y
 !--------------------------------------------------------------
 
-#include "param.inc"
-#include "complex.inc"
 
       maxdim1 = sorted_dimension(left_order)
       maxdim2 = sorted_dimension(right_order)
@@ -244,8 +240,8 @@
            &                   dia_factor,dia_sum_factor,nrep,LeftTensor,irrep_left,irrep_right)
      
 !----------calling variables-----------------------------------
-!      use param_mod, only: A1
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A1
     character(2),dimension(4),intent(in)   :: left_order
     character(2),dimension(2),intent(in)   :: im_order, right_order
     real(8),intent(in),optional :: LeftTensor(:)                
@@ -265,8 +261,6 @@
     real(8),allocatable        :: v_sort(:)
     real(8),allocatable        :: RightTensor_sort(:)
     character(2)   :: sorted_left(4),freeindx(2)
-#include "param.inc"
-#include "complex.inc"
 
 !-------------------------------------------------------------
 !    use of xgemv is different from dgemm because when I mention 'T', then the dimensionality of the incoming array is also changed.
@@ -394,8 +388,8 @@
 
 
 !----------calling variables-----------------------------------
-!      use param_mod, only: A1
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A1
     character(2), dimension(2), intent(in)   :: left_order,im_order
     character(2), dimension(4), intent(in)   :: right_order
     real(8), intent(in)                      :: LeftTensor(:)
@@ -420,8 +414,6 @@
     real(8),allocatable        :: right_sort(:)
     real(8),allocatable        :: left_sort(:)
 !---------------------------------------------------------------    
-#include "param.inc"
-#include "complex.inc"
 
     maxdim = sorted_dimension(right_order)
 
@@ -537,8 +529,8 @@
            &    dia_factor,dia_sum_factor,nrep,RightTensor,LeftTensor,irrep_left,irrep_right)
     
 !----------calling variables-----------------------------------
-!      use param_mod, only: A0, A1, D0
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
     character(*), dimension(4), intent(in)   :: left_order, right_order, im_order
     real(8), intent(in), optional :: LeftTensor(:)       
     real(8), intent(in), optional :: RightTensor(:)   
@@ -561,8 +553,6 @@
    integer             :: maxdim1, maxdim2
    integer             :: contraction_type
 
-#include "param.inc"
-#include "complex.inc"
 
   maxdim1 = max(sorted_dimension(left_order),sorted_dimension(im_order))
   maxdim2 = sorted_dimension(right_order)
@@ -712,8 +702,8 @@
            &     dia_sum_factor,nrep,LeftTensor,RightTensor,irrep_left,irrep_right)
 
 !----------calling variables-----------------------------------
-!      use param_mod, only: A1, D0
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A1
     character(2), dimension(4), intent(in)   :: left_order,im_order
     character(2), dimension(2), intent(in)   :: right_order
     real(8), intent(in), optional :: LeftTensor(:), RightTensor(:) 
@@ -734,8 +724,6 @@
     real(8),allocatable :: im_temp_temp(:)
     integer :: im_temp_size, im_half_size_x, im_half_size_y
 
-#include "param.inc"
-#include "complex.inc"
 
   maxdim = max (sorted_dimension(left_order),sorted_dimension(im_order))
 
@@ -858,8 +846,8 @@
            &     dia_sum_factor,nrep,LeftTensor,RightTensor,irrep_left,irrep_right)
 
 !----------calling variables-----------------------------------
-!      use param_mod, only: A1, D0
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A1
     character(2),dimension(4),intent(in) :: right_order,im_order
     character(2),dimension(2),intent(in) :: left_order
     real(8),intent(in),optional :: LeftTensor(:), RightTensor(:) 
@@ -880,8 +868,6 @@
     real(8),allocatable :: im_temp_temp(:)
     integer :: im_temp_size,  im_half_size_x,  im_half_size_y
 
-#include "param.inc"
-#include "complex.inc"
 
   maxdim = max (sorted_dimension(right_order),sorted_dimension(im_order))
 
@@ -995,7 +981,7 @@
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
 !      use symm_mod, only: MULTB, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
 !---------------description--------------------------------------------
 !     generalization of cntrct routine by Luuk. the previous routine was
@@ -1021,7 +1007,6 @@
 
 !---------------common blocks--------------------------------------
 
-#include "complex.inc"
 
 !---------------local variables--------------------------------------
      integer :: mrp,nrp,krp 
@@ -1097,7 +1082,7 @@
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
 !      use symm_mod, only: MULTB, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
 !---------------description--------------------------------------------
 !     generalization of cntrct routine by Luuk. the previous routine was
@@ -1123,7 +1108,6 @@
 
 !---------------common blocks--------------------------------------
 
-#include "complex.inc"
 
 !---------------local variables--------------------------------------
      integer :: mrp,nrp,krp 
@@ -1198,7 +1182,7 @@
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
 !      use symm_mod, only: MULTB, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
 !---------------description--------------------------------------------
 !     generalization of cntrct routine by Luuk. the previous routine was
@@ -1224,7 +1208,6 @@
 
 !---------------common blocks--------------------------------------
 
-#include "complex.inc"
 
 !---------------local variables--------------------------------------
      integer :: mrp,nrp,krp 
@@ -1300,7 +1283,7 @@
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
 !      use symm_mod, only: MULTB, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
 !---------------description--------------------------------------------
 !     generalization of cntrct routine by Luuk. the previous routine was
@@ -1326,7 +1309,6 @@
 
 !---------------common blocks--------------------------------------
 
-#include "complex.inc"
 
 !---------------local variables--------------------------------------
      integer :: mrp,nrp,krp 
@@ -1402,7 +1384,7 @@
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
 !      use symm_mod, only: MULTB, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
 !---------------description--------------------------------------------
 !  C = A*B operation, where A is a matrix and B is a vector
@@ -1428,7 +1410,6 @@
 
 !---------------common blocks--------------------------------------
 
-#include "complex.inc"
 
 !---------------local variables--------------------------------------
      integer :: mrp,krp,nrp 
@@ -1512,7 +1493,7 @@
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
 !      use symm_mod, only: MULTB, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
 !---------------description--------------------------------------------
 !  C = A*B operation, where A is a matrix and B is a vector
@@ -1536,7 +1517,6 @@
 
 !---------------common blocks--------------------------------------
 
-#include "complex.inc"
 
 !---------------local variables--------------------------------------
      integer :: mrp,nrp,krp 
@@ -1607,7 +1587,7 @@
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
 !      use symm_mod, only: MULTB, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
 !---------------description--------------------------------------------
 !     generalization of cntrct routine by Luuk. the previous routine was
@@ -1634,7 +1614,6 @@
 
 !---------------common blocks--------------------------------------
 
-#include "complex.inc"
 
 !---------------local variables--------------------------------------
      integer :: mrp,nrp,krp 
@@ -1697,7 +1676,7 @@
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
 !      use symm_mod, only: MULTB, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
 !---------------description--------------------------------------------
 !     generalization of cntrct routine by Luuk. the previous routine was
@@ -1724,7 +1703,6 @@
 
 !---------------common blocks--------------------------------------
 
-#include "complex.inc"
 
 !---------------local variables--------------------------------------
      integer :: mrp,nrp,krp 

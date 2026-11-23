@@ -35,15 +35,13 @@
 #if defined (VAR_MPI)
       use infpar_mod, only: MPARID, MYTID, NODE
 #endif
-!      use ccpar_mod, only: MASTER, MYPROC, NMPROC
+      use ccpar_mod, only: MASTER, MYPROC, NMPROC
 !      use files_mod, only: IN, IW
       use interface_to_mpi
 #include "implicit.h"
       INTEGER :: I
 #include "../moltra/dcbtra.h"
-#include "../relccsd/ccpar.inc"
 #include "../relccsd/files.inc"
-!#include "../relccsd/complex.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -147,7 +145,7 @@
       use infpar_mod, only: MPARID, MYTID, NUMNOD
 #endif
       use priunit_mod, only: LUCMD
-!      use ccpar_mod, only: MASTER, MYPROC, NMPROC
+      use ccpar_mod, only: MASTER, MYPROC, NMPROC
 !      use files_mod, only: CCBASF, CCFILN, LCCFIL, MSLVOUT
       use interface_to_mpi
 
@@ -156,7 +154,6 @@
 #if defined (VAR_MPI)
       integer istat(df_mpi_status_size)
 #endif
-#include "../relccsd/ccpar.inc"
 #include "../relccsd/files.inc"
       CHARACTER*10 INTFCE
       LOGICAL CA,CCEND
@@ -255,6 +252,13 @@ C
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE POLPRP_MAIN (IN123,IW123,CA,INTFCE)
 
+      use inpt_mod, only: INTERFACE, IPRNT, NACT, NELEC, NELEC_F1,
+     &  NELEC_F2, NFROZ, NINACT, NORECMP, USEOE
+      use ccpar_mod, only: MYPROC, NMPROC
+#if defined (VAR_MPI)
+      use ccpar_mod, only: MASTER
+#endif
+      use complex_mod, only: CARITH, IRW, RCW
       use eqns_mod, only: EQNS
       use dcbham_mod, only: X2CMMF
       use memory_allocator
@@ -276,10 +280,7 @@ C
 !---------------Common Blocks--------------------------------------
 !
 #include "../relccsd/files.inc"
-#include "../relccsd/inpt.inc"
 #include "../relccsd/symm.inc"
-#include "../relccsd/complex.inc"
-#include "../relccsd/ccpar.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -545,6 +546,10 @@ C
 !
 ! executed in parallel or in serial from here.
 !
+#if defined (VAR_MPI)
+      use ccpar_mod, only: MASTER, MYPROC, NMPROC
+#endif
+      use complex_mod, only: CARITH, RCW
       use interface_to_mpi
       use polprp_cfg     !these data are visible on master node only!
                          !They contain control input for the POLPRP run
@@ -566,10 +571,7 @@ C
 !---------------Common Blocks--------------------------------------
 !
 #include  "../relccsd/symm.inc"
-#include  "../relccsd/complex.inc"
-#include  "../relccsd/param.inc"
 !LTR/LFA are defined here (true, false)
-#include  "../relccsd/ccpar.inc"
 #include "polprp_servercodes.h"
 #include "polprp_stacklines.h"
 !

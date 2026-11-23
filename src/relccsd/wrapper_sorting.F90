@@ -642,7 +642,7 @@
 
 !--------------calling variables---------------
 !      use symm_mod, only: MULTB, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
     integer,intent(in)                    :: Sort_Type 
     character(2),intent(in)               :: orb_array(:)
     real(8),intent(in),target,optional    :: presorted(:)
@@ -663,7 +663,6 @@
     integer      :: sort_type_dummy,AllocateStatus,total_dim
 
 #include "symm.inc"
-#include "complex.inc"
 
     type(sorting_list)     :: a
     type(middle_indices)   :: c(-14:5)!,e  

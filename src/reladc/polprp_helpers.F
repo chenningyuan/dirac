@@ -133,7 +133,7 @@
       SUBROUTINE DENOMVVOO_PP (EPS,T2)
 !
 !      use symm_mod, only: IO, IV, IVVOOTT, MULTB, NE, NO, NREP, NV
-!      use complex_mod, only: CARITH
+      use complex_mod, only: CARITH
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -150,7 +150,6 @@
 !---------------Common Blocks--------------------------------------
 !
 #include  "../relccsd/symm.inc"
-#include  "../relccsd/complex.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -211,7 +210,7 @@
       SUBROUTINE EARR_VVOO (EPS,T2)
 !
 !      use symm_mod, only: IO, IV, JVOVO, MULTB, NE, NO, NREP, NV
-!      use complex_mod, only: CARITH
+      use complex_mod, only: CARITH
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -232,7 +231,6 @@
 !---------------Common Blocks--------------------------------------
 !
 #include  "../relccsd/symm.inc"
-#include  "../relccsd/complex.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -291,7 +289,7 @@
       SUBROUTINE DENOMVOVO(EPS,T)
  
 !      use symm_mod, only: IO, IV, JVOVO, MULTB, NE, NO, NREP, NV
-!      use complex_mod, only: CARITH
+      use complex_mod, only: CARITH
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -308,7 +306,6 @@
 !---------------Common Blocks--------------------------------------
 !
 #include "../relccsd/symm.inc"
-#include "../relccsd/complex.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -458,7 +455,7 @@ C
 !  depending on the CARITH flag. In case of complex:
 !  z -->  -z  not  z --> z*  !
 !
-!      use complex_mod, only: CARITH
+      use complex_mod, only: CARITH
       implicit none
       integer                      :: n
       real*8, dimension(:)         :: arr
@@ -466,7 +463,6 @@ C
 ! it is assumed that n counts the elements and not the array length!
 !
 
-#include  "../relccsd/complex.inc"
 
       integer                      :: i
 
@@ -482,7 +478,7 @@ C
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE print_input_info(iw,nrep)
-!      use complex_mod, only: CARITH
+      use complex_mod, only: CARITH
       use polprp_cfg     !these data are visible on master node only!
 
       implicit none
@@ -492,7 +488,6 @@ C
 !
       integer               :: i,n,icount
 
-#include "../relccsd/complex.inc"
 
       write(iw,*) 'POLPRP control variables:'
       write(iw,*) '-------------------------'
@@ -567,8 +562,10 @@ C
 !
 
 !      use symm_mod, only: IVVOOTT, IVVVVTT, NE, NOOT, NREP, NVVT
-!      use complex_mod, only: CARITH, RCW
-!      use ccpar_mod, only: MASTER, NMPROC
+#if defined (VAR_MPI)
+      use ccpar_mod, only: MASTER, NMPROC
+#endif
+      use complex_mod, only: CARITH, RCW
 #if defined (VAR_MPI)
       use interface_to_mpi
 #endif
@@ -596,8 +593,6 @@ C
 
 
 #include  "../relccsd/symm.inc"
-#include  "../relccsd/complex.inc"
-#include  "../relccsd/ccpar.inc"
 #include  "polprp_servercodes.h"
 !
 !   function interfaces
@@ -723,16 +718,14 @@ C
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine do_partial_precon(vvoo_in,vvoo_ou)
 !      use symm_mod, only: IVVOOTT, NE, NOOT, NREP, NVVT
-!      use ccpar_mod, only: IDIST, MYPROC
-!      use complex_mod, only: RCW
+      use ccpar_mod, only: IDIST, MYPROC
+      use complex_mod, only: RCW
       implicit none
 !
       real*8,dimension (:)                :: vvoo_in, vvoo_ou
 
 #include  "polprp_servercodes.h"
 #include  "../relccsd/symm.inc"
-#include  "../relccsd/ccpar.inc"
-#include  "../relccsd/complex.inc"
 !
 ! local variables
 ! 
@@ -954,7 +947,7 @@ C
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MATXMAT(n,a,b,c)
  
-!      use complex_mod, only: CARITH
+      use complex_mod, only: CARITH
       IMPLICIT none
 !
 !---------------Description--------------------------------------------
@@ -971,7 +964,6 @@ C
 !
 !---------------Common Blocks--------------------------------------
 !
-#include  "../relccsd/complex.inc"
 !
 !---------------Local Variables--------------------------------------
 !
@@ -1000,8 +992,8 @@ C
       SUBROUTINE SRT1T3_NTS (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,
      &                       OFF,OFF1,BUF1,BUF2,DESREP,ICEIL)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -1025,8 +1017,6 @@ C
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "../relccsd/complex.inc"
-#include "../relccsd/param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -1088,8 +1078,8 @@ C
       SUBROUTINE SRT1T2_NTS (NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,
      &                       NPAIR2,OFF,OFF2,BUF1,BUF2,DESREP)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -1111,8 +1101,6 @@ C
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "../relccsd/complex.inc"
-#include "../relccsd/param.inc"
 !
 !---------------Executable code--------------------------------------
 !

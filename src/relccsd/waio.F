@@ -90,14 +90,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Opens a word-addressable file.
 C
-!      use ccpar_mod, only: MYPROC, NMPROC
+#if defined (VAR_MPI)
+      use ccpar_mod, only: MYPROC, NMPROC
+#endif
       use waio_mod, only: DN, MAX_WAIO_FILES, NWORDS_ON_RECORD
       implicit none
       integer itape
 C
-#if defined (VAR_MPI)
-#include "ccpar.inc"
-#endif
 C
       CHARACTER*6 IDENT
       INTEGER*8 SIZE
@@ -376,10 +375,9 @@ C     This routine reads or writes NLEN real words into an array.
 C     The file position is specified by the variable OFFSET that should
 C     either be zero (start at begin of file) or positive.
 C
-!      use complex_mod, only: IRW
+      use complex_mod, only: IRW
       implicit none
 C
-#include "complex.inc"
       INTEGER*8 OFFSET,OFFSETI
 C
       REAL*8 ARRAY(NLEN)

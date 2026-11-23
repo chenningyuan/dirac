@@ -18,7 +18,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE XAXPY (N,A,X,INCX,Y,INCY)
 C
-!      use complex_mod, only: CARITH
+      use complex_mod, only: CARITH
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -40,7 +40,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -59,7 +58,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE XCOPY (N,X,INCX,Y,INCY)
 C
-!      use complex_mod, only: CARITH
+      use complex_mod, only: CARITH
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -81,7 +80,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -101,7 +99,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE XGEMM (TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,
      &                  BETA,C,LDC)
 C
-!      use complex_mod, only: CARITH
+      use complex_mod, only: CARITH
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -132,7 +130,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -163,7 +160,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE XGEMV (TRANS,M,N,ALPHA,A,LDA,X,INCX,BETA,Y,INCY)
 C
-!      use complex_mod, only: CARITH
+      use complex_mod, only: CARITH
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -186,7 +183,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -210,7 +206,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE XSCAL (N,A,X,INCX)
 C
-!      use complex_mod, only: CARITH
+      use complex_mod, only: CARITH
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -232,7 +228,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -251,7 +246,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE XSUM (RESULT,N,X,INCX)
 C
-!      use complex_mod, only: CARITH
+      use complex_mod, only: CARITH
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -274,7 +269,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -308,7 +302,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE XTRANSP (M,N,AR,BR,AC,BC)
 C
-!      use complex_mod, only: CARITH
+      use complex_mod, only: CARITH
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -330,7 +324,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -357,7 +350,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE XDOTC (RESULT,N,X,INCX,Y,INCY)
 C
-!      use complex_mod, only: CARITH
+      use complex_mod, only: CARITH
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -384,7 +377,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C

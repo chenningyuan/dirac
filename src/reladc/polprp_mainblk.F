@@ -2,8 +2,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BUILD_X_MAIN (daibj,eps,dimphph)
 !
 !      use symm_mod, only: IVOVO, IVVOOTT, J2VOVO, JJOO, JJVO, JJVV, JVOVO, KKVVOT, KVVOOT, LLVOOT, LVVOOT, MULTB, MVO, NE, NFOO, NFVV, NO, NOOT, NREP, NV, NVOOT, NVVOT, NVVT
-!      use complex_mod, only: CARITH, RCW
-!      use param_mod, only: A0, A1, AP5, D0, LFA, LTR
+      use complex_mod, only: CARITH, RCW
+      use param_relccsd_mod, only: A0, A1, AP5, LFA, LTR
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -22,8 +22,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !---------------Common Blocks, symmetry arrays from CCSETI --------
 !
 #include  "../relccsd/symm.inc"
-#include  "../relccsd/complex.inc"
-#include  "../relccsd/param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -668,7 +666,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SOLVE_PHPH_C(daibj,nele,iounit)
 !
 !      use symm_mod, only: IO, IV, JVOVO, JVOXX, MULTB, MVO, NE, NO, NREP, NV, REPNA
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -692,7 +690,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !---------------Common Blocks--------------------------------------
 !
 #include  "../relccsd/symm.inc"
-#include  "../relccsd/complex.inc"
 !
 !---------------Local variables--------------------------------------
 !

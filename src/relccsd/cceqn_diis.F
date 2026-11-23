@@ -1,10 +1,10 @@
       SUBROUTINE DIISX (NDIMT1,NDIMT2,T1N,T2N,IT,
      &                  CC,BB,ITC,BB2,RMS)
 C
-!      use param_mod, only: A0, A1, AR0, AR1, D0
-!      use complex_mod, only: CARITH, RCW
 !      use files_mod, only: ITAMPD, ITAMPL
-!      use ccpar_mod, only: MASTER, MYPROC
+      use ccpar_mod, only: MASTER, MYPROC
+      use complex_mod, only: CARITH, RCW
+      use param_relccsd_mod, only: A0, A1, AR0, AR1
       use waio_mod, only: NWORDS_ON_RECORD
       use diis_mod, only: MAXDIM, NST1, NST2
       IMPLICIT NONE
@@ -26,10 +26,7 @@ C
       INTEGER NDIMT1, NDIMT2, IT, ITC  
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
-#include "complex.inc"
 #include "files.inc"
-#include "ccpar.inc"
 C
 
       REAL*8 CC(MAXDIM),BB(MAXDIM+1,MAXDIM+2),BB2(MAXDIM+1,MAXDIM+2)

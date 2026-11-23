@@ -12,8 +12,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADCDBLE_MAIN (MXCORR,NSP,IREPSPI,EPS)
 !      use files_mod, only: ITAPADC, IW
 !      use symm_mod, only: IO, IOO, IOOOOTT, IV, IVOOOT, IVOVO, IVVOOTT, KVVOOT, LOVOOT, MULTB, MXREP, NE, NO, NOOT, NREP, NV1, NVVOT
-!      use complex_mod, only: CARITH, RCW
-!      use param_mod, only: D0
+      use complex_mod, only: CARITH, RCW
       use adcinpt_mod, only: ADCTHR, DIPITER, DIPPRNT, DIPREPS,
      &  DOADCPOP, DOFULL, DOINCORE
       use adc_mat
@@ -39,8 +38,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include  "../relccsd/files.inc"
 #include  "../relccsd/symm.inc"
-#include  "../relccsd/complex.inc"
-#include  "../relccsd/param.inc"
       COMMON/RDMATND/NBUFS
 C
 C
@@ -510,8 +507,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                       AIK,EPS,EABLKKS,EIJKL)
 C
 !      use symm_mod, only: IOOOOTT, NO, NOO, NOOT, NREP, NV1, NV3, NVVT
-!      use complex_mod, only: CARITH, RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: CARITH, RCW
+      use param_relccsd_mod, only: A0, A1
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -528,8 +525,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include  "../relccsd/symm.inc"
-#include  "../relccsd/complex.inc"
-#include  "../relccsd/param.inc"
 !#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
@@ -645,8 +640,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                            LEN_RKLM)
 C
 !      use symm_mod, only: IO, IOOOOTT, IV, LLVOOT, LOVOOT, MULTB, NE, NO, NOOT, NREP, NV, NVO, NVOOT
-!      use param_mod, only: D0, LFA
 !      use files_mod, only: ITAPADC, IW
+      use param_relccsd_mod, only: LFA
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -668,8 +663,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include  "../relccsd/symm.inc"
-!#include  "../relccsd/complex.inc"
-#include  "../relccsd/param.inc"
 #include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
@@ -1028,8 +1021,8 @@ c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                           EPS,DESREP,LEN_RKLM)
 C
 !      use symm_mod, only: IO, IOOOOTT, IV, LLVOOT, LOVOOT, MULTB, NE, NO, NOOT, NREP, NV, NVO, NVOOT
-!      use param_mod, only: D0, LFA
 !      use files_mod, only: ITAPADC, IW
+      use param_relccsd_mod, only: LFA
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -1052,8 +1045,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include  "../relccsd/symm.inc"
-!#include  "../relccsd/complex.inc"
-#include  "../relccsd/param.inc"
 #include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
@@ -1446,7 +1437,6 @@ c
 C---------------Common Blocks--------------------------------------
 C
 #include  "../relccsd/symm.inc"
-!#include  "../relccsd/complex.inc"
 #include  "../relccsd/files.inc"
 
       COMMON/RDMATND/NBUFS
@@ -1818,7 +1808,6 @@ c
 C---------------Common Blocks--------------------------------------
 C
 #include  "../relccsd/symm.inc"
-!#include  "../relccsd/complex.inc"
 #include  "../relccsd/files.inc"
 
       COMMON/RDMATND/NBUFS
@@ -2252,7 +2241,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DENOMY (EPS,T2,CT2)
 C
 !      use symm_mod, only: IO, IV, MULTB, NO, NREP, NV
-!      use complex_mod, only: CARITH
+      use complex_mod, only: CARITH
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -2269,7 +2258,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include  "../relccsd/symm.inc"
-#include  "../relccsd/complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2352,7 +2340,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include  "../relccsd/symm.inc"
-!#include  "../relccsd/complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2465,7 +2452,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include  "../relccsd/symm.inc"
-!#include  "../relccsd/complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2602,8 +2588,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MAKE_AIK(AIK14,VVOO1,VVOO2,EPS,EABLKKS,KREP)
 C
 !      use symm_mod, only: KKVVOT, KVVOOT, MULTB, NO, NREP, NVVOT, NVVT
-!      use complex_mod, only: CARITH
-!      use param_mod, only: A1, LFA
+      use complex_mod, only: CARITH
+      use param_relccsd_mod, only: A1, LFA
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -2618,8 +2604,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include  "../relccsd/symm.inc"
-#include  "../relccsd/complex.inc"
-#include  "../relccsd/param.inc"
 !#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------

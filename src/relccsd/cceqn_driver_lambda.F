@@ -4,11 +4,14 @@
      &                 NBUF2,NBUF3)
 
 !      use files_mod, only: IW
-!      use param_mod, only: A0, A1, A2, D0
 !      use symm_mod, only: IOVOOT, IVOVVT, NDIMT1, NDIMT2, NFOO, NFVV, NO, NOOT, NREP, NV, NV5, NVVT
-!      use inpt_mod, only: IPRNT
-!      use complex_mod, only: RCW
-!      use ccpar_mod, only: MYPROC, NMPROC
+      use inpt_mod, only: IPRNT
+      use ccpar_mod, only: MYPROC
+#if defined (VAR_MPI)
+      use ccpar_mod, only: NMPROC
+#endif
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1, A2
       use interface_to_mpi
       use xmlout
       use intermediates_1b_2b
@@ -44,11 +47,7 @@ C     for diis ...
 C---------------Common Blocks--------------------------------------
 
 #include "files.inc"
-#include "param.inc"
 #include "symm.inc"
-#include "inpt.inc"
-#include "complex.inc"
-#include "ccpar.inc"
 #if defined (VAR_MPI)
       integer ISTAT(df_MPI_STATUS_SIZE)
 #endif

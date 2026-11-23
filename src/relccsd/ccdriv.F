@@ -140,6 +140,7 @@ C--------------------------------------------------------------------
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCINPT (IN,IW)
+      use inpt_mod
       use ihm_mod, only: AIH, DOIH, ER_IH, IHSCHEME, NIH, SHIFT_IH
       use dcbham_mod, only: X2CMMF
       use mxcent_mod, only: MXCOOR
@@ -170,7 +171,6 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "inpt.inc"
 #include "symm.inc"
 #include "dcbprp.h"
 C
@@ -598,6 +598,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCMAIN (IUNIN,IUNUT,CA,INTFCE)
 c
+      use inpt_mod
+      use ccpar_mod, only: MYPROC, NMPROC
+      use complex_mod, only: CARITH, IRW, RCW
       use eqns_mod, only: EQNS
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
@@ -624,10 +627,7 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "inpt.inc"
 #include "symm.inc"
-#include "complex.inc"
-#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1066,6 +1066,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   NSP,EPS1,EPS,IREPSP,IREPSPI,
      &                   FOCKSP,REPORT,NELEC_F1,NELEC_F2)
 C
+      use ccpar_mod, only: IDIST
       use ihm_mod, only: DOIH, ER_IH, IPIORB, MAXSPIM
       use freeze_mod, only: IFROZ, IFROZ_SET_IN_INPUT, MAXFROZ, NFROZEN
       use spinor_indexing
@@ -1086,7 +1087,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
 #include "symm.inc"
-#include "ccpar.inc"
 C---------------Calling variables--------------------------------------
 C
       INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2)
@@ -2144,6 +2144,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCSETI (ICALC,MXCORR,EPS,NSP,IREPSP,IREPSPI)
 C
+      use inpt_mod, only: BREIT, DOCCSD, DOMP2GOLD, INTERFACE, IPRNT
+      use complex_mod, only: IRW, RCW
       use eqns_mod, only: EQNS
       use waio_mod, only: NWORDS_ON_RECORD
       use memory_allocator
@@ -2173,9 +2175,7 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "inpt.inc"
 #include "symm.inc"
-#include "complex.inc"
 C
 C---------------Calling variables--------------------------------------
 C
@@ -2332,6 +2332,9 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCENER (ICALC,MXCORR,EPS)
+      use inpt_mod, only: DOCCSD, DOCCSDT, DOEOMCCSD, DOEOMPT2, DOMP2,
+     &  MXDIMCC, MXITCC, NTOLCC, RESTART_UNCONVERGED
+      use complex_mod, only: RCW
       use eqns_mod, only: EQNS
       use results_mod, only: ECCSD, EMP2, ESCF, ET1, ET2, ET3, IMSTAT
       use diis_mod, only: MAXDIM, MAXIT
@@ -2365,9 +2368,7 @@ C---------------Calling variables--------------------------------------
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "inpt.inc"
 #include "symm.inc"
-#include "complex.inc"
 ! ccpar.inc not needed, because there is no parallelization in this subroutine
 ! include "ccpar.inc"
 C
@@ -2737,6 +2738,15 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     CCFOPR - CC First Order PRoperties, aka gradients
 C
+      use inpt_mod, only: DOCCSDG, DOMP2G, DOMP2GOLD, DONATORB, IPRNT,
+     &  MXDIMCC, MXDIMGR, MXITCC, MXITGR, NAMEE, NEOPER, NOZG, NTOLCC,
+     &  NTOLGR
+      use ccpar_mod, only: MASTER, MYPROC
+#if defined (VAR_MPI)
+      use ccpar_mod, only: NMPROC
+#endif
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, LTR
       use eqns_mod, only: EQNS
       use mp1stpr_mod, only: NTMATR1, NTMATR2
       use diis_mod, only: MAXDIM, MAXIT
@@ -2774,12 +2784,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "files.inc"
-#include "inpt.inc"
 #include "symm.inc"
-#include "complex.inc"
-#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3322,6 +3328,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCHESS (ICALC,MXCORR,EPS,NSP,IREPSPI)
 C
+      use inpt_mod, only: DEBUG, EFREQ, IPRNT, MAXOP, MXDIMRP, MXITRP,
+     &  NAMEA, NAMEB, NAOPER, NBOPER, NFREQ, NTOLRP, TIMING
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: LFA
       use diis_mod, only: MAXDIM, MAXIT
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
@@ -3356,10 +3366,7 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "inpt.inc"
 #include "symm.inc"
-#include "param.inc"
-#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3494,6 +3501,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCEXC (ICALC,MXCORR,EPS,NSP,IREPSPI)
 C
+      use inpt_mod, only: DEBUG, IPRNT, MAXOP, MXDIMRP, MXITRP, NEXC,
+     &  NTOLRP, TIMING
+      use complex_mod, only: RCW
       use diis_mod, only: MAXDIM, MAXIT
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
@@ -3527,9 +3537,7 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "inpt.inc"
 #include "symm.inc"
-#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3645,6 +3653,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCFSPC (ICALC,MXCORR,EPS1,EPS,NSP,IREPSP,IREPSPI)
 C
+      use inpt_mod
+      use complex_mod, only: RCW
       use eqns_mod, only: EQNS, ICURFSS
       use results_mod, only: IMSTAT
       use ihm_mod, only: DOIH, ER_IH
@@ -3679,9 +3689,7 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "inpt.inc"
 #include "symm.inc"
-#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3959,6 +3967,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FS_PUTAMPT (ICURFSS,T1,T2,BUF1,BUF2)
 C
+      use param_relccsd_mod, only: A1
       IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
@@ -3979,7 +3988,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
@@ -4020,6 +4028,13 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDINI(do_restart)
 C
+      use inpt_mod, only: DOCCSD, DOCCSDT, DOENER, DOFSPC, DOMP2,
+     &  DOSORT, NACT, NELEC, NFROZ, NINACT, RESTART_IGNORE_CHECK,
+     &  RESTART_REDO_CCSD, RESTART_REDO_SORT
+#if defined (VAR_MPI)
+      use ccpar_mod, only: MYPROC
+#endif
+      use param_relccsd_mod, only: A0
       use results_mod, only: ETOT, IMSTAT, NSTATS
       IMPLICIT NONE
 C
@@ -4045,9 +4060,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "inpt.inc"
-#include "param.inc"
-#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4269,6 +4281,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDUMP
 C
+      use inpt_mod, only: NACT, NELEC, NFROZ, NINACT
       use results_mod, only: ETOT, IMSTAT
       IMPLICIT NONE
 C
@@ -4288,7 +4301,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "inpt.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4322,6 +4334,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCSUMM
 C
+      use inpt_mod, only: DOCCSD, DOCCSDT, DOFSPC, DOMP2
       use results_mod, only: ECCSD, EMP2, ESCF, ET1, ET2, ET3, ETOT,
      &  IMSTAT
       IMPLICIT NONE
@@ -4341,7 +4354,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "inpt.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4455,6 +4467,11 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RDSYMI (NSP,EPS1,IREPSP,ncore_elec)
 C
+      use inpt_mod, only: BREIT, INTERFACE, NELEC
+      use ccpar_mod, only: MASTER, MYPROC
+#if defined (VAR_MPI)
+      use ccpar_mod, only: NMPROC
+#endif
       use results_mod, only: ECORE
       use interface_to_mpi
       IMPLICIT NONE
@@ -4480,8 +4497,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
 #include "symm.inc"
-#include "inpt.inc"
-#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4696,6 +4711,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DISLIST
 C
+      use ccpar_mod, only: IDIST, MYPROC, NMPROC, NV5PAR, NV6PAR
+      use complex_mod, only: RCW
       IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
@@ -4716,8 +4733,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "symm.inc"
-#include "complex.inc"
-#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C

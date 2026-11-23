@@ -48,8 +48,8 @@
 ! to the routines to print out the solution vectors.
 ! aspg, WIP, june/july 2018
 function create_projector(eom_type, ndet, state_sym, eps)
+      use inpt_mod, only: IPRNT
 #include "files.inc"
-#include "inpt.inc"
    logical, pointer :: create_projector(:) 
 
    integer, intent(in) :: eom_type
@@ -139,8 +139,8 @@ end function
 ! it returs an array of logical variables, where the entries are set to be true if a given line is
 ! to be suppressed. 
 function create_t_projector(ndet, eps)
+      use inpt_mod, only: IPRNT
 #include "files.inc"
-#include "inpt.inc"
    logical, pointer :: create_t_projector(:) 
 
    integer, intent(in) :: ndet
@@ -203,7 +203,6 @@ end function
 !
 !---------------Calling variables--------------------------------------
 
-#include "complex.inc"
 #include "symm.inc"
 
    real*8,  intent(in) :: eps(*)
@@ -217,8 +216,6 @@ end function
 !---------------Common Blocks--------------------------------------
 
 #include "files.inc"
-#include "param.inc"
-#include "ccpar.inc"
 
 !---------------Local variables--------------------------------------
    character(8) :: eomtype
@@ -496,7 +493,6 @@ end function
 !
 !---------------Calling variables--------------------------------------
 
-#include "complex.inc"
 #include "symm.inc"
 
    real*8,  intent(in) :: eps(*)
@@ -508,8 +504,6 @@ end function
 !---------------Common Blocks--------------------------------------
 
 #include "files.inc"
-#include "param.inc"
-#include "ccpar.inc"
 
 !---------------Local variables--------------------------------------
    integer       :: i,ii,irep,j,aoff,a,aa,ai,arep,ssym

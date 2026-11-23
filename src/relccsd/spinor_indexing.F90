@@ -60,7 +60,6 @@ module spinor_indexing
 !
 !---------------Common Blocks--------------------------------------
 !
-!#include "param.inc"
 #include "symm.inc"
 !
 !---------------Calling variables--------------------------------------
@@ -224,7 +223,6 @@ module spinor_indexing
 !---------------Common Blocks--------------------------------------
 !
 !      use symm_mod, only: MULTB, MXREP, NE, NO, NREP, NV
-!#include "param.inc"
 #include "symm.inc"
 !
 !---------------Calling variables--------------------------------------

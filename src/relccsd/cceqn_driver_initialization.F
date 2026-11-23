@@ -4,9 +4,9 @@
 
                              
 !      use files_mod, only: IW
-!      use param_mod, only: A0, D0
 !      use symm_mod, only: NDIMT1, NDIMT2
-!      use inpt_mod, only: IPRNT, NOCCD, NOCCS
+      use inpt_mod, only: IPRNT, NOCCD, NOCCS
+      use param_relccsd_mod, only: A0
       use eqns_mod, only: EQNS, ICURFSS
       use results_mod, only: ECCSD, ECCSDIM
       implicit none
@@ -27,9 +27,7 @@ C     for diis ...
 
 C---------------Common Blocks--------------------------------------
 #include "files.inc"
-#include "param.inc"
 #include "symm.inc"
-#include "inpt.inc"
 !#if defined (VAR_MPI)
 !      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 !#endif

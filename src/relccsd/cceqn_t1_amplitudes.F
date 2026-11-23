@@ -1,10 +1,10 @@
       SUBROUTINE amplitude_equation_T1 (FVO,T1,T2,
      &        HO,HV,HOV,BUF1,BUF2,BUF3,NBUF3,S1)
 C
-!      use param_mod, only: A0, A1, A2, LFA, LTR
 !      use symm_mod, only: JJVO, JVOVO, MULTB, MVO, NDIMT1, NFVO, NO, NREP, NV
-!      use complex_mod, only: CARITH, RCW
-!      use ccpar_mod, only: IDIST, MASTER, MYPROC
+      use ccpar_mod, only: IDIST, MASTER, MYPROC
+      use complex_mod, only: CARITH, RCW
+      use param_relccsd_mod, only: A0, A1, A2, LFA, LTR
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -40,10 +40,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "symm.inc"
-#include "complex.inc"
-#include "ccpar.inc"
 C
 
       interface

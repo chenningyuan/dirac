@@ -19,8 +19,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FMTOFILE (PUT,FVO,FOO,FVV)
 C
 !      use files_mod, only: ITAPT
-!      use complex_mod, only: IRW, RCW
 !      use symm_mod, only: NE, NFOO, NFVO, NFVV
+      use complex_mod, only: IRW, RCW
       use waio_mod, only: NWORDS_ON_RECORD
       implicit none
 C
@@ -42,7 +42,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
@@ -79,8 +78,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETOOOO (VOOOO)
 C
 !      use files_mod, only: ITAPT
-!      use complex_mod, only: IRW, RCW
 !      use symm_mod, only: NV1
+      use complex_mod, only: IRW, RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -100,7 +99,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
@@ -115,8 +113,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETVOOO (VVOOO)
 C
 !      use files_mod, only: ITAPT
-!      use complex_mod, only: IRW, RCW
 !      use symm_mod, only: NV2
+      use complex_mod, only: IRW, RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -136,7 +134,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
@@ -154,8 +151,8 @@ C
       SUBROUTINE GETOOVO (VOOVO)
 C
 !      use files_mod, only: ITAPT
-!      use complex_mod, only: IRW, RCW
 !      use symm_mod, only: NOOT, NREP, NV2, NVO
+      use complex_mod, only: IRW, RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -176,7 +173,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
@@ -199,8 +195,8 @@ C---------------Executable code--------------------------------------
       SUBROUTINE GETOVOO (VOVOO)
 C
 !      use files_mod, only: ITAPT
-!      use complex_mod, only: IRW, RCW
 !      use symm_mod, only: IIOV, IOVOOT, MULTB, NO, NOOT, NREP, NV, NV2, NVO
+      use complex_mod, only: IRW, RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -221,7 +217,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
@@ -242,8 +237,8 @@ C---------------Executable code--------------------------------------
 !=======================================================================
       SUBROUTINE GETOOOV (VOOOV)
 C
-!      use complex_mod, only: IRW, RCW
 !      use symm_mod, only: IOVOOT, NOOT, NOV, NREP
+      use complex_mod, only: IRW, RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -263,7 +258,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
@@ -285,8 +279,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETVVOO (VVVOO)
 C
 !      use files_mod, only: ITAPT
-!      use complex_mod, only: IRW, RCW
 !      use symm_mod, only: NV3
+      use complex_mod, only: IRW, RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -306,7 +300,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
@@ -323,8 +316,8 @@ C
       SUBROUTINE GETOOVV (VOOVV)
 C
 !      use files_mod, only: ITAPT
-!      use complex_mod, only: IRW, RCW
 !      use symm_mod, only: NOOT, NREP, NV3, NVVT
+      use complex_mod, only: IRW, RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -345,7 +338,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
@@ -367,8 +359,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETVOVO (VVOVO)
 C
 !      use files_mod, only: ITAPT
-!      use complex_mod, only: IRW, RCW
 !      use symm_mod, only: NV4
+      use complex_mod, only: IRW, RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -391,7 +383,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
@@ -409,8 +400,8 @@ C
       SUBROUTINE GETVOOV (VVOOV)
 C
 !      use files_mod, only: ITAPT
-!      use complex_mod, only: IRW, RCW
 !      use symm_mod, only: IIOV, IVOOV, MULTB, NO, NREP, NV, NV4, NVO
+      use complex_mod, only: IRW, RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -432,7 +423,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
@@ -457,9 +447,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETVOVV (IREP,ISTART,NINT,DONE,VVOVV,MINT)
 C
 !      use files_mod, only: ITAPT
-!      use complex_mod, only: RCW
 !      use symm_mod, only: NVO
-!      use ccpar_mod, only: IDIST
+      use ccpar_mod, only: IDIST
+      use complex_mod, only: RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -489,9 +479,7 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "complex.inc"
 #include "symm.inc"
-#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -529,8 +517,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE GETVVVO_incore (VVVVO)
 C
-!      use complex_mod, only: IRW, RCW
 !      use symm_mod, only: NREP, NV5, NVO, NVVT
+      use complex_mod, only: IRW, RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -543,7 +531,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
@@ -569,9 +556,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE GETVOVV_incore (VVOVV)
 
-!      use complex_mod, only: RCW
 !      use symm_mod, only: NREP, NVO, NVVT
-!      use ccpar_mod, only: MYPROC, NMPROC
+      use ccpar_mod, only: NMPROC
+#if defined (VAR_MPI)
+      use ccpar_mod, only: MYPROC
+#endif
+      use complex_mod, only: RCW
       use interface_to_mpi
       implicit none
 C
@@ -594,9 +584,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "complex.inc"
 #include "symm.inc"
-#include "ccpar.inc"
 #if defined (VAR_MPI)
       integer ISTAT(df_MPI_STATUS_SIZE)
 #endif
@@ -681,8 +669,8 @@ C
 
       SUBROUTINE GETOVVV_incore (VOVVV)
 C
-!      use complex_mod, only: IRW, RCW
 !      use symm_mod, only: IIOV, IOVVVT, MULTB, NO, NREP, NV, NV5, NVO, NVVT
+      use complex_mod, only: IRW, RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -696,7 +684,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
@@ -748,9 +735,9 @@ C
       SUBROUTINE GETVVVV (IREP,ISTART,NINT,DONE,VVVVV,MINT)
 C
 !      use files_mod, only: ITAPT
-!      use complex_mod, only: RCW
 !      use symm_mod, only: NVVT
-!      use ccpar_mod, only: IDIST
+      use ccpar_mod, only: IDIST
+      use complex_mod, only: RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -778,9 +765,7 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "complex.inc"
 #include "symm.inc"
-#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -821,9 +806,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PUTDZ (IREP,ISTART,NINT,DZ)
 C
 !      use files_mod, only: ITAPT
-!      use complex_mod, only: RCW
 !      use symm_mod, only: NVVT
-!      use ccpar_mod, only: IDIST
+      use ccpar_mod, only: IDIST
+      use complex_mod, only: RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -848,9 +833,7 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "complex.inc"
 #include "symm.inc"
-#include "ccpar.inc"
 C---------------Local variables--------------------------------------
        INTEGER*8 JSTART
        integer jint,mtot
@@ -876,9 +859,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETDZ (IREP,ISTART,NINT,DONE,DZ,MINT)
 C
 !      use files_mod, only: ITAPT
-!      use complex_mod, only: RCW
 !      use symm_mod, only: NVVT
-!      use ccpar_mod, only: IDIST
+      use ccpar_mod, only: IDIST
+      use complex_mod, only: RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -904,9 +887,7 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "complex.inc"
 #include "symm.inc"
-#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -947,8 +928,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PUTAMPT (T1,T2)
 C
 !      use files_mod, only: IRECT1, IRECT2, LRSFIL, MCCRES, NRECT1, NRECT2, RSFILN, RSRCLEN
-!      use complex_mod, only: RCW
 !      use symm_mod, only: NDIMT1, NDIMT2
+      use complex_mod, only: RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -968,7 +949,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
@@ -1017,8 +997,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETAMPT (T1,T2)
 C
 !      use files_mod, only: IRECT1, IRECT2, LRSFIL, MCCRES, NRECT1, NRECT2, RSFILN, RSRCLEN
-!      use complex_mod, only: RCW
 !      use symm_mod, only: NDIMT1, NDIMT2
+      use complex_mod, only: RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1038,7 +1018,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------

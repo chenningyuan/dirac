@@ -48,9 +48,8 @@
    subroutine f_bar_mi_MBPT2(foo,fvo,t1,t2,ho_MBPT2)
 
 !      use symm_mod, only: NDIMT1, NDIMT2, NFOO, NFVO, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
-#include "complex.inc"
 !--------------Calling variables---------------------------------------
      real(8), intent(in) :: foo(nfoo*rcw), fvo(rcw*nfvo)   ! Fock matrix elements
      real(8), intent(in) :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes
@@ -91,9 +90,8 @@
    subroutine f_bar_mi(foo,fvo,t1,t2,ho)
 
 !      use symm_mod, only: NDIMT1, NDIMT2, NFOO, NFVO, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
-#include "complex.inc"
 !--------------Calling variables---------------------------------------
      real(8), intent(in) :: foo(nfoo*rcw), fvo(rcw*nfvo)   ! Fock matrix elements
      real(8), intent(in) :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes
@@ -124,9 +122,8 @@
 
 !---------------Common Blocks--------------------------------------
 !      use symm_mod, only: NDIMT1, NDIMT2, NFVO, NFVV, NO, NREP, NV
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
-#include "complex.inc"
 !---------------Calling variables--------------------------------------
       real(8), intent(in)  :: fvv(nfvv*rcw), fvo(nfvo*rcw)
       real(8), intent(in)  :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
@@ -172,9 +169,8 @@
 
 !---------------Common Blocks--------------------------------------
 !      use symm_mod, only: NDIMT1, NDIMT2, NFVO, NFVV, NO, NREP, NV
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
-#include "complex.inc"
 !---------------Calling variables--------------------------------------
       real(8), intent(in)  :: fvv(nfvv*rcw), fvo(nfvo*rcw)
       real(8), intent(in)  :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
@@ -212,9 +208,8 @@
   subroutine f_bar_me_MBPT2(fvo,t1,hov_MBPT2)
 
 !      use symm_mod, only: NDIMT1, NFVO, NO, NREP, NV
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
-#include "complex.inc"
 !++++++++++++++Calling variables+++++++++++++++++++++++++++++++++++++++
      real(8), intent(in),target  :: fvo(rcw*nfvo)          ! Fock matrix elements
      real(8), intent(in) :: t1(rcw*ndimt1)                 ! Amplitudes
@@ -238,9 +233,8 @@
   subroutine f_bar_me(fvo,t1,hov)
 
 !      use symm_mod, only: NDIMT1, NFVO, NO, NREP, NV
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
-#include "complex.inc"
 !++++++++++++++Calling variables+++++++++++++++++++++++++++++++++++++++
      real(8), intent(in),target  :: fvo(rcw*nfvo)          ! Fock matrix elements
      real(8), intent(in) :: t1(rcw*ndimt1)                 ! Amplitudes
@@ -263,9 +257,8 @@
 !-----------------------------------------------------------------------
 
 !      use symm_mod, only: NDIMT1, NDIMT2, NREP, NV1
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
-#include "complex.inc"
 
 !---------------Calling variables--------------------------------------
   real(8), intent(in)  :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
@@ -299,9 +292,8 @@
 !-----------------------------------------------------------------------
 
 !      use symm_mod, only: NDIMT1, NDIMT2, NREP, NV1
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
-#include "complex.inc"
 
 !---------------Calling variables--------------------------------------
   real(8), intent(in)  :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
@@ -342,9 +334,8 @@
 !     Calculates w_voov intermediate
 !-----------------------------------------------------------------------
 !      use symm_mod, only: IOVOOT, IVOOV, NDIMT1, NDIMT2, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
-#include "complex.inc"
 !---------------Calling variables--------------------------------------
   real(8), intent(in)  :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
   real(8), intent(out) :: w_voov_MBPT2(rcw*ivoov(nrep+1))                ! Intermediate.
@@ -387,9 +378,8 @@
 !     Calculates w_voov intermediate
 !-----------------------------------------------------------------------
 !      use symm_mod, only: IOVOOT, IVOOV, NDIMT1, NDIMT2, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
-#include "complex.inc"
 !---------------Calling variables--------------------------------------
   real(8), intent(in)  :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
   real(8), intent(out) :: w_voov(rcw*ivoov(nrep+1))                ! Intermediate.
@@ -426,13 +416,12 @@
 
 subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
 !      use symm_mod, only: IIOV, IOVVO, IVOOV, MULTB, NDIMT1, NDIMT2, NO, NREP, NV, NV4, NVO
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
   external srt1l1
 !---------------Description--------------------------------------------
 !     Calculates w_voov_MBPT2 intermediate : Gwaltney eq.34
 !-----------------------------------------------------------------------
 #include "symm.inc"
-#include "complex.inc"
 !---------------Calling variables--------------------------------------
   real(8), intent(in)  :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
   real(8), intent(out) :: w_ovvo_MBPT2(rcw*ivoov(nrep+1))                ! Intermediate.
@@ -474,13 +463,12 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
 
  subroutine w_mbej(t1,t2,w_ovvo)
 !      use symm_mod, only: IIOV, IOVVO, IVOOV, MULTB, NDIMT1, NDIMT2, NO, NREP, NV, NV2, NV4, NVO
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
   external srt1l1
 !---------------Description--------------------------------------------
 !     Calculates w_voov intermediate
 !-----------------------------------------------------------------------
 #include "symm.inc"
-#include "complex.inc"
 !---------------Calling variables--------------------------------------
   real(8), intent(in)  :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
   real(8), intent(out) :: w_ovvo(rcw*ivoov(nrep+1))                ! Intermediate.
@@ -526,9 +514,8 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
 !-----------------------------------------------------------------------
 
 !      use symm_mod, only: IOVOOT, NDIMT1, NDIMT2, NFVO, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
-#include "complex.inc"
 
 !---------------Calling variables--------------------------------------
    real(8), intent(in)  :: t1(rcw*ndimt1),t2(rcw*ndimt2)                                    ! Amplitudes.
@@ -604,9 +591,8 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
 !-----------------------------------------------------------------------
 
 !      use symm_mod, only: IOVOOT, IOVVO, NDIMT1, NDIMT2, NFVO, NREP, NV1
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
-#include "complex.inc"
 
 !---------------Calling variables--------------------------------------
    real(8), intent(in)  :: t1(rcw*ndimt1),t2(rcw*ndimt2)                                    ! Amplitudes.
@@ -652,14 +638,13 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
  subroutine wbar_mbej(t2,wbar_ovvo)
 
 !      use symm_mod, only: IIOV, IOVVO, MULTB, NDIMT2, NO, NREP, NV, NV4, NVO
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
   external srt1l1
  !---------------Description--------------------------------------------
  !     Calculates w_voov intermediate
  !-----------------------------------------------------------------------
 
 #include "symm.inc"
-#include "complex.inc"
 
  !---------------Calling variables--------------------------------------
    real(8), intent(in)  :: t2(rcw*ndimt2)                              ! Amplitudes.
@@ -690,14 +675,13 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
  subroutine wbar_mbej_MBPT2(t2,wbar_ovvo)  !!!!! Identique a eom_ee mais ne sert pas ????
 
 !      use symm_mod, only: IIOV, IOVVO, MULTB, NDIMT2, NO, NREP, NV, NV4, NVO
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
   external srt1l1
  !---------------Description--------------------------------------------
  !     Calculates w_voov intermediate
  !-----------------------------------------------------------------------
 
 #include "symm.inc"
-#include "complex.inc"
 
  !---------------Calling variables--------------------------------------
    real(8), intent(in)  :: t2(rcw*ndimt2)                              ! Amplitudes.
@@ -733,9 +717,8 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
 !     Calculates w_mnie intermediate
 !-----------------------------------------------------------------------
 !      use symm_mod, only: NDIMT1, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
-#include "complex.inc"
 !---------------Calling variables----------------------------
   real(8), intent(in)  :: t1(rcw*ndimt1)                                    ! Amplitudes.
   real(8), intent(out) :: int_wooop_MBPT2(:)                                      ! Intermediate.
@@ -759,9 +742,8 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
 !     Calculates w_mnie intermediate
 !-----------------------------------------------------------------------
 !      use symm_mod, only: NDIMT1, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
-#include "complex.inc"
 !---------------Calling variables----------------------------
   real(8), intent(in)  :: t1(rcw*ndimt1)                                    ! Amplitudes.
   real(8), intent(out) :: int_wooop(:)                                      ! Intermediate.
@@ -782,9 +764,8 @@ subroutine w_amef_MBPT2(t1,w_v_temp_MBPT2)
 !     Gwaltney eq.31
 !-----------------------------------------------------------------------
 !      use symm_mod, only: NDIMT1, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
-#include "complex.inc"
 !---------------Calling variables----------------------------
   real(8), intent(in)  :: t1(rcw*ndimt1)                                    ! Amplitudes.
   real(8), intent(out) :: w_v_temp_MBPT2(:)                                      ! Intermediate.
@@ -809,9 +790,8 @@ subroutine w_amef_MBPT2(t1,w_v_temp_MBPT2)
 !     Calculates w_amef intermediate
 !-----------------------------------------------------------------------
 !      use symm_mod, only: NDIMT1, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
-#include "complex.inc"
 !---------------Calling variables----------------------------
   real(8), intent(in)  :: t1(rcw*ndimt1)                                    ! Amplitudes.
   real(8), intent(out) :: w_v_temp(:)                                      ! Intermediate.
@@ -834,9 +814,8 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 !----------------------------------------------------------
 !----------calling variables----------------------
 !      use symm_mod, only: NDIMT1, NDIMT2, NFVO, NREP, NV5
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
-#include "complex.inc"
 !---------------Calling variables--------------------------------------
    real*8, intent(in)  :: t2(rcw*ndimt2),t1(rcw*ndimt1)         ! Amplitudes.
 !   real*8, intent(in)  :: wbar_ovvo(rcw*iovvo(nrep+1)),hov(nfvo*rcw)     ! Intermediate.
@@ -920,9 +899,8 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 !----------------------------------------------------------
 !----------calling variables----------------------
 !      use symm_mod, only: IOVVO, NDIMT1, NDIMT2, NFVO, NREP, NV5
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
-#include "complex.inc"
 !---------------Calling variables--------------------------------------
    real*8, intent(in)  :: t2(rcw*ndimt2),t1(rcw*ndimt1)         ! Amplitudes.
    real*8, intent(in)  :: wbar_ovvo(rcw*iovvo(nrep+1)),hov(nfvo*rcw)     ! Intermediate.
@@ -972,9 +950,8 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 ! que get_vvvv. En effet pour Gwaltney il ne me faut pes W_efab modifié mais uniquement
 ! \V vvvv
 
-!      use complex_mod, only: CARITH, RCW
 !      use symm_mod, only: IIVO, IVO, IVOVVT, MULTB, NDIMT1, NDIMT2, NO, NREP, NV, NV5, NVO, NVVT
-#include "complex.inc"
+      use complex_mod, only: CARITH, RCW
 #include "symm.inc"   
 !---------------Calling variables-------------------------------------
 
@@ -1080,9 +1057,8 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 
  subroutine w_efam_diagram2(t1,t2,buf2,buf3,nbuf3,w_vvvo)
 
-!      use complex_mod, only: CARITH, RCW
 !      use symm_mod, only: IIVO, IVO, IVOVVT, MULTB, NDIMT1, NDIMT2, NO, NREP, NV, NV5, NVO, NVVT
-#include "complex.inc"
+      use complex_mod, only: CARITH, RCW
 #include "symm.inc"   
 !---------------Calling variables-------------------------------------
 
@@ -1186,14 +1162,11 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 
  subroutine w_ejmb_out_of_core(t1,t2,buf1,buf2,buf3,nbuf3,w_vovo)
 
-!      use param_mod, only: A0, D0
-!      use complex_mod, only: CARITH, RCW
 !      use symm_mod, only: IIOV, IVO, IVOOV, MULTB, NDIMT1, NDIMT2, NO, NREP, NV, NV4, NVO
-!      use ccpar_mod, only: MASTER, MYPROC
-#include "param.inc"                                                  
-#include "complex.inc"                                                
+      use ccpar_mod, only: MASTER, MYPROC
+      use complex_mod, only: CARITH, RCW
+      use param_relccsd_mod, only: A0
 #include "symm.inc"                                                   
-#include "ccpar.inc"                                                  
 
 !---------------Calling variables-------------------------------------
 
@@ -1311,14 +1284,11 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 
  subroutine f_bar_ae_out_of_core (t1,buf2,nbuf2,hv)
 
-!      use param_mod, only: A0
-!      use complex_mod, only: RCW
 !      use symm_mod, only: JJVO, JJVV, JVVVO, MULTB, MVO, MVV, NFVO, NFVV, NO, NREP, NV, NVO
-!      use ccpar_mod, only: MASTER, MYPROC
-#include "param.inc"
-#include "complex.inc"
+      use ccpar_mod, only: MASTER, MYPROC
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0
 #include "symm.inc"
-#include "ccpar.inc"
 
 !---------------Calling variables--------------------------------------
      real*8, intent(in)    :: t1(rcw,nfvo),buf2(*)
@@ -1352,11 +1322,9 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 
 !---------------Common Blocks--------------------------------------   
                                                                      
-!      use param_mod, only: A0, A1, D0, LFA
-!      use complex_mod, only: RCW
 !      use symm_mod, only: IIOV, IOVOOT, MULTB, NDIMT1, NDIMT2, NO, NOOT, NREP, NV, NVO, NVVT
-#include "param.inc"                                                  
-#include "complex.inc"                                                
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1, LFA
 #include "symm.inc"                                                   
 
 !---------------Calling variables-------------------------------------
@@ -1434,14 +1402,11 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 !   size for VOVV and VVVV integrals are the same.
 !-----------------------------------------------------------------------------------
 
-!      use param_mod, only: A0, A1, D0
-!      use complex_mod, only: RCW
 !      use symm_mod, only: IVVOOTT, MULTB, NDIMT1, NDIMT2, NO, NOOT, NREP, NT3VVT, NV, NVO, NVVT
-!      use ccpar_mod, only: MYPROC, NMPROC
-#include "param.inc"                                                  
-#include "complex.inc"                                                
+      use ccpar_mod, only: MYPROC, NMPROC
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
 #include "symm.inc"                                                   
-#include "ccpar.inc"                                                  
 
 !--------------------calling variables-------------
    real(8), intent(in)    :: t2(ndimt2*rcw),t1(ndimt1*rcw)  ! Amplitudes.
@@ -1572,12 +1537,10 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 !   size for VOVV and VVVV integrals are the same.
 !-----------------------------------------------------------------------------------
 
-!      use complex_mod, only: RCW
 !      use symm_mod, only: NDIMT1, NDIMT2, NOOT, NREP, NVVT
-!      use ccpar_mod, only: NMPROC
-#include "complex.inc"                                                
+      use ccpar_mod, only: NMPROC
+      use complex_mod, only: RCW
 #include "symm.inc"                                                   
-#include "ccpar.inc"                                                  
 
 !--------------------calling variables-------------
    real(8), intent(in)    :: t2(ndimt2*rcw),t1(ndimt1*rcw)  ! Amplitudes.
@@ -1640,14 +1603,11 @@ end subroutine
 !   size for VOVV and VVVV integrals are the same.
 !-----------------------------------------------------------------------------------
 
-!      use param_mod, only: A0, A1, D0
-!      use complex_mod, only: RCW
 !      use symm_mod, only: IVVOOTT, MULTB, NDIMT1, NDIMT2, NO, NOOT, NREP, NT3VVT, NV, NVO, NVVT
-!      use ccpar_mod, only: MYPROC, NMPROC
-#include "param.inc"                                                  
-#include "complex.inc"                                                
+      use ccpar_mod, only: MYPROC, NMPROC
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
 #include "symm.inc"                                                   
-#include "ccpar.inc"                                                  
 
 !--------------------calling variables-------------
    real(8), intent(in)    :: tau(ndimt2*rcw),t1(ndimt1*rcw)  ! Amplitudes.
@@ -1764,9 +1724,8 @@ end subroutine
 
 !---------------Common Blocks--------------------------------------
 !      use symm_mod, only: NDIMT2, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
 #include "symm.inc"
-#include "complex.inc"
 !     Calling variables
 !     -----------------  
       real(8), intent(in)  :: l2(rcw*ndimt2),t2(rcw*ndimt2)  ! Amplitudes.

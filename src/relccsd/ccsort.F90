@@ -39,8 +39,8 @@
      &                    IFIE,JFIE,KFIE,LFIE,NPAIR,                    &
      &                    OFF,OFF1,OFF2,BUF1,BUF2)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -65,8 +65,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -177,8 +175,8 @@
      &                    IFIE,JFIE,KFIE,LFIE,NPAIR,                    &
      &                    OFF,OFF1,OFF2,BUF1,BUF2)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -201,8 +199,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -308,8 +304,8 @@
      &                    IFIE,JFIE,KFIE,LFIE,NPAIR,                    &
      &                    OFF,OFF1,OFF2,BUF1,BUF2)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -332,8 +328,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -445,8 +439,8 @@
       SUBROUTINE SRT1ST4 (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,   &
      &                    NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -469,8 +463,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -538,8 +530,8 @@
       SUBROUTINE SRT1SS4 (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,   &
      &              NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -562,8 +554,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -612,8 +602,8 @@
       SUBROUTINE SRT1T3 (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,       &
      &                   OFF,OFF1,BUF1,BUF2)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -637,8 +627,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -688,8 +676,8 @@
       SUBROUTINE SRT1T2 (NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,NPAIR2,OFF,  &
      &                   OFF2,BUF1,BUF2)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -713,8 +701,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -767,8 +753,8 @@
       SUBROUTINE SRT6 (NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,NPAIR2,NTRIPL, &
      &                 OFF,OFF1,BUF1,BUF2)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -792,8 +778,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -833,8 +817,8 @@
       SUBROUTINE SRT9 (NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,NPAIR2,NTRIPL, &
      &                 OFF,OFF1,BUF1,BUF2)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -861,8 +845,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -901,8 +883,8 @@
       SUBROUTINE SRT1L1 (NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,NPAIR2,      &
      &                   OFF,OFF1,BUF1,BUF2)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -925,8 +907,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -970,8 +950,8 @@
       SUBROUTINE SRT1S2 (NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,NPAIR2,OFF,  &
      &                   OFF2,BUF1,BUF2)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -994,8 +974,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -1037,8 +1015,8 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1C1 (NREP,NPAIR1,NPAIR2,BUF1,BUF2)
 !
-!      use complex_mod, only: CARITH, RCW
-!      use param_mod, only: A0
+      use complex_mod, only: CARITH, RCW
+      use param_relccsd_mod, only: A0
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -1058,8 +1036,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -1092,7 +1068,7 @@
       SUBROUTINE SRT16 (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,     &
      &                  NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
 !
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -1116,7 +1092,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -1164,8 +1139,8 @@
       SUBROUTINE SRT19(NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,OFF,OFF1,&
      &                  BUF1,BUF2)
  
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -1188,8 +1163,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -1230,8 +1203,8 @@
       SUBROUTINE SRT1LS1 (NREP,MULTB,NPAIR1A,NPAIR1B,IFIE,JFIE,NPAIR2,  &
      &                    OFF,OFF1,BUF1,BUF2)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -1254,8 +1227,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -1297,8 +1268,8 @@
       SUBROUTINE SRT22 (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,OFF,OFF1&
      &                  ,BUF1,BUF2)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -1321,8 +1292,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -1369,8 +1338,8 @@
       SUBROUTINE SRT32 (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,OFF,OFF1&
      &                  ,BUF1,BUF2)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -1393,8 +1362,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -1433,8 +1400,8 @@
       SUBROUTINE SRT23 (NREP,MULTB,NPAIR1,IFIE,JFIE,NPAIR2,NTRIPL,      &
      &                  OFF,OFF1,BUF1,BUF2,NBUF1)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -1459,8 +1426,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -1514,7 +1479,7 @@
       SUBROUTINE SRT33 (IRP,ISTART,NREP,MULTB,NPAIR1,IFIE,JFIE,NPAIR2,  &
      &              NTRIPL,OFF,OFF1,BUF2,NBUF1,OFF3,DONE)
 !
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -1540,7 +1505,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -1592,8 +1556,8 @@
       SUBROUTINE SRT43 (IRP,ISTART,NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,   &
      &         NPAIR2,NTRIPL,OFF,OFF1,BUF1,BUF2,NBUF1,OFF3)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -1619,8 +1583,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -1680,8 +1642,8 @@
       SUBROUTINE SRT1S3 (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,       &
      &                   OFF,OFF1,BUF1,BUF2)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -1705,8 +1667,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -1744,8 +1704,8 @@
      &                  IFIE,JFIE,KFIE,LFIE,NPAIR,                      &
      &                  OFF,OFF1,OFF2,BUF1,BUF2)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -1770,8 +1730,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -1838,8 +1796,8 @@
      &                    IFIE,JFIE,KFIE,LFIE,NPAIR,                    &
      &                    OFF,OFF1,OFF2,BUF1,BUF2)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -1864,8 +1822,6 @@
 !
 !q---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -1947,8 +1903,8 @@
        SUBROUTINE SRT1R1 (NREP,MULTB,DOINV,NPAIR1,KFIE,LFIE,NPAIR2,     &
      &                   OFF,OFF1,BUF1,BUF2)
 !
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -1971,8 +1927,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -2017,8 +1971,8 @@
      &                  NPAIR,OFF,OFF1,OFF2,BUF1,NBUF1,T1,GV,USEDZ,     &
      &                  RIGHT)
 !
-!      use complex_mod, only: CARITH, RCW
-!      use param_mod, only: A1, D0
+      use complex_mod, only: CARITH, RCW
+      use param_relccsd_mod, only: A1
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -2045,8 +1999,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -2193,8 +2145,8 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRTDIR(NREP,MULTB,NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
 !
-!      use complex_mod, only: RCW
 !      use dcborb_mod, only: NAOCC, NAVIR
+      use complex_mod, only: RCW
       use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
       implicit none
 !
@@ -2217,7 +2169,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
 #include "dcborb.h"
 !
 !---------------Local variables--------------------------------------

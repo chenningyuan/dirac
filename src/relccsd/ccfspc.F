@@ -17,9 +17,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FOLDED (ICURFSS,T1,T2,EPS,FVO,
      &                   BUF1,BUF2,BUF3,S1,S2)
 C
-!      use param_mod, only: A0, A1, LFA, LTR
-!      use complex_mod, only: RCW
 !      use symm_mod, only: IAOAO, IAVAV, JAOAVAOAV, JAOAVOV, JJAOAV, JJOV, KKVVOT, KVVOAVT, LAOVOOT, LLVOOT, MAOAV, MOV, MULTB, NAO, NAOAOT, NAOV, NAV, NAVAVT, NDIMT1, NDIMT2, NIO, NIV, NO, NOOT, NREP, NSO, NSOSOT, NSV, NSVSVT, NV, NVOOT, NVVOT, NVVT
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1, LFA, LTR
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -51,8 +51,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
-#include "complex.inc"
 #include "symm.inc"
 ! ccpar.inc not needed, because there is no parallelization in this subroutine
 ! include "ccpar.inc"
@@ -279,9 +277,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                 NSP,IREPSPI)
 
 C
-!      use param_mod, only: A0, A1, LFA
-!      use complex_mod, only: RCW
 !      use symm_mod, only: IAOAO, IAVAV, IFS_HE, IFS_HE2, JAOAVAOAV, JJAOAV, MAOAV, MULTB, MXREP, NAO, NAV, NDIMT1, NDIMT2, NE, NFS_HE, NREP
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1, LFA
       use memory_allocator
       implicit none
 C---------------Description--------------------------------------------
@@ -299,8 +297,6 @@ C
       INTEGER ICURFSS,NSP,IREPSPI
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables -----------------------------------
@@ -473,8 +469,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SOLVE_CG (NDT,H,EVEC_LEFT,EVEC_RIGHT,EV)
 !
 !      use files_mod, only: IW
-!      use complex_mod, only: CARITH, RCW
-!      use inpt_mod, only: IPRNT
+      use inpt_mod, only: IPRNT
+      use complex_mod, only: CARITH, RCW
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -493,8 +489,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !---------------Common Blocks--------------------------------------
 !
 #include "files.inc"
-#include "complex.inc"
-#include "inpt.inc"
 !
 !---------------Calling variables--------------------------------------
 
@@ -597,9 +591,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DUMP_HEFF(ICURFSS,HEFF)
 C
-!      use complex_mod, only: CARITH, RCW
 !      use symm_mod, only: IFS_HE2, NFS_HE, NREP
 !      use files_mod, only: IN, IUHEFF, IW
+      use complex_mod, only: CARITH, RCW
       use ihm_mod, only: AIH, DOIH, IHSCHEME, NIH, SHIFT_IH
       implicit none
 C---------------Description--------------------------------------------
@@ -608,7 +602,6 @@ C     Write the effective Hamiltonian to file for post-processing
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "complex.inc"
 #include "symm.inc"
 #include "files.inc"
 
@@ -693,10 +686,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FS_ANALYSIS1(ICURFSS,EPS,EIGENVALUES,
      &  EIGENVECTORS_LEFT,EIGENVECTORS_RIGHT,NSP,IREPSPI)
 C
-!      use inpt_mod, only: IPRNT, STATE_E_FSCC
-!      use complex_mod, only: RCW
 !      use symm_mod, only: IFS_HE, MXREP, NE, NFS_HE, NREP, REPNA
 !      use files_mod, only: IW
+      use inpt_mod, only: IPRNT, STATE_E_FSCC
+      use complex_mod, only: RCW
       use results_mod, only: ECCSD, ECCSDIM, EFS, ESCF
       implicit none
 C---------------Description--------------------------------------------
@@ -706,8 +699,6 @@ C     compute oscilator strengths.
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "inpt.inc"
-#include "complex.inc"
 #include "symm.inc"
 #include "files.inc"
 C
@@ -786,8 +777,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 !      use symm_mod, only: IO, IV, MULTB, NAO, NAV, NDIMT2, NE, NIO, NIV, NREP
 !      use files_mod, only: IW
-!      use complex_mod, only: CARITH
-!      use param_mod, only: A0, D0
+      use complex_mod, only: CARITH
+      use param_relccsd_mod, only: A0
       use ihm_mod, only: AIH, DOIH, IHSCHEME, IPIORB, NIH, SHIFT_IH
       implicit none
 C
@@ -826,8 +817,6 @@ C---------------Common Blocks----------------------------------------
 C
 #include "symm.inc"
 #include "files.inc"
-#include "complex.inc"
-#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1399,8 +1388,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT1 (T1,FT1,ACVMIN,ACVMAX,ICOMIN,ICOMAX,DOINV)
 C
 !      use symm_mod, only: IVO, NAO, NAV, NIO, NIV, NREP, NV
-!      use complex_mod, only: RCW
-!      use param_mod, only: A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A1
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1425,8 +1414,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "symm.inc"
-#include "complex.inc"
-#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1487,8 +1474,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   JCOMAX,DOINV)
 C
 !      use symm_mod, only: IIOOT, IIVVT, IVVOOTT, MULTB, NAO, NAV, NIO, NIV, NO, NREP, NV, NVVT
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1526,8 +1513,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "symm.inc"
-#include "complex.inc"
-#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1655,8 +1640,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   IJCOMAX,DOINV)
 C
 !      use symm_mod, only: IIOOT, IIVVT, IO, IVVOOTT, MULTB, NAO, NAV, NIO, NIV, NO, NREP, NV, NVVT
-!      use complex_mod, only: CARITH, RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: CARITH, RCW
+      use param_relccsd_mod, only: A0, A1
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1694,8 +1679,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "symm.inc"
-#include "complex.inc"
-#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1828,7 +1811,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 !      use symm_mod, only: IO, IV, MULTB, NAO, NAV, NDIMT2, NE, NIO, NIV, NREP
 !      use files_mod, only: IW
-!      use complex_mod, only: CARITH
+      use complex_mod, only: CARITH
       use eqns_mod, only: EQNS
       implicit none
 C
@@ -1854,7 +1837,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "symm.inc"
 #include "files.inc"
-#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2032,8 +2014,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT2T(T2,FT2,ABCVMIN,ABCVMAX,IJCOMIN,IJCOMAX,DOINV)
 C
 !      use symm_mod, only: IIOOT, IIVVT, IVVOOTT, MULTB, NAO, NAV, NIO, NIV, NO, NREP, NV, NVVT
-!      use complex_mod, only: RCW
-!      use param_mod, only: A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A1
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -2071,8 +2053,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "symm.inc"
-#include "complex.inc"
-#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2183,8 +2163,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   ICOMIN,ICOMAX,JCOMIN,JCOMAX,DOINV)
 C
 !      use symm_mod, only: IIOOT, IIVVT, IVVOOTT, MULTB, NAO, NAV, NIO, NIV, NO, NREP, NV, NVVT
-!      use complex_mod, only: CARITH, RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: CARITH, RCW
+      use param_relccsd_mod, only: A0, A1
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -2222,8 +2202,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "symm.inc"
-#include "complex.inc"
-#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2365,8 +2343,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SCALE_S1 (S1)
 C
 !      use symm_mod, only: IVO, NAO, NAV, NIO, NIV, NREP, NV
-!      use complex_mod, only: RCW
-!      use param_mod, only: A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A1
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -2390,8 +2368,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "symm.inc"
-#include "complex.inc"
-#include "param.inc"
 C
 C---------------Local variables--------------------------------------
       integer ai,i,iend,irp,istart
@@ -2486,9 +2462,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FS_ANALYSIS (ICURFSS,EPS,IPR,NDT_TOT,E_OFF,
      &                   EV_ALL,H_left,H,NSP,IREPSPI)
 C
-!      use complex_mod, only: CARITH, RCW
 !      use symm_mod, only: MXREP, NFS_HE, NREP, REPNA
 !      use files_mod, only: IW
+      use complex_mod, only: CARITH, RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -2517,7 +2493,6 @@ CMI/July 2007 works only with real ECCSD
 C
 C---------------Calling variables--------------------------------------
 C
-#include "complex.inc"
 #include "symm.inc"
       REAL*8 TRES,EPS(*),E_OFF
       REAL*8 EV_ALL(RCW,NDT_TOT),H(RCW,*) 
@@ -2615,10 +2590,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                EIGENVECTORS_RIGHT,NDT_TOT,IREPSPI,NSP,
      &                                 E_OFF,EV_ALL)
 c
-!      use inpt_mod, only: NAMEE
 !      use symm_mod, only: IFS_HE2, MXREP, NE, NFS_HE, NREP, REPNA, SPFR
-!      use complex_mod, only: CARITH, RCW
 !      use files_mod, only: IW
+      use inpt_mod, only: NAMEE
+      use complex_mod, only: CARITH, RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -2631,9 +2606,7 @@ C---------------Routines called--------------------------------------
 C---------------Last modified-----------------------------------------
 C---------------Common Blocks------------------------------------
 C
-#include "inpt.inc"
 #include "symm.inc"
-#include "complex.inc"
 #include "files.inc"
 c
 c---------------Calling Variables-----------------------------------
@@ -2775,21 +2748,18 @@ c
 !C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE TRANSITION_EA_IP (ICURFSS,EOPER,PROP,EV_ALL,
      &         EIGENVECTORS_LEFT,EIGENVECTORS_RIGHT,NDT_TOT,IREPSPI,NSP)
-!      use inpt_mod, only: NAMEE
 !      use symm_mod, only: IFS_HE2, MXREP, NFS_HE, NREP
-!      use param_mod, only: A0, A1, D0
-!      use complex_mod, only: RCW
 !      use files_mod, only: IW
+      use inpt_mod, only: NAMEE
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       implicit none
 c
 c     Contraction of dipole integrals with coefficients for sector (0,1) or (1,0)
 c     Output is written directly here, as getting a nice human-readable output is
 c     difficult and post processing is usually necessary anyhow.
 c
-#include "inpt.inc"
 #include "symm.inc"
-#include "param.inc"
-#include "complex.inc"
 #include "files.inc"
 c
 c-------------------Calling Variables-------------------------------------------------
@@ -2910,13 +2880,12 @@ c
       SUBROUTINE TRANSITION_ONEONE (EOPER,PROP,TRANS_DIPOLE,
      &                       EIGENVECTORS,NDT_TOT,IREPSPI,NSP)
 !      use symm_mod, only: IFS_HE2, MXREP, NFS_HE, NREP
-!      use complex_mod, only: CARITH, RCW
+      use complex_mod, only: CARITH, RCW
       implicit none
 c
 c     Contraction of dipole integrals with coefficients for sector (1,1)
 c
 #include "symm.inc"
-#include "complex.inc"
 c
 c-------------------Calling Variables-------------------------------------------------
 c
@@ -2977,18 +2946,15 @@ c     find  the position of the dipole_{av,ao} elements in the full array
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
        SUBROUTINE READ_PROP(DIPLEN,NSP,PROP)
 C
-!      use param_mod, only: ACCUR, D0, D1
-!      use complex_mod, only: CARITH, RCW
 !      use files_mod, only: IW, MDPROP
-!      use inpt_mod, only: IPRNT
+      use inpt_mod, only: IPRNT
+      use complex_mod, only: CARITH, RCW
+      use param_relccsd_mod, only: ACCUR, D0, D1
        implicit none
 C
 C This routine is analogous to RDPROP in relccsd/ccints.F (without the sorting).
 C
-#include "param.inc"
-#include "complex.inc"
 #include "files.inc"
-#include "inpt.inc"
 C
 C---------------Calling variables------------------------------------
 C
@@ -3096,7 +3062,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                    IREPSPI,NSP)
 
 !      use symm_mod, only: MXREP, NAO, NAV, NIO
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
       implicit none
 c
 c Takes out symmetry block as needed in subroutine Transition_EA_IP
@@ -3104,7 +3070,6 @@ c
 c----------------Common Blocks-----------------------------------------
 c 
 #include "symm.inc"
-#include "complex.inc"
 c
 c----------------Calling variables---------------------------------------------
 c

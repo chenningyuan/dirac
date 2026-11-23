@@ -45,9 +45,8 @@
 ! to the routines to print out the solution vectors.
 function create_projector(eom_type, ndet, state_sym, eps)
 !      use files_mod, only: IN, IW
-!      use inpt_mod, only: IPRNT
+      use inpt_mod, only: IPRNT
 #include "files.inc"
-#include "inpt.inc"
    logical, pointer :: create_projector(:) 
 
    integer, intent(in) :: eom_type
@@ -138,9 +137,8 @@ end function
 ! to be suppressed. 
 function create_t_projector(ndet, eps)
 !      use files_mod, only: IN, IW
-!      use inpt_mod, only: IPRNT
+      use inpt_mod, only: IPRNT
 #include "files.inc"
-#include "inpt.inc"
    logical, pointer :: create_t_projector(:) 
 
    integer, intent(in) :: ndet

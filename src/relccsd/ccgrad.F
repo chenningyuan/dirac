@@ -20,8 +20,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   BUF1,BUF2,BUF3,DOO,DVV,DVO,DOV,DMO)
 C
 !      use symm_mod, only: JJVO, JVOVO, KKVVOT, KVVOOT, LLVOOT, LVVOOT, MULTB, MVO, NDIMT1, NFOO, NFVO, NFVV, NO, NOOT, NREP, NV, NVOOT, NVVOT, NVVT
-!      use param_mod, only: A0, A1, LFA, LTR
-!      use complex_mod, only: CARITH
+      use complex_mod, only: CARITH
+      use param_relccsd_mod, only: A0, A1, LFA, LTR
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -52,8 +52,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "symm.inc"
-#include "param.inc"
-#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -149,11 +147,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
        subroutine cc_density (l1,l2,t1,t2,doo,dvv,buf1,buf2,dmo)
 
 !      use symm_mod, only: NDIMT1, NDIMT2, NFOO, NFVO, NFVV, NREP
-!      use complex_mod, only: CARITH, RCW
+      use complex_mod, only: CARITH, RCW
        use contraction
 
 #include "symm.inc"
-#include "complex.inc"
 !-------------------------calling variables-------------------------
        real*8, intent(in)  :: l1(ndimt1*rcw),l2(ndimt2*rcw),
      &                        t1(ndimt1*rcw),t2(ndimt2*rcw)
@@ -343,9 +340,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 
       subroutine print_density_matrix(dm,block_type)
-!      use complex_mod, only: CARITH, RCW
 !      use symm_mod, only: NO, NREP, NV
-#include "complex.inc"
+      use complex_mod, only: CARITH, RCW
 #include "symm.inc"
          real(kind=8), intent(in) :: dm(*)
          integer, intent(in) :: block_type ! 1 : oo, 2: vv, 3: ov, 4: vo
@@ -416,9 +412,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE CONVDM(BUF1,BUF2,DOO,DVV,DVO,DOV,dmo)
 C
-!      use param_mod, only: A1, AP5, D0
-!      use complex_mod, only: CARITH, RCW
 !      use symm_mod, only: NFOO, NFVO, NFVV, NO, NORBT, NREP, NV
+      use complex_mod, only: CARITH, RCW
+      use param_relccsd_mod, only: A1, AP5
       use dgroup_mod, only: NZ
       implicit none
 C
@@ -448,8 +444,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
@@ -707,11 +701,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   XVO,XOV,DOO,DVV,DVO,DOV,
      &                   EVO,EOV,D2VO,D2OV,DG,CC1,BB1,BB2,CONV)
 C
-!      use inpt_mod, only: DEBUG, IPRNT, MAXOP, MXITGR, NAMEE, NEOPER, TIMING
 !      use symm_mod, only: JJOO, JJVO, JJVV, JVOOO, JVVVO, MULTB, MVO, MVV, NDIMT2, NDIMX, NFOO, NFVO, NFVV, NO, NREP, NV, NVO
-!      use param_mod, only: A0, A1, LFA, LTR
-!      use complex_mod, only: CARITH, RCW
-!      use ccpar_mod, only: NMPROC
+      use inpt_mod, only: DEBUG, IPRNT, MAXOP, MXITGR, NAMEE, NEOPER,
+     &  TIMING
+#if defined (VAR_MPI)
+      use ccpar_mod, only: NMPROC
+#endif
+      use complex_mod, only: CARITH, RCW
+      use param_relccsd_mod, only: A0, A1, LFA, LTR
       use interface_to_mpi
       implicit none
 C
@@ -744,11 +741,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "inpt.inc"
 #include "symm.inc"
-#include "param.inc"
-#include "complex.inc"
-#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -846,8 +839,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 !      use files_mod, only: IW
 !      use symm_mod, only: J2VOVO, JJVO, MULTB, MVO, NO, NREP, NV
-!      use param_mod, only: LFA
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: LFA
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -875,8 +868,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
 #include "symm.inc"
-#include "param.inc"
-#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -939,8 +930,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CONVXM(BUF1,BUF2,XVO,XMO)
 C
-!      use complex_mod, only: CARITH, RCW
 !      use symm_mod, only: NFVO, NO, NORBT, NREP, NV
+      use complex_mod, only: CARITH, RCW
       use dgroup_mod, only: NZ
       implicit none
 C
@@ -964,7 +955,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "complex.inc"
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
@@ -1026,9 +1016,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXPVAL (DOO,DVV,DVO,DOV,EOO,EVV,EVO,EOV,EPHASE,CEXPA)
 C
-!      use param_mod, only: A1
 !      use symm_mod, only: NFOO, NFVO, NFVV, NO, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A1
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1051,9 +1041,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "symm.inc"
-#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C

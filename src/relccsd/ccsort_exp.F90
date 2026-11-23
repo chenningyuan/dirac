@@ -32,8 +32,8 @@
 
       SUBROUTINE SRT1TT4_exp (IRP_INPUT,NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       IMPLICIT INTEGER (A-Z)
 
 !---------------Description--------------------------------------------
@@ -58,8 +58,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-#include "param.inc"
 
 !---------------Local variables--------------------------------------
       type(Offset) :: d,e,f,g,h
@@ -186,8 +184,8 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1TT5_exp (IRP_INPUT,NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       IMPLICIT INTEGER (A-Z)
 
 !---------------Description--------------------------------------------
@@ -210,8 +208,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-#include "param.inc"
 
 !---------------Local variables--------------------------------------
       type(Offset) :: d,e,f,g,h
@@ -333,8 +329,8 @@
 !=====================================================================================
       SUBROUTINE SRT1ST4_exp (IRP_INPUT,NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       IMPLICIT INTEGER (A-Z)
 
 !---------------Description--------------------------------------------
@@ -357,8 +353,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-#include "param.inc"
 
 !---------------Local variables--------------------------------------
       type(Offset) :: d,e,f,g,h
@@ -440,8 +434,8 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1SS4_exp (IRP_INPUT,NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0
       IMPLICIT INTEGER (A-Z)
 
 !---------------Description--------------------------------------------
@@ -464,8 +458,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-#include "param.inc"
 
 !---------------Local variables--------------------------------------
       type(Offset) :: d,e,f,g,h
@@ -530,8 +522,8 @@
 !=======================================================================
       SUBROUTINE SRT1T3_exp (IRP_INPUT,NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       IMPLICIT INTEGER (A-Z)
 
 !---------------Description--------------------------------------------
@@ -555,8 +547,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-#include "param.inc"
 
 !---------------Local variables--------------------------------------
       INTEGER IJKREP,IJLREP
@@ -623,8 +613,8 @@
 
       SUBROUTINE SRT1T2_exp (IRP_INPUT, NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       IMPLICIT INTEGER (A-Z)
 
 !---------------Description--------------------------------------------
@@ -648,8 +638,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-#include "param.inc"
 
 !---------------Local variables--------------------------------------
       INTEGER JKLREP, IKLREP 
@@ -721,8 +709,8 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT6_exp (IRP_INPUT,NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0
       IMPLICIT INTEGER (A-Z)
 
 !---------------Description--------------------------------------------
@@ -745,8 +733,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-#include "param.inc"
 
 !---------------Local variables--------------------------------------
      type(Offset) :: e,f,g,h 
@@ -805,8 +791,8 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT9_exp (IRP_INPUT,NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0
       IMPLICIT INTEGER (A-Z)
 
 !---------------Description--------------------------------------------
@@ -832,8 +818,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-#include "param.inc"
 
 !---------------Local variables--------------------------------------
      type(Offset) :: e,f,g,h 
@@ -891,8 +875,8 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT10_exp (IRP_INPUT,NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0
       IMPLICIT INTEGER (A-Z)
 
 !---------------Description--------------------------------------------
@@ -915,8 +899,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-#include "param.inc"
 
 !---------------Local variables--------------------------------------
      type(Offset) :: e,f,g,h 
@@ -976,8 +958,8 @@
 
       SUBROUTINE SRT1S2_exp (IRP_INPUT, NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0
       IMPLICIT INTEGER (A-Z)
 
 !---------------Description--------------------------------------------
@@ -1000,8 +982,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-#include "param.inc"
 
 !---------------Local variables--------------------------------------
        type(Offset) :: e,f,g,h
@@ -1059,8 +1039,8 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT16_exp (IRP_INPUT,NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0
       IMPLICIT INTEGER (A-Z)
 
 !---------------Description--------------------------------------------
@@ -1084,8 +1064,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-#include "param.inc"
 
 !---------------Local variables--------------------------------------
        type(Offset) :: d,e,f,g,h
@@ -1154,8 +1132,8 @@
 !=============================================================================================================
       SUBROUTINE SRT46_exp (IRP_INPUT, NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0
       IMPLICIT INTEGER (A-Z)
 
 !---------------Description--------------------------------------------
@@ -1179,8 +1157,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-#include "param.inc"
 
 !---------------Local variables--------------------------------------
        type(Offset) :: d,e,f,g,h
@@ -1249,8 +1225,8 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT19_exp (IRP_INPUT,NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
  
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0
       IMPLICIT INTEGER (A-Z)
 
 !---------------Description--------------------------------------------
@@ -1273,8 +1249,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "complex.inc"
-#include "param.inc"
 !
 !---------------Local variables--------------------------------------
       type(Offset) :: e,f,g,h
@@ -1330,8 +1304,8 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT22_exp (IRP_INPUT,NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       IMPLICIT INTEGER (A-Z)
 
 !---------------Description--------------------------------------------
@@ -1354,8 +1328,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-#include "param.inc"
 
 !---------------Local variables--------------------------------------
       type(Offset) :: e,f,g,h
@@ -1419,8 +1391,8 @@
 !===========================================================================
       SUBROUTINE SRT32_exp (IRP_INPUT,NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0
       IMPLICIT INTEGER (A-Z)
 
 !---------------Description--------------------------------------------
@@ -1443,8 +1415,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-#include "param.inc"
 
 !---------------Local variables--------------------------------------
      type(Offset) :: e,f,g,h
@@ -1501,8 +1471,8 @@
 
       SUBROUTINE SRT1S3_exp (IRP_INPUT,NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0
       IMPLICIT INTEGER (A-Z)
 
 !---------------Description--------------------------------------------
@@ -1526,8 +1496,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-#include "param.inc"
 
 !---------------Local variables--------------------------------------
       type(Offset) :: e,f,g,h
@@ -1584,8 +1552,8 @@
 !==========================================================================================
       SUBROUTINE SRT26_exp (IRP_INPUT,NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       IMPLICIT INTEGER (A-Z)
 
 !---------------Description--------------------------------------------
@@ -1610,8 +1578,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-#include "param.inc"
 
 !---------------Local variables--------------------------------------
        type(Offset) :: d,e,f,g,h
@@ -1697,8 +1663,8 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT36_exp (IRP_INPUT,NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       IMPLICIT INTEGER (A-Z)
 
 !---------------Description--------------------------------------------
@@ -1723,8 +1689,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-#include "param.inc"
 
 !---------------Local variables--------------------------------------
 
@@ -1821,8 +1785,8 @@
 
       SUBROUTINE SRT56_exp (IRP_INPUT,NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       IMPLICIT INTEGER (A-Z)
 
 !---------------Description--------------------------------------------
@@ -1847,8 +1811,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-#include "param.inc"
 
 !---------------Local variables--------------------------------------
 
@@ -1949,8 +1911,8 @@
 
       SUBROUTINE SRT1TS4_exp (IRP_INPUT,NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       IMPLICIT INTEGER (A-Z)
 
 !---------------Description--------------------------------------------
@@ -1975,8 +1937,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-#include "param.inc"
 
 !---------------Local variables--------------------------------------
       type(Offset) :: d,e,f,g,h
@@ -2068,8 +2028,8 @@
 
       SUBROUTINE SRT7_exp (IRP_INPUT,NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
-!      use complex_mod, only: RCW
-!      use param_mod, only: A0, A1
+      use complex_mod, only: RCW
+      use param_relccsd_mod, only: A0, A1
       IMPLICIT INTEGER (A-Z)
 
 !---------------Description--------------------------------------------
@@ -2092,8 +2052,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-#include "param.inc"
 
 !---------------Local variables--------------------------------------
       type(Offset) :: e,f,g,h 
@@ -2161,7 +2119,7 @@
       SUBROUTINE SRT1C1_exp (IRP_INPUT,SHIFT_BOSON,NPAIR1,NPAIR2,BUF1,BUF2, &
     &    IRREP_PROD_TYPE)
 !      use symm_mod, only: MULTB, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
       IMPLICIT INTEGER (A-Z)
 #include "symm.inc"
 !---------------Description--------------------------------------------
@@ -2179,8 +2137,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-!#include "param.inc"
 
 !---------------Local variables--------------------------------------
 
@@ -2229,8 +2185,7 @@
 
      SUBROUTINE nvo_to_mvo (IRP_INPUT,DOINV,IFIE,JFIE,BUF1,BUF2)
 !      use symm_mod, only: MULTB, NREP
-!      use complex_mod, only: RCW
-!      use param_mod, only: D0
+      use complex_mod, only: RCW
       IMPLICIT INTEGER (A-Z)
 #include "symm.inc"
 
@@ -2255,8 +2210,6 @@
 
 !---------------Common Blocks--------------------------------------
 
-#include "complex.inc"
-#include "param.inc"
 
 !---------------Local variables--------------------------------------
       type(Offset) :: d,e,f,g,h

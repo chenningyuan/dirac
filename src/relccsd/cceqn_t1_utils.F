@@ -1,8 +1,8 @@
       SUBROUTINE T1EQN1 (TAU,S1)
 C
-!      use param_mod, only: A1, LFA
 !      use symm_mod, only: IVOOOT, LLVOOT, LOVOOT, LVVOOT, MULTB, NDIMT1, NDIMT2, NO, NOOT, NREP, NV, NVO, NVOOT, NVVT
-!      use complex_mod, only: CARITH, RCW
+      use complex_mod, only: CARITH, RCW
+      use param_relccsd_mod, only: A1, LFA
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -22,9 +22,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "symm.inc"
-#include "complex.inc"
 
       real*8,intent(inout) :: S1(ndimt1*rcw)
       real*8,intent(in)    :: TAU(ndimt2*rcw)
@@ -77,7 +75,7 @@ C
       SUBROUTINE T1EQN2 (TAU,BUF3,NBUF3,S1)
 C
 !      use symm_mod, only: IIVO, IVO, IVVOOTT, MULTB, NO, NREP, NV, NVO, NVVT
-!      use complex_mod, only: CARITH, RCW
+      use complex_mod, only: CARITH, RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -101,7 +99,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "symm.inc"
-#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C

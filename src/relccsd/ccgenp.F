@@ -17,11 +17,10 @@
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION SUMT(A,N)
-!      use param_mod, only: D0
+      use param_relccsd_mod, only: D0
       REAL*8 SUMT,A(*)
       INTEGER N
 
-#include "param.inc"
 
       SUMT=D0
       DO I=1,N

@@ -2,7 +2,7 @@
       SUBROUTINE property_handler(ioch,ioch2,lavail,nsp,irepspi)
 
 !      use symm_mod, only: MOO, MOV, MVO, MVV, NE, NREP
-!      use complex_mod, only: RCW
+      use complex_mod, only: RCW
       use polprp_cfg   !make some input variables available
 
       IMPLICIT none
@@ -25,7 +25,6 @@
 !
 #include  "../relccsd/symm.inc"
 !provides MXREP,NXREP etc.
-#include  "../relccsd/complex.inc"
 !provides CARITH,RCW
 !
 !---------------Local variables--------------------------------------
@@ -185,7 +184,7 @@
      &               
 
  
-!      use complex_mod, only: CARITH, RCW
+      use complex_mod, only: CARITH, RCW
       IMPLICIT NONE
 !
 !---------------Description--------------------------------------------
@@ -204,7 +203,6 @@
 !
 !---------------Common blocks----------------------------------------
 !
-#include  "../relccsd/complex.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -322,10 +320,10 @@
      &                           PROP,AOO,AOV,AVO,AVV,
      &                           printlevel)
 !
-!      use param_mod, only: ACCUR, D0, D1
 !      use symm_mod, only: IO, IV, MULTB, MXREP, NE, NO, NREP, NV
-!      use complex_mod, only: CARITH, RCW
-!      use ccpar_mod, only: MASTER, MYPROC
+      use ccpar_mod, only: MASTER, MYPROC
+      use complex_mod, only: CARITH, RCW
+      use param_relccsd_mod, only: ACCUR, D0, D1
       use interface_to_mpi
       use qstack       !make stack system available
 
@@ -367,10 +365,7 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "../relccsd/param.inc"
 #include "../relccsd/symm.inc"
-#include "../relccsd/complex.inc"
-#include "../relccsd/ccpar.inc"
 #include "polprp_stacklines.h"
 !
 !---------------Calling variables--------------------------------------

@@ -20,12 +20,14 @@ set(MODULE_SOURCES
     cbitro.F90
     cbivib.F90
     ccom.F90
+    ccpar.F90
     chrnos.F90
     chrsgn.F90
     chrxyz.F90
     cintfo_luciarel.F90
     codata.F90
     comdis.F90
+    complex.F90
     consts.F90
     cossya.F90
     cotabs.F90
@@ -93,6 +95,7 @@ set(MODULE_SOURCES
     inforb.F90
     infpar.F90
     inftap.F90
+    inpt.F90
     iratdef.F90
     iterat.F90
     krciprop.F90
@@ -121,6 +124,7 @@ set(MODULE_SOURCES
     optinf.F90
     orgcom.F90
     param_dirrci.F90
+    param_relccsd.F90
     pgroup.F90
     pi.F90
     pincom.F90

@@ -18,6 +18,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       PROGRAM RELCCSD
 C
+      use ccpar_mod, only: MASTER, MYPROC, NMPROC
       use interface_to_mpi
       implicit none
 C
@@ -37,7 +38,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
