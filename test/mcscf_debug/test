@@ -12,8 +12,8 @@ f = Filter()
 f.add(string = 'Final KR-MCSCF energy',
       rel_tolerance = 1.0e-5)
 
-test.run(['mcscf.inp'], ['c2v.mol'])
-test.run(['mcscf.inp'], ['c2.mol'])
-test.run(['mcscf.inp'], ['c1.mol'])
+test.run(['mcscf_acmout.inp'], ['c2v.mol'])
+test.run(['mcscf_acmoin_noscf.inp'], ['c2.mol'],'--put "mcscf_acmout_c2v.h5=DFACMO.h5"')
+test.run(['mcscf_acmoin_noscf.inp'], ['c1.mol'],'--put "mcscf_acmout_c2v.h5=DFACMO.h5"')
 
 sys.exit(test.return_code)
