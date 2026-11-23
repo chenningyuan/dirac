@@ -40,18 +40,6 @@ Read :ref:`orbital_strings` of
 orbitals to be included in the MP2 calculation when constructing
 the MP2 density and natural orbitals.
 
-keyword(MAX VS)
-
-Maximum number of virtual orbitals in the MP2 calculation. The actual number will be reduced to this value 
-if its exceeded by the number calculated from :ref:`MP2_NO_.ACTIVE`.
-
-*Default:*
-
-::
-
-    .MAX VS
-     200
-
 keyword(SEL NO)
 
 Select a minimal set of natural orbitals given as a string analog to the :ref:`orbital_strings` 

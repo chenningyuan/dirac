@@ -1,0 +1,6 @@
+**Tests related to atomic supersymmetry
+- Nb_Nb.out ... an open shell system (D_oo)
+- Nblin_Nblin.out ... an open shell system with Ghost center (C_oo)
+- Nelin_Ne.out ... linear symmetry is employed instead of atomic supersymmetry (D_oo)
+- Nelin_Nelin.out ... linear symmetry is employed with Ghost center (C_oo)
+- cc_x2cmmf_Ne.out ... atomic supersymmetry at the x2cmmf method

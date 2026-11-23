@@ -27,10 +27,11 @@ $
 $ Basis =aug-cc-pVDZ Diffuse                                                    
 $Elements                             References                                
 $--------                             ---------                                 
-$ H    :  T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+$ H    :  R.A. Kendall, T.H. Dunning, Jr. and R.J. Harrison, J. Chem. Phys. 96, 
+$         6796 (1992).                                                          
 $ He   :  D.E. Woon and T.H. Dunning, Jr., J. Chem. Phys. 100, 2975 (1994).     
 $ B - F:  R.A. Kendall, T.H. Dunning, Jr. and R.J. Harrison, J. Chem. Phys. 96, 
-$         6769 (1992).                                                          
+$         6796 (1992).                                                          
 $Al - Cl: D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 98, 1358 (1993).       
 $
 $**                                                                             
@@ -222,6 +223,7 @@ $ D-TYPE FUNCTIONS
     2    2    0
      2.20200000  1.00000000  0.00000000
      0.63100000  0.00000000  1.00000000
+a 13
 $ ALUMINUM     (12s,8p,1d) -> [4s,3p,1d]                                        
 $ ALUMINUM     Diffuse (1s,1p,1d)                                               
 $ S-TYPE FUNCTIONS
@@ -1230,7 +1232,7 @@ $ F-TYPE FUNCTIONS
     3    2    0
      5.73440000  0.43113200  0.00000000
      1.46150000  0.75464200  0.00000000
-     0.05365400  0.00000000  1.00000000  
+     0.53654000  0.00000000  1.00000000  
 a 31
 $ GALLIUM      (14s,11p,6d) -> [5s,4p,2d]                                       
 $ GALLIUM      Diffuse (1s,1p,1d)                                               

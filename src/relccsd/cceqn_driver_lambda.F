@@ -40,10 +40,7 @@ C---------------Common Blocks--------------------------------------
 #include "files.inc"
 #include "param.inc"
 #include "symm.inc"
-#include "eqns.inc"
 #include "inpt.inc"
-#include "ihm.inc"
-#include "results.inc"
 #include "complex.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
@@ -231,7 +228,7 @@ C
 
        rms = sqrt((rms)/(ndimt1+ndimt2)*rcw)
 
-      if (iprnt.ge.1) then
+      if (iprnt.ge.2) then
        write(iw,*)'maximum value RESL1',maxval(abs(resl1))
        write(iw,*)'maximum value RESL2',maxval(abs(resl2))
       endif

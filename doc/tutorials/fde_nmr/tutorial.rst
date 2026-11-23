@@ -171,7 +171,7 @@ Step 1: SCF and response calculation on the subsystem II
 In the first step we perform the calculations on subsystem II, the aim of which is
 to get its density and electrostatic potential written on a text file.
 In addition, we will export the perturbed density of subsystem II. 
-We will need the DFCOEF file of subsystem II, which can be taken from ``getfrozen.inp`` run with the following input:
+We will need the CHECKPOINT.h5 file of subsystem II, which can be taken from ``getfrozen.inp`` run with the following input:
 
 .. literalinclude:: getfrozen.inp
 
@@ -238,7 +238,7 @@ With this setup the calculations on the test system gave the following results:
     v+w11+w12, ALL terms                 2370.2536
     ===================================  =========
 
-Here the two results are the same within 0.0001 ppm accuracy, as the contributions from the Coulomb embedding contribution to the perturbed Fock matrix are very small (can be printed in the output with the print level set at least to 5 under ``**PROPERTIES`` section).
+Here the two results are the same within 0.0001 ppm accuracy, as the contributions from the Coulomb embedding contribution to the perturbed Fock matrix are very small (can be printed in the output with the print level set at least to 5 under :ref:`**PROPERTIES` section).
 
 
 

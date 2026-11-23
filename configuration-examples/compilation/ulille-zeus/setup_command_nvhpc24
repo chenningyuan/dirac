@@ -1,0 +1,1 @@
+./setup --cmake-options="-DCMAKE_VERBOSE_MAKEFILE=ON -DENABLE_PCMSOLVER=OFF -DEXATENSOR_GIT_HASH=8cdddfba0a283bf48b574d3b82921426d4f85949" --fc=mpifort --cc=mpicc --cxx=mpic++ --mpi build_nvhpc_ompi_24

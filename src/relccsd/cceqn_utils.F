@@ -1232,7 +1232,7 @@ C
       END
 
       SUBROUTINE FCORE(T1,T2,EPS)
-      use relcc_cfg  
+      use mfsolver_dirac_input
       use projectors 
 C
       implicit none
@@ -1264,7 +1264,7 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-      if (.not.relcc_projectors_frozen_core) RETURN
+      if (.not.mfsolver_projectors_frozen_core) RETURN
 
       projector => create_t_projector(NDIMT1+NDIMT2,EPS)
        
@@ -1395,6 +1395,106 @@ C
 C
       DIAG = DDOT (RCW*NDIMT1,BUF1,1,BUF1,1)
       DIAG =  SQRT(DIAG/RSUM)
+C
+      RETURN
+      END
+C     &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
+
+      SUBROUTINE PRINT_AMPLITUDES (T1,T2,THRESHOLD)
+C
+      implicit none
+C
+C---------------Description--------------------------------------------
+C
+C     Print largest amplitudes
+C
+C---------------Routines called----------------------------------------
+C
+C     XCOPY
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 T1(*),T2(*),THRESHOLD
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "symm.inc"
+#include "param.inc"
+#include "files.inc"
+#include "complex.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      REAL*8 EI,EIJ
+      integer a,abij,ai,amin,arp,b,brp,i,ijrp,imin,irp,j,jrp
+C
+C---------------Executable code--------------------------------------
+C
+      WRITE (IW,1000)
+      WRITE (IW,2000)
+      AI = 1
+      DO IRP = 1, NREP
+      DO I = 1, NO(IRP)
+         DO A = 1, NV(IRP)
+             EI = AR0
+             EI = T1(AI) * T1(AI)
+             IF (CARITH) THEN
+                EI = EI + T1(AI+1) * T1(AI+1)
+             ENDIF
+             EI = DSQRT(EI)
+             IF (EI.GT.THRESHOLD) WRITE (IW,2001) IRP,I,A,EI
+             AI = AI + RCW
+         ENDDO       
+      ENDDO
+      ENDDO
+C
+      WRITE (IW,3000)
+      ABIJ = 1
+      DO IJRP = 1, NREP
+      DO 10 JRP = 1, NREP
+      IRP = MULTB(JRP,IJRP+NREP,2)
+      IF (IRP.LT.JRP) GOTO 10
+      DO J = 1, NO(JRP)
+         IMIN = 1
+         IF (IRP.EQ.JRP) IMIN = J + 1
+         DO I = IMIN, NO(IRP)
+            EIJ = AR0
+            DO 20 BRP = 1, NREP
+            ARP = MULTB(BRP,IJRP+NREP,2)
+            IF (ARP.LT.BRP) GOTO 20
+            DO B = 1, NV(BRP)
+               AMIN = 1
+               IF (ARP.EQ.BRP) AMIN = B + 1
+               DO A = AMIN, NV(ARP)
+                  EIJ = T2(ABIJ) * T2(ABIJ)
+                  IF (CARITH) THEN
+                     EIJ = EIJ + T2(ABIJ+1) * T2(ABIJ+1)
+                  ENDIF
+                  EIJ = DSQRT(EIJ)
+                  IF (EIJ.GT.THRESHOLD) WRITE (IW,3001) IRP,I,JRP,J,
+     &                                  ARP,A,BRP,B,EIJ
+                  ABIJ = ABIJ + RCW
+               ENDDO
+            ENDDO
+ 20         CONTINUE
+         ENDDO
+      ENDDO
+ 10   CONTINUE
+      ENDDO
+C
+      WRITE (IW,4000)
+C
+ 1000 FORMAT (//' Largest amplitudes')
+ 2000 FORMAT (/'   Irrep Occ Vir',5X,'|Amplitude| (T1-amplitudes)')
+ 2001 FORMAT (I7,2I4,F30.15)
+ 3000 FORMAT (/'   Irrep1 Occ1 Irrep2 Occ2 Irrep3 Vir1 Irrep4 Vir2',5X,
+     &'|Amplitude| (T2-amplitudes)')
+ 3001 FORMAT (4(I7,I5),F30.15)
+ 4000 FORMAT (//)
 C
       RETURN
       END

@@ -1,7 +1,4 @@
 C
-C Authorship of this program should be dicussed before
-C distributing it within the DIRAC package (MI,jan 2005);
-C see email from Timo (Atomares SCF).
 C
 C NOTE: The previous  value of NDIMPQ was 500000. 
 C  Replaced by a parameter in scfarr.h, NDIMPQPAR.
@@ -39,10 +36,9 @@ C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "relscf_dim.h"
 #include "amfi_if.h"
-C     DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
      *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(*),SMIN(*),THRE(*),EPS(2),
@@ -113,8 +109,8 @@ CMI  ... rather error exit !
 
    95 CONTINUE
       WRITE (LUPRI,100) NBVAR1,IIII,ZETDIF,DMNXP
-  100 FORMAT(/,6X,'EXPONENT REDUNDANCY FOR ORBITALS',I2,1X,'AND',
-     *I2,2X,'ZEDIF',F9.5,1X,'SMALLER THAN DMNXP',F9.5)
+  100 FORMAT(/,6X,'EXPONENT REDUNDANCY FOR ORBITALS',I2,' AND',
+     *I2,'  ZEDIF',F9.5,' SMALLER THAN DMNXP',F9.5)
       CALL FLSHFO(LUPRI)
       CALL QUIT('relscf error exit on EXPONENT REDUNDANCY FOR ORBITALS')
 
@@ -137,7 +133,7 @@ C     MXOCC IS MAXIMAL SUM OF ALL OCCUPATION NUMBERS (OPEN AND CLOSED)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "scfarr.h"
 #include "relscf_v10.h"
       DIMENSION WORK(LWORK)
@@ -195,7 +191,6 @@ C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION V(ISIZE),SMAT(ISIZE),P(ISIZE),G(ISIZE),
      *          H(ISIZE),BU(ISIZE),EV2(ISIZE),
      *          EIG(N,N),SINV(N,N),REVT(N,N),AUX(N,N),OVE(N,N),
@@ -351,7 +346,7 @@ C   Called from INPUT_AT34.
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "scfarr.h"
 #include "relscf_ijpair.h"
 #include "relscf_dim.h"
@@ -360,7 +355,6 @@ C
 Cvec  VERSION INCLUDING IDK ARRAY
 C
 #include "amfi_if.h"
-c     logical relscf_verbose
       DIMENSION WORK(LWORK)
 CMI   DIMENSION C(LDIMC),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
       DIMENSION C(*),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
@@ -483,7 +477,6 @@ C//SKIPCc1
 
       SUBROUTINE BESSKA(AVAL,XVAL,KA,KA1)
 #include "implicit.h"
-#include "priunit.h"
       REAL*8 AVAL,XVAL,EPS,KA,KA1
 C
 C     SUBROUTINE TO CALCULATE MODIFIED BESSEL FUNCTION OF THE
@@ -595,15 +588,13 @@ C
 
       SUBROUTINE CHECK(ICORE,K,TEXT)
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "amfi_if.h"
-c     logical relscf_verbose
       CHARACTER*8 TEXT
       DATA MSK /0/, KSK /5000000/
 C
 C     GENUEGEND KERNSPEICHER VORHANDEN?
 C
-c     relscf_verbose = .false.
 C
       IF (ICORE.EQ.0) GOTO 4
 
@@ -630,7 +621,6 @@ C
       L=MSK-KSK
       IC=(L+1023)/1024
 
-CMI   if (relscf_verbose) WRITE (LUPRI,101) L,IC
       IF (IPR_RELSCF.GE.2) THEN
           WRITE (LUPRI,101) L,IC
       ENDIF
@@ -643,7 +633,6 @@ C
 4     IC=(MSK+1023)/1024
       KSK=MSK-KSK
       L=(KSK+1023)/1024
-CMI   if (relscf_verbose) WRITE (LUPRI,102) MSK,IC,KSK,L
       if (IPR_RELSCF.GE.2)  THEN
           WRITE (LUPRI,102) MSK,IC,KSK,L
 102   FORMAT(' DYNAMIC STORAGE: ',I8,' WORDS (',I5,'K ) - USED ',
@@ -657,7 +646,6 @@ CMI   STOP
 
       SUBROUTINE CPLAB (A,B,L,M,N,IA,IB,C,IC,IER)
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION   A(IA,M),B(IB,N),C(IC,N)
       IF (IA .GE. L .AND. IB .GE. M .AND. IC .GE. L) GO TO 5
       IER=129
@@ -710,7 +698,6 @@ CMI - removed S from param.list
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
 #include "relscf_dim.h"
       DIMENSION P(*),Q(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
      *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,*),CM2SCF(MXBF,*),
@@ -767,13 +754,11 @@ C    CALCULATE INTEGRAL OVER DERIVATIVE OF THE FUNCTIONS
 C
       DOUBLE PRECISION FUNCTION DER(IDER,IS1,IS2,AL,BE)
 #include "implicit.h"
+#include "priunit.h" ! LUPRI
 #include "relscf_crelop.h"
 #include "amfi_if.h"
-c     logical relscf_verbose
       INTEGER IS1(3),IS2(3),I1(2,3),I2(2,3)
       REAL*8 F(2),G(2)
-
-c     relscf_verbose = .false.
 
       DO I=1,3
         DO J=1,2
@@ -852,7 +837,6 @@ C
 
       SUBROUTINE DIAGX(A,N,EIG,EW,SINV,AUX,IC)
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION A(*),AUX(N,N),SINV(N,N),EIG(N,N),EW(N)
       TOL=1.D-15
       IJ=0
@@ -902,7 +886,7 @@ C     NO DEFINE THE COLUMN CORRESPONDING TO THE VECTOR C IN A MATRIX C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "amfi_if.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
@@ -1094,11 +1078,10 @@ C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "scfarr.h"
 #include "relscf_dim.h"
 #include "amfi_if.h"
-c     logical relscf_verbose
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
      *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,*),CM2SCF(MXBF,*),
      *CSAV1(MXBF,*),CSAV2(MXBF,*),GMIN(*),SMIN(*),THRE(*),EPS(*),
@@ -1107,7 +1090,6 @@ c     logical relscf_verbose
      *ITRAN(*),NROW(*),NBVAR(*),IORCN(*)
       COMMON /CLOCKX/ CPU,CLK
 C
-c     relscf_verbose = .false.
       POT  = 0.D0
       POTN = 0.D0
       CIN  = 0.D0
@@ -1115,28 +1097,22 @@ c     relscf_verbose = .false.
       IPQ=NDIMPQ
       IF(NDIMPQ.EQ.NDIMPQPAR) IPQ=0
 C
-      K=0
-      ENERG=DT(1)
-      K=K+1
       IPQ=IPQ+1
-      POT=POT+0.5D0*(ENERG*P(IPQ)*DT(1)-DOS(1)*Q(IPQ)*DOS(1))
-      POTN=POTN+U(1)*ENERG
-      CIN=CIN+T(1)*ENERG
+      POT=POT+0.5D0*(DT(1)*P(IPQ)*DT(1)-DOS(1)*Q(IPQ)*DOS(1))
+      POTN=POTN+U(1)*DT(1)
+      CIN=CIN+T(1)*DT(1)
       IF(N1T.EQ.1) GOTO 21
 C
       DO I=2,N1T
-        ENERG=DT(I)
         DO J=1,I-1
-          K=K+1
           IPQ=IPQ+1
-          TERM=ENERG*P(IPQ)*DT(J)-DOS(I)*Q(IPQ)*DOS(J)
+          TERM=DT(I)*P(IPQ)*DT(J)-DOS(I)*Q(IPQ)*DOS(J)
           POT=POT+TERM
         END DO
-        K=K+1
         IPQ=IPQ+1
-        POT=POT+0.5D0* ( ENERG*P(IPQ)*DT(I)-DOS(I)*Q(IPQ)*DOS(I) )
-        POTN=POTN+U(I)*ENERG
-        CIN=CIN+T(I)*ENERG
+        POT=POT+0.5D0* ( DT(I)*P(IPQ)*DT(I)-DOS(I)*Q(IPQ)*DOS(I) )
+        POTN=POTN+U(I)*DT(I)
+        CIN=CIN+T(I)*DT(I)
       END DO
 21    CONTINUE
       POT=POT-ZN*POTN
@@ -1154,8 +1130,9 @@ C
       CPU=SECONDX()
 
       IF (IPR_RELSCF.GE.2) THEN
+       write (lupri,*) 'NUMVAR',NUMVAR
        WRITE (LUPRI,65) NBVAR1,ZETA(NBVAR1),ENERG,CIN,POT,VIR,NITSCF,CPU
-   65  FORMAT(I5,5(1X,D16.10),I5,F14.2)
+   65  FORMAT(I5,1P,5D17.10,I5,F14.2)
       ENDIF
 
       RETURN
@@ -1181,7 +1158,6 @@ C     AUXF,AUXG,AUXH  SCRATCH ARAYS
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION V(*),G(*),E(N),R(N),A(N),TT(N),AUXF(N,N),
      *AUXG(N,N),AUXH(N,N)
       M=N
@@ -1379,7 +1355,6 @@ C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
       DIMENSION SCR(*),
@@ -1507,7 +1482,6 @@ C
 C***** NAME FILLMA
       SUBROUTINE FILLMA(N,S,OVE)
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION S(*),OVE(N,N)
       IJ=0
       DO I=1,N
@@ -1556,7 +1530,6 @@ C  W(2) -> W(*)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
 CMI   DIMENSION X(2), W(2)
       DIMENSION X(*), W(*)
       DIMENSION GPT(166),GWT(166),P3(2),W3(2)
@@ -1894,7 +1867,7 @@ C  GMIN(MXBF,1) ->  GMIN(MXBF,*)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "scfarr.h"
 #include "relscf_dim.h"
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
@@ -2063,7 +2036,7 @@ C   C(MXBF,1) -> C(MXBF,*)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "relscf_dim.h"
 #include "relscf_v10.h"
 #include "scfarr.h"
@@ -2113,7 +2086,7 @@ CMI  &          ZADD(MX100,4),C(MXBF,1),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),
         FATT(I)=IM1*FATT(IM1)
       END DO
       IF(NVAR.NE.0) WRITE (6,1000)
- 1000 FORMAT('1INTERMEDIATE OPTIMIZATION DATA',//)
+ 1000 FORMAT(' INTERMEDIATE OPTIMIZATION DATA',//)
       NUMVAR=0
       NALARM=0
       MVAR=0
@@ -2565,7 +2538,6 @@ C W(2) -> W(*)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
 CMI   DIMENSION N (2),A(2),B(2),C(2),X(2),W(2),NP(2),XP(2),WP(2),
       DIMENSION N (*),A(*),B(*),C(*),X(*),W(*),NP(*),XP(*),WP(*),
      1          X1(150),W1(150),X2(12),W2(12)
@@ -2719,7 +2691,7 @@ C   Called from AT3
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "scfarr.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
@@ -2744,7 +2716,6 @@ C
       CHARACTER*8 OPER(3)
       EQUIVALENCE (AJMN(1),VCC(1)),(TITLE(1),NAME(1))
 #include "amfi_if.h"
-c     logical relscf_verbose
 C
 C     SET DEFAULT VALUES
 C
@@ -2762,7 +2733,6 @@ CMI   DATA IBLANK /4H    /
 CMI   write(LUPRI,*) 'INPUT_AT34: NBLANK=',NBLANK
 CMI   write(LUPRI,*) 'INPUT_AT34: IBLANK=',IBLANK
 C
-c     relscf_verbose = .false.
 C
 #include "memint.h"
       NDIMC=MXOCC*MXOCC
@@ -3386,7 +3356,6 @@ C       =0 LEFT AS THEY ARE
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION A(N,N),B(N,N),EIG(N)
       ENUI=0.D0
       U1=N
@@ -3484,7 +3453,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C     V 2.0 - VECTORIZED VERSION - BERND HESS
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION A(N,N),EIVU(N),EIVR(N,N)
 
       IF(N-1) 2,2,1
@@ -3655,7 +3623,6 @@ C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
 #include "scfarr.h"
 #include "relscf_ijpair.h"
 #include "relscf_dim.h"
@@ -3683,7 +3650,6 @@ CMI  *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
             IJ=NSTEP+J
             MM=MM+1
 
-C           write(LUPRI,*) 'IJ=',IJ, 'LPQ=',LPQ
             if (MM.GT.LPQ) call quit('MM > LPQ !')
             DT(IJ)=S(MM)
 
@@ -3814,8 +3780,12 @@ C**** ORDER EIGENVECTORS AND EIGENVALUES WITHIN SYMMETRY
               IND=1
  29           CONTINUE
               iMIN=1
+              EMIN=EPSI(1)
               DO J=2,NBAS1
-                 IF (EPSI(iMIN).GT.EPSI(J)) iMIN=J
+                 IF (EPSI(J).LT.EMIN) THEN
+                    iMIN=J
+                    EMIN=EPSI(J)
+                 END IF
               END DO
               IF (ITOS.EQ.1) GO TO 28
               IF (IND.EQ.NSTEP2) GO TO 28
@@ -3831,15 +3801,15 @@ C**** ORDER EIGENVECTORS AND EIGENVALUES WITHIN SYMMETRY
               NSTEP1=NSTEP1+1
               NSTEP2=NSTEP2+1
            END DO
-        END DO
+        END DO ! I=1,ILOOP
         M1=N1(N)+M1
-      END DO
+      END DO ! ISH=1,IFIN
       RETURN
       END
 
       SUBROUTINE KBR(BETA,X,RESULT)
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 C     PROGRAM TO CALCULATE CONTINUED FRACTION
 C     1/1+ A1*X/1+ A2*X/1+ ...
@@ -3849,7 +3819,7 @@ C
 C     A(2N+1) = N+BETA
 C     A(2N)   = N-1/2
 C
-C#    WRITE (6,900) BETA,X
+C#    WRITE (LUPRI,900) BETA,X
 C#900 FORMAT(' KBR - BETA,X ',2D16.8)
       THR=1.D-12
       THR1=1.D-8
@@ -3863,19 +3833,20 @@ C#900 FORMAT(' KBR - BETA,X ',2D16.8)
       J=J-1
       IF (J.GT.0) GOTO 3
       SUM=1.D0/(1.D0-0.5D0*X/SUM)
-      IF (I.GT.2000) WRITE (6,991) I,BETA,X,SUM
-C#    WRITE (6,991) I,BETA,X,SUM
+      IF (I.GT.2000) WRITE (LUPRI,991) I,BETA,X,SUM
+C#    WRITE (LUPRI,991) I,BETA,X,SUM
   991 FORMAT(' KBR - I,BETA,X,SUM ',I5,F10.3,D20.10,D30.20)
       I=I+100
       IF (I.LT.300 .OR. DABS(OLD-SUM).GT.THR.AND. I.LT.3000) GOTO 1
-C#    WRITE (6,991) I,SUM
+C#    WRITE (LUPRI,991) I,SUM
       RESULT=SUM
       IF (I.LT.3000) RETURN
       DEL=OLD-SUM
-      WRITE (6,999) DEL,THR
-999   FORMAT(' CONTINUED FRACTION DEL=',D20.10,' LARGER THAN THR=',
-     *D20.10)
-      IF (DEL.GT.THR1) STOP 999
+      WRITE (LUPRI,999) DEL,THR
+999   FORMAT(' CONTINUED FRACTION DEL=',1P,D20.10,' LARGER THAN THR=',
+     &D20.10)
+      IF (DEL.GT.THR1)
+     &   CALL QUIT('Problem with continued fraction, see output')
       RETURN
       END
 
@@ -3920,23 +3891,19 @@ CMI   PARAMETER (MAINST=1500000)
 C     PARAMETER (MAINST=2400000)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "amfi_if.h"
-c     logical relscf_verbose
 
       REAL*8 GJ0,GK0
       REAL*8 WORK
       DIMENSION WORK(LWORK)
 
-!     if (relscf_verbose) WRITE (LUPRI,100)
-C     if (IPR_RELSCF.GE.2) WRITE (LUPRI,100)
-C100   FORMAT(' *** PROGRAM AT34 - ALLIANT - @V ***'/)
+      IPR_RELSCF = 0
+
       IF (IPR_RELSCF.GE.0) THEN
         CALL FLSHFO(LUPRI)
         CALL HEADER('*** PROGRAM AT34 - ALLIANT - @V ***',-1)
       ENDIF
-
-C     CALL FLSHFO(LUPRI)
 
       CALL AT3(WORK,LWORK)
 
@@ -3957,7 +3924,7 @@ C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "amfi_if.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
@@ -4202,7 +4169,7 @@ C  U(2)       --> U(*)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "scfarr.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
@@ -4228,7 +4195,6 @@ C
 C     PUNCH BASIS SET AND VECTORS FOR INPUT TO IBMOL-H
       LOGICAL LLIE(4), EX
 #include "amfi_if.h"
-c     logical relscf_verbose
 CMI   DATA LLIE/1HS,1HP,1HD,1HF/, NTYSM/1,3,6,10/
       DATA LLIE/.false.,.false.,.false.,.false./, NTYSM/1,3,6,10/
 #include "memint.h"
@@ -4870,7 +4836,7 @@ C     PRINT INTERMEDIATE ITERATION RESULTS
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "relscf_dim.h"
 CMI   DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
@@ -4883,10 +4849,7 @@ CMI  *C(MXBF,1),CTRAN(*),PQN(*),ZETA(*),ZETINC(*),
      *ITRAN(*),NROW(*),NBVAR(*),IORCN(*)
       COMMON /CLOCKX/ CPU,CLK
 #include "amfi_if.h"
-c     logical relscf_verbose
-c     relscf_verbose = .false.
 C
-CMI   IF (NITSCF.EQ.1.and.relscf_verbose) THEN
 CMI   IF (NITSCF.EQ.1.and.IPR_RELSCF.GE.2) THEN
       IF (NITSCF.EQ.1.and.IPR_RELSCF.GE.0) THEN
          IF (IPARAM.EQ.0) THEN
@@ -4929,12 +4892,9 @@ C
       ENERG=CIN+POT
       VIR=POT/CIN
 C
-CMI   if (relscf_verbose) WRITE (6,65) NITSCF,ENERG,POT,CIN,VIR
 CMI   if (IPR_RELSCF.GE.2) THEN
       if (IPR_RELSCF.GE.0) THEN
-CMI      WRITE (LUPRI,65) NITSCF,ENERG,POT,CIN,VIR
          WRITE (LUPRI,'(5X,I5,4(3X,D20.10))') NITSCF,ENERG,POT,CIN,VIR
-CMI65 FORMAT(5X,I5,4(3X,D20.10))
       ENDIF
 
       RETURN
@@ -4946,7 +4906,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C *** PVP V 1.0 - 19.1.84 - BERND HESS
 C *** PVP V 1.1 -  5.6.86 - BERND HESS
 #include "implicit.h"
-#include "relscf_crelop.h"
       INTEGER IS1(3),IS2(3)
 C
 C    CALCULATE ANGULAR AND RADIAL PART
@@ -5025,7 +4984,7 @@ C      OPERATORS IN A BASIS SET OF GAUSSIAN FUNCTIONS
 C      V 1.0 - 12.3.86 - BERND HESS
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "relscf_crelop.h"
 C
 C     SUBROUTINE RELOP INITIALIZES THE COMMON BLOCK USED BY
@@ -5033,10 +4992,7 @@ C     THE RELOP PACKAGE
 C     V 1.0 - 12.3.86 - BERND HESS
 C
 #include "amfi_if.h"
-c     logical relscf_verbose
-c     relscf_verbose = .false.
 
-CMI   if (relscf_verbose) WRITE (6,100)
       if (IPR_RELSCF.GE.2)  THEN
          WRITE (LUPRI,100)
 100      FORMAT(/,
@@ -5111,7 +5067,6 @@ C               OF LOWER INDEX
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
 #include "relscf_v10.h"
 C     DIMENSION C(MXBF,1),S(*),SCR(*)
       DIMENSION C(MXBF,*),S(*),SCR(*)
@@ -5214,7 +5169,6 @@ C     A1(N)          SCRATCH
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
 CMI   DIMENSION SS(2),P(2),G(2),A1(2),SINV(N,N)
       DIMENSION SS(*),P(*),G(*),A1(*),SINV(N,N)
       JL=0
@@ -5283,7 +5237,6 @@ C      INTEGRALS ARE CALCULATED BETWEEN   NORMALIZED FUNCTIONS
       DOUBLE PRECISION FUNCTION
      *SQROPY(AA,AB,LA,MA,NA,LB,MB,NB)
 #include "implicit.h"
-#include "priunit.h"
 #include "relscf_crelop.h"
 C
 C     SUBROUTINE SQROPY CALCULATES MATRIXELEMENT BETWEEN FUNCTION
@@ -5430,7 +5383,6 @@ C
 
       SUBROUTINE TRSM(A,B,C,N,H,W)
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION A(*),B(N,N),C(*),H(N,N),W(N,N)
 C
 C     TRANSFORM SYMMETRIC MATRIX A BY UNITARY TRANSFORMATION
@@ -5468,7 +5420,6 @@ C
 
       SUBROUTINE TRSMT(A,B,C,N,H,W)
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION A(*),B(N,N),C(*),H(N,N),W(N,N)
 C
 C     B*A*BT
@@ -5516,7 +5467,6 @@ C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
-#include "priunit.h"
 #include "relscf_dim.h"
 C     DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
@@ -5610,7 +5560,7 @@ C
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE TEIG(P,Q,NSYM,NBAS,NOSH,ZETA,ajmn,U,OCCUP,ndimpq)
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       LOGICAL OPEN,KLNEMN
 C.......................................................................
 C
@@ -5910,7 +5860,7 @@ C.......................................................................
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SETABJ(AJMN,NSYM,NOSH,NCCUP)
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C.......................................................................
 C
 C     SET COUPLING COEFFICIENTS FOR OPEN SHELLS. FOR A TABULATION
@@ -5942,8 +5892,6 @@ CMI   DIMENSION NOSH(2),AJMN(24),NCCUP(2),IANUM(90),IADEN(90)
      X            17745,13013,507507/
 
 #include "amfi_if.h"
-c     logical relscf_verbose
-c     relscf_verbose = .false.
 
       IEXCHG = 20
       DO I = 1,24  ! MI: AJMN has range 1-24 !
@@ -6006,7 +5954,7 @@ C     inspired by LABKRMC written by J. Thyssen
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
       CHARACTER LABEL*8
       LOGICAL   FNDLAB
@@ -6052,7 +6000,7 @@ C     inspired by WRTKRMC by J. Thyssen
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8
@@ -6087,7 +6035,7 @@ C     inspired by IWRTKRMC by J. Thyssen
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
       DIMENSION IVECTOR(ISIZE)
       CHARACTER LABEL*8
@@ -6120,7 +6068,7 @@ C     inspired by REAKRMC by J. Thyssen
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8

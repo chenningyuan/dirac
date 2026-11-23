@@ -61,6 +61,6 @@ The g-factor Hydrogen fluoride molecule will look like:
 
 .. literalinclude:: rotg-HF
 
-One should recall that in the case of linear molecules, as the present one, only one tensor element is printed out (the g-factor) because for these molecules the g-tensor has only two equal and non-zero elements.
+One should recall that in the case of linear molecules, as the present one, only one tensor element is printed out (the g-factor) because for these molecules the g-tensor has only two equal and non-zero diagonal elements.
 
 As it can be seen, the total g-tensor of the Hydrogen fluoride molecule is given, and then separated in its two terms (nuc and LR). The latter contribution, the linear response function, is further separated in their (e-e) and (e-p) linear response parts, as well as in their :math:`\mathbf{L}` and :math:`\mathbf{S}` parts. It is seen how the (e-p) contribution to the linear response term of the g-factor is almost zero.

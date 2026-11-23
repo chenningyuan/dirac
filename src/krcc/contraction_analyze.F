@@ -16,7 +16,7 @@
 *
 * Lasse 2010
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "crun.inc"
@@ -118,7 +118,7 @@
 *
 * Lasse 2010
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 *
@@ -201,7 +201,7 @@
 * Will find the different ways NPART and NHOLE can be contracted when
 * having NPARTTOT and NHOLETOT in total
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       INTEGER INDXP(2),INDXH(2),INUMCON(4,4)
 *
@@ -333,7 +333,7 @@
 *
 * Simple routine to eliminate all of the same type of contractions
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       INTEGER INUMCON(4,4),IFACTOR(4)
 * Scratch
@@ -428,7 +428,7 @@ C       CALL IWRTMA(ITEMP,4,4,4,4)
 *
 * Routine to find the possible contractions of a given set of indices
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 *
@@ -530,7 +530,7 @@ C         CALL WRT_SPOX_TP_CC_KRCC(TOP(1,ITOP),1)
 * Reforms from indices contracted to indices to be found
 * and moves indices to front and joins common indices
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       INTEGER INUMCON(4),ITEMP(4),ITINDX(4)
 *
@@ -567,7 +567,7 @@ C         CALL WRT_SPOX_TP_CC_KRCC(TOP(1,ITOP),1)
 * Will calculate the resultant operator from a contraction between HOP
 * and TOP defined from INUMCON
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       INTEGER IOP(4*NGAS),HOP(4*NGAS),TOP(4*NGAS)
       INTEGER INUMCON(4),ITINDX(4)
@@ -614,7 +614,7 @@ C         CALL WRT_SPOX_TP_CC_KRCC(TOP(1,ITOP),1)
 *
 * See if IOP belongs to RESOP
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "crun.inc"
 #include "cgas.inc"
@@ -673,7 +673,7 @@ C         CALL WRT_SPOX_TP_CC_KRCC(TOP(1,ITOP),1)
 * Checks if operator would be accepted on N,MK,MUB basis
 * and calculates the range where to search for an operator
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       INTEGER RESOPS(0:IEXCITE,-IKRFLIP:IKRFLIP,-IMUB:IMUB)
       INTEGER RESOPF(0:IEXCITE,-IKRFLIP:IKRFLIP,-IMUB:IMUB)
@@ -758,7 +758,7 @@ C    &                          WORK(KSNH22TOM12),WORK(KFNH22TOM12))
 * given operator can have including the operator contracted with and the
 * resultant operator along with prefactors of contractions
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 *
@@ -828,7 +828,7 @@ C    &                          WORK(KSNH22TOM12),WORK(KFNH22TOM12))
 * IWAY = 1 maps Hamiltonians to intermediates
 * IWAY = 2 maps intermediates to Hamiltonians
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "crun.inc"
 #include "cgas.inc"
@@ -933,7 +933,7 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
 * Will find non-zero entries in a given operator type with a max of
 * NINDX non-zero indices.
 *
-#include "implicit.inc"
+#include "implicit.h"
       INTEGER IOP(4*NGAS),INDX(NINDX)
 *
       NTEST = 00
@@ -974,7 +974,7 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
 * CC_VEC_FNC_KRCC.
 *                               Lasse 2011
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "ctcc.inc"
@@ -1240,7 +1240,7 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
 *
 * Extended to also include the Hamiltonian. Lasse 2012
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -1330,7 +1330,7 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
 *
 * This routine is redundant and should be eliminated
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "crun.inc"
@@ -1401,7 +1401,7 @@ C
 * Jeppe Olsen, May 2000, Finished March 2003 ( Well it became July 2003)
 *                        and even November 2004
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -1765,7 +1765,7 @@ C         print*,'ND1_TOT,NEX_TOT',ND1_TOT,NEX_TOT
 * Based on ANA_GENCCS_CC_KRCC just with more loops.
 * Original and pretty version (slow and not in use)
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -2051,7 +2051,7 @@ C    &                NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
 * Moved GETSTR2_TOTSM_SPGP_KRCC into loop structure for speed up and
 * added a lot of IF statements. Not so pretty but faster.
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -2102,7 +2102,7 @@ C    &                NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
 * Moved GETSTR2_TOTSM_SPGP_KRCC into loop structure for speed up and
 * added a lot of IF statements. Not so pretty but faster.
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -2426,7 +2426,7 @@ C              END IF
      &                  IOCC_ABD,IOCC_AAD,IOCC_CBD,IOCC_CAD,
      &                  NSTR_TOT,IEXD1234,NRANK,ISIGN_DE,T,OUTT)
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       DIMENSION T(*),OUTT(*)
       INTEGER IOCC_ABE(*),IOCC_AAE(*),IOCC_CBE(*),IOCC_CAE(*)
@@ -2486,7 +2486,7 @@ C             print*,'---------------------------'
      &                  NSTR_ABD,NSTR_AAD,NSTR_CBD,NSTR_CAD,
      &                  NSTR_TOT,T,OUTT)
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       DIMENSION T(*),OUTT(*)
 *
@@ -2580,7 +2580,7 @@ C             print*,'---------------------------'
 *               => IMAP = 6-9 (8-9 Not yet implemented)
 * Third case : Two indices are contracted => IMAP = 1
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       INTEGER IEX(NGAS,4),IDX(NGAS,4)
 *
@@ -2689,7 +2689,7 @@ c     print*,'NINDEX,NCA,NCB,NAA,NAB',NINDEX,NCA,NCB,NAA,NAB
 *
 * This is for a free CA index in EX that is lower than the one in DX
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       DIMENSION T(*),OUTT(*)
 *
@@ -2763,7 +2763,7 @@ C           print*,'---------------------------'
 *
 * This is for a free CA index in EX that is lower than the one in DX
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       DIMENSION T(*),OUTT(*)
 *
@@ -2834,7 +2834,7 @@ C           print*,'---------------------------'
 *
 * Reduces the EX operator to the free index
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       INTEGER IEX(NGAS,4),IDX(NGAS,4),IFREEOP(NGAS,4)
 *
@@ -2887,7 +2887,7 @@ C           print*,'---------------------------'
 * This is for a free CA index in EX that belongs to the same GAS as the
 * free index in DX
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       DIMENSION T(*),OUTT(*)
 * Local scratch
@@ -2992,7 +2992,7 @@ C             print*,'---------------------------'
 *
 * To be used with sorting routines
 *
-#include "implicit.inc"
+#include "implicit.h"
       INTEGER ISET(NSTR_D,NSTR_D)
 * Local scratch
       INTEGER IMARK(NSTR_D*(NSTR_D-1)/2),ISCR(NSTR_D)
@@ -3083,7 +3083,7 @@ C         print*,'IFILL',IFILL
 * This is for a free CA index in EX that belongs to the same GAS as the
 * free index in DX
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       DIMENSION T(*),OUTT(*)
 * Local scratch
@@ -3194,7 +3194,7 @@ C           print*,'---------------------------'
 * This is for a free CB index in EX that belongs to the same GAS as the
 * free index in DX
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       DIMENSION T(*),OUTT(*)
 * Local scratch

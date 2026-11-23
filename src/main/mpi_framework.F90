@@ -277,8 +277,16 @@ SUBROUTINE SYNC_NODES(IVARIABLE,ITASK)
 !          way - smarter solutions are welcome.
 !
 !          ITASK == 0: print memory allocation; IVARIABLE = memsize (from
-!                      calling routine)
+!                      calling routine). the memsize in this case will typically
+!                      be the dimension of the work array (e.g. WORK_memsize at 
+!                      the time of writing)
 !          ITASK == 1: call timer and print timing results
+!          ITASK == 2: print memory allocation; IVARIABLE = maxsize (from
+!                      calling routine). In contrast to the first case above
+!                      (ITASK.eq.0), here maxsize is the maximum amount of 
+!                      memory to be in use, as set through the use of the
+!                      wrapper routines alloc/dealloc via the memory_allocator
+!                      module.
 !
 !          Written by Stefan Knecht, Duesseldorf 2008
 !                           H.J.Aa Jensen, SDU Odense, 2016  (polish output)

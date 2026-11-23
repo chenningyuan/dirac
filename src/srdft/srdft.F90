@@ -115,7 +115,7 @@ contains
 
        call twofck(isymop,ihrmop,ifckop,
      &             fao,WORK(KDAO),
-     &            NFMAT,WORK(KPOS),IOPT_INTFLG,IPRTWO,WORK(KFREE),LFREE)
+     &            NFMAT,IOPT_INTFLG,IPRTWO,WORK(KFREE),LFREE)
 
 
 

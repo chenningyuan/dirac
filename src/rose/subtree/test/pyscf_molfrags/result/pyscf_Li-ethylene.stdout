@@ -1,0 +1,316 @@
+ 
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ @                                                @
+ @       Reduction of Orbital Space Extent        @
+ @                     (ROSE)                     @
+ @                                                @
+ @ By Bruno Senjean, Souloke Sen, Michal Repisky, @
+ @        Gerald Knizia and Lucas Visscher.       @
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ 
+ Select algebra (rcq) based on the use of restricted and spatial orbitals:
+   rcq = 1, 2 or 4  : real, complex or quaternion algebra, respectively
+   restricted       :  T
+   spatial_orbitals :  T
+   rcq              :  1
+ 
+ ####################################
+ #      Molecular  Coordinates      #
+ ####################################
+ 
+Atom    Z           X           Y           Z
+C    6.00 -0.23305025  0.00962428  1.27045009
+C    6.00 -0.23305025  0.00962428 -1.27045009
+H    1.00 -0.31541081  1.76669047 -2.35458334
+H    1.00 -0.31541081  1.76669047  2.35458334
+H    1.00 -0.31237298 -1.74836347  2.35353126
+H    1.00 -0.31237298 -1.74836347 -2.35353126
+Li   3.00  4.21178614 -0.13011135  0.00000000
+ 
+ ####################################
+ #         Basis set size           #
+ #               and                #
+ #      Canonical MO Energies       #
+ ####################################
+ 
+ No. basis functions    B1:     57
+ No. molecular orbitals B1:     57
+ No. occupied  orbitals B1:      9
+ No. molecular orbitals B2:     16
+ 
+          MO              Energy
+           1    -11.310926227339
+           2    -11.309293641389
+           3     -2.684425591086
+           4     -1.237066878441
+           5     -0.980998890725
+           6     -0.834114166285
+           7     -0.777761476273
+           8     -0.688992556662
+           9     -0.590411177683
+          10     -0.148881024189
+          11     -0.112717282107
+          12     -0.095602670776
+          13     -0.028757392634
+          14      0.002810711757
+          15      0.097753032449
+          16      0.114350924008
+          17      0.125305145024
+          18      0.134822438450
+          19      0.154562909454
+          20      0.174529661816
+          21      0.228690495858
+          22      0.241953702768
+          23      0.388738457912
+          24      0.560557203970
+          25      0.625858926345
+          26      0.708120379099
+          27      0.720158255123
+          28      0.901624547751
+          29      0.937594944746
+          30      0.957543082004
+          31      1.014627154429
+          32      1.082412043999
+          33      1.118823281931
+          34      1.129127815841
+          35      1.160589905507
+          36      1.216571506065
+          37      1.269123916266
+          38      1.406191128045
+          39      1.497598138360
+          40      4.690338932906
+          41      4.741101096190
+          42      4.818095686357
+          43      4.863085784873
+          44      4.971534654860
+          45      5.047413503165
+          46      5.297026822425
+          47      5.447293964736
+          48      5.468523503822
+          49      5.488708420140
+          50      5.661687024490
+          51      6.599597664782
+          52      6.954180975150
+          53     22.967386769206
+          54     23.091547099602
+          55     24.397650776331
+          56    106.797911510644
+          57    106.946343775818
+ 
+ ####################################
+ #   Intrinsic Fragments Orbitals   #
+ ####################################
+ 
+  Version: Standard 2013
+ 
+  --- Check Symmetrical Orthogonalization --- 
+**SUCCESS** Symmetrical orthogonalization was successful, norm:  0.3749E-14
+ 
+ 
+  --- Check Symmetrical Orthogonalization --- 
+**SUCCESS** Symmetrical orthogonalization was successful, norm:  0.8259E-14
+ 
+ 
+ ####################################
+ # Intrinsic Localized occupied MOs #
+ ####################################
+ 
+ ----- Percentage of localization before the localization procedure ----- 
+ 
+ MO Localized on fragments (with %) (thrs = 0.01, first ten are shown)
+  1 [    1]                                             
+    [100.0]                                             
+  2 [    1]                                             
+    [100.0]                                             
+  3 [    2]                                             
+    [100.0]                                             
+  4 [    1    2]                                        
+    [ 97.1  2.9]                                        
+  5 [    1]                                             
+    [100.0]                                             
+  6 [    1]                                             
+    [100.0]                                             
+  7 [    1]                                             
+    [ 99.5]                                             
+  8 [    1]                                             
+    [100.0]                                             
+  9 [    1    2]                                        
+    [ 95.1  4.9]                                        
+ 
+ ----- Localization procedure: 2x2 Rotations -----
+ (Exponent = 4)
+ 
+ Iter        Function    Gradient
+    1        8.686457    3.95E-03
+    2        8.709265    2.63E-04
+    3        8.709276    2.82E-08
+    4        8.709276    1.24E-17
+ 
+ ******************************************
+ Final converged values (it, func, fGrad):
+    4            8.7092763614346236  1.2376E-17
+ ******************************************
+ 
+ 
+ ----- Percentage of localization after the localization procedure ----- 
+ 
+ MO Localized on fragments (with %) (thrs = 0.01, first ten are shown)
+  1 [    1]                                             
+    [100.0]                                             
+  2 [    1]                                             
+    [100.0]                                             
+  3 [    2]                                             
+    [100.0]                                             
+  4 [    1]                                             
+    [100.0]                                             
+  5 [    1]                                             
+    [100.0]                                             
+  6 [    1    2]                                        
+    [ 91.8  8.2]                                        
+  7 [    1]                                             
+    [100.0]                                             
+  8 [    1]                                             
+    [100.0]                                             
+  9 [    1]                                             
+    [100.0]                                             
+ 
+ ----- Diagonal of the Fock matrix in the localized MO basis ----
+ 
+          MO             diag(F)
+           1    -11.309293641389
+           2    -11.143668677861
+           3     -2.683615301795
+           4     -1.015342415752
+           5     -0.980998890725
+           6     -0.890791316715
+           7     -0.866737724938
+           8     -0.834550080046
+           9     -0.688992556662
+ 
+ ----- Diagonalization of the Fock matrix to check the recovering of the occupie
+ d canonical MOs -----
+ 
+          MO              Energy
+           1    -11.310926227339
+           2    -11.309293641389
+           3     -2.684425591086
+           4     -1.237066878441
+           5     -0.980998890725
+           6     -0.834114166285
+           7     -0.777761476273
+           8     -0.688992556662
+           9     -0.590411177683
+ 
+ 
+ ####################################
+ # Intrinsic Localized virtual MOs  #
+ ####################################
+ 
+ ----- Percentage of localization before the localization procedure ----- 
+ 
+ MO Localized on fragments (with %) (thrs = 0.01, first ten are shown)
+  1 [    1]                                             
+    [100.0]                                             
+  2 [    1    2]                                        
+    [  8.6 91.4]                                        
+  3 [    1]                                             
+    [ 99.9]                                             
+  4 [    1]                                             
+    [100.0]                                             
+  5 [    1]                                             
+    [ 99.9]                                             
+  6 [    1]                                             
+    [ 99.9]                                             
+  7 [    1]                                             
+    [ 99.9]                                             
+ 
+ ----- Localization procedure: 2x2 Rotations -----
+ (Exponent = 4)
+ 
+ Iter        Function    Gradient
+    1        6.686027    1.85E-02
+    2        6.709276    2.65E-05
+    3        6.709276    4.23E-10
+    4        6.709276    3.33E-15
+    5        6.709276    2.06E-19
+ 
+ ******************************************
+ Final converged values (it, func, fGrad):
+    5            6.7092763571591476  2.0580E-19
+ ******************************************
+ 
+ 
+ ----- Percentage of localization after the localization procedure ----- 
+ 
+ MO Localized on fragments (with %) (thrs = 0.01, first ten are shown)
+  1 [    1    2]                                        
+    [  8.2 91.8]                                        
+  2 [    1]                                             
+    [100.0]                                             
+  3 [    1]                                             
+    [100.0]                                             
+  4 [    1]                                             
+    [100.0]                                             
+  5 [    1]                                             
+    [100.0]                                             
+  6 [    1]                                             
+    [100.0]                                             
+  7 [    1]                                             
+    [100.0]                                             
+ 
+ ----- Diagonal of the Fock matrix in the localized MO basis ----
+ 
+          MO             diag(F)
+           1     -0.125949920610
+           2      0.050836582988
+           3      0.134612421388
+           4      0.164304685417
+           5      0.183959508318
+           6      0.195524241066
+           7      0.255830784586
+ 
+ ####################################
+ #  Partial charges of fragments    #
+ ####################################
+ 
+       Fragment      Charge
+   frag0           0.164478
+   frag1           0.835522
+ 
+ 
+ 
+ ####################################
+ #         Starting TESTS           #
+ ####################################
+ 
+ The matrix is normalized.
+ The matrix is normalized.
+ The matrix is normalized.
+ Deviation of IBO_RDM from HF_RDM  :  2.149429193988636E-014
+ Deviation from orthogonality      :  8.258529919781436E-015
+ Deviation from orthogonality      :  9.972266540482020E-015
+ Deviation in number of electrons  :  3.197442310920451E-014
+ Deviation in number of electrons  :  3.197442310920451E-014
+ HF energy (moB1)   :   -84.3709120544028     
+ HF energy (IAO)    :   -84.3709120544032     
+ HF energy (IBO/MO) :   -84.3709120544030     
+ Deviation from the HF energy in the original basis and in the IAO basis:
+ -3.9790393E-13
+ Deviation from the HF energy in the original basis and in the IBO basis:
+ -1.9895197E-13
+ 
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ @                                                @
+ @       Reduction of Orbital Space Extent        @
+ @                                                @
+ @                      END                       @
+ @                                                @
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+output file: /Users/visscher/sources/rose_clones/rose_visscher/examples/PYSCF/dum/H4-Li1-C2_0_1+.out
+Hartree-Fock energy: -84.37091058823705
+output file: /Users/visscher/sources/rose_clones/rose_visscher/examples/PYSCF/dum/H4-C2_0.out
+Hartree-Fock energy: -77.18172515784411
+output file: /Users/visscher/sources/rose_clones/rose_visscher/examples/PYSCF/dum/Li1_0_1+.out
+Hartree-Fock energy: -7.142863034057823
+overwrite output file: /Users/visscher/sources/rose_clones/rose_visscher/examples/PYSCF/dum/H4-Li1-C2_0_1+.out
+Hartree-Fock energy: -84.37091058823756

@@ -8,6 +8,7 @@
 !     IPRHAM     - Print level
 !     IPOVERLAP  - Pointer to the overlap in DCBXPR
 !     IPBETAMT   - Pointer to the beta matrix in DCBXPR
+!     IPESHIFT   - Energy shift
 !     IPMOLFLD   - Pointer to the nuclear attraction in DCBXPR
 !     IPKINERG   - Pointer to the kinetic energy in DCBXPR
 !     IPSOPP     - Pointer to the ECP spin-orbit matrix, SOPP DCBXPR
@@ -34,7 +35,6 @@
 !
 !     SPINFR     - Neglect spin-orbit coupling
 !     SPINFR2    - Neglect 2-electron spin-orbit coupling
-!     MOLMF      - Use molecular mean field approximation (^4 DC(G)**)       in correlated calcs.
 !     X2CMMF     - Use molecular mean field approximation (^2 DC(G) (U_mol)) in correlated calcs.
 !     ZORA       - Make ZORA approximation (ZORA: approx density, cheap)
 !     ZORA4      - Make ZORA approximation (ZORA4: full density, expensive)
@@ -118,7 +118,7 @@
      &        IPSPNMOM, IPSPNORB, N1OPER, IPR1OP(MAX1OPER), LSOLMX,     &
      &        IPRSOL, ICTLV1C(2), IBSS, MC, I1_HAM, I2_HAM, IMFCH,      &
      &        I2CHAM, INI2C, I2COFK, IPSOPP, IPVEMB0, ISORDER_AMFI_x2c, &
-     &        I1_DCLHAM,I2_DCLHAM                                     
+     &        IPESHIFT,I1_DCLHAM,I2_DCLHAM                                     
 !
 !     IMPORTANT !!!
 !     =============
@@ -130,7 +130,7 @@
      &                IPKINERG, IPANGMOM, IPSPNMOM, IPSPNORB, N1OPER,   &
      &                IPR1OP, LSOLMX, IPRSOL, ICTLV1C, IBSS, MC,        &
      &                IMFCH, I2CHAM, INI2C, I2COFK, IPVEMB0, IPSOPP,    &
-     &                ISORDER_AMFI_x2c, I2_HAM
+     &                ISORDER_AMFI_x2c, IPESHIFT, I2_HAM
 
       INTEGER INTV1C
       EQUIVALENCE (INTV1C, ICTLV1C (1))
@@ -141,9 +141,10 @@
      &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1, ALLAMFA,     &
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
      &        RDSUSLLMOD, CAP, CMPEIG,                                  &
-     &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,MOLMF,  &
+     &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,        &
      &        TRMO4C2C, X2CMMF, X2C, X2C_aba, ECPCALC,MDIRAC, TRS_MIX,  &
-     &        WRITE_Jz_MATRIX, WRITE_K_MATRIX, NONREL, FAKE2C
+     &        WRITE_Jz_MATRIX, WRITE_K_MATRIX, NONREL, FAKE2C,          &
+     &        DOEFFQED, DOASHIFT
       COMMON /DCLHAM/ I1_DCLHAM,                                        &
      &                QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
      &                LEVYLE, SUB_BL, SOLVEN, INERSI, INERSF, SPINFR,   &
@@ -153,9 +154,10 @@
      &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA,         &
      &                RDSUSLLMOD,CAP,CMPEIG,                            &
      &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
-     &                NOSFMU,MOLMF, TRMO4C2C, X2CMMF, X2C, X2C_aba,     &
+     &                NOSFMU,       TRMO4C2C, X2CMMF, X2C, X2C_aba,     &
      &                ECPCALC,MDIRAC,TRS_MIX,WRITE_Jz_MATRIX,NONREL,    &
-     &                WRITE_K_MATRIX,FAKE2C, I2_DCLHAM
+     &                WRITE_K_MATRIX,FAKE2C,I2_DCLHAM,                  &
+     &    	      DOEFFQED, DOASHIFT
 
 !    Do NOT add any variables after the end tag !!!
 !
@@ -164,9 +166,9 @@
 ! DCRHAM and go to DFTCOM in dftcom.h, for now it stays here
 !
       REAL*8 SSMTRC, SSMTRC_SAVE, EPSOL, E_PE, EPSTAT, RSOLAV, HFXFAC,  &
-     &       HFXATT, HFXMU, ONECNV
+     &       HFXATT, HFXMU, ONECNV, ESHIFT
       COMMON /DCRHAM/ SSMTRC, SSMTRC_SAVE, EPSOL, E_PE, EPSTAT, RSOLAV, & 
-     &                HFXFAC, HFXMU, HFXATT, ONECNV
+     &                HFXFAC, HFXMU, HFXATT, ONECNV, ESHIFT
 
 !     REAL*8 SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV, ONECNV
 !     COMMON /DCRHAM/ SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV, ONECNV

@@ -35,9 +35,7 @@ C
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
-#include "infpar.h"
 #include "dcbgen.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "blocks.h"
 #include "dcbtra.h"
@@ -51,7 +49,6 @@ C
       CALL QENTER('TRDR2T')
       KFRSAV = KFREE
 C
-C     TODO (/hjaaj aug 2001):
       IF (.NOT. LMP2)
      &     CALL QUIT('TRDR2T: Only MP2 is implemented for strategy 2')
 C
@@ -313,15 +310,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "iratdef.h"
 #include "maxorb.h"
-#include "dcbgen.h"
 #include "dcbtra.h"
-#include "dcbbas.h"
+#include "comdis.h"
 #include "dcborb.h"
 #include "dcbmpt.h"
 #include "dgroup.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "symmet.h"
       LOGICAL ANTIS,LMP2,NODV,NOPV,L2TYP(0:3),IBEQJB,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,2),NSTR(2,0:2,4),INDX(3,*),
      &          NSTRT(4),ITQMT(0:7,0:7,2),
@@ -867,12 +862,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
-#include "iratdef.h"
 #include "dcbtra.h"
-#include "dcborb.h"
-#include "dcbmpt.h"
 #include "dcbmp2.h"
-#include "dgroup.h"
       DIMENSION KQ(2,4), KE(2,2), NSTR(2,0:2,4), INDX(3,*),
      &     NSTRT(4), ITQMT(0:7,0:7,2), IJP12(0:7), NDMOQR(2,2,4),
      &     ICMOQR(2,4), TIM1(7), DINTSKP(*), GABRAO(*), WORK(*),
@@ -1074,7 +1065,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbtra.h"
+#include "comdis.h"
 #include "dcbmpt.h"
       DIMENSION IDSLST(6,NDSLST), INDX(3,*), IJP12(0:7)
       LOGICAL SORTDS, DONE
@@ -1181,9 +1172,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "iratdef.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcborb.h"
 #include "dcbmpt.h"
-#include "dcbmp2.h"
 #include "dgroup.h"
       DIMENSION IDSNFO(6), KQ(2,4), KE(2,2), INDX(3,*),
      &     NSTR(2,0:2,4), NSTRT(4), DINTSKP(*), GABRAO(*), WORK(*),
@@ -1383,8 +1374,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "dcbtra.h"
-#include "dcbbas.h"
-#include "symmet.h"
       DIMENSION NSTR(2,0:2,4),NSTRT(4),WORK(*)
 C
 C
@@ -1549,12 +1538,12 @@ C     Written by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbbas.h"
 #include "symmet.h"
 C
@@ -1705,7 +1694,6 @@ C     Written by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -1804,8 +1792,6 @@ C/* Deck MP2FI1 */
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
-#include "dcbtra.h"
 #include "dgroup.h"
       DIMENSION NSTR(2,0:2,4)
       DIMENSION FMAT(NFM,2)
@@ -1875,7 +1861,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TIMEC */
       SUBROUTINE TIMEC(TEXT,TIMSTR,TIMEND)
 #include "implicit.h"
-#include "priunit.h"
       CHARACTER TEXT*6
 C
       IF (TEXT .EQ. 'START ') THEN
@@ -2008,7 +1993,6 @@ C
 C     -              Updated values of buffer blocks
 C
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 C
       INTEGER   NSTR1(2),NSTR2(2)
@@ -2028,7 +2012,7 @@ C
 C
 #include "dgroup.h"
 #include "dcbtra.h"
-#include "dcbibt.h"
+#include "comdis.h"
 C
       CALL QENTER('MS4IN1E')
       KFRSAV = KFREE
@@ -2570,6 +2554,7 @@ C
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbmp2.h"
 #include "dcbbas.h"
@@ -2757,6 +2742,11 @@ C
             END IF
             CALL FLSHFO(LUPRI)
          END IF
+
+         IF (ISLVRL .GT. NODES) THEN
+            CALL QUIT('Program error, counter for number of '//
+     &         'released slaves is greater than number of nodes')
+         END IF
 C
 C     Check if current batch is finished
 C
@@ -2905,6 +2895,7 @@ C
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbmp2.h"
 #include "dcbbas.h"
@@ -3027,9 +3018,13 @@ C ----------------------------------------------------------------------
 C     End inner loop over tasks
 C ----------------------------------------------------------------------
  200  CONTINUE
+      IF (CMMNFO) WRITE(LUPRI,'(A,I4,A,6I4,I8)') ' <COMMINFO> Node #',
+     &     MYTID, ' released; INTGTH, task:', INTGTH,IDSNFO
 C     
 C     4/4 transformation
 C
+      IF (INTGTH .GT. 0) THEN ! some integrals to transfer to master
+
       IF (IPRINT .GE. 1) WRITE (LUPRI,1012) N4QMT*8./(1024.*1024.)
       CALL MEMGET('REAL',K4QMAT,N4QMT,WORK,KFREE,LFREE)
       CALL DZERO(WORK(K4QMAT),N4QMT)
@@ -3077,6 +3072,9 @@ C
 #endif
       IF (CMMNFO) WRITE(LUPRI,'(A,I4,A,I4)') ' <COMMINFO> Node #',
      &     MYTID, ' sent fully transformed integrals for batch ', IJBTCH
+
+      END IF ! (INTGTH .GT. 0)
+
 C
 C     If master sends MP2FIN = .TRUE., there are no more batches
 C
@@ -3132,6 +3130,7 @@ C
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dgroup.h"

@@ -19,7 +19,7 @@ BeH
 .SCF
 .KR CI
 ############
-*KRCICALC
+*KRCI
 .CI PROGRAM
 LUCIAREL
 .GASSH

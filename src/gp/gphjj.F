@@ -187,56 +187,14 @@ C
       END IF
       RETURN
       END
-C  /* Deck dunit */
-      SUBROUTINE DUNIT(A,N)
-C
-C  SUBROUTINE DUNIT SETS THE REAL SQUARE MATRIX A EQUAL
-C  TO A UNIT MATRIX.
-C  /VER 2/ 14-Sep-1983 hjaaj
-C
-#include "implicit.h"
-      DIMENSION A(*)
-      PARAMETER (D1=1.0D00, D0=0.0D00)
-C
-      NN = N*N
-      DO 100 I = 1,NN
-         A(I) = D0
-  100 CONTINUE
-      N1 = N + 1
-      DO 200 I = 1,NN,N1
-         A(I) = D1
-  200 CONTINUE
-      RETURN
-      END
-C  /* Deck dzero */
-      SUBROUTINE DZERO(DX,LENGTH)
-#include "implicit.h"
-C
-C Last revision 5-May-1984 by Hans Jorgen Aa. Jensen
-C
-C   Subroutine DZERO sets a real array of length *LENGTH*
-C   to zero.
-C...................................................................
-C     DIMENSION DX(*)
-      DIMENSION DX(LENGTH)
-C
-      IF (LENGTH.LE.0) RETURN
-C
-      DO 100 I = 1,LENGTH
-  100    DX(I) = 0.0D00
-C
-      RETURN
-      END
 C  /* Deck dzero8 */
       SUBROUTINE DZERO8(DX,LENGTH8)
-#include "implicit.h"
 C   Last revision 23-Nov-2007 by S. Knecht
 C
-C   Subroutine DZERO8 sets a real array of length *LENGTH8*
-C   to zero.
+C   Subroutine DZERO8 sets a real array of length *LENGTH8* to zero.
 C...................................................................
-      INTEGER*8 LENGTH8
-      DIMENSION DX(LENGTH8)
+      INTEGER*8 LENGTH8, I
+      REAL*8    DX(LENGTH8)
 C
       IF (LENGTH8.LE.0) RETURN
 C
@@ -245,86 +203,20 @@ C
 C
       RETURN
       END
-C  /* Deck isum */
-      FUNCTION ISUM(N,IA,INCA)
-C
-C     8-Feb-1987 hjaaj
-C     Sums elements of a integer vector.
-C     USES UNROLLED LOOPS FOR INCREMENTS EQUAL TO ONE.
-C     -- based on DDOT from LINPACK
-C     DDOT: JACK DONGARRA, LINPACK, 3/11/78.
-C
-      INTEGER ISUM,  IA(*), ITEMP
-      INTEGER I,INCA,JA,M,MP1,N
-C
-      ISUM  = 0
-      IF(N.LE.0)RETURN
-      ITEMP = 0
-      IF(INCA.EQ.1)GO TO 20
-C
-C        CODE FOR UNEQUAL INCREMENTS OR EQUAL INCREMENTS
-C          NOT EQUAL TO 1
-C
-      JA = 1
-      IF(INCA.LT.0)JA = (-N+1)*INCA + 1
-      DO 10 I = 1,N
-        ITEMP = ITEMP + IA(JA)
-        JA = JA + INCA
-   10 CONTINUE
-      ISUM = ITEMP
-      RETURN
-C
-C        CODE FOR BOTH INCREMENTS EQUAL TO 1
-C
-C
-C        CLEAN-UP LOOP
-C
-   20 M = MOD(N,5)
-      IF( M .EQ. 0 ) GO TO 40
-      DO 30 I = 1,M
-        ITEMP = ITEMP + IA(I)
-   30 CONTINUE
-      IF( N .LT. 5 ) GO TO 60
-   40 MP1 = M + 1
-      DO 50 I = MP1,N,5
-         ITEMP = ITEMP     + IA(I)     + IA(I + 1)
-     *         + IA(I + 2) + IA(I + 3) + IA(I + 4)
-   50 CONTINUE
-   60 ISUM = ITEMP
-      RETURN
-      END
-C  /* Deck izero */
-      SUBROUTINE IZERO(INTI,LENGTH)
-C...................................................................
-C Written 5-May-1984 by Hans Jorgen Aa. Jensen
-C
-C   Subroutine IZERO sets an integer array of length *LENGTH*
-C   to zero.
-C...................................................................
-      INTEGER INTI(*),LENGTH
-C
-      IF (LENGTH.LE.0) RETURN
-C
-      DO 100 I=1,LENGTH
-  100    INTI(I) = 0
-C
-      RETURN
-      END
 C  /* Deck izero8 */
-      SUBROUTINE IZERO8(INTI8,LENGTH8)
+      SUBROUTINE IZERO8(INT_I8,LENGTH)
 C...................................................................
 C   modified routine IZERO - S. Knecht - 19-Feb-2008
 C
-C   Subroutine IZERO sets an integer*8 array of length *LENGTH8*
-C   to zero.
+C   Subroutine IZERO8 sets an integer*8 array of length *LENGTH* to zero.
 C...................................................................
-      INTEGER*8 INTI8(*),LENGTH8
-C
-      IF (LENGTH8.LE.0) RETURN
-C
-      DO 100 I=1,LENGTH8
-  100    INTI8(I) = 0
-C
+      INTEGER*8 INT_I8(*)
+      INTEGER   LENGTH
+
+      IF (LENGTH.LE.0) RETURN
+
+      INT_I8(1:LENGTH) = 0
+
       RETURN
       END
 C  /* Deck imino8 */
@@ -332,10 +224,9 @@ C  /* Deck imino8 */
 C...................................................................
 C   modified routine IZERO - S. Knecht - 19-Feb-2008
 C
-C   Subroutine IMIN08 sets an integer*8 array of length *LENGTH8*
-C   to minus one.
+C   Subroutine IMIN08 sets an integer*8 array of length *LENGTH8* to minus one.
 C...................................................................
-      INTEGER*8 INTI8(*),LENGTH8, IMIN1
+      INTEGER*8 INTI8(*),LENGTH8, IMIN1,I
 C
       IF (LENGTH8.LE.0) RETURN
       IMIN1 = - 1
@@ -967,13 +858,8 @@ C
       character*100 msg
       CALL GETDAT(LDATE,LTIME)
 
-#if !defined VAR_IFORT
-!miro: ifort 10.1 does not know the "iomsg" parameter ....
       WRITE (LU,ERR=1000,IOSTAT=IOSVAL,iomsg=msg) 
      &              LSTARS,LDATE,LTIME,LABEL
-#else
-      WRITE (LU,ERR=1000,IOSTAT=IOSVAL) LSTARS,LDATE,LTIME,LABEL
-#endif
       RETURN
 C
  1000 IF (LUERR .LT. 0) THEN
@@ -985,9 +871,7 @@ C
      &      '         IOSTAT value',IOSVAL
          WRITE(LUERR,*) 'LSTARS=',LSTARS
          WRITE(LUERR,*) 'LDATE=',LDATE,' LTIME=',LTIME
-#if !defined VAR_IFORT
-         WRITE (LUERR,'(A,A)') 'message:',msg
-#endif
+         WRITE (LUERR,'(A,A)') 'error message:',msg
          CALL QTRACE(LUERR)
          CALL QUIT('NEWLAB: output error writing label')
       END IF
@@ -1041,8 +925,10 @@ C
       END
 C  /* Deck second */
       REAL*8 FUNCTION SECOND ()
-      real*4 etime,tarray(2)
-      SECOND = etime(tarray)
+      ! compatibility function for old CDC/Cray SECOND() function
+      real(8) :: timcpu, timwall
+      call gettim(timcpu,timwall)
+      SECOND = timcpu
       RETURN
       END
 C  /* Deck sotmat */

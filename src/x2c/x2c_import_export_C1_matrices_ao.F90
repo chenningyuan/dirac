@@ -21,7 +21,7 @@
 !
 module x2c_import_exportC1
   use x2cmod_cfg
-  use x2c_fio
+ !use x2c_fio
   use x2c_utils, only: print_x2cmat
 
   implicit none

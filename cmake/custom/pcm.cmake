@@ -20,8 +20,8 @@
 #     - "'-DENABLE_PCMSOLVER={0}'.format(arguments['--pcmsolver'])"
 #     - "'-DPCMSOLVER_ROOT={0}'.format(arguments['--pcmsolver-dir'])"
 
-option(ENABLE_PCMSOLVER "Enable Polarizable Continuum Model through PCMSolver" ON)
-
+option(ENABLE_PCMSOLVER "Enable Polarizable Continuum Model through PCMSolver" OFF)
+set(PCMSOLVER_ROOT '')
 if(ENABLE_PCMSOLVER)
   # User signal to try pre-built PCMSolver
   if(PCMSOLVER_ROOT)

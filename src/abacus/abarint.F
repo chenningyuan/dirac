@@ -30,7 +30,6 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "optinf.h"
-#include "priunit.h"
       DIMENSION WILBMT(MXRCRD*MX2CRD), BMTRAN(MXRCRD*MXRCRD)
       DIMENSION BMTINV(MXRCRD*MX2CRD), PJINMT(MXRCRD*MXRCRD)
       DIMENSION TMPMAT(MX2CRD,MX2CRD), TMPMT2(MX2CRD,MX2CRD)
@@ -67,7 +66,6 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "optinf.h"
-#include "gnrinf.h"
 #include "priunit.h"
       DIMENSION ATMARR(MXCENT,8), IBOND(MXCENT,MXCENT)
       PARAMETER (D0 = 0.0D0)
@@ -222,7 +220,6 @@ C
 #include "maxaqn.h"
 #include "priunit.h"
 #include "optinf.h"
-#include "symmet.h"
 #include "nuclei.h"
       DIMENSION EVEC(NCORD,NCORD), IFRQCM(NCORD)
       DIMENSION IMAGIN(NCORD), ATMARR(MXCENT,8)
@@ -867,7 +864,6 @@ C
 #include "mxcent.h"
 #include "optinf.h"
 #include "priunit.h"
-#include "pi.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       NDIHD = 0
@@ -949,7 +945,6 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "optinf.h"
-#include "gnrinf.h"
 #include "priunit.h"
 #include "pi.h"
       DIMENSION ATMARR(MXCENT,8), WILBMT(MXRCRD,MXCOOR)
@@ -1309,7 +1304,6 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "optinf.h"
-#include "gnrinf.h"
 #include "priunit.h"
       DIMENSION DWILBM(MXCOOR,MXCOOR), WILBMT(MXRCRD,MXCOOR)
       DIMENSION ATMARR(MXCENT,8), TMPMAT(MXCOOR,MXCOOR)
@@ -1625,8 +1619,6 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "optinf.h"
-#include "gnrinf.h"
-#include "priunit.h"
       DIMENSION DWILBM(MXCOOR,MXCOOR), ATMARR(MXCENT,8)
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION WORK(LWORK)
@@ -1652,9 +1644,6 @@ C     delocalized internal coordinates are used.
 C
 #include "implicit.h"
 #include "mxcent.h"
-#include "optinf.h"
-#include "gnrinf.h"
-#include "priunit.h"
       DIMENSION DWILBM(MXCOOR,MXCOOR), ATMARR(MXCENT,8)
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION REDMAT(IRED,ICRT,ICRT)
@@ -1706,8 +1695,6 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "optinf.h"
-#include "gnrinf.h"
-#include "priunit.h"
       DIMENSION DWILBM(MXCOOR,MXCOOR), ATMARR(MXCENT,8)
       DIMENSION WILBMT(MXRCRD,MXCOOR)
       DIMENSION VEC1(3),VEC2(3),VEC3(3),VEC4(3),VEC5(3)
@@ -2189,8 +2176,6 @@ C  /* Deck decomp */
 !
 #include "implicit.h"
 #include "mxcent.h"
-#include "optinf.h"
-#include "priunit.h"
       DIMENSION UMAT(MXCOOR,MXRCRD), WMAT(MXRCRD,MXRCRD)
       DIMENSION VMAT(MXRCRD,MXRCRD), VAL(MXRCRD)
       DIMENSION WILBMT(MXRCRD,MXCOOR)
@@ -2548,7 +2533,6 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "optinf.h"
-#include "priunit.h"
       DIMENSION ATMARR(MXCENT,8), TMPMAT(MXCOOR,MXCOOR)
       DIMENSION TMPMT2(MX2CRD,MX2CRD), TMPMT3(MX2CRD,MX2CRD)
       DIMENSION HESSX(MXCOOR,MXCOOR), GRADQ(MXRCRD)
@@ -3314,7 +3298,6 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "optinf.h"
-#include "priunit.h"
 #include "pi.h"
       DIMENSION ATMCRD(MXCENT,8), VALINT(MXRCRD)
       DIMENSION VEC1(3), VEC2(3), VEC3(3), VEC4(3), VEC5(3)
@@ -3807,7 +3790,6 @@ C
 #include "cbirea.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "trkoor.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS
       CHARACTER FILENM*10, TMPLN*80
       DIMENSION GEINFO(0:ITRMAX,6), NONTVC(MXCENT)
@@ -4298,11 +4280,8 @@ C     Builds a simple model Hessian in redundant internal coordinates.
 C     As described by Roland Lindh.
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
-#include "gnrinf.h"
 #include "optinf.h"
-#include "nuclei.h"
       DIMENSION ATMARR(MXCENT,8), HESINT(MXRCRD,MXRCRD)
       DIMENSION ALFA(3,3), DIST(3,3)
       CALL DZERO(HESINT,MXRCRD*MXRCRD)

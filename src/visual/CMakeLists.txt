@@ -11,11 +11,22 @@ set(FIXED_VISUAL_FORTRAN_SOURCES
 )
 
 set(FREE_VISUAL_FORTRAN_SOURCES
-    integration.F90
     visual_cfg.F90
+    dirac_dmat_factory.F90
     visual.F90
     visual_in_point.F90
-    visual_london.F90
+    visual_io.F90
+    visual_grids.F90
+    visual_grid_functions.F90
+    visual_datatypes.F90
+    visual_utils.F90
+    visual_dirac.F90
+    visual_txt_storage.F90
+    visual_labeled_storage.F90
+    visual_spinor_components.F90
+    visual_mpi.F90
+    ${PROJECT_SOURCE_DIR}/src/prp/dirac_rsp_utils.F90
+    ${PROJECT_SOURCE_DIR}/src/prp/dirac_conmat_lao_utils.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -31,7 +42,7 @@ endif()
 
 add_library(
     visual 
-    OBJECT
+    STATIC
     ${FIXED_VISUAL_FORTRAN_SOURCES}
     ${FREE_VISUAL_FORTRAN_SOURCES}
 )

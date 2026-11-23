@@ -118,6 +118,7 @@
   write(iunit,*) 'iprprj  ',iprprj
   write(iunit,*) 'prothr  ',prothr
   write(iunit,*) 'ownbas  ',ownbas
+  write(iunit,*) 'c1read  ',c1read
   write(iunit,*) 'maxref  ',maxref
   write(iunit,*) 'twocomp ',twocomp
   write(iunit,*) 'x2c     ',x2c

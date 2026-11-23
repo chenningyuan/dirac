@@ -1,0 +1,4470 @@
+  ** interface to 32-bit integer MPI enabled **
+
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory
+    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+
+Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
+
+ *******************************************************************************
+ *                                                                             *
+ *                                O U T P U T                                  *
+ *                                   from                                      *
+ *                                                                             *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                    *
+ *                   @@  @@        @@  @@   @@  @@   @@                        *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                        *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                        *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                    *
+ *                                                                             *
+ *                                                                             *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:%
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::$
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::(
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:$
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.S
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::S
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::?
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.S
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.(
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/$
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:iS
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::c
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::S
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::$
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::$
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::(
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:Z
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|(
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||S
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:$
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::%
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:$
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::$
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/)
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii$
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////$
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/Z
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::$
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::&
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/=
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|$
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>M
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:M
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%M
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;M
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<SM
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$SM
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<M
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></M
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&M
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SFM
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]ZkM
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&M
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&M
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&FM
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&M
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6M
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969kM
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&M
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1M
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&M
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9ZM
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6M
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][FM
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&M
+ *******************************************************************************
+ *                                                                             *
+ *         =========================================================           *
+ *                     Program for Atomic and Molecular                        *
+ *          Direct Iterative Relativistic All-electron Calculations            *
+ *         =========================================================           *
+ *                                                                             *
+ *                                                                             *
+ *    Written by:                                                              *
+ *                                                                             *
+ *    Trond Saue               Universite Toulouse III           France        *
+ *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *                                                                             *
+ *    with contributions from:                                                 *
+ *                                                                             *
+ *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
+ *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Jan Brandejs             Universite Toulouse III           France        *
+ *    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joel Creutzberg          University of Southern Denmark    Denmark       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
+ *    Sebastien Dubillard      University of Strasbourg          France        *
+ *    Ulf Ekstroem             University of Oslo                Norway        *
+ *    Ephraim Eliav            University of Tel Aviv            Israel        *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
+ *    Elke Fasshauer           University of Tubingen            Germany       *
+ *    Timo Fleig               Universite Toulouse III           France        *
+ *    Olav Fossgaard           UiT The Arctic University of      Norway        *
+ *    Loic Halbert             Universite de Lille               France        *
+ *    Erik D. Hedegaard        University of Southern Denmark    Denmark       *
+ *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
+ *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Martin van Horn          Universite Toulouse III           France        *
+ *    Miroslav Ilias           Matej Bel University              Slovakia      *
+ *    Christoph R. Jacob       TU Braunschweig                   Germany       *
+ *    Stefan Knecht            Algorithmiq Ltd / ETH Zuerich     Finland/CH    *
+ *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
+ *    Ossama Kullie            University of Kassel              Germany       *
+ *    Jon K. Laerdahl          University of Oslo                Norway        *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
+ *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Nanna Holmgaard List     Stockholm Inst. of Technology     Sweden        *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
+ *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
+ *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
+ *    Andreas Nyvang           Aarhus University                 Denmark       *
+ *    Malgorzata Olejniczak    University of Warsaw              Poland        *
+ *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Anastasios Papadopoulos  Max Planck Institute f. Coal Res. Germany       *
+ *    Young Choon Park         KAIST, Daejeon                    South Korea   *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
+ *    Markus Pernpointner      University of Heidelberg          Germany       *
+ *    Johann V. Pototschnig    Technical University Graz         Austria       *
+ *    Roberto Di Remigio       EuroCC National Competence Centre Sweden        *
+ *    Michal Repisky           UiT The Arctic University of      Norway        *
+ *    Carlos M. R. Rocha       Netherlands eScience Center       Netherlands   *
+ *    Kenneth Ruud             UiT The Arctic University of      Norway        *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
+ *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
+ *    Bruno Senjean            CNRS/Universite de Montpellier    France        *
+ *    Avijit Shee              University of Berkeley            USA           *
+ *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Ayaki Sunaga             Kyoto University                  Japan         *
+ *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
+ *    Joern Thyssen            University of Southern Denmark    Denmark       *
+ *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
+ *    Marta L. Vidal           Cardiff University                UK            *
+ *    Sebastien Villaume       Linkoeping University             Sweden        *
+ *    Olivier Visser           University of Groningen           Netherlands   *
+ *    Toke Winther             University of Southern Denmark    Denmark       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *    Xiang Yuan               Universite de Lille               France        *
+ *                                                                             *
+ *    For more information about the DIRAC code see http://diracprogram.org    *
+ *                                                                             *
+ *    This is an experimental code. The authors accept no responsibility       *
+ *    for the performance of the code or for the correctness of the results.   *
+ *                                                                             *
+ *    This program is free software; you can redistribute it and/or            *
+ *    modify it under the terms of the GNU Lesser General Public               *
+ *    License version 2.1 as published by the Free Software Foundation.        *
+ *                                                                             *
+ *    If results obtained with this code are published, an                     *
+ *    appropriate citation would be:                                           *
+ *                                                                             *
+ *    DIRAC, a relativistic ab initio electronic structure program,            *
+ *    Release DIRAC25 (2025), written by                                       *
+ *    T. Saue, L. Visscher, H. J. Aa. Jensen, R. Bast and A. S. P. Gomes       *
+ *    with contributions from I. A. Aucar, V. Bakken, J. Brandejs, C. Chibueze,*
+ *    J. Creutzberg, K. G. Dyall, S. Dubillard, U. Ekstroem, E. Eliav,         *
+ *    T. Enevoldsen, E. Fasshauer, T. Fleig, O. Fossgaard, L. Halbert,         *
+ *    E. D. Hedegaard, T. Helgaker, J. Henriksson, M. van Horn, M. Ilias,      *
+ *    Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie, J. K. Laerdahl,       *
+ *    C. V. Larsen, Y. S. Lee, N. H. List, H. S. Nataraj, M. K. Nayak,         *
+ *    P. Norman, A. Nyvang, M. Olejniczak, J. Olsen, J. M. H. Olsen,           *
+ *    A. Papadopoulos, Y. C. Park, J. K. Pedersen, M. Pernpointner,            *
+ *    J. V. Pototschnig, R. Di Remigio, M. Repisky, C. M. R. Rocha, K. Ruud,   *
+ *    P. Salek,  B. Schimmelpfennig, B. Senjean, A. Shee, J. Sikkema,          *
+ *    A. Sunaga, A. J. Thorvaldsen, J. Thyssen, J. N. P. van Stralen,          *
+ *    M. L. Vidal, S. Villaume, O. Visser, T. Winther, S. Yamamoto and X. Yuan *
+ *    (see http://diracprogram.org).                                           *
+ *                                                                             *
+ *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104         *
+ *                                    https://doi.org/10.1063/5.0004844        *
+ *                                                                             *
+ *******************************************************************************
+
+
+Version information
+-------------------
+
+Branch        | hjaaj-esr
+Commit hash   | d39aacd59
+Commit author | Hans Joergen Aagard Jensen
+Commit date   | Tue Feb 11 14:44:58 2025 +0100
+
+
+Configuration and build information
+-----------------------------------
+
+Who compiled             | hjj
+Compiled on server       | adm-110765.pc.sdu.dk
+Operating system         | Linux-6.11.0-14-generic
+CMake version            | 3.30.3
+CMake generator          | Unix Makefiles
+CMake build type         | release
+Configuration time       | 2025-02-11 10:06:53.556860+00:00
+Fortran compiler         | /opt/intel/oneapi/2025.0/bin/mpiifx
+Fortran compiler version | 2025.0.0
+Fortran compiler flags   |  -w -assume byterecl -g -traceback -DVAR_IFX  -fiopenmp -w -assume byterecl -g -traceback -DVAR_IFX  -fiopenmp
+C compiler               | /opt/intel/oneapi/2025.0/bin/mpiicx
+C compiler version       | 2025.0.0
+C compiler flags         |  -g  -fiopenmp -g  -fiopenmp
+C++ compiler             | /opt/intel/oneapi/2025.0/bin/mpiicpx
+C++ compiler version     | 2025.0.0
+C++ compiler flags       |  -Wno-unknown-pragmas  -fiopenmp -Wno-unknown-pragmas  -fiopenmp
+Static linking           | False
+64-bit integers          | False
+MPI parallelization      | True
+MPI launcher             | /opt/intel/oneapi/2025.0/bin/mpiexec
+Math libraries           | -Wl,--start-group;/opt/intel/oneapi/2025.0/lib/intel64/libmkl_lapack95_lp64.a;/opt/intel/oneapi/2025.0/lib/intel64/libmkl_intel_lp64.so;-qopenmp;-Wl,--end-group;-Wl,--start-group;/opt/intel/oneapi/2025.0/lib/intel64/libmkl_intel_lp64.so;/opt/intel/oneapi/2025.0/lib/intel64/libmkl_intel_thread.so;/opt/intel/oneapi/2025.0/lib/intel64/libmkl_core.so;/usr/lib/x86_64-linux-gnu/libpthread.a;/usr/lib/x86_64-linux-gnu/libm.so;-qopenmp;-Wl,--end-group
+Builtin BLAS library     | OFF
+Builtin LAPACK library   | OFF
+Explicit libraries       | unknown
+Compile definitions      | HAVE_MPI;HAVE_OPENMP;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;HAS_PELIB;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
+
+EXACORR dependencies
+--------------------
+Exatensor source repo    | https://github.com/RelMBdev/ExaTENSOR.git
+Exatensor git hash       | bc0d8ef36703e0526fe96fe0a0c4c2e69ad02cd9
+Exatensor configuration  | WRAP=NOWRAP BUILD_TYPE=OPT   TOOLKIT=INTEL EXA_OS=LINUX GPU_CUDA=NOCUDA MPILIB=MPICH PATH_MPICH=/opt/intel/oneapi/2025.0 BLASLIB=MKL     
+
+
+ LAPACK integer*4/8 selftest passed
+ Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+
+Execution time and host
+-----------------------
+
+ 
+     Date and time (Linux)  : Tue Feb 11 22:10:51 2025
+     Host name              : adm-110765.pc.sdu.dk                    
+
+ * Opening checkpoint file 
+    - New checkpoint file created
+
+
+Contents of the input file
+--------------------------
+
+**DIRAC                                                                                             
+.TITLE                                                                                              
+Testing KRCI with GASCIP                                                                            
+.WAVE FUNCTION                                                                                      
+**INTEGRALS                                                                                         
+*READIN                                                                                             
+.UNCONTRACTED                                                                                       
+**HAMILTONIAN                                                                                       
+.X2C                                                                                                
+**WAVE FUNCTION                                                                                     
+.SCF                                                                                                
+.KR CI                                                                                              
+*KRCI                                                                                               
+.CI PROGRAM                                                                                         
+LUCIAREL                                                                                            
+.PRINT                                                                                              
+ 2                                                                                                  
+.INACTIVE                                                                                           
+1                                                                                                   
+.GAS SHELLS                                                                                         
+3                                                                                                   
+2 4 / 2                                                                                             
+6 8 / 4                                                                                             
+8 8 / 7                                                                                             
+.CIROOTS                                                                                            
+1 3                                                                                                 
+.CIROOTS                                                                                            
+2 2                                                                                                 
+.NOOCCN                                                                                             
+**MOLECULE                                                                                          
+*BASIS                                                                                              
+.DEFAULT                                                                                            
+cc-pVDZ                                                                                             
+**END OF                                                                                            
+
+
+Contents of the molecule file
+-----------------------------
+
+3                                                                                                   
+H2O - geometry from Chem. Rev. paper MCSCF/CI/QCORR (2012).                                         
+O 0.00000000  0.00000000 -0.11976444                                                                
+H 0.00000000 -0.80201121  0.43557446                                                                
+H 0.00000000  0.80201121  0.43557446                                                                
+
+
+    **************************************************************************
+    ************************ Testing KRCI with GASCIP ************************
+    **************************************************************************
+
+ Jobs in this run:
+   * Wave function
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   Codata Internationally Recommended 2022 Values of the Fundamental Physical Co
+ nstants  
+            Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor   
+          
+            https://physics.nist.gov/constants (Accessed June 4, 2024)          
+          
+ * The speed of light :        137.0359993
+ * Running in two-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+ Default print level:        1
+ Using default nuclear model: Gaussian charge distribution.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+ Changes of defaults for *READIN
+ -------------------------------
+
+
+ Uncontracted basis forced, irrespective of basis input file.
+
+
+
+   ***************************************************************************
+   ****************** Output from MOLECULE input processing ******************
+   ***************************************************************************
+
+
+
+                     SYMADD: Detection of molecular symmetry
+                     ---------------------------------------
+
+ Symmetry test threshold:  5.00E-06
+
+    The molecule has been centered at center of mass.
+
+ Symmetry point group found: C(2v)          
+
+ Rotational Axes
+ ---------------
+       2 :      0.00000000     0.00000000     1.00000000  Isotope  0
+
+ No unique improper rotational axes were found.
+
+ Mirror planes
+ -----------------------------
+ #1 = Type: 2=h, 1=v, 0=other
+ #2 = Number of atoms in plane
+ #3-5 = normal vector of plane
+ -----------------------------
+ 0     1 :     -1.00000000     0.00000000     0.00000000
+ 0     1 :      0.00000000    -1.00000000     0.00000000
+
+ The following symmetry elements were found: X  Y     
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 2
+
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Full group is:  C(2v)          
+Represented as: C2v
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
+    A2  | A2   B2   B1   A1 
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * One fermion irrep:   E1 
+   * Real group. NZ = 1
+   * Direct product decomposition:
+          E1  x E1  : A1  + A2  + B1  + B2 
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1
+      La  |  A1 (1)  A2 (2)  |
+      Sa  |  A2 (1)  A1 (2)  |
+      Lb  |  B1 (3)  B2 (4)  |
+      Sb  |  B2 (3)  B1 (4)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    A1   1
+    B1   j
+    B2   k
+    A2   i
+
+  Nuclear repulsion energy                       :      9.009284060566 Hartree
+
+  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000    0.924399227287 a.u.;  origin (0,0,0)
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    3
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  O           1       8      27      27      L  - [9s4p1d|9s4p1d]                                                
+  H           2       1       7       7      L  - [4s1p|4s1p]                                                    
+  ----------------------------------------------------------------------
+                             41      41      L  - large components
+  ----------------------------------------------------------------------
+  total:      3      10      41      41
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1   2
+   Elements                             References                                
+   --------                             ----------                                
+   H      : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   He     : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).      
+   Li - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   Na - Mg: D.E. Woon and T.H. Dunning, Jr.  (to be published)                    
+   Al - Ar: D.E. Woon and T.H. Dunning, Jr.  J. Chem. Phys. 98, 1358 (1993).      
+   Ca     : J. Koput and K.A. Peterson, J. Phys. Chem. A, 106, 9595 (2002).       
+   Ga - Kr: A.K. Wilson, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr.,             
+            J. Chem. Phys., 110, 7667 (1999)                                      
+
+
+  Cartesian Coordinates (bohr)
+  ----------------------------
+
+  Total number of coordinates:  9
+
+
+   1   O        x      0.0000000000
+   2            y      0.0000000000
+   3            z     -0.1174477629
+
+   4   H    1   x      0.0000000000
+   5            y      1.5155815368
+   6            z      0.9319906652
+
+   7   H    2   x      0.0000000000
+   8            y     -1.5155815368
+   9            z      0.9319906652
+
+
+
+  Cartesian coordinates in XYZ format (Angstrom)
+  ----------------------------------------------
+
+    3
+ 
+O      0.0000000000   0.0000000000  -0.0621506795
+H      0.0000000000   0.8020112100   0.4931882205
+H      0.0000000000  -0.8020112100   0.4931882205
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     3    2    3    1
+
+
+  Symmetry  A1 ( 1)
+
+    1   O     z    3
+    2   H     y    [  5  -    8 ]/2
+    3   H     z    [  6  +    9 ]/2
+
+
+  Symmetry  B1 ( 2)
+
+    4   O     x    1
+    5   H     x    [  4  +    7 ]/2
+
+
+  Symmetry  B2 ( 3)
+
+    6   O     y    2
+    7   H     y    [  5  +    8 ]/2
+    8   H     z    [  6  -    9 ]/2
+
+
+  Symmetry  A2 ( 4)
+
+    9   H     x    [  4  -    7 ]/2
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H  1        H  2
+
+   O       0.000000
+   H  1    0.975512    0.000000
+   H  2    0.975512    1.604022    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H  1       O                              0.975512
+  bond distance:    H  2       O                              0.975512
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H  2       O          H  1                 110.600
+
+
+
+   Nuclear repulsion energy                          :    9.009284060566 Hartree
+
+                       * Total mass:    18.010565 amu
+                       * Natural abundance:  99.730 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.000000000000000
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.000000000000000
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:   18
+     1  L O   1 s        2  L O   1 px       3  L O   1 py       4  L O   1 pz       5  L O   1 dxx      6  L O   1 dxy 
+     7  L O   1 dxz      8  L O   1 dyy      9  L O   1 dyz     10  L O   1 dzz     11  L H   1 s       12  L H   2 s   
+    13  L H   1 px      14  L H   1 py      15  L H   1 pz      16  L H   2 px      17  L H   2 py      18  L H   2 pz  
+   * Small components:    0
+
+
+
+                                GETLAB: SO-labels
+                                -----------------
+
+   * Large components:   18
+     1  L A1 O  s        2  L A1 O  pz       3  L A1 O  dxx      4  L A1 O  dyy      5  L A1 O  dzz      6  L A1 H  s   
+     7  L A1 H  py       8  L A1 H  pz       9  L B1 O  px      10  L B1 O  dxz     11  L B1 H  px      12  L B2 O  py  
+    13  L B2 O  dyz     14  L B2 H  s       15  L B2 H  py      16  L B2 H  pz      17  L A2 O  dxy     18  L A2 H  px  
+   * Small components:    0
+
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:           22     6    11     2
+  Number of large orbitals in each symmetry:     22     6    11     2
+  Number of small orbitals in each symmetry:      0     0     0     0
+
+* Large component functions
+
+  Symmetry  A1 ( 1)
+
+        9 functions:    O  s   
+        4 functions:    O  pz  
+        1 functions:    O  dxx 
+        1 functions:    O  dyy 
+        1 functions:    O  dzz 
+        4 functions:    H  s   1+2
+        1 functions:    H  py  1-2
+        1 functions:    H  pz  1+2
+
+  Symmetry  B1 ( 2)
+
+        4 functions:    O  px  
+        1 functions:    O  dxz 
+        1 functions:    H  px  1+2
+
+  Symmetry  B2 ( 3)
+
+        4 functions:    O  py  
+        1 functions:    O  dyz 
+        4 functions:    H  s   1-2
+        1 functions:    H  py  1+2
+        1 functions:    H  pz  1-2
+
+  Symmetry  A2 ( 4)
+
+        1 functions:    O  dxy 
+        1 functions:    H  px  1-2
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+
+ One-electron operator origins:
+ - General operator origin (a.u.)       :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Magnetic gauge origin (a.u.)         :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Dipole (and multipole) origin (a.u.) :   0.000000000000000   0.000000000000000   0.000000000000000
+ * Print level:    0
+ * Exact-Two-Component (X2C) Hamiltonian
+   Reference: 
+    M. Ilias and T. Saue:
+    "Implementation of an infinite-order two-component relativistic Hamiltonian 
+    by a simple one-step transformation." 
+    J. Chem. Phys., 126 (2007) 064102.
+   additional reference for the new X2C module:
+    S. Knecht and T. Saue:
+    manuscript in preparation, Strasbourg 2010.
+
+ * Running in two-component mode
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     0
+   - SS-integrals:     0
+   - GT-integrals:     0
+===========================================================================
+   Set-up for AMFI/RELSCF calculations
+===========================================================================
+  ...no reading under "*AMFI  ", thus default settings
+ * AMFI   code print level:    0
+ * RELSCF code print level:    0
+ * RELSCF maximum number of iterations:   50
+ * All AMFI mean-field summations are on neutral individual atoms.
+ * order of AMFI contributions to the X2C Hamiltonian:  2
+  --> adding spin-same orbit MFSSO2 terms.
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Wave function types requested (in input order):
+     HF        
+     KR-CI     
+
+ Wave function jobs in execution order (expanded):
+ * Hartree-Fock calculation
+ * Kramers restricted CI calculation
+ * CI program used       : LUCIAREL
+===========================================================================
+ *KRCI: General set-up for KR-CI calculation:
+===========================================================================
+ * Inactive orbitals     :    1
+ * Active orbitals       :   13
+ * Active electrons      :    8
+ * GAS space setup for   3 GAS space(s) : 
+   - GAS space   1       :    2
+    (constraints: min/max active electrons after space :   2/  4)
+   - GAS space   2       :    4
+    (constraints: min/max active electrons after space :   6/  8)
+   - GAS space   3       :    7
+    (constraints: min/max active electrons after space :   8/  8)
+ * CI program used       : LUCIAREL
+ * atomic, linear, spinfr, levyle:   F   F   F   F
+ * Used symmetry nomenclature for       Fermion and Boson  irreps of complex (sub)groups  
+ * Fermion irreps   1E   2E
+ * Boson   irreps    a    b
+ * Convergence of CI function(s) in the following symmetries:
+    ** 3 eigenstate(s) in symmetry:   a
+    -- Allowed interval of 2 * MK :  -8 to   8
+    ** 2 eigenstate(s) in symmetry:   b
+    -- Allowed interval of 2 * MK :  -8 to   8
+
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+ * General print level   :    2
+===========================================================================
+ Control parameters for KR-CI optimization
+===========================================================================
+ * Gradient convergence threshold:  3.00D-03 (default for energy calculation)
+ * Energy convergence threshold:    1.00D-05 (default for energy calculation)
+   (These thresholds will give approx. 5 digits in energies, 0.01 mH, but only 2-3 digits for properties.)
+ * Maximum number of CI iterations for each symmetry:  40
+ * Integrals on slave nodes provided by the MASTER
+ * Calculation of natural orbital occupation numbers (.NOOCCN)
+
+ * Initial Automatic occupation based on:
+   Total charge of atoms =  10
+   Charge of molecule    =   0
+   i.e. no. of electrons =  10
+===========================================================================
+ *SCF: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 1
+ * Closed shell SCF calculation with    10 electrons in    5 orbitals.
+ * Charge of molecule : 0
+ * Sum of atomic potentials used for start guess
+ * General print level   :   0
+
+ ***** INITIAL TRIAL SCF FUNCTION *****
+ * Trial vectors read from CHECKPOINT
+ * Scaling of active-active block correction to open shell Fock operator    0.500000
+   to improve convergence (default value).
+
+ ***** SCF CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-07
+   Allowed convergence:1.000D-06
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+    ---> this is default setting from Hamiltonian input
+ * NB!!! No e-p rotations in 2nd order optimization.
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+
+   ***************************************************************************
+   ****************** Output from MOLECULE input processing ******************
+   ***************************************************************************
+
+
+
+                     SYMADD: Detection of molecular symmetry
+                     ---------------------------------------
+
+ Symmetry test threshold:  5.00E-06
+
+    The molecule has been centered at center of mass.
+
+ Symmetry point group found: C(2v)          
+
+ Rotational Axes
+ ---------------
+       2 :      0.00000000     0.00000000     1.00000000  Isotope  0
+
+ No unique improper rotational axes were found.
+
+ Mirror planes
+ -----------------------------
+ #1 = Type: 2=h, 1=v, 0=other
+ #2 = Number of atoms in plane
+ #3-5 = normal vector of plane
+ -----------------------------
+ 0     1 :     -1.00000000     0.00000000     0.00000000
+ 0     1 :      0.00000000    -1.00000000     0.00000000
+
+ The following symmetry elements were found: X  Y     
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 2
+
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Full group is:  C(2v)          
+Represented as: C2v
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
+    A2  | A2   B2   B1   A1 
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * One fermion irrep:   E1 
+   * Real group. NZ = 1
+   * Direct product decomposition:
+          E1  x E1  : A1  + A2  + B1  + B2 
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1
+      La  |  A1 (1)  A2 (2)  |
+      Sa  |  A2 (1)  A1 (2)  |
+      Lb  |  B1 (3)  B2 (4)  |
+      Sb  |  B2 (3)  B1 (4)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    A1   1
+    B1   j
+    B2   k
+    A2   i
+
+  Nuclear repulsion energy                       :      9.009284060566 Hartree
+
+  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000    0.924399227287 a.u.;  origin (0,0,0)
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    3
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  O           1       8      27      27      L  - [9s4p1d|9s4p1d]                                                
+  H           2       1       7       7      L  - [4s1p|4s1p]                                                    
+  ----------------------------------------------------------------------
+                             41      41      L  - large components
+                            106     106      S  - small components
+  ----------------------------------------------------------------------
+  total:      3      10     147     147
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1   2
+   Elements                             References                                
+   --------                             ----------                                
+   H      : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   He     : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).      
+   Li - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   Na - Mg: D.E. Woon and T.H. Dunning, Jr.  (to be published)                    
+   Al - Ar: D.E. Woon and T.H. Dunning, Jr.  J. Chem. Phys. 98, 1358 (1993).      
+   Ca     : J. Koput and K.A. Peterson, J. Phys. Chem. A, 106, 9595 (2002).       
+   Ga - Kr: A.K. Wilson, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr.,             
+            J. Chem. Phys., 110, 7667 (1999)                                      
+
+
+  Cartesian Coordinates (bohr)
+  ----------------------------
+
+  Total number of coordinates:  9
+
+
+   1   O        x      0.0000000000
+   2            y      0.0000000000
+   3            z     -0.1174477629
+
+   4   H    1   x      0.0000000000
+   5            y      1.5155815368
+   6            z      0.9319906652
+
+   7   H    2   x      0.0000000000
+   8            y     -1.5155815368
+   9            z      0.9319906652
+
+
+
+  Cartesian coordinates in XYZ format (Angstrom)
+  ----------------------------------------------
+
+    3
+ 
+O      0.0000000000   0.0000000000  -0.0621506795
+H      0.0000000000   0.8020112100   0.4931882205
+H      0.0000000000  -0.8020112100   0.4931882205
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     3    2    3    1
+
+
+  Symmetry  A1 ( 1)
+
+    1   O     z    3
+    2   H     y    [  5  -    8 ]/2
+    3   H     z    [  6  +    9 ]/2
+
+
+  Symmetry  B1 ( 2)
+
+    4   O     x    1
+    5   H     x    [  4  +    7 ]/2
+
+
+  Symmetry  B2 ( 3)
+
+    6   O     y    2
+    7   H     y    [  5  +    8 ]/2
+    8   H     z    [  6  -    9 ]/2
+
+
+  Symmetry  A2 ( 4)
+
+    9   H     x    [  4  -    7 ]/2
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H  1        H  2
+
+   O       0.000000
+   H  1    0.975512    0.000000
+   H  2    0.975512    1.604022    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H  1       O                              0.975512
+  bond distance:    H  2       O                              0.975512
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H  2       O          H  1                 110.600
+
+
+
+   Nuclear repulsion energy                          :    9.009284060566 Hartree
+
+                       * Total mass:    18.010565 amu
+                       * Natural abundance:  99.730 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.000000000000000
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.000000000000000
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                               au             Debye
+
+                    z      0.92439923      2.34961022
+
+                        1 Debye =   2.54177000 a.u. 
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   A1    * Deleted:          1(Proj:          1, Lindep:          0) Smin: 0.15E-01
+   L   B1    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.19E+00
+   L   B2    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.69E-01
+   L   A2    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.78E+00
+   S   A1    * Deleted:          6(Proj:          6, Lindep:          0) Smin: 0.11E-01
+   S   B1    * Deleted:          1(Proj:          1, Lindep:          0) Smin: 0.17E-01
+   S   B2    * Deleted:          2(Proj:          2, Lindep:          0) Smin: 0.74E-02
+   S   A2    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.10E+00
+
+                   *********************************************************************
+                   ***   Entering the Exact-Two-Component (X2C) interface in DIRAC   ***
+                   ***                                                               ***
+                   *** library version:  1.2 (August  2013)                          ***
+                   ***                                                               ***
+                   *** authors:          - Stefan Knecht                             ***
+                   ***                   - Trond Saue                                ***
+                   *** contributors:     - Hans Joergen Aagaard Jensen               ***
+                   ***                   - Michal Repisky                            ***
+                   ***                   - Miroslav Ilias                            ***
+                   *** features:         - X2C                                       ***
+                   ***                   - X2C-atomic/fragment (X2C-LU)              ***
+                   ***                   - X2C-spinfree                              ***
+                   ***                   - X2C-molecular-mean-field (X2Cmmf)         ***
+                   ***                                                               ***
+                   ***                      Universities of                          ***
+                   ***     Zuerich, Toulouse, Odense, Banska Bystrica and Tromsoe    ***
+                   ***                                                               ***
+                   *** contact: stefan.knecht@gmail.com                              ***
+                   *********************************************************************
+
+
+                   *** chosen path in X2C module: molecular X2C (with spin-orbit contributions)      
+
+
+                                Output from AMFIIN
+                                ------------------
+
+
+  *** number of unique nuclei (from file MNF.INP): 2
+
+  *** calculate AMFI for atom type 1 with atomic charge     8
+  *** number of nuclei with identical atom type:   1
+   unique nuclei index: 1
+  *** file with AMFI integrals for this center: AOPROPER_MNF.8.1    
+
+
+                         ATOMIC NO-PAIR SO-MF CODE starts
+                         --------------------------------
+
+   Douglas-Kroll type operators 
+  charge on the calculated atom:  0
+  Mean-field summation for electrons #:   8
+    ...electronic occupation of  O: [He]2s^2 2p^4             
+ ****  Written to the file TOSCF for "relscf" ****
+        charge:  8.000
+      nprimit:   9  4  1  0
+   closed sh.:   2  0  0  0
+     open sh.:   0  4  0  0
+
+
+                       *** PROGRAM AT34 - ALLIANT - @V ***
+                       -----------------------------------
+
+
+ MAXIMAL NUMBER OF BASIS FUNCTIONS   =       380
+ MAXIMAL NUMBER OF OCCUPIED ORBITALS =        65
+
+
+  INPUT_AT34: read data from the TOSCF file
+  charge=    8.000000
+  NBAS:  9  4  1  0
+  NCSH:  2  0  0  0
+  NOOC:  0  4  0  0
+  parameter IREL=  1
+
+
+  READ EXPONENTS:
+   11720.0000000000        1759.00000000000        400.800000000000     
+   113.700000000000        37.0300000000000        13.2700000000000     
+   5.02500000000000        1.01300000000000       0.302300000000000     
+   17.7000000000000        3.85400000000000        1.04600000000000     
+  0.275300000000000        1.18500000000000     
+ 
+1    ATOMIC HARTREE-FOCK PROGRAM 
+     MODIFIED BY LAURA GIANOLIO IST. DONEGANI
+     MONTEDISON SPA NOVARA (ITALY). MARCH 1,1978
+     DYNAMIC STORAGE BUILT IN BY BERND HESS
+     UNIVERSITY OF BONN - AUGUST 29,1986
+     IBM+ AND CRAY VERSION BY BERND HESS
+     UNIVERSITY OF BONN - OCTOBER 26,1986
+     T.SAUE,M.ILIAS - 2007,2008         
+
+
+                                                     
+0     TYPE GAUSS ORBITALS
+0     JACOBI DIAGONALIZATION
+0     CHARGE =  8.000000
+0     DIAGONALIZATION SCF THRESHOLD BIAS  = 0.700E+01        DIAGONALIZATION DIVERGENCE =        0.100E-03
+      NUMBER OF SCF ITERATIONS            = 10                SCF DIVERGENCE             =        0.100E-02
+      NUMBER OF DIAGONALIZATION ITERATIONS= 10                MINIMUM EXPONENT           =        0.110E-03
+      MAXIMUM NUMBER OF ITERATIONS        = 50                MINIMUM EXPONENT DIFFERENCE=        0.110E-02
+      RELATIVE MINIMUM ENERGY DIFFERENCE  = 0.110E-07        RELATIVE MAXIMUM ENERGY DIFFERENCE= 0.990E-01
+
+      SYMMETRY SPECIES            S       P       D       F
+      NUMBER OF BASIS FUNCTIONS:  9       4       1
+      NUMBER OF CLOSED SHELLS  :  2       0       0
+      OPEN SHELL OCCUPATION    :  0       4       0
+
+0     VECTOR COUPLING COEFFICIENTS K
+       0.00000000D+00       0.00000000D+00       0.00000000D+00       0.00000000D+00       0.00000000D+00
+       0.00000000D+00       0.00000000D+00       0.00000000D+00       0.00000000D+00       0.00000000D+00
+       0.00000000D+00       0.00000000D+00       0.00000000D+00       0.00000000D+00       0.00000000D+00
+       0.00000000D+00       0.00000000D+00       0.00000000D+00       0.00000000D+00       0.00000000D+00
+       0.00000000D+00       0.00000000D+00       0.00000000D+00       0.00000000D+00
+0     BASIS FUNCTIONS (PRINCIPAL QUANTUM NUMBER, ORBITAL EXPONENTS)
+
+               S                            P                            D                            F
+
+      1.0        11720.000000      2.0           17.700000      3.0            1.185000
+      1.0         1759.000000      2.0            3.854000
+      1.0          400.800000      2.0            1.046000
+      1.0          113.700000      2.0            0.275300
+      1.0           37.030000
+      1.0           13.270000
+      1.0            5.025000
+      1.0            1.013000
+      1.0            0.302300
+  INPUT VECTORS
+  SYMMETRY           1
+  NBAS(L)           9
+  MXBF           9
+  VECTOR           1
+  0.00000000000000  0.00000000000000  0.00000000000000  1.00000000000000
+  0.00000000000000  0.00000000000000  0.00000000000000  0.00000000000000
+  0.00000000000000
+  VECTOR           2
+  0.00000000000000  0.00000000000000  0.00000000000000  0.00000000000000
+  0.00000000000000  0.00000000000000  0.00000000000000  0.00000000000000
+  1.00000000000000
+  SYMMETRY           2
+  NBAS(L)           4
+  MXBF           9
+  VECTOR           1
+  0.00000000000000  0.00000000000000  0.00000000000000  1.00000000000000
+  SYMMETRY           3
+  NBAS(L)           1
+  MXBF           9
+0     INPUT TRIAL VECTORS
+
+   0.000000   0.000000   0.000000
+   0.000000   0.000000
+   0.000000   0.000000
+   1.000000   0.000000
+   0.000000   0.000000
+   0.000000   0.000000
+   0.000000   0.000000
+   0.000000   0.000000
+   0.000000   1.000000
+
+ MXBF (LARGEST NO OF FCT. PER SYMM.) =         9
+ NBF  (NUMBER OF BASIS FUNCTIONS)    =        14
+ NOR  (NUMBER OF OCCUPIED ORBITALS)  =         3
+ LPQ  (MATRIX SIZE 1)                =        56
+ LQM  (MATRIX SIZE 2)                =      1596
+ GJ0                                 =        1.0000000000
+ GK0                                 =        1.0000000000
+
+
+ MX100                               =       100
+ LOW  EXPONENT THRESHOLDS            =     0.1000D-05     0.1000D-05     0.1000D-05     0.1000D-05
+ HIGH EXPONENT THRESHOLDS            =     0.1000D+09     0.1000D+07     0.1000D+06     0.1000D+05
+ FOLLOWING OPERATOR(S) WERE SPECIFIED BY IPARM:
+     0=NON-REL      2=EV      
+
+    107296(KFREE) DOUBLE WORDS ARE REQUIRED (COMMING IN WORK ARRAY)TO RUN THIS CASE
+
+ size(WORK(:K1))=           4
+ size(WORK(:N2))=        1603
+ size(WORK(:N3))=        4798
+ size(WORK(:N4))=        4857
+ size(WORK(:N5))=        4916
+
+ ****** RELATIVISTIC OPERATORS V 1.0 - BERND HESS ******
+
+
+  ### SCF ITERATIONS           ###
+  ### NON-RELATIVISTIC APPROX. ###
+0     AUTOMATIC VECTOR COUPLING COEFFICIENTS K
+
+  0.00000000000000  0.00000000000000 -0.16666666666667 -0.01666666666667
+  0.00000000000000  0.00000000000000  0.00000000000000  0.00000000000000
+  0.00000000000000  0.00000000000000  0.00000000000000  0.00000000000000
+  0.00000000000000  0.00000000000000  0.00000000000000  0.00000000000000
+  0.00000000000000  0.00000000000000  0.00000000000000  0.00000000000000
+  0.00000000000000  0.00000000000000  0.00000000000000  0.00000000000000
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+    1. iteration,  total energy:             0.000000000000
+
+  ...extra printout in advance:
+ --- NON-RELATIVISTIC RESULT ---
+        IT                  TOTAL              POTENTIAL                KINETIC       VIRIAL RELATION
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+    2. iteration,  total energy:           -71.292636094637
+
+  ...extra printout in advance:
+         2      -0.7129263609D+02      -0.1264240984D+03       0.5513146228D+02      -0.2293138857D+01
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+    3. iteration,  total energy:           -74.460726878281
+
+  ...extra printout in advance:
+         3      -0.7446072688D+02      -0.1546237091D+03       0.8016298221D+02      -0.1928866727D+01
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+    4. iteration,  total energy:           -74.762344904174
+
+  ...extra printout in advance:
+         4      -0.7476234490D+02      -0.1480568906D+03       0.7329454571D+02      -0.2020026036D+01
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+    5. iteration,  total energy:           -74.782917711488
+
+  ...extra printout in advance:
+         5      -0.7478291771D+02      -0.1490103967D+03       0.7422747896D+02      -0.2007482926D+01
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+    6. iteration,  total energy:           -74.785964221396
+
+  ...extra printout in advance:
+         6      -0.7478596422D+02      -0.1497099024D+03       0.7492393814D+02      -0.1998158480D+01
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+    7. iteration,  total energy:           -74.786172202162
+
+  ...extra printout in advance:
+         7      -0.7478617220D+02      -0.1495338142D+03       0.7474764197D+02      -0.2000515471D+01
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+    8. iteration,  total energy:           -74.786186580357
+
+  ...extra printout in advance:
+         8      -0.7478618658D+02      -0.1495819343D+03       0.7479574776D+02      -0.1999872170D+01
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+    9. iteration,  total energy:           -74.786187508483
+
+  ...extra printout in advance:
+         9      -0.7478618751D+02      -0.1495757776D+03       0.7478959012D+02      -0.1999954504D+01
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+   10. iteration,  total energy:           -74.786187641305
+
+  ...extra printout in advance:
+        10      -0.7478618764D+02      -0.1495712848D+03       0.7478509713D+02      -0.2000014582D+01
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+   11. iteration,  total energy:           -74.786187650828
+
+  ...extra printout in advance:
+        11      -0.7478618765D+02      -0.1495725210D+03       0.7478633331D+02      -0.1999998052D+01
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+   12. iteration,  total energy:           -74.786187651488
+
+  ...extra printout in advance:
+        12      -0.7478618765D+02      -0.1495722083D+03       0.7478602062D+02      -0.2000002233D+01
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+   13. iteration,  total energy:           -74.786187656172
+
+  ...extra printout in advance:
+        13      -0.7478618766D+02      -0.1495722511D+03       0.7478606345D+02      -0.2000001661D+01
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+   13. iteration,  total energy:           -74.786187651537
+
+  ...extra printout in advance:
+        13      -0.7478618765D+02      -0.1495722830D+03       0.7478609539D+02      -0.2000001234D+01
+  ### NON-RELATIVISTIC APPROX. ###
+        13      -0.7478618765D+02      -0.1495722830D+03       0.7478609539D+02      -0.2000001234D+01
+  total energy  -74.7861876515366     
+  ### SCF ITERATIONS           ###
+  ### EV APPROX.               ###
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+    1. iteration,  total energy:           -74.834671965472
+
+  ...extra printout in advance:
+        IT                  TOTAL              POTENTIAL                KINETIC       VIRIAL RELATION
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+    2. iteration,  total energy:           -74.838229600650
+
+  ...extra printout in advance:
+         2      -0.7483822960D+02      -0.1497897546D+03       0.7495152499D+02      -0.1998488418D+01
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+    3. iteration,  total energy:           -74.838230705342
+
+  ...extra printout in advance:
+         3      -0.7483823071D+02      -0.1497830903D+03       0.7494485959D+02      -0.1998577236D+01
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+    4. iteration,  total energy:           -74.838230772077
+
+  ...extra printout in advance:
+         4      -0.7483823077D+02      -0.1497861834D+03       0.7494795259D+02      -0.1998536026D+01
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+    5. iteration,  total energy:           -74.838230780590
+
+  ...extra printout in advance:
+         5      -0.7483823078D+02      -0.1497858409D+03       0.7494761013D+02      -0.1998540589D+01
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+    6. iteration,  total energy:           -74.838230776905
+
+  ...extra printout in advance:
+         6      -0.7483823078D+02      -0.1497856033D+03       0.7494737249D+02      -0.1998543755D+01
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+    7. iteration,  total energy:           -74.838230776965
+
+  ...extra printout in advance:
+         7      -0.7483823078D+02      -0.1497856841D+03       0.7494745330D+02      -0.1998542679D+01
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+    8. iteration,  total energy:           -74.838230776969
+
+  ...extra printout in advance:
+         8      -0.7483823078D+02      -0.1497856673D+03       0.7494743651D+02      -0.1998542902D+01
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+    9. iteration,  total energy:           -74.838230781550
+
+  ...extra printout in advance:
+         9      -0.7483823078D+02      -0.1497856701D+03       0.7494743931D+02      -0.1998542865D+01
+
+  call JDAAA
+
+  call EXTRAP
+
+    Calling DENSI
+
+ sizeof(S(:1)   =           1
+ sizeof(S(:LPQ))=          56
+
+    Calling ENERGY_RELSCF
+
+    9. iteration,  total energy:           -74.838230776969
+
+  ...extra printout in advance:
+         9      -0.7483823078D+02      -0.1497856723D+03       0.7494744149D+02      -0.1998542836D+01
+  ### EV  OPERATOR RESULT      ###
+         9      -0.7483823078D+02      -0.1497856723D+03       0.7494744149D+02      -0.1998542836D+01
+  0.00097754046502 -0.00022060079577
+  0.00581055600788 -0.00134354746302
+  0.02836485478614 -0.00640113247724
+  0.10543106520137 -0.02592779227732
+  0.28344688927796 -0.07112970475477
+  0.44828423900839 -0.16561641901319
+  0.27029397602829 -0.11608401470882
+  0.01540518370177  0.55854275979226
+ -0.00257521010606  0.57138171204587
+  0.04315513584355
+  0.22898541571201
+  0.50860582731492
+  0.46057181901813
+
+1
+
+     FINAL RESULTS
+
+                                                     
+0     TYPE GAUSS ORBITALS
+0     JACOBI DIAGONALIZATION
+0     CHARGE =  8.000000
+
+      SYMMETRY SPECIES           S     P     D     F
+      NUMBER OF BASIS FUNCTIONS=  9      4      1
+      NUMBER OF CLOSED SHELLS  =  2      0      0
+      OPEN SHELL OCCUPATION    = 0     4     0
+0     VECTOR COUPLING COEFFICIENTS K
+
+       0.00000000D+00       0.00000000D+00      -0.16666667D+00      -0.16666667D-01       0.00000000D+00
+       0.00000000D+00       0.00000000D+00       0.00000000D+00       0.00000000D+00       0.00000000D+00
+       0.00000000D+00       0.00000000D+00       0.00000000D+00       0.00000000D+00       0.00000000D+00
+       0.00000000D+00       0.00000000D+00       0.00000000D+00       0.00000000D+00       0.00000000D+00
+       0.00000000D+00       0.00000000D+00       0.00000000D+00       0.00000000D+00
+0     BASIS FUNCTIONS (PRINCIPAL QUANTUM NUMBER, ORBITAL EXPONENTS)
+
+               S                            P                            D                            F
+
+      1.0        11720.000000      2.0           17.700000      3.0            1.185000
+      1.0           37.030000      2.0            0.275300
+      1.0           37.030000
+      1.0           13.270000
+      1.0            5.025000
+      1.0            1.013000
+      1.0            0.302300
+0     FINAL SCF RESULTS OBTAINED AT COMPUTATION NO 9     SCF THRESHOLD = 0.3200E-06
+0     TOTAL HF ENERGY    POTENTIAL ENERGY    KINETIC ENERGY    VIRIAL THEOREM
+      -0.7483823078D+02  -0.1497856723D+03   0.7494744149D+02  -0.1998542836D+01
+0     ORBITAL ENERGIES, EIGENVECTORS, AND DIAGONALIZATION THRESHOLD
+0       -20.68079      -1.24083      -0.62267
+ 
+         0.000978     -0.000221      0.043155
+         0.005811     -0.001344      0.228985
+         0.028365     -0.006401      0.508606
+         0.105431     -0.025928      0.460572
+         0.283447     -0.071130      1.000000
+         0.448284     -0.165616      0.000000
+         0.270294     -0.116084      0.000000
+         0.015405      0.558543      0.000000
+        -0.002575      0.571382      0.000000
+0      0.1616E-08
+ SPIN UP   DENSITY =    3.999993
+ SPIN DOWN DENSITY =    3.999993
+ TOTAL     DENSITY =    7.999985
+ WIGNER CORRECTION =    3.684497         0.263747
+ 
+ after sizeof(S(:1)   =           1
+ after sizeof(S(:LPQ))=          56
+ after size(WORK(:K1))=           4
+ after size(WORK(:N2))=        1603
+ after size(WORK(:N3))=        4798
+ after size(WORK(:N4))=        4857
+ after size(WORK(:N5))=        4916
+      *** AMFIIN: ADDING nucleus    1 with charge   8 to the BSSn Hamiltonian.
+
+  *** calculate AMFI for atom type 2 with atomic charge     1
+  *** number of nuclei with identical atom type:   2
+  no 2e-SO corrections for hydrogen or hydrogen-like 1e-systems. AMFI is skipped
+ .
+   unique nuclei index: 2
+
+       *** This (AMFI) unique nuclei is not to be calculated ! Only pass (to read input basis) through the AMFI routine.
+
+
+
+                         ATOMIC NO-PAIR SO-MF CODE starts
+                         --------------------------------
+
+   Douglas-Kroll type operators 
+  skip explicit AMFI - reading AMFI integrals from file AOPROPER_MNF.xxx!
+
+                   *********************************************************************
+                   ***               X2C transformation ended properly.              ***
+                   ***          Calculation continues in two-component mode.         ***
+                   *********************************************************************
+
+
+ The following symmetry elements were found: X  Y     
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                               au             Debye
+
+                    z      0.92439923      2.34961022
+
+                        1 Debye =   2.54177000 a.u. 
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   A1    * Deleted:          1(Proj:          1, Lindep:          0) Smin: 0.15E-01
+   L   B1    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.19E+00
+   L   B2    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.69E-01
+   L   A2    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.78E+00
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+No. of positive energy orbitals (NESH):    40
+No. of negative energy orbitals (NPSH):     0
+Total no. of orbitals           (NORB):    40
+
+
+ *******************************************************************************
+ *********************** X2C relativistic HF calculation ***********************
+ *******************************************************************************
+
+
+*** INFO *** No trial vectors found.
+ Using sum of fitted atomic potentials as start potential.
+
+ Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
+
+
+########## START ITERATION NO.   1 ##########   Tue Feb 11 22:10:51 2025
+
+E_HOMO...E_LUMO, symmetry 1:                                  5  -0.64072    6  -0.16303
+
+=> Calculating sum of orbital energies
+It.    1    -37.19485338847      0.00D+00  0.00D+00  0.00D+00               0.00280198s   Atom. scrpot   Tue Feb 11
+
+########## START ITERATION NO.   2 ##########   Tue Feb 11 22:10:51 2025
+
+
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    2.88%    0.00%    0.00%   0.00631198s
+E_HOMO...E_LUMO, symmetry 1:                                  5  -0.22729    6   0.21743
+>>> Total wall time:  0.01100000s, and total CPU time :  0.01095298s
+
+########## END ITERATION NO.   2 ##########   Tue Feb 11 22:10:51 2025
+
+It.    2    -75.83019525609      3.86D+01  5.74D+00  1.65D+00               0.01100000s   LL             Tue Feb 11
+
+########## START ITERATION NO.   3 ##########   Tue Feb 11 22:10:51 2025
+
+    3 *** Differential density matrix. DCOVLP     = 0.9141
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    3.15%    0.00%    0.00%   0.00643998s
+E_HOMO...E_LUMO, symmetry 1:                                  5  -0.51817    6   0.17441
+>>> Total wall time:  0.00750000s, and total CPU time :  0.00742799s
+
+########## END ITERATION NO.   3 ##########   Tue Feb 11 22:10:51 2025
+
+It.    3    -75.99685091406      1.67D-01 -1.22D+00  7.40D-01   DIIS   2    0.00750000s   LL             Tue Feb 11
+
+########## START ITERATION NO.   4 ##########   Tue Feb 11 22:10:51 2025
+
+    4 *** Differential density matrix. DCOVLP     = 0.9828
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    3.58%    0.00%    0.00%   0.00628901s
+E_HOMO...E_LUMO, symmetry 1:                                  5  -0.48763    6   0.18010
+>>> Total wall time:  0.00720000s, and total CPU time :  0.00725201s
+
+########## END ITERATION NO.   4 ##########   Tue Feb 11 22:10:51 2025
+
+It.    4    -76.07726211066      8.04D-02  4.97D-01  1.07D-01   DIIS   3    0.00720000s   LL             Tue Feb 11
+
+########## START ITERATION NO.   5 ##########   Tue Feb 11 22:10:51 2025
+
+    5 *** Differential density matrix. DCOVLP     = 0.9996
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    4.59%    0.00%    0.00%   0.00621998s
+E_HOMO...E_LUMO, symmetry 1:                                  5  -0.48935    6   0.18063
+>>> Total wall time:  0.00710000s, and total CPU time :  0.00716299s
+
+########## END ITERATION NO.   5 ##########   Tue Feb 11 22:10:51 2025
+
+It.    5    -76.07901993988      1.76D-03 -6.26D-02  6.36D-03   DIIS   4    0.00710000s   LL             Tue Feb 11
+
+########## START ITERATION NO.   6 ##########   Tue Feb 11 22:10:51 2025
+
+    6 *** Differential density matrix. DCOVLP     = 1.0002
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    5.63%    0.00%    0.00%   0.00624499s
+E_HOMO...E_LUMO, symmetry 1:                                  5  -0.49014    6   0.18059
+>>> Total wall time:  0.00720000s, and total CPU time :  0.00718400s
+
+########## END ITERATION NO.   6 ##########   Tue Feb 11 22:10:51 2025
+
+It.    6    -76.07903744857      1.75D-05 -6.67D-04  1.95D-03   DIIS   5    0.00720000s   LL             Tue Feb 11
+
+########## START ITERATION NO.   7 ##########   Tue Feb 11 22:10:51 2025
+
+    7 *** Differential density matrix. DCOVLP     = 1.0001
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    6.17%    0.00%    0.00%   0.00630501s
+E_HOMO...E_LUMO, symmetry 1:                                  5  -0.49019    6   0.18060
+>>> Total wall time:  0.00730000s, and total CPU time :  0.00730702s
+
+########## END ITERATION NO.   7 ##########   Tue Feb 11 22:10:51 2025
+
+It.    7    -76.07903932173      1.87D-06  2.93D-04  2.11D-04   DIIS   6    0.00730000s   LL             Tue Feb 11
+
+########## START ITERATION NO.   8 ##########   Tue Feb 11 22:10:51 2025
+
+    8 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    8.11%    0.00%    0.00%   0.00628799s
+E_HOMO...E_LUMO, symmetry 1:                                  5  -0.49020    6   0.18060
+>>> Total wall time:  0.00730000s, and total CPU time :  0.00725299s
+
+########## END ITERATION NO.   8 ##########   Tue Feb 11 22:10:51 2025
+
+It.    8    -76.07903934839      2.67D-08 -3.66D-05  5.25D-05   DIIS   7    0.00730000s   LL             Tue Feb 11
+
+########## START ITERATION NO.   9 ##########   Tue Feb 11 22:10:51 2025
+
+    9 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    9.73%    0.00%    0.00%   0.00619203s
+E_HOMO...E_LUMO, symmetry 1:                                  5  -0.49020    6   0.18060
+>>> Total wall time:  0.00720000s, and total CPU time :  0.00716498s
+
+########## END ITERATION NO.   9 ##########   Tue Feb 11 22:10:51 2025
+
+It.    9    -76.07903935035      1.96D-09 -7.29D-06  1.16D-05   DIIS   8    0.00720000s   LL             Tue Feb 11
+
+########## START ITERATION NO.  10 ##########   Tue Feb 11 22:10:51 2025
+
+   10 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   13.36%    0.00%    0.00%   0.00621700s
+E_HOMO...E_LUMO, symmetry 1:                                  5  -0.49020    6   0.18060
+>>> Total wall time:  0.00720000s, and total CPU time :  0.00718200s
+
+########## END ITERATION NO.  10 ##########   Tue Feb 11 22:10:51 2025
+
+It.   10    -76.07903935044      8.83D-11  2.78D-06  2.07D-06   DIIS   9    0.00720000s   LL             Tue Feb 11
+
+########## START ITERATION NO.  11 ##########   Tue Feb 11 22:10:51 2025
+
+   11 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   17.46%    0.00%    0.00%   0.00626099s
+E_HOMO...E_LUMO, symmetry 1:                                  5  -0.49020    6   0.18060
+>>> Total wall time:  0.00720000s, and total CPU time :  0.00724101s
+
+########## END ITERATION NO.  11 ##########   Tue Feb 11 22:10:51 2025
+
+It.   11    -76.07903935044      2.12D-12 -6.42D-07  2.34D-07   DIIS   9    0.00720000s   LL             Tue Feb 11
+
+########## START ITERATION NO.  12 ##########   Tue Feb 11 22:10:51 2025
+
+   12 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   21.76%    0.00%    0.02%   0.00619894s
+>>> Total wall time:  0.00650000s, and total CPU time :  0.00659001s
+
+########## END ITERATION NO.  12 ##########   Tue Feb 11 22:10:51 2025
+
+It.   12    -76.07903935044     -5.68D-14  3.47D-08  7.28D-08   DIIS   9    0.00650000s   LL             Tue Feb 11
+
+
+                                   SCF - CYCLE
+                                   -----------
+
+* Convergence on norm of error vector (gradient).
+  Desired convergence:1.000D-07
+  Allowed convergence:1.000D-06
+
+* ERGVAL - convergence in total energy
+* FCKVAL - convergence in maximum change in total Fock matrix
+* EVCVAL - convergence in error vector (gradient)
+--------------------------------------------------------------------------------------------------------------------------------
+           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
+--------------------------------------------------------------------------------------------------------------------------------
+It.    1    -37.19485338847      0.00D+00  0.00D+00  0.00D+00               0.00280198s   Atom. scrpot   Tue Feb 11
+It.    2    -75.83019525609      3.86D+01  5.74D+00  1.65D+00               0.01100000s   LL             Tue Feb 11
+It.    3    -75.99685091406      1.67D-01 -1.22D+00  7.40D-01   DIIS   2    0.00750000s   LL             Tue Feb 11
+It.    4    -76.07726211066      8.04D-02  4.97D-01  1.07D-01   DIIS   3    0.00720000s   LL             Tue Feb 11
+It.    5    -76.07901993988      1.76D-03 -6.26D-02  6.36D-03   DIIS   4    0.00710000s   LL             Tue Feb 11
+It.    6    -76.07903744857      1.75D-05 -6.67D-04  1.95D-03   DIIS   5    0.00720000s   LL             Tue Feb 11
+It.    7    -76.07903932173      1.87D-06  2.93D-04  2.11D-04   DIIS   6    0.00730000s   LL             Tue Feb 11
+It.    8    -76.07903934839      2.67D-08 -3.66D-05  5.25D-05   DIIS   7    0.00730000s   LL             Tue Feb 11
+It.    9    -76.07903935035      1.96D-09 -7.29D-06  1.16D-05   DIIS   8    0.00720000s   LL             Tue Feb 11
+It.   10    -76.07903935044      8.83D-11  2.78D-06  2.07D-06   DIIS   9    0.00720000s   LL             Tue Feb 11
+It.   11    -76.07903935044      2.12D-12 -6.42D-07  2.34D-07   DIIS   9    0.00720000s   LL             Tue Feb 11
+It.   12    -76.07903935044     -5.68D-14  3.47D-08  7.28D-08   DIIS   9    0.00650000s   LL             Tue Feb 11
+--------------------------------------------------------------------------------------------------------------------------------
+* Convergence after   12 iterations.
+* Average elapsed time per iteration: 
+      No 2-ints    :    0.00280000s
+      LL           :    0.00751818s
+
+
+                                   TOTAL ENERGY
+                                   ------------
+
+   Charge of molecule : 0
+
+   Electronic energy                        :    -85.088323411003273
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :      9.009284060565534
+
+   Sum of all contributions to the energy
+   Total energy                             :    -76.079039350437739
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1 
+  * Closed shell, f = 1.0000
+   -20.56182504869  ( 2)       -1.32610277812  ( 2)       -0.70154356931  ( 2)       -0.55161327489  ( 2)       -0.49020070309  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+     0.18059690364  ( 2)        0.25032338436  ( 2)        0.67468628469  ( 2)        0.70839986279  ( 2)        1.08252327621  ( 2)
+     1.12456558953  ( 2)        1.18991085222  ( 2)        1.45275646646  ( 2)        1.46275497594  ( 2)        1.67624908908  ( 2)
+     1.69962391129  ( 2)        1.84806195771  ( 2)        2.33304467328  ( 2)        2.38427032325  ( 2)        3.23634263783  ( 2)
+     3.28027730009  ( 2)        3.34220052809  ( 2)        3.37703704752  ( 2)        3.54719672343  ( 2)        3.88389849400  ( 2)
+     4.08823231078  ( 2)        6.12422358504  ( 2)        6.50741710758  ( 2)        6.84771961486  ( 2)       13.05634966295  ( 2)
+    22.16409921204  ( 2)       22.32749255333  ( 2)       33.42264589538  ( 2)       33.62999545578  ( 2)       33.84318780197  ( 2)
+    61.53310170997  ( 2)      230.57277359500  ( 2)      851.99841779571  ( 2)     3409.90742311869  ( 2)    15466.31439242893  ( 2)
+* HOMO - LUMO gap:
+
+    E(LUMO) :     0.18059690 au (symmetry E1 )
+  - E(HOMO) :    -0.49020070 au (symmetry E1 )
+  ------------------------------------------
+    gap     :     0.67079761 au
+
+
+
+ *******************************************************************************
+ ****************************** KR-CI calculation ******************************
+ *******************************************************************************
+
+   This is output from DIRAC KR-CI
+   - a relativistic four-component CI wave function program.
+
+
+   General structure: 
+     Stefan Knecht and Hans Joergen Aa. Jensen 
+
+   Integral transformation: 
+     Luuk Visscher, Jon K. Laerdahl, and Trond Saue
+
+   GASCIP CI code: 
+     Joern Thyssen and Hans Joergen Aa. Jensen
+
+   LUCIAREL CI code: 
+     Timo Fleig and Jeppe Olsen
+
+   Parallel LUCIAREL CI code: 
+     Stefan Knecht, Hans Joergen Aa. Jensen and Timo Fleig
+
+   Linear symmetry implementation (CI and MCSCF):
+     Stefan Knecht and Hans Joergen Aa. Jensen
+
+ *******************************************************************************
+
+ This module is published in:
+
+    GASCIP: J Thyssen, T Fleig, and H J Aa Jensen
+                       J Chem Phys 129, 034109 (2008), suppl. material.
+    DIRAC-LUCIAREL: T Fleig, J Olsen, and L Visscher
+                       J Chem Phys, 119,6 (2003) 2963
+    PARALLEL LUCIAREL:
+                    S. Knecht, H J Aa Jensen, and T Fleig
+                       J Chem Phys, 132,1 (2010) 014108
+
+ *******************************************************************************
+
+
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+&&& KRCI calculation for symmetry    a
+&&& Number of CI roots for this symmetry: 3
+&&& CI program used: LUCIAREL
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+  //  LUCIAREL called
+  //  CIRUN = NDET  
+  //  The number of CI determinants will be computed
+
+  Number of determinants per double group irrep 
+  ============================================= 
+               35574               35448                   0                   0
+
+ (RSETCI) Number of determinants: 35574
+
+ CPU (Wall) time for generation of determinants:  0.11647499s( 0.11650000s)
+
+ (RSETWOP) Orbital classes:
+     Inactive orbitals   :    1..   1                                        
+     Active orbitals     :    2..  14                                        
+     Secondary orbitals  :   15..  40                                        
+
+ (ROPTST)  Control parameter   (ISTART) =1563
+           Orbital start guess (IROST)  =  63
+           Config. start guess (IRCIST) =  15
+           Write CMO & CREF    (IWRT)   =   0
+
+ (ROPTST)  Start orbitals read from CHECKPOINT file
+
+ -> Gram-Schmidt orthonormalizing MO coefficients.
+
+ (RTRACTL) Integrals in transformation = LL           (INTFLG=1)
+           No positronic integrals     = T
+           Approximate positronic FQX  = F
+* Orbital string 1 for corep 1 = 2..14
+* Orbital string 2 for corep 1 = 2..14
+* Orbital string 3 for corep 1 = 2..14
+* Orbital string 4 for corep 1 = 2..14
+
+ (RTRACTL1) Starting 4-index integral transformation.
+ - Integral class 1 : (LL|??)
+   - Beginning task   1 of   5 after      0. seconds and      0. CPU-seconds
+   - Beginning task   2 of   5 after      0. seconds and      0. CPU-seconds
+   - Beginning task   3 of   5 after      0. seconds and      0. CPU-seconds
+   - Beginning task   4 of   5 after      0. seconds and      0. CPU-seconds
+   - Beginning task   5 of   5 after      0. seconds and      0. CPU-seconds
+
+ - Starting symmetrization after           0.02 seconds
+ - Finished symmetrization after           0.02 seconds
+
+
+------ Timing report (in CPU seconds) of module  integral transformation      
+
+ Time in  Initializing MS4IND file            0.004 seconds
+ Time in  Computing+transform. integral       0.024 seconds
+ Time in  Symmetrizing MO integrals           0.000 seconds
+
+------ End of timing report ------
+
+
+ (RTRACTL1) Total CPU (wall) time used :   00:00:00 (   00:00:00)
+            Transformation ended Tue Feb 11 22:10:52 2025
+  //  LUCIAREL called
+  //  CIRUN = KR-CI 
+  //  Running large-scale CI calculation
+
+* REAFCK: Fock matrix read from file /home/hjj/DIRAC_scratch_directory/hjj/DIRAC_krci_luciarel_h2
+* Heading :Testing KRCI with GASCIP                          Tue Feb 11 22:10:51 2025
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    5.35%    0.00%    0.00%   0.00615197s
+
+ (rGETFC) 1-electron core energy:       -66.068636305251303
+
+ (rGETFC) 2-electron core energy:         4.748236215295815
+
+ (rGETFC) Nuclear repulsion     :         9.009284060565534
+
+ (rGETFC) Total core energy     :       -52.311116029389950
+   Core energy :     -52.3111160294
+  Allocating for             1027 diagonal integrals.
+
+
+  Allocating for            81796 integrals.
+
+ Number of integrals/CC amplitudes:            81796
+ (including imaginary parts) 
+
+
+       ===================================================
+        parallel distribution setup for symmetry irrep   1
+       ===================================================
+
+  total number of processes to distribute on :                  1
+  total number of blocks                     :               1296
+  total number of active blocks              :                 78
+  size of largest TTSS block                 :               7056
+  overall weighted active block length       :            3773762
+  Maximum weighted block size                :            1016064
+
+                    ================================
+                     Summation of even distribution 
+                    ================================
+
+  CPU    0  computes     78 blocks with a total weight of            3773762
+
+   ==============================================================
+   ==> allocation of two CI vectors and one resolution vector <==
+  
+   current available free memory in double words:        63875096
+   allocate two CI vectors each of length:                  35574
+   allocate resolution vector of length:                   100352
+   ==============================================================
+
+   
+   
+
+    6 start vectors based on lowest diagonal elements of H_CI
+         1          -76.079039
+         2          -75.754906
+         7          -75.754906
+         3          -75.666021
+        13          -75.666021
+         4          -75.658642
+
+  Number of roots to be converged ........    3
+
+  Maximum subspace dimension .............    9
+
+  Maximum number of CI microiterations ...   40
+
+  MRNRM MEIG MAPROJ MAVEC MWORK MLFRSC 
+   1 2471477152216031693
+ 
+  ----------------------------------------------
+  I'll take you to a place
+  Where we shall find our
+   ROOTS, BLOODY ROOTS
+ 
+                Sepultura
+  ----------------------------------------------
+ 
+  Inverse iteration modified Davidson 
+  INITIAL PROJECTED MATRIX  
+
+   1  -0.23767923E+02-0.22089678E-07-0.23443790E+02-0.22089678E-07
+       0.12625788E-05-0.23443790E+02 0.28107219E-08-0.22725668E-03
+      -0.16085489E-03-0.23354905E+02 0.28107220E-08-0.16085489E-03
+      -0.22725668E-03 0.20893973E-01-0.23354905E+02 0.10065293E-07
+      -0.20143793E-04 0.36683078E-05 0.56012801E-04 0.48251089E-05
+      -0.23347526E+02
+ Eigenvalues of initial iteration 
+ -76.0790393504375 -75.7549076065475 -75.7549063871010
+  Initial set of eigen values (no shift) 
+
+   1  -0.23767923E+02-0.23375799E+02 0.24222419E-01
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.   1
+  Olsen correction active
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.76792332        -23.44379158        -23.44379036
+                        Total energy       =        -76.07903935        -75.75490761        -75.75490639
+                        Lowering of energy =          0.00000000          0.00000133          0.00000011
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         5.68687D-01
+              2         6.33992D-01
+              3         6.33994D-01
+ Eigenvalues of iteration ..   2
+ -76.1772886894798 -75.8793660564254 -75.8793654285287
+ Norm of Residuals (Previous it) 
+   0.5686871132203   0.6339923606212   0.6339936777000
+  Projected matrix and eigen pairs 
+
+     1-2.3767923E+01
+
+     2-2.2089678E-08-2.3443790E+01
+
+     3-2.2089678E-08 1.2625788E-06-2.3443790E+01
+
+     4 2.8107219E-09-2.2725668E-04-1.6085489E-04-2.3354905E+01
+
+     5 2.8107220E-09-1.6085489E-04-2.2725668E-04 2.0893973E-02-2.3354905E+01
+
+
+     6 1.0065293E-08-2.0143793E-05 3.6683078E-06 5.6012801E-05 4.8251089E-06
+      -2.3347526E+01
+
+     7 5.6864800E-01 6.2756917E-05 6.2756918E-05-1.1318876E-02-1.1318876E-02
+      -2.6223123E-05-2.0574467E+01
+
+     8-6.0186576E-09-4.4895997E-01 4.4748470E-01-7.5550081E-04 7.4972393E-04
+      -1.1364689E-04 1.1876026E-07-2.0339794E+01
+
+     9-3.8318776E-06-4.4748269E-01-4.4895798E-01-1.7677019E-03-1.7702298E-03
+      -7.6369446E-05 6.9355032E-05-2.2075985E-10-2.0339796E+01
+  -.2386617E+02
+  -.2356825E+02
+  -.2356825E+02
+
+   1   0.98538719E+00 0.77464969E-07-0.28114089E-04
+
+   2   0.31295961E-04-0.69581349E+00 0.69189319E+00
+
+   3   0.31296811E-04 0.69189746E+00 0.69580928E+00
+
+   4  -0.36211567E-02-0.10001324E-02 0.26013799E-02
+
+   5  -0.36211575E-02 0.98551694E-03 0.26070654E-02
+
+   6  -0.82001393E-05-0.17404573E-03 0.11740619E-03
+
+   7  -0.17025232E+00 0.23485541E-07-0.85197638E-05
+
+   8   0.14204186E-07-0.19266404E+00-0.22662100E-03
+
+   9   0.87418500E-05-0.22662266E-03 0.19266455E+00
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    3   9   6
+ Output from GET_CNEW.., NROOT and NVECUT =     3    6
+  Reset projected matrix  
+
+   1  -0.23866173E+02-0.58709548E-15-0.23568250E+02 0.65876124E-15
+       0.12434498E-13-0.23568249E+02-0.66613381E-15 0.42075718E-14
+      -0.49942689E-14-0.20479675E+02-0.11145598E-15 0.99920072E-14
+       0.15543122E-14-0.10424638E-06-0.20215353E+02-0.15499754E-14
+      -0.53290705E-14-0.26867397E-13-0.62144985E-04 0.23116876E-07
+      -0.20215341E+02
+
+                        Wall time for microiteration       0.56235930s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.   2
+  Olsen correction active
+  Olsen correction active
+  Olsen correction active
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.86617266        -23.56825003        -23.56824940
+                        Total energy       =        -76.17728869        -75.87936606        -75.87936543
+                        Lowering of energy =          0.09824934          0.12445845          0.12445904
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         1.37747D-01
+              2         2.28454D-01
+              3         2.28455D-01
+ Eigenvalues of iteration ..   3
+ -76.1834187970062 -75.8979652881442 -75.8979647819049
+ Norm of Residuals (Previous it) 
+   0.1377472100498   0.2284541748547   0.2284549486002
+  Projected matrix and eigen pairs 
+
+     1-2.3866173E+01
+
+     2-5.8709548E-16-2.3568250E+01
+
+     3 6.5876124E-16 1.2434498E-14-2.3568249E+01
+
+     4-6.6613381E-16 4.2075718E-15-4.9942689E-15-2.0479675E+01
+
+     5-1.1145598E-16 9.9920072E-15 1.5543122E-15-1.0424638E-07-2.0215353E+01
+
+
+     6-1.5499754E-15-5.3290705E-15-2.6867397E-14-6.2144985E-05 2.3116876E-08
+      -2.0215341E+01
+
+     7-1.3771473E-01 5.4684595E-07-1.9891881E-04 7.6853310E-01-1.4917913E-06
+      -9.4852535E-04-2.0604403E+01
+
+     8-9.7581505E-10-2.2838732E-01-7.2539980E-10 1.1454693E-07 1.1186020E+00
+       1.3157585E-03-5.0107030E-07-2.0411258E+01
+
+     9 4.0215960E-07-2.2259933E-10-2.2838801E-01-4.1518183E-05 1.3157673E-03
+      -1.1186045E+00 2.0790528E-04-3.7420371E-08-2.0411257E+01
+  -.2387230E+02
+  -.2358685E+02
+  -.2358685E+02
+
+   1   0.99896008E+00 0.75662327E-07 0.35327344E-04
+
+   2  -0.87308074E-07 0.99633896E+00 0.63369404E-03
+
+   3   0.31458638E-04 0.63369377E-03-0.99633894E+00
+
+   4  -0.10073077E-01 0.34567270E-07 0.16158932E-04
+
+   5   0.19704644E-07-0.26920518E-01 0.14544213E-04
+
+   6   0.12326481E-04-0.14542550E-04-0.26920576E-01
+
+   7   0.44466795E-01-0.15388827E-06-0.71890659E-04
+
+   8  -0.97631261E-08 0.81139089E-01 0.51604792E-04
+
+   9   0.31517547E-05 0.51607731E-04-0.81139311E-01
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    3   9   6
+ Output from GET_CNEW.., NROOT and NVECUT =     3    6
+  Reset projected matrix  
+
+   1  -0.23872303E+02 0.60715322E-17-0.23586849E+02 0.32309225E-16
+       0.71054274E-14-0.23586849E+02-0.13877788E-13 0.65485811E-16
+       0.57245875E-15-0.20923382E+02-0.71557343E-17-0.40745185E-13
+      -0.66613381E-15 0.82504830E-06-0.21041892E+02 0.19598038E-14
+      -0.42188475E-14 0.38968828E-13-0.27606906E-03-0.45766022E-07
+      -0.21041890E+02
+
+                        Wall time for microiteration       0.87476656s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.   3
+  Olsen correction active
+  Olsen correction active
+  Olsen correction active
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.87230277        -23.58684926        -23.58684875
+                        Total energy       =        -76.18341880        -75.89796529        -75.89796478
+                        Lowering of energy =          0.00613011          0.01859923          0.01859935
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         6.13987D-02
+              2         1.29205D-01
+              3         1.29205D-01
+ Eigenvalues of iteration ..   4
+ -76.1845981243932 -75.9038942501569 -75.9038937797457
+ Norm of Residuals (Previous it) 
+   0.0613987389887   0.1292047405813   0.1292052396486
+  Projected matrix and eigen pairs 
+
+     1-2.3872303E+01
+
+     2 6.0715322E-18-2.3586849E+01
+
+     3 3.2309225E-17 7.1054274E-15-2.3586849E+01
+
+     4-1.3877788E-14 6.5485811E-17 5.7245875E-16-2.0923382E+01
+
+     5-7.1557343E-18-4.0745185E-14-6.6613381E-16 8.2504830E-07-2.1041892E+01
+
+
+     6 1.9598038E-15-4.2188475E-15 3.8968828E-14-2.7606906E-04-4.5766022E-08
+      -2.1041890E+01
+
+     7-6.1381831E-02 3.4553006E-07 1.5993343E-04-1.2877595E+00 1.6044449E-06
+      -5.7461423E-04-2.0116545E+01
+
+     8-6.1079569E-10-1.2915799E-01 8.1113863E-09-1.9561452E-07-1.4480244E+00
+      -9.2101118E-04-5.3891197E-07-1.9957189E+01
+
+     9-3.2270035E-07 4.4321075E-11-1.2915839E-01-9.2303625E-05-9.2097776E-04
+       1.4480252E+00-3.0616441E-04-1.6506999E-08-1.9957183E+01
+  -.2387348E+02
+  -.2359278E+02
+  -.2359278E+02
+
+   1   0.99978033E+00-0.16966667E-07 0.12353164E-04
+
+   2  -0.23928013E-07-0.99860943E+00 0.82604345E-03
+
+   3  -0.10896435E-04 0.82604321E-03 0.99860942E+00
+
+   4   0.83848848E-02 0.39454017E-07-0.28360528E-04
+
+   5  -0.14332423E-07-0.26021818E-01 0.38073420E-04
+
+   6   0.49180801E-05-0.38076809E-04-0.26021870E-01
+
+   7   0.19208751E-01 0.77520701E-07-0.56495731E-04
+
+   8  -0.17138175E-08-0.45840892E-01 0.37916154E-04
+
+   9  -0.39610426E-06 0.37919624E-04 0.45840956E-01
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    3   9   6
+ Output from GET_CNEW.., NROOT and NVECUT =     3    6
+  Reset projected matrix  
+
+   1  -0.23873482E+02-0.57896396E-16-0.23592778E+02-0.12143064E-16
+      -0.71054274E-14-0.23592778E+02-0.20428104E-13-0.26042536E-14
+      -0.12216790E-14-0.21188814E+02-0.41199683E-17 0.64670491E-13
+      -0.33306691E-15 0.93821461E-06-0.21458926E+02-0.10972126E-15
+       0.62172489E-14-0.63171690E-13 0.36961242E-03 0.42646644E-07
+      -0.21458922E+02
+
+                        Wall time for microiteration       0.88937741s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.   4
+  Olsen correction active
+  Olsen correction active
+  Olsen correction active
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.87348210        -23.59277822        -23.59277775
+                        Total energy       =        -76.18459812        -75.90389425        -75.90389378
+                        Lowering of energy =          0.00117933          0.00592896          0.00592900
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         2.92900D-02
+              2         7.63874D-02
+              3         7.63876D-02
+ Eigenvalues of iteration ..   5
+ -76.1848635190918 -75.9060912109231 -75.9060907489165
+ Norm of Residuals (Previous it) 
+   0.0292900469488   0.0763873990836   0.0763876246344
+  Projected matrix and eigen pairs 
+
+     1-2.3873482E+01
+
+     2-5.7896396E-17-2.3592778E+01
+
+     3-1.2143064E-17-7.1054274E-15-2.3592778E+01
+
+     4-2.0428104E-14-2.6042536E-15-1.2216790E-15-2.1188814E+01
+
+     5-4.1199683E-18 6.4670491E-14-3.3306691E-16 9.3821461E-07-2.1458926E+01
+
+
+     6-1.0972126E-16 6.2172489E-15-6.3171690E-14 3.6961242E-04 4.2646644E-08
+      -2.1458922E+01
+
+     7-2.9275387E-02-1.5544532E-07 1.1235573E-04-1.3471214E+00 6.2385518E-07
+       3.0229098E-04-1.9968517E+01
+
+     8 6.9940572E-10-7.6347375E-02-1.2478620E-08 8.9962073E-08 1.3994409E+00
+      -1.1577125E-03 2.7032343E-07-2.0024950E+01
+
+     9-6.4713478E-07 2.0476561E-10-7.6347518E-02-7.2782973E-05-1.1576137E-03
+      -1.3994416E+00-4.3343901E-04 2.2393201E-07-2.0024946E+01
+  -.2387375E+02
+  -.2359498E+02
+  -.2359497E+02
+
+   1  -0.99994857E+00-0.38409440E-08-0.38904951E-05
+
+   2  -0.50560893E-08 0.99940867E+00 0.49590220E-03
+
+   3   0.34386835E-05 0.49590211E-03-0.99940867E+00
+
+   4  -0.45482103E-02 0.23538345E-07 0.23101755E-04
+
+   5   0.38675863E-08-0.18841457E-01-0.24932244E-04
+
+   6   0.14336441E-05 0.24935250E-04-0.18841443E-01
+
+   7  -0.90649886E-02 0.36911892E-07 0.37647408E-04
+
+   8  -0.15057136E-09 0.28758836E-01 0.14266854E-04
+
+   9  -0.68551536E-06 0.14268388E-04-0.28758837E-01
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    3   9   6
+ Output from GET_CNEW.., NROOT and NVECUT =     3    6
+  Reset projected matrix  
+
+   1  -0.23873747E+02 0.27972416E-16-0.23594975E+02 0.34911310E-16
+      -0.26645353E-13-0.23594975E+02 0.17152946E-13-0.27339242E-14
+      -0.24242761E-14-0.21293599E+02-0.21684043E-18-0.10114132E-12
+       0.22204460E-14-0.65815604E-06-0.21736407E+02 0.12511693E-15
+      -0.55511151E-15 0.10319523E-12 0.21891425E-03 0.39854609E-07
+      -0.21736402E+02
+
+                        Wall time for microiteration       0.88901656s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.   5
+  Olsen correction active
+  Olsen correction active
+  Olsen correction active
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.87374749        -23.59497518        -23.59497472
+                        Total energy       =        -76.18486352        -75.90609121        -75.90609075
+                        Lowering of energy =          0.00026539          0.00219696          0.00219697
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         1.67404D-02
+              2         5.49935D-02
+              3         5.49936D-02
+ Eigenvalues of iteration ..   6
+ -76.1849504300298 -75.9071468861322 -75.9071464234311
+ Norm of Residuals (Previous it) 
+   0.0167404319367   0.0549935093234   0.0549936127244
+  Projected matrix and eigen pairs 
+
+     1-2.3873747E+01
+
+     2 2.7972416E-17-2.3594975E+01
+
+     3 3.4911310E-17-2.6645353E-14-2.3594975E+01
+
+     4 1.7152946E-14-2.7339242E-15-2.4242761E-15-2.1293599E+01
+
+     5-2.1684043E-19-1.0114132E-13 2.2204460E-15-6.5815604E-07-2.1736407E+01
+
+
+     6 1.2511693E-16-5.5511151E-16 1.0319523E-13 2.1891425E-04 3.9854609E-08
+      -2.1736402E+01
+
+     7-1.6729607E-02 7.6608615E-08 8.0301425E-05 1.5852204E+00 4.8650166E-08
+      -2.1916979E-04-1.9679616E+01
+
+     8-2.7233136E-10-5.4954145E-02 1.5202906E-08 2.6502180E-08-1.5515459E+00
+      -7.7016517E-04-7.0829806E-07-1.9440835E+01
+
+     9-4.9854482E-07-4.8674606E-10-5.4954190E-02 5.3180671E-05-7.6988663E-04
+       1.5515475E+00-1.3709239E-03-4.6586963E-07-1.9440825E+01
+  -.2387383E+02
+  -.2359603E+02
+  -.2359603E+02
+
+   1   0.99998141E+00-0.93612828E-09 0.12268745E-05
+
+   2  -0.12530250E-08-0.99968711E+00 0.39824926E-03
+
+   3  -0.11148276E-05 0.39824917E-03 0.99968711E+00
+
+   4  -0.31916181E-02-0.13930393E-07 0.15496192E-04
+
+   5   0.23703103E-09-0.16022619E-01 0.14330883E-04
+
+   6  -0.54430152E-06-0.14334389E-04-0.16022551E-01
+
+   7   0.51949411E-02 0.15624704E-07-0.20938812E-04
+
+   8   0.88362285E-09-0.19204100E-01 0.76468594E-05
+
+   9   0.19339872E-05 0.76484631E-05 0.19204041E-01
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    3   9   6
+ Output from GET_CNEW.., NROOT and NVECUT =     3    6
+  Reset projected matrix  
+
+   1  -0.23873834E+02-0.26237693E-16-0.23596031E+02 0.43368087E-18
+      -0.88817842E-14-0.23596030E+02 0.27755576E-16-0.45328324E-14
+      -0.42327253E-15-0.21535875E+02-0.10842022E-18 0.81268325E-13
+      -0.23314684E-14 0.33414649E-07-0.21908360E+02 0.25912432E-15
+       0.00000000E+00-0.98587805E-13-0.52208902E-03-0.61996418E-07
+      -0.21908352E+02
+
+                        Wall time for microiteration       0.89028899s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.   6
+  Olsen correction active
+  Olsen correction active
+  Olsen correction active
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.87383440        -23.59603086        -23.59603039
+                        Total energy       =        -76.18495043        -75.90714689        -75.90714642
+                        Lowering of energy =          0.00008691          0.00105568          0.00105567
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         1.02602D-02
+              2         4.06770D-02
+              3         4.06770D-02
+ Eigenvalues of iteration ..   7
+ -76.1849797691117 -75.9076492967931 -75.9076488282110
+ Norm of Residuals (Previous it) 
+   0.0102602027703   0.0406770136253   0.0406769664195
+  Projected matrix and eigen pairs 
+
+     1-2.3873834E+01
+
+     2-2.6237693E-17-2.3596031E+01
+
+     3 4.3368087E-19-8.8817842E-15-2.3596030E+01
+
+     4 2.7755576E-17-4.5328324E-15-4.2327253E-16-2.1535875E+01
+
+     5-1.0842022E-19 8.1268325E-14-2.3314684E-15 3.3414649E-08-2.1908360E+01
+
+
+     6 2.5912432E-16 0.0000000E+00-9.8587805E-14-5.2208902E-04-6.1996418E-08
+      -2.1908352E+01
+
+     7-1.0249076E-02-3.7174047E-08 5.5419620E-05-1.6186161E+00 4.7282931E-07
+       9.4883100E-04-1.9172945E+01
+
+     8 2.9068197E-10-4.0639383E-02-9.6911517E-09 4.6444161E-08 1.5793816E+00
+      -6.2933952E-04 1.5068010E-06-1.8831662E+01
+
+     9-7.7023941E-07 6.0192240E-11-4.0639298E-02-1.4218024E-04-6.2918917E-04
+      -1.5793834E+00-3.9447693E-03-7.0835548E-08-1.8831640E+01
+  -.2387386E+02
+  -.2359653E+02
+  -.2359653E+02
+
+   1   0.99999394E+00 0.20714799E-09 0.10050507E-06
+
+   2   0.22468740E-09-0.99985668E+00-0.30436814E-03
+
+   3  -0.14506018E-06-0.30436804E-03 0.99985668E+00
+
+   4   0.19818040E-02-0.66835796E-08 0.91712994E-06
+
+   5   0.10796616E-08 0.11564305E-01 0.81243424E-05
+
+   6   0.14844513E-05-0.81283996E-05 0.11564150E-01
+
+   7   0.28625901E-02-0.56723911E-08-0.36482279E-05
+
+   8  -0.10824071E-08-0.12360883E-01-0.37592674E-05
+
+   9   0.29119868E-05-0.37633302E-05 0.12360759E-01
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    3   9   6
+ Output from GET_CNEW.., NROOT and NVECUT =     3    6
+  Reset projected matrix  
+
+   1  -0.23873864E+02 0.11275703E-16-0.23596533E+02 0.41199683E-17
+       0.00000000E+00-0.23596533E+02 0.18818280E-13 0.33584246E-14
+       0.24251434E-14-0.21453543E+02 0.14094628E-17 0.65836225E-13
+      -0.66613381E-15 0.58377828E-06-0.21843069E+02 0.72500599E-15
+      -0.11102230E-14-0.80824236E-13-0.23032667E-02-0.98503364E-07
+      -0.21843046E+02
+
+                        Wall time for microiteration       0.89299576s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.   7
+  Olsen correction active
+  Olsen correction active
+  Olsen correction active
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.87386374        -23.59653327        -23.59653280
+                        Total energy       =        -76.18497977        -75.90764930        -75.90764883
+                        Lowering of energy =          0.00002934          0.00050241          0.00050240
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         7.38850D-03
+              2         2.82514D-02
+              3         2.82512D-02
+ Eigenvalues of iteration ..   8
+ -76.1849928632731 -75.9078641211397 -75.9078636479956
+ Norm of Residuals (Previous it) 
+   0.0073884972746   0.0282513749140   0.0282512314784
+  Projected matrix and eigen pairs 
+
+     1-2.3873864E+01
+
+     2 1.1275703E-17-2.3596533E+01
+
+     3 4.1199683E-18 0.0000000E+00-2.3596533E+01
+
+     4 1.8818280E-14 3.3584246E-15 2.4251434E-15-2.1453543E+01
+
+     5 1.4094628E-18 6.5836225E-14-6.6613381E-16 5.8377828E-07-2.1843069E+01
+
+
+     6 7.2500599E-16-1.1102230E-15-8.0824236E-14-2.3032667E-03-9.8503364E-08
+      -2.1843046E+01
+
+     7-7.3757099E-03 1.8660029E-08 2.3370566E-05-2.0349582E+00-1.0054613E-06
+       2.8094798E-03-1.8008320E+01
+
+     8-7.3457801E-11-2.8219468E-02 3.3928783E-09-1.8073704E-08 1.6191335E+00
+       4.9253382E-04-6.2444802E-07-1.8394909E+01
+
+     9-7.6029354E-07 1.9630483E-10-2.8219315E-02-2.7530659E-04 4.9286874E-04
+      -1.6191432E+00-4.9473913E-03 5.5665524E-07-1.8394869E+01
+  -.2387388E+02
+  -.2359675E+02
+  -.2359675E+02
+
+   1  -0.99999731E+00 0.12221350E-09-0.10754420E-06
+
+   2   0.98722604E-10 0.99994632E+00 0.98021887E-04
+
+   3  -0.62265067E-07-0.98021859E-04 0.99994632E+00
+
+   4  -0.14926333E-02-0.55151953E-08 0.11622227E-04
+
+   5   0.21780169E-09-0.70281976E-02-0.28264657E-05
+
+   6  -0.89700113E-06-0.28279286E-05 0.70280477E-02
+
+   7  -0.17753036E-02-0.45905492E-08 0.32559305E-05
+
+   8  -0.20367365E-09 0.76122207E-02 0.74461595E-06
+
+   9  -0.20822156E-05-0.74692430E-06 0.76121030E-02
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    3   9   6
+ Output from GET_CNEW.., NROOT and NVECUT =     3    6
+  Reset projected matrix  
+
+   1  -0.23873877E+02 0.10842022E-17-0.23596748E+02 0.86736174E-18
+      -0.58619776E-13-0.23596748E+02-0.27394753E-13 0.18735014E-15
+      -0.26298408E-14-0.21439865E+02 0.10842022E-17-0.73718809E-13
+       0.44408921E-15 0.23203253E-07-0.21595431E+02-0.28341045E-15
+       0.38857806E-14-0.72164497E-13-0.33455865E-02 0.84380951E-07
+      -0.21595391E+02
+
+                        Wall time for microiteration       0.89061817s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.   8
+  Olsen correction active
+  Olsen correction active
+  Olsen correction active
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.87387683        -23.59674809        -23.59674762
+                        Total energy       =        -76.18499286        -75.90786412        -75.90786365
+                        Lowering of energy =          0.00001309          0.00021482          0.00021482
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         5.43533D-03
+              2         1.81721D-02
+              3         1.81718D-02
+ Eigenvalues of iteration ..   9
+ -76.1850007200382 -75.9079544401159 -75.9079539623176
+ Norm of Residuals (Previous it) 
+   0.0054353257881   0.0181721294317   0.0181718022572
+  Projected matrix and eigen pairs 
+
+     1-2.3873877E+01
+
+     2 1.0842022E-18-2.3596748E+01
+
+     3 8.6736174E-19-5.8619776E-14-2.3596748E+01
+
+     4-2.7394753E-14 1.8735014E-16-2.6298408E-15-2.1439865E+01
+
+     5 1.0842022E-18-7.3718809E-14 4.4408921E-16 2.3203253E-08-2.1595431E+01
+
+
+     6-2.8341045E-16 3.8857806E-15-7.2164497E-14-3.3455865E-03 8.4380951E-08
+      -2.1595391E+01
+
+     7-5.4245646E-03-1.2836511E-08 1.0828382E-05 2.2411723E+00 1.1311023E-07
+      -3.0758103E-03-1.8064983E+01
+
+     8-5.1336569E-11-1.8151614E-02 4.3933863E-09 3.2180442E-08-1.6933823E+00
+       1.6597441E-04-3.4716610E-07-1.8516103E+01
+
+     9 4.6257758E-07-1.5638466E-10-1.8151284E-02-3.0526852E-04-1.6600805E-04
+      -1.6933825E+00 2.9172571E-03-3.6577456E-07-1.8516060E+01
+  -.2387388E+02
+  -.2359684E+02
+  -.2359684E+02
+
+   1   0.99999806E+00-0.94587866E-10 0.18316873E-06
+
+   2   0.75070032E-10 0.99997876E+00 0.26853665E-04
+
+   3  -0.13811533E-06-0.26853662E-04 0.99997876E+00
+
+   4  -0.13336125E-02-0.59118841E-08 0.16512624E-04
+
+   5  -0.58370161E-10 0.42099217E-02 0.52494424E-06
+
+   6  -0.92807889E-06-0.52542879E-06 0.42097079E-02
+
+   7   0.14483650E-02 0.47722650E-08-0.89303563E-05
+
+   8   0.12191207E-09 0.49757040E-02 0.13287209E-06
+
+   9  -0.12447289E-05-0.13311717E-06 0.49755327E-02
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    3   9   6
+ Output from GET_CNEW.., NROOT and NVECUT =     3    6
+  Reset projected matrix  
+
+   1  -0.23873885E+02-0.45536491E-17-0.23596838E+02 0.47704896E-17
+       0.17763568E-13-0.23596838E+02 0.26784130E-13-0.35457748E-14
+       0.42639503E-14-0.21847005E+02-0.49873300E-17-0.65836225E-13
+       0.57731597E-14-0.36975908E-06-0.21470739E+02-0.35670251E-15
+      -0.22204460E-15-0.77049478E-13 0.31613138E-02-0.14218841E-06
+      -0.21470664E+02
+
+                        Wall time for microiteration       0.88850014s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.   9
+  Olsen correction active
+  Olsen correction active
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.87388469        -23.59683841        -23.59683793
+                        Total energy       =        -76.18500072        -75.90795444        -75.90795396
+                        Lowering of energy =          0.00000786          0.00009032          0.00009031
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         4.10728D-03
+              2         1.16049D-02
+              3         1.16044D-02
+ Eigenvalues of iteration ..  10
+ -76.1850007200575 -75.9079899279390 -75.9079894458828
+ Norm of Residuals (Previous it) 
+   0.0041072812534   0.0116049262139   0.0116044316269
+  Projected matrix and eigen pairs 
+
+     1-2.3873885E+01
+
+     2-4.5536491E-18-2.3596838E+01
+
+     3 4.7704896E-18 1.7763568E-14-2.3596838E+01
+
+     4 2.6784130E-14-3.5457748E-15 4.2639503E-15-2.1847005E+01
+
+     5-4.9873300E-18-6.5836225E-14 5.7731597E-15-3.6975908E-07-2.1470739E+01
+
+
+     6-3.5670251E-16-2.2204460E-16-7.7049478E-14 3.1613138E-03-1.4218841E-07
+      -2.1470664E+01
+
+     7-4.5340089E-09-1.1589668E-02 4.3187305E-09-2.2327014E-06-1.7162436E+00
+       4.6587021E-05-1.8426528E+01
+
+     8 9.0223912E-06-9.8914738E-11-1.1589174E-02 4.5318353E-03-4.6112500E-05
+      -1.7162272E+00-3.1373141E-07-1.8426443E+01
+  -.2387388E+02
+  -.2359687E+02
+  -.2359687E+02
+
+   1   0.10000000E+01 0.99999226E+00 0.99999226E+00
+
+   2   0.44931485E-10-0.26559102E-04-0.12394231E-04
+
+   3  -0.89407380E-07 0.48791149E-08 0.13130262E-06
+
+   4   0.71594611E-08 0.24716851E-02 0.24714014E-02
+
+   5   0.72597425E-09-0.13254051E-06 0.80195324E-07
+
+   6  -0.15263625E-05 0.30619988E-02 0.30617618E-02
+
+   7   0.10740867E-08-0.81280391E-07 0.25685870E-08
+
+   8  -0.21373417E-05 0.99723061E-07 0.35101257E-02
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    3   8   6
+ Output from GET_CNEW.., NROOT and NVECUT =     3    5
+ GET_CNEW.., Reduced number of vectors: 2*NROOT and NVECUT =     6    5
+  Reset projected matrix  
+
+   1  -0.23873885E+02-0.54210109E-17-0.23596874E+02-0.78062556E-17
+       0.35527137E-13-0.23596873E+02 0.41199683E-17-0.61395333E-13
+      -0.13322676E-14-0.21305129E+02-0.15946988E-14-0.93258734E-14
+      -0.60729199E-13 0.13007277E-06-0.21305003E+02
+
+                        Wall time for microiteration       0.59906090s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.  10
+  Olsen correction active
+  Olsen correction active
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.87388469        -23.59687390        -23.59687342
+                        Total energy       =        -76.18500072        -75.90798993        -75.90798945
+                        Lowering of energy =          0.00000000          0.00003549          0.00003548
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         4.10728D-03
+              2         7.73168D-03
+              3         7.73090D-03
+ Eigenvalues of iteration ..  11
+ -76.1850007200916 -75.9080089111970 -75.9080084239837
+ Norm of Residuals (Previous it) 
+   0.0041072803078   0.0077316778475   0.0077309027438
+  Projected matrix and eigen pairs 
+
+     1-2.3873885E+01
+
+     2-5.4210109E-18-2.3596874E+01
+
+     3-7.8062556E-18 3.5527137E-14-2.3596873E+01
+
+     4 4.1199683E-18-6.1395333E-14-1.3322676E-15-2.1305129E+01
+
+     5-1.5946988E-15-9.3258734E-15-6.0729199E-14 1.3007277E-07-2.1305003E+01
+
+
+     6-3.8586464E-09-7.7233859E-03 1.5691710E-09-1.8867858E+00 4.9714302E-05
+      -1.8901243E+01
+
+     7 1.1045132E-05 5.7491283E-11-7.7226122E-03-5.0090542E-05-1.8867570E+00
+       5.1087742E-07-1.8901150E+01
+  -.2387388E+02
+  -.2359689E+02
+  -.2359689E+02
+
+   1  -0.10000000E+01-0.11829990E-04 0.20230598E-02
+
+   2  -0.30004239E-10 0.20235477E-02 0.28353497E-07
+
+   3   0.85849031E-07-0.77562095E-07 0.24574592E-02
+
+   4  -0.73049311E-09 0.24578808E-02-0.25929502E-08
+
+   5   0.22617290E-05-0.29314172E-07-0.29563241E-02
+
+   6  -0.10761233E-08 0.97991752E-07 0.11805196E-05
+
+   7   0.30794178E-05 0.11829994E-04 0.87671844E+00
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    3   7   5
+ Output from GET_CNEW.., NROOT and NVECUT =     3    5
+ GET_CNEW.., Reduced number of vectors: 2*NROOT and NVECUT =     6    5
+  Reset projected matrix  
+
+   1  -0.23873885E+02-0.12359905E-16-0.23596893E+02-0.30357661E-17
+      -0.15987212E-13-0.23596892E+02-0.10842022E-18-0.42188475E-13
+      -0.34972025E-14-0.21724024E+02 0.85928443E-15 0.51070259E-14
+      -0.40412118E-13 0.10320466E-06-0.21723784E+02
+
+                        Wall time for microiteration       0.59427026s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.  11
+  Olsen correction active
+  Olsen correction active
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.87388469        -23.59689288        -23.59689239
+                        Total energy       =        -76.18500072        -75.90800891        -75.90800842
+                        Lowering of energy =          0.00000000          0.00001898          0.00001898
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         4.10727D-03
+              2         5.15694D-03
+              3         5.15586D-03
+ Eigenvalues of iteration ..  12
+ -76.1850007200979 -75.9080164952886 -75.9080160037439
+ Norm of Residuals (Previous it) 
+   0.0041072693342   0.0051569414703   0.0051558646775
+  Projected matrix and eigen pairs 
+
+     1-2.3873885E+01
+
+     2-1.2359905E-17-2.3596893E+01
+
+     3-3.0357661E-18-1.5987212E-14-2.3596892E+01
+
+     4-1.0842022E-19-4.2188475E-14-3.4972025E-15-2.1724024E+01
+
+     5 8.5928443E-16 5.1070259E-15-4.0412118E-14 1.0320466E-07-2.1723784E+01
+
+
+     6 2.6522689E-09-5.1519586E-03 2.6979250E-09-1.5689633E+00 1.8823777E-05
+      -1.8782751E+01
+
+     7-5.0322166E-06-1.5793829E-10-5.1508837E-03-1.8607443E-05-1.5689434E+00
+      -1.1170887E-06-1.8782413E+01
+  -.2387388E+02
+  -.2359690E+02
+  -.2359690E+02
+
+   1  -0.10000000E+01 0.37597030E-05-0.12325813E-02
+
+   2   0.12495353E-10-0.12332014E-02-0.51276813E-08
+
+   3  -0.23711579E-07 0.19152916E-07-0.14715429E-02
+
+   4   0.47932019E-09-0.14720766E-02 0.65015980E-09
+
+   5  -0.93045410E-06 0.51233964E-08-0.17168040E-02
+
+   6   0.67184629E-09 0.26734770E-07-0.83769332E-07
+
+   7  -0.12751064E-05-0.37597034E-05 0.91757096E+00
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    3   7   5
+ Output from GET_CNEW.., NROOT and NVECUT =     3    5
+ GET_CNEW.., Reduced number of vectors: 2*NROOT and NVECUT =     6    5
+  Reset projected matrix  
+
+   1  -0.23873885E+02 0.75894152E-17-0.23596900E+02 0.30357661E-17
+       0.53290705E-13-0.23596900E+02-0.17347235E-17 0.14876989E-13
+       0.16098234E-14-0.21540362E+02-0.46902586E-15 0.21094237E-14
+       0.17208457E-13-0.30088738E-06-0.21539807E+02
+
+                        Wall time for microiteration       0.59384721s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.  12
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.87388469        -23.59690047        -23.59689997
+                        Total energy       =        -76.18500072        -75.90801650        -75.90801600
+                        Lowering of energy =          0.00000000          0.00000758          0.00000758
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         4.10728D-03
+              2         3.30720D-03
+              3         3.30574D-03
+  Reset projected matrix  
+
+   1  -0.23873885E+02 0.75894152E-17-0.23596900E+02 0.30357661E-17
+       0.53290705E-13-0.23596900E+02
+
+                        Wall time for microiteration       0.01994902s
+
+
+ (MICDV4_ENLMD_REL_PAR) Micro iterations converged.
+
+                        Core energy        =         -52.31111603
+                        Active energies    =         -23.87388469        -23.59690047        -23.59689997
+                        Final CI energies  =         -76.18500072        -75.90801650        -75.90801600
+
+                        root    1 ...... converged!
+
+                        root    2 ...... converged!
+
+                        root    3 ...... converged!
+
+ Gradient convergence threshold 3.00D-03
+ Energy   convergence threshold 1.00D-05
+
+ Information about convergence for root...   1
+ ============================================
+
+
+  Summary of iterations
+ -----------------------
+
+  Iteration point        Eigenvalue         Residual 
+          1           -76.0790393504375   0.56869E+00
+          2           -76.1772886894798   0.13775E+00
+          3           -76.1834187970062   0.61399E-01
+          4           -76.1845981243932   0.29290E-01
+          5           -76.1848635190918   0.16740E-01
+          6           -76.1849504300298   0.10260E-01
+          7           -76.1849797691117   0.73885E-02
+          8           -76.1849928632731   0.54353E-02
+          9           -76.1850007200382   0.41073E-02
+         10           -76.1850007200575   0.41073E-02
+         11           -76.1850007200916   0.41073E-02
+         12           -76.1850007200979   0.41073E-02
+
+ Information about convergence for root...   2
+ ============================================
+
+
+  Summary of iterations
+ -----------------------
+
+  Iteration point        Eigenvalue         Residual 
+          1           -75.7549076065475   0.63399E+00
+          2           -75.8793660564254   0.22845E+00
+          3           -75.8979652881442   0.12920E+00
+          4           -75.9038942501569   0.76387E-01
+          5           -75.9060912109231   0.54994E-01
+          6           -75.9071468861322   0.40677E-01
+          7           -75.9076492967931   0.28251E-01
+          8           -75.9078641211397   0.18172E-01
+          9           -75.9079544401159   0.11605E-01
+         10           -75.9079899279390   0.77317E-02
+         11           -75.9080089111970   0.51569E-02
+         12           -75.9080164952886   0.33072E-02
+
+ Information about convergence for root...   3
+ ============================================
+
+
+  Summary of iterations
+ -----------------------
+
+  Iteration point        Eigenvalue         Residual 
+          1           -75.7549063871010   0.63399E+00
+          2           -75.8793654285287   0.22845E+00
+          3           -75.8979647819049   0.12921E+00
+          4           -75.9038937797457   0.76388E-01
+          5           -75.9060907489165   0.54994E-01
+          6           -75.9071464234311   0.40677E-01
+          7           -75.9076488282110   0.28251E-01
+          8           -75.9078636479956   0.18172E-01
+          9           -75.9079539623176   0.11604E-01
+         10           -75.9079894458828   0.77309E-02
+         11           -75.9080084239837   0.51559E-02
+         12           -75.9080160037439   0.33057E-02
+
+  I have completed task KR-CI  in  8.84580000s (wall time)
+
+
+
+  *************************************************************
+  ************* Natural orbital occupation numbers ************
+  *************************************************************
+  //  LUCIAREL called
+  //  CIRUN = DENS1 
+  //  Computing only 1-particle density matrices
+  Allocating for             1027 diagonal integrals.
+
+
+  Allocating for              338 integrals.
+
+ Number of integrals/CC amplitudes:              338
+ (including imaginary parts) 
+
+
+       ===================================================
+        parallel distribution setup for symmetry irrep   1
+       ===================================================
+
+  total number of processes to distribute on :                  1
+  total number of blocks                     :               1296
+  total number of active blocks              :                 78
+  size of largest TTSS block                 :               7056
+  overall weighted active block length       :             361738
+  Maximum weighted block size                :              84672
+
+                    ================================
+                     Summation of even distribution 
+                    ================================
+
+  CPU    0  computes     78 blocks with a total weight of             361738
+
+   ==============================================================
+   ==> allocation of two CI vectors and one resolution vector <==
+  
+   current available free memory in double words:        63964508
+   allocate two CI vectors each of length:                  35574
+   allocate resolution vector of length:                   100352
+   ==============================================================
+
+  
+             ==================================== 
+             PARALLEL 1p DENSITY MAT. CALCULATION 
+             ==================================== 
+  
+  
+   Computing spin-dependent one-particle density
+  
+
+ Allocating 4-index array of length            1352
+
+   
+   
+  updating one- and two-particle densities 
+   
+   parallel update level    0
+   
+  Real density elements     : 
+  -------------------------------
+
+  I have completed task DENS1  in  0.03770000s (wall time)
+
+
+
+ ***************************************************
+ *************** CI natural orbitals ***************
+ ***************************************************
+
+
+   Natural orbital occupation numbers for state:  1
+   ------------------------------------------------
+
+   Symmetry  1.   Occupation of active orbitals:
+
+   1.993332852   1.972854950   1.976100263   1.983591929   0.021496148
+   0.022339198   0.003215941   0.000423755   0.006683775   0.014073497
+   0.000332178   0.002164048   0.003391466
+
+   Total     2.000000000 +     8.000000000 =    10.000000000
+
+   Symmetry  1. ** REORDERED DESCENDING OCCUPATION **
+
+   1.993332852   1.983591929   1.976100263   1.972854950   0.022339198
+   0.021496148   0.014073497   0.006683775   0.003391466   0.003215941
+   0.002164048   0.000423755   0.000332178
+
+ (RGETNO) active orbitals are NOT transformed to natural orbitals.
+  //  LUCIAREL called
+  //  CIRUN = DENS1 
+  //  Computing only 1-particle density matrices
+  Allocating for             1027 diagonal integrals.
+
+
+  Allocating for              338 integrals.
+
+ Number of integrals/CC amplitudes:              338
+ (including imaginary parts) 
+
+
+       ===================================================
+        parallel distribution setup for symmetry irrep   1
+       ===================================================
+
+  total number of processes to distribute on :                  1
+  total number of blocks                     :               1296
+  total number of active blocks              :                 78
+  size of largest TTSS block                 :               7056
+  overall weighted active block length       :             361738
+  Maximum weighted block size                :              84672
+
+                    ================================
+                     Summation of even distribution 
+                    ================================
+
+  CPU    0  computes     78 blocks with a total weight of             361738
+
+   ==============================================================
+   ==> allocation of two CI vectors and one resolution vector <==
+  
+   current available free memory in double words:        63964508
+   allocate two CI vectors each of length:                  35574
+   allocate resolution vector of length:                   100352
+   ==============================================================
+
+  
+             ==================================== 
+             PARALLEL 1p DENSITY MAT. CALCULATION 
+             ==================================== 
+  
+  
+   Computing spin-dependent one-particle density
+  
+
+ Allocating 4-index array of length            1352
+
+   
+   
+  updating one- and two-particle densities 
+   
+   parallel update level    0
+   
+  Real density elements     : 
+  -------------------------------
+
+  I have completed task DENS1  in  0.04000000s (wall time)
+
+
+
+ ***************************************************
+ *************** CI natural orbitals ***************
+ ***************************************************
+
+
+   Natural orbital occupation numbers for state:  2
+   ------------------------------------------------
+
+   Symmetry  1.   Occupation of active orbitals:
+
+   1.993082168   1.975647020   1.983110178   0.997075332   0.994541115
+   0.024597543   0.003879121   0.005954855   0.010867387   0.005186016
+   0.001635810   0.001805630   0.002617824
+
+   Total     2.000000000 +     8.000000000 =    10.000000000
+
+   Symmetry  1. ** REORDERED DESCENDING OCCUPATION **
+
+   1.993082168   1.983110178   1.975647020   0.997075332   0.994541115
+   0.024597543   0.010867387   0.005954855   0.005186016   0.003879121
+   0.002617824   0.001805630   0.001635810
+
+ (RGETNO) active orbitals are NOT transformed to natural orbitals.
+  //  LUCIAREL called
+  //  CIRUN = DENS1 
+  //  Computing only 1-particle density matrices
+  Allocating for             1027 diagonal integrals.
+
+
+  Allocating for              338 integrals.
+
+ Number of integrals/CC amplitudes:              338
+ (including imaginary parts) 
+
+
+       ===================================================
+        parallel distribution setup for symmetry irrep   1
+       ===================================================
+
+  total number of processes to distribute on :                  1
+  total number of blocks                     :               1296
+  total number of active blocks              :                 78
+  size of largest TTSS block                 :               7056
+  overall weighted active block length       :             361738
+  Maximum weighted block size                :              84672
+
+                    ================================
+                     Summation of even distribution 
+                    ================================
+
+  CPU    0  computes     78 blocks with a total weight of             361738
+
+   ==============================================================
+   ==> allocation of two CI vectors and one resolution vector <==
+  
+   current available free memory in double words:        63964508
+   allocate two CI vectors each of length:                  35574
+   allocate resolution vector of length:                   100352
+   ==============================================================
+
+  
+             ==================================== 
+             PARALLEL 1p DENSITY MAT. CALCULATION 
+             ==================================== 
+  
+  
+   Computing spin-dependent one-particle density
+  
+
+ Allocating 4-index array of length            1352
+
+   
+   
+  updating one- and two-particle densities 
+   
+   parallel update level    0
+   
+  Real density elements     : 
+  -------------------------------
+
+  I have completed task DENS1  in  0.04300000s (wall time)
+
+
+
+ ***************************************************
+ *************** CI natural orbitals ***************
+ ***************************************************
+
+
+   Natural orbital occupation numbers for state:  3
+   ------------------------------------------------
+
+   Symmetry  1.   Occupation of active orbitals:
+
+   1.993082172   1.975647085   1.983110078   0.997257324   0.994358970
+   0.024597667   0.003879134   0.005954886   0.010867496   0.005185905
+   0.001635827   0.001805626   0.002617830
+
+   Total     2.000000000 +     8.000000000 =    10.000000000
+
+   Symmetry  1. ** REORDERED DESCENDING OCCUPATION **
+
+   1.993082172   1.983110078   1.975647085   0.997257324   0.994358970
+   0.024597667   0.010867496   0.005954886   0.005185905   0.003879134
+   0.002617830   0.001805626   0.001635827
+
+ (RGETNO) active orbitals are NOT transformed to natural orbitals.
+ (ROPTST)  KR-CI calculation ended properly.
+
+>>> TOTAL CPU (WALL) TIME IN KR-CI:  9.84758884s( 9.84960000s)
+
+
+
+
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+&&& KRCI calculation for symmetry    b
+&&& Number of CI roots for this symmetry: 2
+&&& CI program used: LUCIAREL
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+  //  LUCIAREL called
+  //  CIRUN = NDET  
+  //  The number of CI determinants will be computed
+
+  Number of determinants per double group irrep 
+  ============================================= 
+               35574               35448                   0                   0
+
+ (RSETCI) Number of determinants: 35448
+
+ CPU (Wall) time for generation of determinants:  0.11513805s( 0.11510000s)
+
+ (RSETWOP) Orbital classes:
+     Inactive orbitals   :    1..   1                                        
+     Active orbitals     :    2..  14                                        
+     Secondary orbitals  :   15..  40                                        
+
+ (ROPTST)  Control parameter   (ISTART) =1563
+           Orbital start guess (IROST)  =  63
+           Config. start guess (IRCIST) =  15
+           Write CMO & CREF    (IWRT)   =   0
+
+ (ROPTST)  Start orbitals read from CHECKPOINT file
+
+ -> Gram-Schmidt orthonormalizing MO coefficients.
+  //  LUCIAREL called
+  //  CIRUN = KR-CI 
+  //  Running large-scale CI calculation
+
+* REAFCK: Fock matrix read from file /home/hjj/DIRAC_scratch_directory/hjj/DIRAC_krci_luciarel_h2
+* Heading :Testing KRCI with GASCIP                          Tue Feb 11 22:10:51 2025
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    5.35%    0.00%    0.00%   0.00617981s
+
+ (rGETFC) 1-electron core energy:       -66.068636305251303
+
+ (rGETFC) 2-electron core energy:         4.748236215295815
+
+ (rGETFC) Nuclear repulsion     :         9.009284060565534
+
+ (rGETFC) Total core energy     :       -52.311116029389950
+   Core energy :     -52.3111160294
+  Allocating for             1027 diagonal integrals.
+
+
+  Allocating for            81796 integrals.
+
+ Number of integrals/CC amplitudes:            81796
+ (including imaginary parts) 
+
+
+       ===================================================
+        parallel distribution setup for symmetry irrep   2
+       ===================================================
+
+  total number of processes to distribute on :                  1
+  total number of blocks                     :               1296
+  total number of active blocks              :                 74
+  size of largest TTSS block                 :               3136
+  overall weighted active block length       :            3714880
+  Maximum weighted block size                :             435904
+
+                    ================================
+                     Summation of even distribution 
+                    ================================
+
+  CPU    0  computes     74 blocks with a total weight of            3714880
+
+   ==============================================================
+   ==> allocation of two CI vectors and one resolution vector <==
+  
+   current available free memory in double words:        63875096
+   allocate two CI vectors each of length:                  35448
+   allocate resolution vector of length:                   100352
+   ==============================================================
+
+   
+   
+
+    4 start vectors based on lowest diagonal elements of H_CI
+         1          -75.743416
+     18404          -75.743416
+         5          -75.686914
+     18405          -75.686914
+
+  Number of roots to be converged ........    2
+
+  Maximum subspace dimension .............    6
+
+  Maximum number of CI microiterations ...   40
+
+  MRNRM MEIG MAPROJ MAVEC MWORK MLFRSC 
+   1 165 985100610421084
+ 
+  ----------------------------------------------
+  I'll take you to a place
+  Where we shall find our
+   ROOTS, BLOODY ROOTS
+ 
+                Sepultura
+  ----------------------------------------------
+ 
+  Inverse iteration modified Davidson 
+  INITIAL PROJECTED MATRIX  
+
+   1  -0.23432300E+02 0.11490872E-01-0.23432300E+02 0.15343456E-04
+       0.81371633E-04-0.23375798E+02 0.81371633E-04 0.15343456E-04
+       0.33557091E-06-0.23375798E+02
+ Eigenvalues of initial iteration 
+ -75.7549073245851 -75.7319257247680
+  Initial set of eigen values (no shift) 
+
+   1  -0.23443791E+02-0.23375799E+02
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.   1
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.44379130        -23.42080970
+                        Total energy       =        -75.75490732        -75.73192572
+                        Lowering of energy =          0.01149094         -0.01149066
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         6.33992D-01
+              2         6.33329D-01
+ Eigenvalues of iteration ..   2
+ -75.8793695093694 -75.8564767065281
+ Norm of Residuals (Previous it) 
+   0.6339923919102   0.6333288873472
+  Projected matrix and eigen pairs 
+
+     1-2.3432300E+01
+
+     2 1.1490872E-02-2.3432300E+01
+
+     3 1.5343456E-05 8.1371633E-05-2.3375798E+01
+
+     4 8.1371633E-05 1.5343456E-05 3.3557091E-07-2.3375798E+01
+
+     5 4.4822311E-01-4.4822311E-01 7.4986266E-04-7.4986266E-04-2.0339892E+01
+
+
+     6-4.4775546E-01-4.4775546E-01 5.8370193E-04 5.8370193E-04 3.5527137E-15
+      -2.0326032E+01
+  -.2356825E+02
+  -.2354536E+02
+
+   1   0.69385749E+00 0.69381204E+00
+
+   2  -0.69385749E+00 0.69381204E+00
+
+   3   0.98875191E-03-0.10601057E-02
+
+   4  -0.98875191E-03-0.10601057E-02
+
+   5  -0.19266967E+00-0.62639949E-13
+
+   6  -0.61315323E-13 0.19299600E+00
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    2   6   4
+ Output from GET_CNEW.., NROOT and NVECUT =     2    4
+  Reset projected matrix  
+
+   1  -0.23568253E+02 0.00000000E+00-0.23545361E+02 0.14099832E-13
+       0.44408921E-14-0.20215448E+02 0.44408921E-14-0.79936058E-14
+       0.44408921E-14-0.20201515E+02
+
+                        Wall time for microiteration       0.46361731s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.   2
+  Olsen correction active
+  Olsen correction active
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.56825348        -23.54536068
+                        Total energy       =        -75.87936951        -75.85647671
+                        Lowering of energy =          0.12446218          0.12455098
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         2.28439D-01
+              2         2.29497D-01
+ Eigenvalues of iteration ..   3
+ -75.8979666001551 -75.8753709590661
+ Norm of Residuals (Previous it) 
+   0.2284388884661   0.2294966330458
+  Projected matrix and eigen pairs 
+
+     1-2.3568253E+01
+
+     2 0.0000000E+00-2.3545361E+01
+
+     3 1.4099832E-14 4.4408921E-15-2.0215448E+01
+
+     4 4.4408921E-15-7.9936058E-15 4.4408921E-15-2.0201515E+01
+
+     5-2.2837219E-01-1.0824674E-15 1.1186345E+00 3.6903813E-13-2.0411277E+01
+
+
+     6-3.8857806E-16-2.2943258E-01 3.6681769E-13-1.1224393E+00 0.0000000E+00
+      -2.0403603E+01
+  -.2358685E+02
+  -.2356425E+02
+
+   1  -0.99633948E+00-0.95934085E-14
+
+   2  -0.95063995E-14 0.99625244E+00
+
+   3   0.26920721E-01-0.10538306E-13
+
+   4   0.99876871E-14 0.27385054E-01
+
+   5  -0.81135167E-01 0.52978842E-15
+
+   6  -0.38788970E-15 0.82043470E-01
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    2   6   4
+ Output from GET_CNEW.., NROOT and NVECUT =     2    4
+  Reset projected matrix  
+
+   1  -0.23586851E+02 0.17763568E-14-0.23564255E+02 0.40800696E-13
+      -0.55511151E-15-0.21041967E+02-0.14432899E-14-0.33861802E-14
+      -0.13322676E-14-0.21038647E+02
+
+                        Wall time for microiteration       0.55293367s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.   3
+  Olsen correction active
+  Olsen correction active
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.58685057        -23.56425493
+                        Total energy       =        -75.89796660        -75.87537096
+                        Lowering of energy =          0.01859709          0.01889425
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         1.29222D-01
+              2         1.30449D-01
+ Eigenvalues of iteration ..   4
+ -75.9038954668708 -75.8812955451911
+ Norm of Residuals (Previous it) 
+   0.1292218343251   0.1304489696916
+  Projected matrix and eigen pairs 
+
+     1-2.3586851E+01
+
+     2 1.7763568E-15-2.3564255E+01
+
+     3 4.0800696E-14-5.5511151E-16-2.1041967E+01
+
+     4-1.4432899E-15-3.3861802E-15-1.3322676E-15-2.1038647E+01
+
+     5-1.2917516E-01 1.8596236E-15 1.4483405E+00 1.0880186E-14-1.9956014E+01
+
+
+     6-1.6653345E-16-1.3040385E-01 3.0642155E-14-1.4468448E+00 5.5955240E-14
+      -1.9872995E+01
+  -.2359278E+02
+  -.2357018E+02
+
+   1   0.99861002E+00 0.77273361E-13
+
+   2  -0.77267289E-13 0.99863363E+00
+
+   3  -0.26024406E-01-0.23309451E-14
+
+   4  -0.18250965E-14 0.25930584E-01
+
+   5   0.45834089E-01 0.34175423E-14
+
+   6  -0.38493876E-14 0.45370525E-01
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    2   6   4
+ Output from GET_CNEW.., NROOT and NVECUT =     2    4
+  Reset projected matrix  
+
+   1  -0.23592779E+02 0.19539925E-13-0.23570180E+02-0.63227201E-13
+      -0.99920072E-15-0.21458584E+02 0.55511151E-15-0.37081449E-13
+       0.20872193E-13-0.21400701E+02
+
+                        Wall time for microiteration       0.55615073s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.   4
+  Olsen correction active
+  Olsen correction active
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.59277944        -23.57017952
+                        Total energy       =        -75.90389547        -75.88129555
+                        Lowering of energy =          0.00592887          0.00592459
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         7.63850D-02
+              2         7.45672D-02
+ Eigenvalues of iteration ..   5
+ -75.9060913463703 -75.8832729717138
+ Norm of Residuals (Previous it) 
+   0.0763849827818   0.0745672051544
+  Projected matrix and eigen pairs 
+
+     1-2.3592779E+01
+
+     2 1.9539925E-14-2.3570180E+01
+
+     3-6.3227201E-14-9.9920072E-16-2.1458584E+01
+
+     4 5.5511151E-16-3.7081449E-14 2.0872193E-14-2.1400701E+01
+
+     5-7.6344862E-02 1.4016566E-15-1.3996260E+00 1.3056223E-13-2.0023724E+01
+
+
+     6-4.8572257E-16-7.4528828E-02-1.7386093E-13-1.3785069E+00 9.4146912E-14
+      -1.9888061E+01
+  -.2359498E+02
+  -.2357216E+02
+
+   1  -0.99940934E+00-0.87199988E-12
+
+   2   0.87188520E-12-0.99950653E+00
+
+   3  -0.18832295E-01-0.15719000E-13
+
+   4   0.16932146E-13-0.16835248E-01
+
+   5  -0.28745647E-01-0.20095499E-13
+
+   6   0.23542016E-13-0.26519278E-01
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    2   6   4
+ Output from GET_CNEW.., NROOT and NVECUT =     2    4
+  Reset projected matrix  
+
+   1  -0.23594975E+02-0.21316282E-13-0.23572157E+02 0.91981978E-13
+       0.42188475E-14-0.21735585E+02-0.31086245E-14 0.66613381E-13
+       0.29309888E-13-0.21568071E+02
+
+                        Wall time for microiteration       0.55713021s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.   5
+  Olsen correction active
+  Olsen correction active
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.59497532        -23.57215694
+                        Total energy       =        -75.90609135        -75.88327297
+                        Lowering of energy =          0.00219588          0.00197743
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         5.49851D-02
+              2         5.06893D-02
+ Eigenvalues of iteration ..   6
+ -75.9071471637521 -75.8841206670106
+ Norm of Residuals (Previous it) 
+   0.0549851000614   0.0506893448439
+  Projected matrix and eigen pairs 
+
+     1-2.3594975E+01
+
+     2-2.1316282E-14-2.3572157E+01
+
+     3 9.1981978E-14 4.2188475E-15-2.1735585E+01
+
+     4-3.1086245E-15 6.6613381E-14 2.9309888E-14-2.1568071E+01
+
+     5-5.4945702E-02 3.1086245E-15 1.5520420E+00-1.2455592E-12-1.9441845E+01
+
+
+     6-1.0408341E-16-5.0653311E-02 1.0670353E-12 1.5627891E+00-1.8829382E-13
+      -1.9328109E+01
+  -.2359603E+02
+  -.2357300E+02
+
+   1   0.99968704E+00 0.92155940E-12
+
+   2   0.92167224E-12-0.99977496E+00
+
+   3  -0.16025277E-01-0.39991705E-14
+
+   4   0.19132536E-14 0.13041714E-01
+
+   5   0.19209636E-01 0.18673885E-13
+
+   6   0.15116620E-13-0.16731474E-01
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    2   6   4
+ Output from GET_CNEW.., NROOT and NVECUT =     2    4
+  Reset projected matrix  
+
+   1  -0.23596031E+02-0.26645353E-13-0.23573005E+02-0.84932061E-13
+       0.39968029E-14-0.21908936E+02-0.12212453E-14 0.85487173E-13
+      -0.92370556E-13-0.21689357E+02
+
+                        Wall time for microiteration       0.55667717s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.   6
+  Olsen correction active
+  Olsen correction active
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.59603113        -23.57300464
+                        Total energy       =        -75.90714716        -75.88412067
+                        Lowering of energy =          0.00105582          0.00084770
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         4.06509D-02
+              2         3.53885D-02
+ Eigenvalues of iteration ..   7
+ -75.9076493317751 -75.8844958701830
+ Norm of Residuals (Previous it) 
+   0.0406508537595   0.0353884536335
+  Projected matrix and eigen pairs 
+
+     1-2.3596031E+01
+
+     2-2.6645353E-14-2.3573005E+01
+
+     3-8.4932061E-14 3.9968029E-15-2.1908936E+01
+
+     4-1.2212453E-15 8.5487173E-14-9.2370556E-14-2.1689357E+01
+
+     5-4.0613283E-02-1.0963452E-14-1.5780308E+00-1.3544721E-12-1.8836320E+01
+
+
+     6-6.3837824E-16-3.5356238E-02-1.2783108E-12 1.6147553E+00-4.2410520E-14
+      -1.8857710E+01
+  -.2359653E+02
+  -.2357338E+02
+
+   1  -0.99985675E+00 0.11550006E-11
+
+   2  -0.11550317E-11-0.99990234E+00
+
+   3  -0.11560200E-01 0.58862890E-14
+
+   4   0.23065140E-15 0.90944933E-02
+
+   5  -0.12362854E-01 0.11812562E-13
+
+   6  -0.12059986E-13-0.10611042E-01
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    2   6   4
+ Output from GET_CNEW.., NROOT and NVECUT =     2    4
+  Reset projected matrix  
+
+   1  -0.23596533E+02 0.14210855E-13-0.23573380E+02 0.77604589E-13
+      -0.21094237E-14-0.21843633E+02 0.12212453E-14 0.82933660E-13
+       0.22559732E-12-0.21652256E+02
+
+                        Wall time for microiteration       0.55595008s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.   7
+  Olsen correction active
+  Olsen correction active
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.59653330        -23.57337984
+                        Total energy       =        -75.90764933        -75.88449587
+                        Lowering of energy =          0.00050217          0.00037520
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         2.82497D-02
+              2         2.43880D-02
+ Eigenvalues of iteration ..   8
+ -75.9078639114422 -75.8846542666703
+ Norm of Residuals (Previous it) 
+   0.0282497316038   0.0243879566837
+  Projected matrix and eigen pairs 
+
+     1-2.3596533E+01
+
+     2 1.4210855E-14-2.3573380E+01
+
+     3 7.7604589E-14-2.1094237E-15-2.1843633E+01
+
+     4 1.2212453E-15 8.2933660E-14 2.2559732E-13-2.1652256E+01
+
+     5-2.8217774E-02 2.6645353E-15 1.6191944E+00 1.9155788E-12-1.8390534E+01
+
+
+     6 2.6367797E-15-2.4359582E-02-1.6902035E-12 1.6883399E+00-4.6962434E-14
+      -1.8343671E+01
+  -.2359675E+02
+  -.2357354E+02
+
+   1  -0.99994643E+00-0.61538560E-12
+
+   2   0.61534323E-12-0.99996254E+00
+
+   3   0.70231377E-02-0.59741309E-14
+
+   4   0.34506967E-14 0.57138419E-02
+
+   5  -0.76040076E-02-0.22909746E-14
+
+   6   0.44380895E-14-0.65021869E-02
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    2   6   4
+ Output from GET_CNEW.., NROOT and NVECUT =     2    4
+  Reset projected matrix  
+
+   1  -0.23596748E+02-0.35527137E-13-0.23573538E+02 0.67834627E-13
+       0.41078252E-14-0.21594052E+02 0.44408921E-15 0.85931262E-13
+       0.35349501E-12-0.21459511E+02
+
+                        Wall time for microiteration       0.55705706s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.   8
+  Olsen correction active
+  Olsen correction active
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.59674788        -23.57353824
+                        Total energy       =        -75.90786391        -75.88465427
+                        Lowering of energy =          0.00021458          0.00015840
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         1.81696D-02
+              2         1.61707D-02
+ Eigenvalues of iteration ..   9
+ -75.9079543002503 -75.8847278413891
+ Norm of Residuals (Previous it) 
+   0.0181695946813   0.0161706994684
+  Projected matrix and eigen pairs 
+
+     1-2.3596748E+01
+
+     2-3.5527137E-14-2.3573538E+01
+
+     3 6.7834627E-14 4.1078252E-15-2.1594052E+01
+
+     4 4.4408921E-16 8.5931262E-14 3.5349501E-13-2.1459511E+01
+
+     5-1.8149071E-02 3.9412917E-15 1.6945696E+00-9.4224628E-13-1.8518921E+01
+
+
+     6 9.0205621E-16-1.6152041E-02 6.8600681E-13 1.8007005E+00-4.6651571E-13
+      -1.8493954E+01
+  -.2359684E+02
+  -.2357361E+02
+
+   1   0.99997872E+00 0.15288468E-11
+
+   2   0.15288594E-11-0.99998210E+00
+
+   3  -0.42138179E-02-0.42788119E-14
+
+   4  -0.29945998E-14 0.38797992E-02
+
+   5   0.49802486E-02 0.84762033E-14
+
+   6   0.67410122E-14-0.45550529E-02
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    2   6   4
+ Output from GET_CNEW.., NROOT and NVECUT =     2    4
+  Reset projected matrix  
+
+   1  -0.23596838E+02-0.42632564E-13-0.23573612E+02-0.78048679E-13
+       0.39968029E-14-0.21472998E+02-0.88817842E-15 0.83821838E-13
+      -0.86153307E-13-0.21518529E+02
+
+                        Wall time for microiteration       0.55736965s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.   9
+  Olsen correction active
+  Olsen correction active
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.59683827        -23.57361181
+                        Total energy       =        -75.90795430        -75.88472784
+                        Lowering of energy =          0.00009039          0.00007357
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         1.16061D-02
+              2         1.06805D-02
+ Eigenvalues of iteration ..  10
+ -75.9079897675077 -75.8847591436038
+ Norm of Residuals (Previous it) 
+   0.0116060696349   0.0106805098686
+  Projected matrix and eigen pairs 
+
+     1-2.3596838E+01
+
+     2-4.2632564E-14-2.3573612E+01
+
+     3-7.8048679E-14 3.9968029E-15-2.1472998E+01
+
+     4-8.8817842E-16 8.3821838E-14-8.6153307E-14-2.1518529E+01
+
+     5-1.1590791E-02-3.7747583E-15-1.7148471E+00-2.3849256E-12-1.8424382E+01
+
+
+     6-1.0824674E-15-1.0666415E-02-2.7848834E-12 1.7227875E+00 4.2832404E-13
+      -1.8494798E+01
+  -.2359687E+02
+  -.2357364E+02
+
+   1  -0.99999227E+00-0.18361909E-11
+
+   2  -0.18361877E-11 0.99999267E+00
+
+   3  -0.24706287E-02-0.95554322E-15
+
+   4   0.30791114E-15-0.24600802E-02
+
+   5  -0.30599277E-02-0.35142868E-14
+
+   6  -0.52465379E-14 0.29346304E-02
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    2   6   4
+ Output from GET_CNEW.., NROOT and NVECUT =     2    4
+  Reset projected matrix  
+
+   1  -0.23596874E+02-0.14210855E-13-0.23573643E+02 0.61173289E-13
+       0.72164497E-14-0.21303806E+02-0.16098234E-14-0.82822638E-13
+       0.96211927E-12-0.21439020E+02
+
+                        Wall time for microiteration       0.55652042s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.  10
+  Olsen correction active
+  Olsen correction active
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.59687374        -23.57364311
+                        Total energy       =        -75.90798977        -75.88475914
+                        Lowering of energy =          0.00003547          0.00003130
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         7.73459D-03
+              2         7.37576D-03
+ Eigenvalues of iteration ..  11
+ -75.9080087795080 -75.8847769096339
+ Norm of Residuals (Previous it) 
+   0.0077345909730   0.0073757569304
+  Projected matrix and eigen pairs 
+
+     1-2.3596874E+01
+
+     2-1.4210855E-14-2.3573643E+01
+
+     3 6.1173289E-14 7.2164497E-15-2.1303806E+01
+
+     4-1.6098234E-15-8.2822638E-14 9.6211927E-13-2.1439020E+01
+
+     5-7.7263121E-03 1.8873791E-15 1.8884992E+00 3.8947734E-12-1.8901690E+01
+
+
+     6 1.1934898E-15-7.3677620E-03 1.9336754E-12-1.8549945E+00-9.9409370E-13
+      -1.8906188E+01
+  -.2359689E+02
+  -.2357366E+02
+
+   1  -0.99999492E+00-0.61181705E-12
+
+   2  -0.61180920E-12 0.99999490E+00
+
+   3   0.20265141E-02-0.50973237E-14
+
+   4   0.15421957E-14 0.20954170E-02
+
+   5  -0.24606699E-02-0.13563784E-14
+
+   6  -0.14535498E-14 0.24113075E-02
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    2   6   4
+ Output from GET_CNEW.., NROOT and NVECUT =     2    4
+  Reset projected matrix  
+
+   1  -0.23596893E+02 0.17763568E-14-0.23573661E+02 0.46518345E-13
+      -0.22204460E-14-0.21725938E+02 0.14988011E-14-0.57509553E-13
+      -0.11854961E-11-0.21832777E+02
+
+                        Wall time for microiteration       0.55677357s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.  11
+  Olsen correction active
+  Olsen correction active
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.59689275        -23.57366088
+                        Total energy       =        -75.90800878        -75.88477691
+                        Lowering of energy =          0.00001901          0.00001777
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         5.15555D-03
+              2         5.00001D-03
+ Eigenvalues of iteration ..  12
+ -75.9080163562677 -75.8847838562627
+ Norm of Residuals (Previous it) 
+   0.0051555467826   0.0050000088713
+  Projected matrix and eigen pairs 
+
+     1-2.3596893E+01
+
+     2 1.7763568E-15-2.3573661E+01
+
+     3 4.6518345E-14-2.2204460E-15-2.1725938E+01
+
+     4 1.4988011E-15-5.7509553E-14-1.1854961E-12-2.1832777E+01
+
+     5-5.1505669E-03 2.2204460E-16 1.5666764E+00-2.5246472E-13-1.8783744E+01
+
+
+     6 1.0408341E-15-4.9951728E-03 1.9593216E-12-1.5188540E+00 8.4010576E-13
+      -1.8656609E+01
+  -.2359690E+02
+  -.2357367E+02
+
+   1  -0.99999816E+00-0.76905210E-13
+
+   2   0.76897928E-13-0.99999830E+00
+
+   3   0.12318048E-02-0.15437102E-14
+
+   4   0.20535082E-14-0.12132974E-02
+
+   5  -0.14710508E-02 0.12511309E-14
+
+   6   0.68139044E-15-0.13906660E-02
+  Info from GET_CNEWCOLD_BAS2 
+  ============================
+ 
+ NROOT, NVEC, NVECP =    2   6   4
+ Output from GET_CNEW.., NROOT and NVECUT =     2    4
+  Reset projected matrix  
+
+   1  -0.23596900E+02-0.53290705E-14-0.23573668E+02 0.11768364E-13
+       0.39968029E-14-0.21538744E+02 0.00000000E+00 0.20983215E-13
+       0.12758683E-11-0.21534166E+02
+
+                        Wall time for microiteration       0.55560787s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.  12
+
+                        Core energy        =        -52.31111603
+                        Active energy      =        -23.59690033        -23.57366783
+                        Total energy       =        -75.90801636        -75.88478386
+                        Lowering of energy =          0.00000758          0.00000695
+
+                        Norm of CI residuals (thr = 3.00D-03)
+              1         3.30749D-03
+              2         3.12307D-03
+  Reset projected matrix  
+
+   1  -0.23596900E+02-0.53290705E-14-0.23573668E+02
+
+                        Wall time for microiteration       0.01086039s
+
+
+ (MICDV4_ENLMD_REL_PAR) Micro iterations converged.
+
+                        Core energy        =         -52.31111603
+                        Active energies    =         -23.59690033        -23.57366783
+                        Final CI energies  =         -75.90801636        -75.88478386
+
+                        root    1 ...... converged!
+
+                        root    2 ...... converged!
+
+ Gradient convergence threshold 3.00D-03
+ Energy   convergence threshold 1.00D-05
+
+ Information about convergence for root...   1
+ ============================================
+
+
+  Summary of iterations
+ -----------------------
+
+  Iteration point        Eigenvalue         Residual 
+          1           -75.7549073245851   0.63399E+00
+          2           -75.8793695093694   0.22844E+00
+          3           -75.8979666001551   0.12922E+00
+          4           -75.9038954668708   0.76385E-01
+          5           -75.9060913463703   0.54985E-01
+          6           -75.9071471637521   0.40651E-01
+          7           -75.9076493317751   0.28250E-01
+          8           -75.9078639114422   0.18170E-01
+          9           -75.9079543002503   0.11606E-01
+         10           -75.9079897675077   0.77346E-02
+         11           -75.9080087795080   0.51555E-02
+         12           -75.9080163562677   0.33075E-02
+
+ Information about convergence for root...   2
+ ============================================
+
+
+  Summary of iterations
+ -----------------------
+
+  Iteration point        Eigenvalue         Residual 
+          1           -75.7319257247680   0.63333E+00
+          2           -75.8564767065281   0.22950E+00
+          3           -75.8753709590661   0.13045E+00
+          4           -75.8812955451911   0.74567E-01
+          5           -75.8832729717138   0.50689E-01
+          6           -75.8841206670106   0.35388E-01
+          7           -75.8844958701830   0.24388E-01
+          8           -75.8846542666703   0.16171E-01
+          9           -75.8847278413891   0.10681E-01
+         10           -75.8847591436038   0.73758E-02
+         11           -75.8847769096339   0.50000E-02
+         12           -75.8847838562627   0.31231E-02
+
+  I have completed task KR-CI  in  6.23700000s (wall time)
+
+
+
+  *************************************************************
+  ************* Natural orbital occupation numbers ************
+  *************************************************************
+  //  LUCIAREL called
+  //  CIRUN = DENS1 
+  //  Computing only 1-particle density matrices
+  Allocating for             1027 diagonal integrals.
+
+
+  Allocating for              338 integrals.
+
+ Number of integrals/CC amplitudes:              338
+ (including imaginary parts) 
+
+
+       ===================================================
+        parallel distribution setup for symmetry irrep   2
+       ===================================================
+
+  total number of processes to distribute on :                  1
+  total number of blocks                     :               1296
+  total number of active blocks              :                 74
+  size of largest TTSS block                 :               3136
+  overall weighted active block length       :             358118
+  Maximum weighted block size                :              37632
+
+                    ================================
+                     Summation of even distribution 
+                    ================================
+
+  CPU    0  computes     74 blocks with a total weight of             358118
+
+   ==============================================================
+   ==> allocation of two CI vectors and one resolution vector <==
+  
+   current available free memory in double words:        63964508
+   allocate two CI vectors each of length:                  35448
+   allocate resolution vector of length:                   100352
+   ==============================================================
+
+  
+             ==================================== 
+             PARALLEL 1p DENSITY MAT. CALCULATION 
+             ==================================== 
+  
+  
+   Computing spin-dependent one-particle density
+  
+
+ Allocating 4-index array of length            1352
+
+   
+   
+  updating one- and two-particle densities 
+   
+   parallel update level    0
+   
+  Real density elements     : 
+  -------------------------------
+
+  I have completed task DENS1  in  0.03550000s (wall time)
+
+
+
+ ***************************************************
+ *************** CI natural orbitals ***************
+ ***************************************************
+
+
+   Natural orbital occupation numbers for state:  1
+   ------------------------------------------------
+
+   Symmetry  1.   Occupation of active orbitals:
+
+   1.993082130   1.975647307   1.983110225   0.997075305   0.994541134
+   0.024597130   0.003879188   0.005954907   0.010867437   0.005186025
+   0.001635797   0.001805609   0.002617808
+
+   Total     2.000000000 +     8.000000000 =    10.000000000
+
+   Symmetry  1. ** REORDERED DESCENDING OCCUPATION **
+
+   1.993082130   1.983110225   1.975647307   0.997075305   0.994541134
+   0.024597130   0.010867437   0.005954907   0.005186025   0.003879188
+   0.002617808   0.001805609   0.001635797
+
+ (RGETNO) active orbitals are NOT transformed to natural orbitals.
+  //  LUCIAREL called
+  //  CIRUN = DENS1 
+  //  Computing only 1-particle density matrices
+  Allocating for             1027 diagonal integrals.
+
+
+  Allocating for              338 integrals.
+
+ Number of integrals/CC amplitudes:              338
+ (including imaginary parts) 
+
+
+       ===================================================
+        parallel distribution setup for symmetry irrep   2
+       ===================================================
+
+  total number of processes to distribute on :                  1
+  total number of blocks                     :               1296
+  total number of active blocks              :                 74
+  size of largest TTSS block                 :               3136
+  overall weighted active block length       :             358118
+  Maximum weighted block size                :              37632
+
+                    ================================
+                     Summation of even distribution 
+                    ================================
+
+  CPU    0  computes     74 blocks with a total weight of             358118
+
+   ==============================================================
+   ==> allocation of two CI vectors and one resolution vector <==
+  
+   current available free memory in double words:        63964508
+   allocate two CI vectors each of length:                  35448
+   allocate resolution vector of length:                   100352
+   ==============================================================
+
+  
+             ==================================== 
+             PARALLEL 1p DENSITY MAT. CALCULATION 
+             ==================================== 
+  
+  
+   Computing spin-dependent one-particle density
+  
+
+ Allocating 4-index array of length            1352
+
+   
+   
+  updating one- and two-particle densities 
+   
+   parallel update level    0
+   
+  Real density elements     : 
+  -------------------------------
+
+  I have completed task DENS1  in  0.03870000s (wall time)
+
+
+
+ ***************************************************
+ *************** CI natural orbitals ***************
+ ***************************************************
+
+
+   Natural orbital occupation numbers for state:  2
+   ------------------------------------------------
+
+   Symmetry  1.   Occupation of active orbitals:
+
+   1.993979694   1.972038395   1.983871112   0.996280277   0.994665124
+   0.027296727   0.003819887   0.006286166   0.010874317   0.004647991
+   0.001663043   0.002012577   0.002564689
+
+   Total     2.000000000 +     8.000000000 =    10.000000000
+
+   Symmetry  1. ** REORDERED DESCENDING OCCUPATION **
+
+   1.993979694   1.983871112   1.972038395   0.996280277   0.994665124
+   0.027296727   0.010874317   0.006286166   0.004647991   0.003819887
+   0.002564689   0.002012577   0.001663043
+
+ (RGETNO) active orbitals are NOT transformed to natural orbitals.
+ (ROPTST)  KR-CI calculation ended properly.
+
+>>> TOTAL CPU (WALL) TIME IN KR-CI:  6.97475338s( 6.97600000s)
+
+
+
+
+ * Closing HDF5 checkpoint file 
+    - Checkpoint file contains all required data, can be used for restarts
+    - Checkpoint file closed
+
+*****************************************************
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+
+ 
+     Date and time (Linux)  : Tue Feb 11 22:11:09 2025
+     Host name              : adm-110765.pc.sdu.dk                    
+
+>>>> Node 0, utime: 15, stime: 1, minflt: 18469, majflt: 0, nvcsw: 1502, nivcsw: 302, maxrss: 146792
+>>>> Total WALL time used in DIRAC: 18s
+  
+  Dynamical Memory Usage Summary for Master
+  
+  Mean allocation size (Mb) :         7.69
+  
+  Largest          10  allocations
+  
+      488.28 Mb at subroutine krci_calc_+0xaa                            for WORK in KRCI_CALC                         
+      488.28 Mb at subroutine psiscf_+0x97                               for WORK in PSISCF                            
+      488.28 Mb at subroutine pamset_+0x291                              for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine gmotra_+0x13e9                             for WORK in GMOTRA - part 2                   
+      488.28 Mb at subroutine gmotra_+0x29e                              for WORK in GMOTRA                            
+      488.28 Mb at subroutine pamset_+0x76                               for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine MAIN__+0xa76                               for test allocation of work array in DIRAC mai
+        1.91 Mb at subroutine set_hop_dbg_+0x786                         for unnamed variable                          
+        1.91 Mb at subroutine set_hop_dbg_+0x76e                         for unnamed variable                          
+        1.91 Mb at subroutine set_hop_dbg_+0x756                         for unnamed variable                          
+  
+  Peak memory usage:       495.97 MB
+  Peak memory usage:        0.484 GB
+       reached at subroutine : set_hop_dbg_+0x786                        
+              for variable   : unnamed variable                          
+  
+ MEMGET high-water mark:    0.00 MB
+
+*****************************************************
+DIRAC pam run in /home/hjj/progs/gitDirac_esr/test/krci_short

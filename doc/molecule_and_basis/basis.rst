@@ -23,8 +23,10 @@ correlating sets for the valence shells.
 Dyall basis sets
 ----------------
 
-We recommend that you use the `Dyall basis set
-repository <https://doi.org/10.5281/zenodo.7574628>`_
+We recommend that you use the Dyall basis set repositories for
+`double-, triple-, and quadruple-zeta sets <https://doi.org/10.5281/zenodo.7574628>`_
+and
+`quintuple-zeta set <https://zenodo.org/records/17088050>`_
 whenever the basis sets are available for the elements of interest.
 In order to make that usage as convenient as possible,
 the following files, containing all sets currently available at the
@@ -44,6 +46,10 @@ URL above (published or to be published), are made available:
 |  quadruple-zeta     |  dyall.v4z  |  dyall.cv4z    |  dyall.ae4z    | dyall.4zp |
 +---------------------+-------------+----------------+----------------+-----------+
 |  +diffuse functions |  dyall.av4z |  dyall.acv4z   |  dyall.aae4z   |           |
++---------------------+-------------+----------------+----------------+-----------+
+|  quintuple-zeta     |  dyall.v5z  |  dyall.cv5z    |  dyall.ae5z    |           |
++---------------------+-------------+----------------+----------------+-----------+
+|  +diffuse functions |  dyall.av5z |  dyall.acv5z   |  dyall.aae5z   |           |
 +---------------------+-------------+----------------+----------------+-----------+
 
 The basis sets with diffuse functions are available for the s, p, and d blocks. 

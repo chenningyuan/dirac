@@ -71,6 +71,10 @@ Calculate fragments in their own basis.
 This keyword must be used with some care as the list of fragments is
 assumed to be identical to that of symmetry independent centers.
 
+keyword(C1READ)
+
+Read C1 coefficients for fragments.
+
 keyword(ATOMS)
 
 Analyze molecular orbitals in terms of atomic fragments.

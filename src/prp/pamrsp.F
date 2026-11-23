@@ -132,7 +132,6 @@ C     Last revision: July 30 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "aovec.h"
 #include "maxorb.h"
       PARAMETER(D0=0.0D0)
@@ -143,8 +142,6 @@ C
 C
 #include "dcbgen.h"
 #include "dcbxrs.h"
-#include "blocks.h"
-#include "dcbfir.h"
 C
       CHARACTER*1 TTYPEG, TTYPSG
 C
@@ -169,16 +166,7 @@ C     now has complex coefficients
       CALL MEMGET2('REAL','REDS' ,KREDS ,N2REDM,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','REDGP',KREDGP,NREDGP,WORK,KFREE,LFREE)
 C
-C     New NPOS(*) array for HER_PARDRV, reset dcbfir.h to true
-C
-
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-      if (NPOS.GT.0) THEN
-         CALL MEMGET2('INTE','POS',KPOS,NPOS,WORK,KFREE,LFREE)
-      else
-         KPOS = KFREE
-      endif
+      call HERPAR_RESET_TASK_ORDER()
 C
 C
 C     Fix the number of variational parameters
@@ -236,7 +224,7 @@ C
      &            IBTYP,IBCVC,IBEVC,IBPVC,EVALR,EVECR,
      &            WORK(KREDE),WORK(KREDS),WORK(KREDGP),
      &            WORK(KRNORM),WORK(KIVECS),WORK(KISIM),
-     &            WORK(KPOS),WORK,KFREE,LFREE)
+     &            WORK,KFREE,LFREE)
 C
       CALL MEMREL('XRSCTL.XRSCT1',WORK,1,KFRSAV,KFREE,LFREE)
 C
@@ -249,7 +237,7 @@ C/* Deck XRSCT1 */
       SUBROUTINE XRSCT1(GPCI,GPOE,GPOP,RCNV,
      &                  IBTYP,IBCVC,IBEVC,IBPVC,EVALR,EVECR,
      &                  REDE,REDS,REDGP,RNORM,IVECS,ISIM,
-     &                  NPOS,WORK,KFREE,LFREE)
+     &                  WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Module for solving the linear response equations.
@@ -371,7 +359,6 @@ C
 #include "dcbxrs.h"
 #include "pgroup.h"
 #include "dgroup.h"
-#include "dcborb.h"
 #include "cbihr2.h"
 #include "dcbbas.h"
 #include "dcbkrmc_itinfo.h"
@@ -381,16 +368,13 @@ C
      &          IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),RCNV(*),
      &          EVALR(*),EVECR(NEVEC,NFREQ),
      &          RNORM(NVPAR,NFREQ*NDAMP),IVECS(NFREQ,NVPAR),
-     &          ISIM(NVPAR),NPOS(*),WORK(*)
+     &          ISIM(NVPAR),WORK(*)
 C
-#include "dcbibn.h"
       LOGICAL BVLOAD
       CHARACTER LAB123(3)*8,RESTAR*8
 C
       DATA LAB123/'********','********','XRSPONPP'/
       DATA RESTAR/'RESTART '/
-C
-#include "ibtfun.h"
 C
       CALL QENTER('XRSCT1')
       KFRSAV = KFREE
@@ -449,7 +433,7 @@ C
       IF (E2CHEK) THEN
          SCRFCK = 1.D-14 ! we need accuracy for symmetry check of E2 matrix
       ELSE IF (.NOT. USRSCR) THEN
-         IDTEST = IBTAND(INTDEF, IDFLAG)
+         IDTEST = IAND(INTDEF, IDFLAG)
          IF (IDTEST .NE. 0) THEN
 C
 C           Some Fock matrices will be calculated with direct code :
@@ -632,7 +616,7 @@ C
      &       WORK,KFREE,LFREE)
           CALL XRSSVC(WORK(KBCI),WORK(KBOE),WORK(KBOP),
      &         WORK(KSCI),WORK(KSOE),WORK(KSOP),
-     &         IBTYP,IBCVC,IBEVC,IBPVC,NPOS,
+     &         IBTYP,IBCVC,IBEVC,IBPVC,
      &         GPCI,GPOE,GPOP, WORK,KFREE,LFREE)
 
 C
@@ -871,8 +855,6 @@ C***********************************************************************
      &          GPCI(*),GPOE(*),GPOP(*),
      &          EVALR(*),EVECR(*),WORK(*)
 C
-#include "dcbibn.h"
-C
 #include "dcbxrs.h"
 #include "dgroup.h"
 C
@@ -1093,7 +1075,6 @@ C     Last revision : July 30 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
 #include "dcbibn.h"
@@ -1555,7 +1536,6 @@ C     Written by T.Saue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
       DIMENSION WORK(*)
@@ -1636,7 +1616,6 @@ C     Written by T.Saue Sep 18 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
       DIMENSION SCVEC(*),SEVEC(*),SPVEC(*)
@@ -1944,12 +1923,9 @@ C***********************************************************************
 C
 #include "consts.h"
 C
-#include "dcbibn.h"
 C
-#include "dcbfir.h"
 #include "dcbxrs.h"
 #include "dcbgen.h"
-#include "dgroup.h"
 #include "dcborb.h"
       DIMENSION WORK(*),REDGP(*), REDS(*), REDE(*),
      &          GPCI(*),GPOE(*),GPOP(*),
@@ -3034,7 +3010,6 @@ C     Written by T.Saue Nov 8 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
 #include "dcbibn.h"
@@ -3314,7 +3289,6 @@ C***********************************************************************
       use orbital_rotation_indices
 
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
       DIMENSION HEDIAG(*),HPDIAG(*),HCDIAG(*),
@@ -3350,7 +3324,6 @@ C     Written by J. Thyssen - Nov 21 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
 #include "dcbgen.h"
@@ -3393,7 +3366,6 @@ C
 #include "dcbxrs.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbibn.h"
 #include "dgroup.h"
 C
       DIMENSION HEDIAG(*),HPDIAG(*),JXOPE(2,*),JXOPP(2,*),
@@ -3680,7 +3652,7 @@ C     Written by T.Saue Dec 1 1996
 C
 C     TYP='E' : NDIM = NZXOPE, NZL = NZ
 C     TYP='P' : NDIM = NZXOPP, NZL = NZ
-C     TYP='C' : NDIM = NCONF,  NZL = NZ_in_CI
+C     TYP='C' : NDIM = NZCONF, NZL = NZ_in_CI
 C
 C***********************************************************************
 #include "implicit.h"
@@ -3702,7 +3674,6 @@ C
      &          EVALR(NFREQ),IBTYP(2,*),IBVEC(*),IVEC(*),
      &          EVECR(NEVEC,NFREQ),PREC(NDIM,2,*),WORK(*)
       LOGICAL FNDRSP
-#include "chrnos.h"
 C
       CALL QENTER('XRSST2')
 C
@@ -4020,13 +3991,10 @@ C     written by S.Villaume & T.Saue Nov-Dec 10
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       PARAMETER(D0=0.0D0,D1=1.0D0,DM1 = -1.0D0, D2 = 2.0D0, D4 = 4.0D0)
-#include "dcbibn.h"
 C
 #include "dcbxrs.h"
-#include "dgroup.h"
 C
       DIMENSION PREC(NVAR,2,*),HDIAG(NVAR),SDIAG(NVAR)
 C
@@ -4179,8 +4147,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dcbbas.h"
-#include "dcborb.h"
       CHARACTER*16 LAB1,LAB2,XLAB1,XLAB2
       CHARACTER*2 TYP1,TYP2,XTYP1,XTYP2
       DIMENSION RSPVEC(LEN)
@@ -4236,8 +4202,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dcbbas.h"
-#include "dcborb.h"
 #include "pgroup.h"
       CHARACTER*16 LAB1,LAB2,XLAB1,XLAB2
       CHARACTER*2 TYP1,TYP2,XTYP1,XTYP2

@@ -23,15 +23,24 @@ import shutil
 
 def expand_sections(source_dir, build_dir, build_type):
 
-    KEYWORD_REGEX  = r'keyword\(([a-zA-Z !0-9_+-]+)\)'
+    KEYWORD_REGEX  = r'keyword\(([a-zA-Z !0-9\(\)_+-]+)\)'
     STARSTAR_REGEX = r'starstar\(([a-zA-Z 0-9_]+)\)'
     STAR_REGEX     = r'star\(([a-zA-Z 0-9_]+)\)'
 
-    DIR_TEMP  = os.path.join(build_dir, build_type+'_temp')
+    # The documentation is copied to <build>/<type>_temp/doc, and the other
+    # top-level directories of the source tree are linked next to it, so that
+    # relative references out of doc/ (e.g. ../../test/...) resolve as in the
+    # source tree.
+    DIR_TEMP_ROOT = os.path.join(build_dir, build_type+'_temp')
+    DIR_TEMP  = os.path.join(DIR_TEMP_ROOT, 'doc')
     DIR_FINAL = os.path.join(build_dir, build_type)
 
-    shutil.rmtree(DIR_TEMP, ignore_errors=True)
+    shutil.rmtree(DIR_TEMP_ROOT, ignore_errors=True)
     shutil.copytree(source_dir, DIR_TEMP)
+    project_dir = os.path.dirname(source_dir)
+    for entry in os.listdir(project_dir):
+        if entry != 'doc' and not entry.startswith('.'):
+            os.symlink(os.path.join(project_dir, entry), os.path.join(DIR_TEMP_ROOT, entry))
 
     for root, dirs, files in os.walk(os.path.join(DIR_TEMP, 'manual')):
         for filename in fnmatch.filter(files, '*.rst'):
@@ -54,7 +63,7 @@ def expand_sections(source_dir, build_dir, build_type):
                 if section_found != []:
                     section = '%s_' % section_found[0].replace(' ', '_')
                 print(re.sub(KEYWORD_REGEX,
-                            ('.. index:: .\g<1>\n.. _%s.\g<1>:\n\n.\g<1>\n'+str('-'*(line.find(')')-line.find('(')))) % section,line[0:len(line)-1]))
+                            (r".. index:: .\g<1>\n.. _%s.\g<1>:\n\n.\g<1>\n"+str("-"*(line.rfind(")")-line.find("(")))) % section,line[0:len(line)-1]))
 
             ##replace:
             # starstar(RABOOF)
@@ -67,7 +76,7 @@ def expand_sections(source_dir, build_dir, build_type):
             # ==========
             for line in fileinput.input(os.path.join(root, filename), inplace=True):
                 print(re.sub(STARSTAR_REGEX,
-                             ('.. index:: **\g<1>\n.. _**\g<1>:\n\n'+str('='*(line.find(')')-line.find('(')+3))+'\n\\*\\*\g<1>\n'+str('='*(line.find(')')-line.find('(')+3))),line[0:len(line)-1]))
+                             (r".. index:: **\g<1>\n.. _**\g<1>:\n\n"+str("="*(line.find(")")-line.find("(")+3))+r"\n\\*\\*\g<1>\n"+str("="*(line.find(")")-line.find("(")+3))),line[0:len(line)-1]))
 
             ##replace:
             # star(RABOOF)
@@ -80,11 +89,10 @@ def expand_sections(source_dir, build_dir, build_type):
             # ========
             for line in fileinput.input(os.path.join(root, filename), inplace=True):
                 print(re.sub(STAR_REGEX,
-                             ('.. index:: *\g<1>\n.. _*\g<1>:\n\n'+str('='*(line.find(')')-line.find('(')+1))+'\n\\*\g<1>\n'+str('='*(line.find(')')-line.find('(')+1))),line[0:len(line)-1]))
+                             (r".. index:: *\g<1>\n.. _*\g<1>:\n\n"+str("="*(line.find(")")-line.find("(")+1))+r"\n\\*\g<1>\n"+str("="*(line.find(")")-line.find("(")+1))),line[0:len(line)-1]))
 
-    # Miro: use quiet mode to keep only warnings and errors
+    # Miro: use quiet mode to keep only warnings and errors, adding "-v" flag makes verbose output 
     subprocess.call('sphinx-build -q -b %s %s %s' % (build_type, DIR_TEMP, DIR_FINAL), shell=True)
-
 
 if __name__ == '__main__':
     source_dir = os.path.dirname(os.path.abspath(__file__))

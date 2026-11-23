@@ -24,7 +24,7 @@ Example
 -------
 
 Demonstration of this feature is in the DIRAC *test/count_cc_memory*, see
-:download:`test  <../../../../test/count_cc_memory/test>`
+:download:`test  <test>`
 
 We found the almost minimal setting - via the *--ag* parameter flag -  for the memory counting run:
 
@@ -32,8 +32,8 @@ We found the almost minimal setting - via the *--ag* parameter flag -  for the m
 
  pam --noarch --gb=0.20 --ag=0.366 --inp=H2O.ae4z.x2c.scf_countmem-relcc.inp  --mol=H2O.xyz --put "DFPCMO.H2O.x2c.ae4z=DFPCMO" 
 
-Input files are :download:`H2O.ae4z.x2c.scf_countmem-relcc.inp  <../../../../test/count_cc_memory/H2O.ae4z.x2c.scf_countmem-relcc.inp>`, :download:`H2O.xyz  <../../../../test/count_cc_memory/H2O.xyz>`, producing the output 
-:download:`file  <../../../../test/count_cc_memory/result/H2O.ae4z.x2c.scf_countmem-relcc_H2O.out>`.
+Input files are :download:`H2O.ae4z.x2c.scf_countmem-relcc.inp  <H2O.ae4z.x2c.scf_countmem-relcc.inp>`, :download:`H2O.xyz  <H2O.xyz>`, producing the output 
+:download:`file  <H2O.ae4z.x2c.scf_countmem-relcc_H2O.out>`.
 
 We are to look the "Peak memory usage" to get reasonable estimate of dynamic memory:
 
@@ -59,7 +59,7 @@ This amount of  memory must be free at the running machine equiped with at least
  pam --noarch --mpi=16 --gb=0.20 --ag=0.366 --inp=H2O.ae4z.x2c.scf_relcc.inp  --mol=H2O.xyz --put "DFPCMO.H2O.x2c.ae4z=DFPCMO"  
 
 Have a look at the 
-:download:`output  <../../../../test/count_cc_memory/result/H2O.ae4z.x2c.scf_relcc_H2O.out>` file.
+:download:`output  <H2O.ae4z.x2c.scf_relcc_H2O.out>` file.
 We search there the peak memory usage which is cca 99.2% of the *--ag* parameter.
 
 ::

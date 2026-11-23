@@ -3,7 +3,7 @@
 !
 !     Data from the periodic table.
 !
-      CHARACTER(LEN=4), PARAMETER :: NUCLABEL(1:118)=(/                 &
+      CHARACTER(LEN=4), PARAMETER :: NUCLABEL(1:138)=(/                 &
      &  'H  ', 'He ', 'Li ', 'Be ', 'B  ',                              &
      &  'C  ', 'N  ', 'O  ', 'F  ', 'Ne ',                              &
      &  'Na ', 'Mg ', 'Al ', 'Si ', 'P  ',                              &
@@ -27,9 +27,13 @@
      &  'Md ', 'No ', 'Lr ', 'Rf ', 'Db ',                              &
      &  'Sg ', 'Bh ', 'Hs ', 'Mt ', 'Ds ',                              &
      &  'Rg ', 'Cn ', 'Nh ', 'Fl ', 'Mc ',                              &
-     &  'Lv ', 'Ts ', 'Og '/)
+     &  'Lv ', 'Ts ', 'Og ', 'Uee', 'Ubn',                              &
+     &  'Ubu', 'Ubb', 'Ubt', 'Ubq', 'Ubp',                              &
+     &  'Ubh', 'Ubs', 'Ubo', 'Ube', 'Utn',                              &
+     &  'Utu', 'Utb', 'Utt', 'Utq', 'Utp',                              &
+     &  'Uth', 'Uts', 'Uto'/)
 ! Nuclear mass refers to most abundant or most stable isotope
-      REAL(KIND=8), PARAMETER :: NUCMASS(1:118)=(/                      &
+      REAL(KIND=8), PARAMETER :: NUCMASS(1:138)=(/                      &
      &    1.D0,   4.D0,   7.D0,   9.D0,  11.D0,                         &
      &   12.D0,  14.D0,  16.D0,  19.D0,  20.D0,                         &
      &   23.D0,  24.D0,  27.D0,  28.D0,  31.D0,                         &
@@ -53,4 +57,8 @@
      &  258.D0, 259.D0, 262.D0, 261.D0, 262.D0,                         &
      &  263.D0, 262.D0, 265.D0, 266.D0, 281.D0,                         &
      &  280.D0, 285.D0, 284.D0, 289.D0, 288.D0,                         &
-     &  292.D0, 293.D0, 294.D0/)
+     &  292.D0, 293.D0, 294.D0, 303.D0, 304.D0,                         &
+     &  330.D0, 334.D0, 337.D0, 340.D0, 344.D0,                         &
+     &  347.D0, 350.D0, 354.D0, 357.D0, 361.D0,                         &
+     &  364.D0, 367.D0, 371.D0, 374.D0, 378.D0,                         &
+     &  381.D0, 385.D0, 388.D0/)

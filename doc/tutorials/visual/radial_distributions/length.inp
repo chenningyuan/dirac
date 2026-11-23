@@ -10,17 +10,22 @@
 **GRID
 .ULTRAFINE
 **VISUAL
-.DSCALE
--2.403791564532
-.EDIPX
- PAMXVC 3
-.EDIPX
- PAMXVC 9
+.GRIDS
+2
+id=1 input=radial
+id=2 input=dft
 .RADIAL
-0.0D0 0.0D0 0.0D0
+0.0,  0.0,   0.0
 10.0
 500
-.3D_INT
+.GRIDFUNCTIONS
+6
+name=edip id_grid=1 dscale=2.403791564532 rspvec_file=RESPONSE.h5 rspvec_id=3 purpose=integration
+name=edip id_grid=1 dscale=2.403791564532 rspvec_file=RESPONSE.h5 rspvec_id=9 purpose=integration
+name=edip id_grid=1 dscale=2.403791564532 rspvec_file=RESPONSE.h5 rspvec_id=3 purpose=visualization export=csv file_out=length_radial_rspvec3.csv
+name=edip id_grid=1 dscale=2.403791564532 rspvec_file=RESPONSE.h5 rspvec_id=9 purpose=visualization export=csv file_out=length_radial_rspvec9.csv
+name=edip id_grid=2 dscale=2.403791564532 rspvec_file=RESPONSE.h5 rspvec_id=3 purpose=integration
+name=edip id_grid=2 dscale=2.403791564532 rspvec_file=RESPONSE.h5 rspvec_id=9 purpose=integration
 **MOLECULE
 *BASIS
 .DEFAULT

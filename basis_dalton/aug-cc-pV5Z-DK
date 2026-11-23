@@ -29,7 +29,7 @@ $ H    :  T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).
 $         Diffuse s exponent - S. Mielke                                        
 $ He   :  D.E. Woon and T.H. Dunning, Jr., J. Chem. Phys. 100, 2975 (1994).     
 $ B - F:  R.A. Kendall, T.H. Dunning, Jr. and R.J. Harrison, J. Chem. Phys. 96, 
-$         6769 (1992).                                                          
+$         6796 (1992).                                                          
 $Al - Cl: D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 98, 1358 (1993).       
 $
 $Recontraction for use in Douglas-Kroll calculations:                           
@@ -516,6 +516,7 @@ $ H-TYPE FUNCTIONS
     2    2    0
      3.77600000  1.00000000  0.00000000
      1.62800000  0.00000000  1.00000000
+a 13
 $ ALUMINUM     (20s,12p,4d,3f,2g,1h) -> [7s,6p,4d,3f,2g,1h]                     
 $ ALUMINUM     (1s,1p,1d,1f,1g,1h)                                              
 $ S-TYPE FUNCTIONS

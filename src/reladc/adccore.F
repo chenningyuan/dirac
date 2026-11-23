@@ -422,7 +422,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &               maxcore_infc(3),maxcore_info(3)
       ENDIF
 
-!<<<<<<< HEAD
 !!
 !! MXCORR is a cumulative maximum of individual memory requirements
 !! ===> if any subroutine would need more core than MAXCORE we quit.
@@ -463,9 +462,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      IF(DODIPS) THEN
 !        CALL ADCDBLE_MAIN (ICALC,CC,KFREE,LFREE,MXCORR,NSP,IREPSPI,EPS)
 !      ENDIF
-!
-!=======
-!>>>>>>> master
 !
 !     return after closing low-level I/O files
 !

@@ -1,0 +1,115 @@
+include_directories(
+    ${PROJECT_SOURCE_DIR}/src/include
+    )
+
+if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
+    SET(CMAKE_Fortran_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
+    message(STATUS "For libcaspt2.a, objects mode set to 64 bit on IBM AIX with XL Fortran compiler")
+endif()
+
+set(FIXED_CASPT2_FORTRAN_SOURCES
+)
+
+set(FREE_CASPT2_FORTRAN_SOURCES
+    module_dict.F90
+    module_error.F90
+    module_global_variables.F90
+    module_mpi.F90
+    module_time.F90
+    module_2integrals.F90
+    module_blas.F90
+    module_essential_input.F90
+    module_file_manager.F90
+    module_index_utils.F90
+    module_intra.F90
+    module_realonly.F90
+    module_restart_file.F90
+    module_sort_swap.F90
+    module_validation.F90
+    ras_det_check.F90
+    read_input_module.F90
+    takekr.F90
+
+    # CASPT2 modules
+    ulambda_s_half.F90
+
+    # IVO modules
+    module_cmo_variables.F90
+    # module_dfpcmo_handler.F90  # for stand alone program
+    module_hdf5_cmo_handler.F90
+    module_ivo_consistency_check.F90
+
+    # General
+    create_newmdcint.F90
+    cutoff.F90
+    dcaspt2_deallocate.F90
+    # dcaspt2_main.F90
+    dcaspt2_run_subprograms.F90
+    density_matrix.F90
+    diag.F90
+    e0test.F90
+    get_filename.F90
+    mem.F90
+    one_e_exct.F90
+    pam_relcaspt2.F90
+    print_head.F90
+    read_cidata.F90
+    read_mrconee.F90
+    tramo.F90
+
+    # IVO
+    fockivo.F90
+    print_head_ivo.F90
+    r4divo.F90
+
+    # CASCI
+    calce0.F90
+    casci.F90
+    casmat.F90
+    checkdgc.F90
+    print_head_casci.F90
+    r4dcasci.F90
+    search_cas_configuration.F90
+
+    # CASPT2
+    divide_2_elec_integral_into_subspaces.F90
+    e0after_tra.F90
+    fock_matrix_of_hf.F90
+    fockcasci.F90
+    fockdiag.F90
+    print_head_caspt2.F90
+    r4dcaspt2_tra.F90
+    sdet.F90
+    solve_A_subspace.F90
+    solve_B_subspace.F90
+    solve_C_subspace.F90
+    solve_D_subspace.F90
+    solve_E_subspace.F90
+    solve_F_subspace.F90
+    solve_G_subspace.F90
+    solve_H_subspace.F90
+    trac.F90
+    prtoutfock.F90
+)
+
+if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
+    set_source_files_properties(${FREE_CASPT2_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
+    set_source_files_properties(${FIXED_CASPT2_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
+endif()
+
+if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
+    set_source_files_properties(${FREE_CASPT2_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-fp-model=precise")
+    set_source_files_properties(${FIXED_CASPT2_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-fp-model=precise")
+endif()
+
+add_library(
+    caspt2
+    STATIC
+    ${FREE_CASPT2_FORTRAN_SOURCES}
+    ${FIXED_CASPT2_FORTRAN_SOURCES}
+)
+
+# add intermodule dependencies
+add_dependencies(caspt2 gp)
+add_dependencies(caspt2 interface_mpi)
+

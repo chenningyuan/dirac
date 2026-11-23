@@ -275,7 +275,7 @@ C
      &                   WORK(KSIOIO),ISMOST(1,ISSM),
      &                   NBATCH,WORK(KLXLBT),WORK(KLXLEBT),
      &                   WORK(KLXI1BT),WORK(KLXIBT),0,ITTSS_ORD,
-     &                   IBLKDSTND,IBLOCKI)
+     &                   IBLKDSTND,NUM_BLOCKS2)
 #endif
 *
        IF(IDIAG.EQ.1.AND.ICISTR.EQ.1) THEN

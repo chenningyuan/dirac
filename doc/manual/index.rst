@@ -18,13 +18,14 @@ Keyword reference
 
 * :doc:`**HAMILTONIAN <hamiltonian>` --- Specify the Hamiltonian
    - :doc:`*DFT <dft>` --- DFT directives
+   - :doc:`*EFFQED <effqed>` --- effective QED potential directives
    - :doc:`*XAMFI <xamfi>` --- X-AMFI directives
    - :doc:`*AMFI <amfi>` --- AMFI directives
    - :doc:`*X2C <x2c>` --- X2C directives
    - :doc:`*FDE <fde>` --- Frozen Density Embedding directives
    - :doc:`*PCM <pcm>` --- Polarizable Continuum Model directives
    - :doc:`*PCMSOL <pcmsolver>` --- PCMSolver module directives
-   - :doc:`*PEQM <peqm>` --- Polarizable embedding model directives
+   - :doc:`*PELIB <pelib>` --- Polarizable (density) embedding model directives
     
 * :doc:`**WAVE FUNCTION <wave_function>` --- Method specification
    - :doc:`*SCF <wave_function/scf>` --- SCF module (Hartree-Fock/Kohn-Sham)
@@ -43,6 +44,8 @@ Keyword reference
    - :doc:`*MP2 NO <wave_function/mp2no>` --- MP2 natural orbitals module
    - :doc:`*LAPLCE <wave_function/laplce>` --- Laplace transformation of orbital-energy denominators
    - :doc:`**EXACC <wave_function/exacorr>` --- Parallel implementation of coupled cluster methods based on ExaTensor library.
+   - :doc:`*CASPT2 <wave_function/caspt2>` --- Relativistic IVO/CASCI/CASPT2 and IVO/RASCI/RASPT2 module
+
 
 * :doc:`**ANALYZE <analyze>` --- Analyze the wave function
    - :doc:`*MULPOP <analyze/mulpop>` --- Mulliken population analysis
@@ -61,6 +64,7 @@ Keyword reference
    - :doc:`*NMR <properties/nmr>` --- NMR directives
    - :doc:`*STEX <properties/stex>` --- Static exchange (STEX) directives
    - :doc:`*NQCC <properties/nqcc>` --- NQCC directives
+   - :doc:`*ESR <properties/esr>` --- ESR/EPR directives
 
 
 * :doc:`**VISUAL <visual>` --- Visualization module

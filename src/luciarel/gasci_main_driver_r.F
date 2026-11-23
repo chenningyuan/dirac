@@ -37,7 +37,7 @@
       use mospinor_info
       use symmetry_setup_krci
 
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #if defined (VAR_MPI2)
 #include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -133,45 +133,44 @@ C     DIAGONAL_ALLOC keeps track of allocation of T_BUFF_D
       CPIC_PASS_D    = .FALSE.
       DIAGONAL_ALLOC = .FALSE.
 C
-CSK   NTEST = 3
-      IF(NTEST.GE.100) THEN
+
+      IF(NTEST.GT.0) THEN
         WRITE(LUWRT,*)
-        WRITE(LUWRT,*) ' ====================================='
-        WRITE(LUWRT,*) ' Control has been transferred to GASCI'
-        WRITE(LUWRT,*) ' ====================================='
+        WRITE(LUWRT,*) ' =============================================='
+        WRITE(LUWRT,*) ' Control has been transferred to GASCI_LUCIAREL'
+        WRITE(LUWRT,*) ' =============================================='
         WRITE(LUWRT,*)
-        WRITE(LUWRT,'(A)') '  A few pertinent data : '
-        WRITE(LUWRT,*)
-        WRITE(LUWRT,'(A,I2)') '  CI space         ',ISPC
-        WRITE(LUWRT,*)
-        WRITE(LUWRT,*) ' Number of GAS spaces included ',LCMBSPC(ISPC)
+      IF(NTEST.GT.2) THEN
+        WRITE(LUWRT,'(A/)')   '  A few pertinent data : '
+        WRITE(LUWRT,'(A,I2/)') ' Internal CI space ',ISPC
+      END IF
+      IF (LCMBSPC(ISPC) .GT. 1) THEN
+        WRITE(LUWRT,*) '  Number of GAS spaces included ',LCMBSPC(ISPC)
         WRITE(LUWRT,'(A,10I3)') ' GAS spaces included           ',
      &               (ICMBSPC(II,ISPC),II=1,LCMBSPC(ISPC))
         WRITE(LUWRT,*)
-        WRITE(LUWRT,*) ' Occupation constraints : '
-        WRITE(LUWRT,*) '========================= '
-        WRITE(LUWRT,*)
-        WRITE(LUWRT,*)
+      END IF
+        WRITE(LUWRT,'(A/)') '  Occupation constraints : '
         DO JJGASSPC = 1, LCMBSPC(ISPC)
          JGASSPC = ICMBSPC(JJGASSPC,ISPC)
-        WRITE(LUWRT,*)
-     &  ' Gas space  Min acc. occupation Max acc. occupation '
-        WRITE(LUWRT,*)
-     &  ' ================================================== '
-        DO IGAS = 1, NGAS
-          WRITE(LUWRT,'(3X,I2,13X,I3,16X,I3)') IGAS,
+         WRITE(LUWRT,*)
+     &   ' Gas space  Min acc. occupation Max acc. occupation '
+         WRITE(LUWRT,*)
+     &   ' ================================================== '
+         DO IGAS = 1, NGAS
+           WRITE(LUWRT,'(3X,I2,13X,I3,16X,I3)') IGAS,
      &     IGSOCCX(IGAS,1,JGASSPC),IGSOCCX(IGAS,2,JGASSPC)
+         END DO
         END DO
-        END DO
-C
-       END IF
-CSK    NTEST = 0
-C
+      END IF
+
 !     already done one routine up
 !     ECORE = ECORE_KRMC
+
       NDET = XISPSM(ISM,ISPC)
-      IF(NTEST > 25) 
-     &  write(LUWRT,*) ' Number of determinants/combinations  ',NDET
+      write(LUWRT,'(/A,I0)')  '  Number of determinants ',NDET
+C
+C
 C     transfer NDET to common block LUCIPARREL
       L_COMBI     = NDET
       L_COMBI_MAX = NDET
@@ -302,6 +301,7 @@ C
      &            'routine requires 64-bit integer in dirac')
 #endif
 C
+        IF (NTEST .GT. 0) THEN
         WRITE(LUWRT,'(/2X,A)')
      & '=============================================================='
         WRITE(LUWRT,'(2X,A/)')
@@ -313,6 +313,7 @@ C
       
         WRITE(LUWRT,'(2X,A/)')
      & '=============================================================='
+       END IF
 
         IF(SPLIT_IJKL) deallocate(IT_TTOL)
 C
@@ -492,7 +493,7 @@ C     CI diagonal - if required
         LUDIA = LUSC1
       END IF
 #if defined (VAR_MPI2)
-      IF( USE_EX_IDIA ) THEN
+      IF( USE_EX_IDIA .AND. NTEST.GT.0) THEN
         WRITE(LUWRT,*) '  saving CPU/WALL-time in this MPI run   '
         WRITE(LUWRT,*) '  using existing diagonal file DIAPAR.1. '
         WRITE(LUWRT,*) '                                         '
@@ -1013,11 +1014,11 @@ C       left hand-side vector on LUSC62
      &                        NUM_BLOCKS,1,IRC)
 C
 C       files are in place now... say hello
-        WRITE(LUWRT,*) ' '
-        WRITE(LUWRT,'(12X,A)') ' =================================== '
+        if (ntest .gt. 0) then
+        WRITE(LUWRT,'(/12X,A)') ' =================================== '
         WRITE(LUWRT,'(12X,A)') ' PARALLEL DENSITY MATRIX CALCULATION '
         WRITE(LUWRT,'(12X,A)') ' =================================== '
-        WRITE(LUWRT,*) ' '
+        end if
 C
 #endif
 C
@@ -1037,16 +1038,12 @@ C
 C
         if (IDENSI.eq.3) then
           IDEN12 = 1
-          write(LUWRT,*) ' '
-          write(LUWRT,'(2X,A)') 
+          if (ntest .gt. 0) write(LUWRT,'(/2X,A)') 
      &    ' Computing spin-dependent one-particle density'
-          write(LUWRT,*) ' '
         else if (IDENSI.eq.4) then
           IDEN12 = 2
-          write(LUWRT,*) ' '
-          write(LUWRT,'(2X,A)') 
+          if (ntest .gt. 0) write(LUWRT,'(/2X,A)') 
      &   ' Computing spin-dependent one- and two-particle densities.'
-          write(LUWRT,*) ' '
         else
           write(LUWRT,*) 'IDENSI =  ',IDENSI
           Call Abend2( 'Problemo in gasci. Quitting.' )
@@ -1151,7 +1148,7 @@ C         FIXME!!!       HAS TO BE CHANGED AS SOON AS THE COMPLETE
 C                        KR-MCSCF IS RUNNING IN PARALLEL!
 C
           IF(MYPROC .eq. MASTER)THEN
-            WRITE(LUWRT,'(/a,i16/)')
+           IF (NTEST .gt. 0)  WRITE(LUWRT,'(/a,i16/)')
      &      ' Allocating 4-index array of length',NTERMS*4
             call memmar_i8(KINDEX,NTERMS*4,'ADDL  ',1,'KINDEX')
             call IZERO8(WORK(KINDEX),NTERMS*4)
@@ -1421,7 +1418,7 @@ C
       if (CIRUN /= 'REFVEC') THEN
          CALL GETTIM(CPU1,WALL1)
          WALL1 = WALL1 - WALL0
-         write(LUWRT,'(/5A/)') '  I have completed task ',CIRUN,
+         write(LUWRT,'(/5A)') '  I have completed task ',CIRUN,
      &      ' in ',SECTID(WALL1),' (wall time)'
       END IF
 

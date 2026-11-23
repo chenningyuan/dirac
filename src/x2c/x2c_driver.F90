@@ -83,7 +83,7 @@ module dirx2c
   use x2c_h1inf2c_mo2ao
   use x2c_2e_soc_interface
   use x2c_pct_ao
-  use x2c_fio
+ !use x2c_fio
   use x2c_utils
   use x2c_h1mat_base
   use x2c_pct_mo_coefficients
@@ -380,7 +380,7 @@ contains
 !      operator matrix is the 4c-Dirac Fock operator)
 !      ---------------------------------------------------------------------------------------------------------------
        if(x2c_is_defining_h1mat == 2)then ! X2Cmmf
-         call x2c_pctrafo_mo_coefficients_driver(2,                         &
+         call x2c_pctrafo_mo_coefficients_driver(1,                         &
                                                  nr_cmo_q,                  &
                                                  nr_ao_total_x2c,           &
                                                  nr_ao_large_x2c,           &

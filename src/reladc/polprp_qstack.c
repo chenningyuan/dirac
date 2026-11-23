@@ -18,7 +18,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
-#include<stdint.h>
+#include<inttypes.h>
 #include<complex.h>
 
 #define MAXNUMSTACK 100
@@ -556,7 +556,7 @@ double qstack_meminf(void){
   umem+=numofstacks*sizeof(CINT48);
 
   usedmem=(double)(umem)/(1024.0 * 1024.0);  // mem in MB as a double
-  if(verbose) printf("%s total allocated memory: %llu bytes = (%.2f Megabytes).\n",taginf,umem,usedmem);
+  if(verbose) printf("%s total allocated memory: %" PRIu64 " bytes = (%.2f Megabytes).\n",taginf,umem,usedmem);
 
   return usedmem;
 }

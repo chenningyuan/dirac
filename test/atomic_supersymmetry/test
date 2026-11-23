@@ -16,6 +16,8 @@ f.add(from_string  = '   Electronic energy',
 
 test.run(['Nb.inp'], ['Nb.xyz'], f)
 test.run(['Nblin.inp'], ['Nblin.xyz'], f)
+test.run(['Nelin.inp'], ['Ne.xyz'], f)
+test.run(['Nelin.inp'], ['Nelin.xyz'], f)
 
 f = Filter()
 f.add(from_string = ' Overview of calculated energies',

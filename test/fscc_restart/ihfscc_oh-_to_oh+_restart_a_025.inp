@@ -19,8 +19,6 @@ OH test, single-reference
 .MAXITR
  50
 **MOLTRA
-.SCHEME 
- 6
 .ACTIVE
 energy -1.0 2. 0.01
 **ANALYZE

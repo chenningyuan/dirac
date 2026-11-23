@@ -378,8 +378,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
-C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbham.h"
@@ -929,7 +927,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
       PARAMETER (THROUT = 1.0D-15)
 C
 #include "dcborb.h"
@@ -1276,10 +1273,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "thrzer.h"
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1435,13 +1428,8 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
-#include "consts.h"
       PARAMETER (THROUT = 1.0D-10)
-C
-#include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION VDUUUU(NASHT,NASHT,NNASHX,NZ,*)
       DIMENSION VMUUUU( (2*NASHT)**4, *)
@@ -1736,16 +1724,12 @@ C
       use mospinor_info
       use symmetry_setup_krci
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "pgroup.h"
-#include "dcbkrci.h"
 C
       DIMENSION  VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
       DIMENSION  hcore(2*NASHT,2*NASHT,*)

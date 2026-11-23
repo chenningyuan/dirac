@@ -24,7 +24,7 @@
 !
 module x2c_h1inf2c_mo2ao
 
-  use x2c_fio
+ !use x2c_fio
   use x2c_utils, only:                 &
       construct_saomo_overlap_half_tr, &
       print_x2cmat

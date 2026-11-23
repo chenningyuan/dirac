@@ -40,8 +40,6 @@ C
 #include "files.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "eqns.inc"
-#include "ccpar.inc"
 #include "waio.h"
 C
 C---------------Local variables--------------------------------------
@@ -98,7 +96,6 @@ C
 #include "files.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "eqns.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -132,7 +129,6 @@ C
 #include "files.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "eqns.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -170,8 +166,6 @@ C
 #include "files.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "eqns.inc"
-#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -214,8 +208,6 @@ C
 #include "files.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "eqns.inc"
-#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -254,11 +246,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "eqns.inc"
-#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -299,7 +288,6 @@ C
 #include "files.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "eqns.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -336,8 +324,6 @@ C
 #include "files.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "eqns.inc"
-#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -381,7 +367,6 @@ C
 #include "files.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "eqns.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -420,8 +405,6 @@ C
 #include "files.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "eqns.inc"
-#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -475,7 +458,6 @@ C
 #include "files.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "waio.h"
 #include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
@@ -526,11 +508,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "eqns.inc"
 C
 C---------------Local variables--------------------------------------
       REAL*8, ALLOCATABLE :: VOVV_TEMP(:)
@@ -577,11 +556,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "eqns.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
       integer ISTAT(df_MPI_STATUS_SIZE)
@@ -680,11 +656,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "eqns.inc"
-#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -716,16 +689,6 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8             :: VVVOV(*)
       REAL*8, ALLOCATABLE:: VOVVV(:)
-C
-C---------------Common Blocks--------------------------------------
-C
-#include "files.inc"
-#include "complex.inc"
-#include "symm.inc"
-#include "eqns.inc"
-#include "param.inc"
-C
-C---------------Local variables--------------------------------------
 C
 C---------------Executable code--------------------------------------
 C
@@ -773,7 +736,6 @@ C
 #include "files.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "waio.h"
 #include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
@@ -840,7 +802,6 @@ C
 #include "files.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "eqns.inc"
 #include "ccpar.inc"
 C---------------Local variables--------------------------------------
        INTEGER*8 JSTART
@@ -893,7 +854,6 @@ C
 #include "files.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "waio.h"
 #include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------

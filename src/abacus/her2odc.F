@@ -27,9 +27,7 @@ C
 C     TUH Apr 11 1988
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "iratdef.h"
       LOGICAL TPR12, TCON12, GEN12, EXPECT, DIRFCK, RPRI12, RCNT12
       DIMENSION NPCO1(*), NPCO2(*), JSTR1(*), JSTR2(*), COOR12(*),
      &          EXP12(*), FAC12(*), CONT1(*), CONT2(*), NUCS12(*),
@@ -497,6 +495,7 @@ C  /* Deck odcseg */
 C
 C     TUH 84
 C
+      use gab_screening, only: prune_thr, qorb, ao2orb
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -508,6 +507,8 @@ C
       LOGICAL TCON12, TPR12, DIAG12, ALLSYM, EXPECT, DIRFCK, DOTHIS
 #include "primit.h"
 #include "symmet.h"
+#include "blocks.h"
+#include "twocom.h"
       COMMON /MAXOLD/ OLDMAX
       DIMENSION NPCO1(NSET1,2), NPCO2(NSET2,2), JSTR1(*), JSTR2(*),
      &          COOR12(NUC1*NUC2,3,3,NODC12),
@@ -536,6 +537,18 @@ C
          THRSH  = THRESH/OLDMAX
       END IF
 C
+C     Pruning of orbital pairs (direct Fock matrices, see PRNSET):
+C     sets are contracted orbitals, skip pairs with small QORB
+C
+      THRPRN = PRUNE_THR(IELCTR)
+      IF (IELCTR .EQ. 1) THEN
+         ISHL1 = ISHELA
+         ISHL2 = ISHELB
+      ELSE
+         ISHL1 = ISHELC
+         ISHL2 = ISHELD
+      END IF
+C
 C     Run over contracted orbitals
 C     ============================
 C
@@ -556,6 +569,11 @@ C
             ISTR2 = JSTR2(ISET2) + 1
             IEND2 = JSTR2(ISET2) + NPCO2(ISET2,1)
             IORB2 = - NPCO2(ISET2,2)
+            IF (THRPRN .GT. D0) THEN
+               IA1 = AO2ORB(IORBSH(ISHL1,ISET1) + 1)
+               IA2 = AO2ORB(IORBSH(ISHL2,ISET2) + 1)
+               IF (QORB(IA1,IA2) .LT. THRPRN) GO TO 200
+            END IF
 C
 C           Run over primitives
 C           ===================
@@ -682,7 +700,6 @@ C
 C     TUH Apr 11 1988
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       LOGICAL SAM12X, SAM12Y, SAM12Z, ONECEN, DO1, DO2, BIGVEC, UNDIFF,
      &        SPNORB, LONDON
@@ -1464,11 +1481,9 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       INTEGER A, B, ABM, T, X, IODD(3)
       DIMENSION COEF12(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
      &          COOR12(NUC1*NUC2,3,3), COOR1(MXUC12)
-#include "abainf.h"
 #include "chrxyz.h"
 #include "orgcom.h"
 

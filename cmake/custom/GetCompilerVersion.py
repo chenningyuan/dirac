@@ -54,52 +54,52 @@ def get_compiler_version(compiler,version_flag,pattern):
 
 #! looking for C compiler version
 if C_COMPILER_VENDOR == 'GNU':
-    C_COMPILER_VERSION = get_compiler_version(C_COMPILER,'--version','\d+\.\d+\.\d+')
-elif C_COMPILER_VENDOR == 'Intel':
+    C_COMPILER_VERSION = get_compiler_version(C_COMPILER,'--version',r"\d+\.\d+\.\d+")
+elif C_COMPILER_VENDOR == 'Intel' or C_COMPILER_VENDOR == 'IntelLLVM':
     if CMAKE_SYSTEM_NAME == 'Windows':
-        C_COMPILER_VERSION = get_compiler_version(C_COMPILER,'\V','\d+\.\d+')
+        C_COMPILER_VERSION = get_compiler_version(C_COMPILER,r'/V',r"\d+\.\d+")
     else:
-        C_COMPILER_VERSION = get_compiler_version(C_COMPILER,'-V','\d+\.\d+')
-elif C_COMPILER_VENDOR == 'PGI':
-    C_COMPILER_VERSION = get_compiler_version(C_COMPILER,'-V','\d+\.\d+')
+        C_COMPILER_VERSION = get_compiler_version(C_COMPILER,'-V',r"\d+\.\d+\.\d+")
+elif C_COMPILER_VENDOR == 'NVHPC':
+    C_COMPILER_VERSION = get_compiler_version(C_COMPILER,'-V',r"\d+\.\d+")
 elif C_COMPILER_VENDOR == 'XL':
-    C_COMPILER_VERSION = get_compiler_version(C_COMPILER,'-qversion','\d+\.\d+')
+    C_COMPILER_VERSION = get_compiler_version(C_COMPILER,'-qversion',r"\d+\.\d+")
 elif C_COMPILER_VENDOR == 'Clang':
-    C_COMPILER_VERSION =  get_compiler_version(C_COMPILER,'--version','\d+\.\d+')
+    C_COMPILER_VERSION =  get_compiler_version(C_COMPILER,'--version',r"\d+\.\d+")
 else:
     #! unknown, not supported vendor
     C_COMPILER_VERSION = '0.0'
 
 #! looking for C++ compiler version
 if CXX_COMPILER_VENDOR == 'GNU':
-    CXX_COMPILER_VERSION = get_compiler_version(CXX_COMPILER,'--version','\d+\.\d+\.\d+')
-elif CXX_COMPILER_VENDOR == 'Intel':
+    CXX_COMPILER_VERSION = get_compiler_version(CXX_COMPILER,'--version',r"\d+\.\d+\.\d+")
+elif CXX_COMPILER_VENDOR == 'Intel' or CXX_COMPILER_VENDOR == 'IntelLLVM':
     if CMAKE_SYSTEM_NAME == 'Windows':
-        CXX_COMPILER_VERSION = get_compiler_version(CXX_COMPILER,'/V','\d+\.\d+\.\d+')
+        CXX_COMPILER_VERSION = get_compiler_version(CXX_COMPILER,r'/V',r"\d+\.\d+\.\d+")
     else:
-        CXX_COMPILER_VERSION = get_compiler_version(CXX_COMPILER,'-V','\d+\.\d+\.\d+')
-elif CXX_COMPILER_VENDOR == 'PGI':
-    CXX_COMPILER_VERSION = get_compiler_version(CXX_COMPILER,'-V','\d+\.\d+')
+        CXX_COMPILER_VERSION = get_compiler_version(CXX_COMPILER,'-V',r"\d+\.\d+\.\d+")
+elif CXX_COMPILER_VENDOR == 'NVHPC':
+    CXX_COMPILER_VERSION = get_compiler_version(CXX_COMPILER,'-V',r"\d+\.\d+")
 elif CXX_COMPILER_VENDOR == 'XL':
-    CXX_COMPILER_VERSION = get_compiler_version(CXX_COMPILER,'-qversion','\d+\.\d+')
+    CXX_COMPILER_VERSION = get_compiler_version(CXX_COMPILER,'-qversion',r"\d+\.\d+")
 elif CXX_COMPILER_VENDOR == 'Clang':
-    CXX_COMPILER_VERSION = get_compiler_version(CXX_COMPILER,'--version','\d+\.\d+')
+    CXX_COMPILER_VERSION = get_compiler_version(CXX_COMPILER,'--version',r"\d+\.\d+")
 else:
     #! unknown, not supported vendor
     CXX_COMPILER_VERSION = '0.0'
 
 #! looking for Fortran compiler version
 if Fortran_COMPILER_VENDOR == 'GNU':
-    Fortran_COMPILER_VERSION = get_compiler_version(Fortran_COMPILER,'--version','\d+\.\d+\.\d+')
-elif Fortran_COMPILER_VENDOR == 'Intel':
+    Fortran_COMPILER_VERSION = get_compiler_version(Fortran_COMPILER,'--version',r"\d+\.\d+\.\d+")
+elif Fortran_COMPILER_VENDOR == 'Intel' or Fortran_COMPILER_VENDOR == 'IntelLLVM':
     if CMAKE_SYSTEM_NAME == 'Windows':
-        Fortran_COMPILER_VERSION = get_compiler_version(Fortran_COMPILER,'/V','\d+\.\d+')
+        Fortran_COMPILER_VERSION = get_compiler_version(Fortran_COMPILER,r"/V',r'\d+\.\d+")
     else:
-        Fortran_COMPILER_VERSION = get_compiler_version(Fortran_COMPILER,'-V','\d+\.\d+')
-elif Fortran_COMPILER_VENDOR == 'PGI':
-    Fortran_COMPILER_VERSION = get_compiler_version(Fortran_COMPILER,'-V','\d+\.\d+')
+        Fortran_COMPILER_VERSION = get_compiler_version(Fortran_COMPILER,'-V',r"\d+\.\d+\.\d+")
+elif Fortran_COMPILER_VENDOR == 'NVHPC' or Fortran_COMPILER_VENDOR == 'Cray':
+    Fortran_COMPILER_VERSION = get_compiler_version(Fortran_COMPILER,'-V',r"\d+\.\d+")
 elif Fortran_COMPILER_VENDOR == 'XL':
-    Fortran_COMPILER_VERSION = get_compiler_version(Fortran_COMPILER,'-qversion','\d+\.\d+')
+    Fortran_COMPILER_VERSION = get_compiler_version(Fortran_COMPILER,'-qversion',r"\d+\.\d+")
 else:
     #! unknown, not supported vendor
     Fortran_COMPILER_VERSION = '0.0'

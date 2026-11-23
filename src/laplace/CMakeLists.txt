@@ -10,6 +10,7 @@ endif()
 
 # source files
 set(FREE_F95_LAPLACE_FORTRAN_SOURCES
+    type_laplace.F90
     pamlaplce.F90
    )
 
@@ -40,10 +41,9 @@ endif()
 
 add_library(
     laplace
-    OBJECT
+    STATIC
     ${FREE_F95_LAPLACE_FORTRAN_SOURCES}
     ${FREE_F03_LAPLACE_FORTRAN_SOURCES}
     )
 
-target_link_libraries(laplace laplace-minimax)
-add_dependencies(laplace gp)
+add_dependencies(laplace laplace-minimax)

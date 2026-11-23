@@ -23,7 +23,7 @@
 !
 module x2c_h1mat_base
 
-  use x2c_fio
+ !use x2c_fio
   use x2c_cb_interface, only:         &
       reset_x2c_cb_onefck
   use x2c_utils, only:                &

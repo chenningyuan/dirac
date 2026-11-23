@@ -1,0 +1,3188 @@
+  ** interface to 32-bit integer MPI enabled **
+
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+
+Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
+
+ *******************************************************************************
+ *                                                                             *
+ *                                O U T P U T                                  *
+ *                                   from                                      *
+ *                                                                             *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                    *
+ *                   @@  @@        @@  @@   @@  @@   @@                        *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                        *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                        *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                    *
+ *                                                                             *
+ *                                                                             *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:%
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::$
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::(
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:$
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.S
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::S
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::?
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.S
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.(
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/$
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:iS
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::c
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::S
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::$
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::$
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::(
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:Z
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|(
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||S
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:$
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::%
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:$
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::$
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/)
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii$
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////$
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/Z
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::$
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::&
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/=
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|$
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>M
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:M
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%M
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;M
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<SM
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$SM
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<M
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></M
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&M
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SFM
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]ZkM
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&M
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&M
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&FM
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&M
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6M
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969kM
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&M
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1M
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&M
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9ZM
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6M
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][FM
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&M
+ *******************************************************************************
+ *                                                                             *
+ *         =========================================================           *
+ *                     Program for Atomic and Molecular                        *
+ *          Direct Iterative Relativistic All-electron Calculations            *
+ *         =========================================================           *
+ *                                                                             *
+ *                                                                             *
+ *    Written by:                                                              *
+ *                                                                             *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *    Trond Saue               Universite Toulouse III           France        *
+ *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
+ *                                                                             *
+ *    with contributions from:                                                 *
+ *                                                                             *
+ *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
+ *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joel Creutzberg          University of Southern Denmark    Denmark       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
+ *    Sebastien Dubillard      University of Strasbourg          France        *
+ *    Ulf Ekstroem             University of Oslo                Norway        *
+ *    Ephraim Eliav            University of Tel Aviv            Israel        *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
+ *    Elke Fasshauer           University of Tubingen            Germany       *
+ *    Timo Fleig               Universite Toulouse III           France        *
+ *    Olav Fossgaard           UiT The Arctic University of      Norway        *
+ *    Loic Halbert             Universite de Lille               France        *
+ *    Erik D. Hedegaard        University of Southern Denmark    Denmark       *
+ *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
+ *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Martin van Horn          Universite Toulouse III           France        *
+ *    Miroslav Ilias           Matej Bel University              Slovakia      *
+ *    Christoph R. Jacob       TU Braunschweig                   Germany       *
+ *    Stefan Knecht            Algorithmiq Ltd / ETH Zuerich     Finland/CH    *
+ *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
+ *    Ossama Kullie            University of Kassel              Germany       *
+ *    Jon K. Laerdahl          University of Oslo                Norway        *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
+ *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Nanna Holmgaard List     Stockholm Inst. of Technology     Sweden        *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
+ *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
+ *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
+ *    Andreas Nyvang           Aarhus University                 Denmark       *
+ *    Malgorzata Olejniczak    University of Warsaw              Poland        *
+ *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Anastasios Papadopoulos  Max Planck Institute f. Coal Res. Germany       *
+ *    Young Choon Park         KAIST, Daejeon                    South Korea   *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
+ *    Markus Pernpointner      University of Heidelberg          Germany       *
+ *    Johann V. Pototschnig    Technical University Graz         Austria       *
+ *    Roberto Di Remigio       EuroCC National Competence Centre Sweden        *
+ *    Michal Repisky           UiT The Arctic University of      Norway        *
+ *    Kenneth Ruud             UiT The Arctic University of      Norway        *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
+ *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
+ *    Bruno Senjean            CNRS/Universite de Montpellier    France        *
+ *    Avijit Shee              University of Berkeley            USA           *
+ *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Ayaki Sunaga             Kyoto University                  Japan         *
+ *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
+ *    Joern Thyssen            University of Southern Denmark    Denmark       *
+ *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
+ *    Marta L. Vidal           Cardiff University                UK            *
+ *    Sebastien Villaume       Linkoeping University             Sweden        *
+ *    Olivier Visser           University of Groningen           Netherlands   *
+ *    Toke Winther             University of Southern Denmark    Denmark       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *    Xiang Yuan               Universite de Lille               France        *
+ *                                                                             *
+ *    For more information about the DIRAC code see http://diracprogram.org    *
+ *                                                                             *
+ *    This is an experimental code. The authors accept no responsibility       *
+ *    for the performance of the code or for the correctness of the results.   *
+ *                                                                             *
+ *    This program is free software; you can redistribute it and/or            *
+ *    modify it under the terms of the GNU Lesser General Public               *
+ *    License version 2.1 as published by the Free Software Foundation.        *
+ *                                                                             *
+ *    If results obtained with this code are published, an                     *
+ *    appropriate citation would be:                                           *
+ *                                                                             *
+ *    DIRAC, a relativistic ab initio electronic structure program,            *
+ *    Release DIRAC23 (2023), written by                                       *
+ *    R. Bast, A. S. P. Gomes, T. Saue, L. Visscher, and H. J. Aa. Jensen,     *
+ *    with contributions from I. A. Aucar, V. Bakken, C. Chibueze,             *
+ *    J. Creutzberg, K. G. Dyall, S. Dubillard, U. Ekstroem, E. Eliav,         *
+ *    T. Enevoldsen, E. Fasshauer, T. Fleig, O. Fossgaard, L. Halbert,         *
+ *    E. D. Hedegaard, T. Helgaker, J. Henriksson, M. van Horn, M. Ilias,      *
+ *    Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie, J. K. Laerdahl,       *
+ *    C. V. Larsen, Y. S. Lee, N. H. List, H. S. Nataraj, M. K. Nayak,         *
+ *    P. Norman, A. Nyvang, M. Olejniczak, J. Olsen, J. M. H. Olsen,           *
+ *    A. Papadopoulos, Y. C. Park, J. K. Pedersen, M. Pernpointner,            *
+ *    J. V. Pototschnig, R. Di Remigio, M. Repisky, K. Ruud, P. Salek,         *
+ *    B. Schimmelpfennig, B. Senjean, A. Shee, J. Sikkema, A. Sunaga,          *
+ *    A. J. Thorvaldsen, J. Thyssen, J. N. P. van Stralen, M. L. Vidal,        *
+ *    S. Villaume, O. Visser, T. Winther, S. Yamamoto and X. Yuan              *
+ *    (see http://diracprogram.org).                                           *
+ *                                                                             *
+ *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104.        *
+ *                                                                             *
+ *******************************************************************************
+
+
+Version information
+-------------------
+
+Branch        | yuan/exacc-cc-rsp
+Commit hash   | da4509716
+Commit author | Xiang Yuan
+Commit date   | Fri Apr 28 10:32:35 2023 +0200
+
+
+Configuration and build information
+-----------------------------------
+
+Who compiled             | yuan
+Compiled on server       | PCMTs-MacBook-Pro.local
+Operating system         | Darwin-20.6.0
+CMake version            | 3.23.3
+CMake generator          | Unix Makefiles
+CMake build type         | release
+Configuration time       | 2023-04-28 09:16:33.645010
+Fortran compiler         | /Users/yuan/mpich-install/bin/mpif90
+Fortran compiler version | 8.5.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS  -fopenmp -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS  -fopenmp
+C compiler               | /Users/yuan/mpich-install/bin/mpicc
+C compiler version       | 8.5.0
+C compiler flags         |  -g  -fopenmp -g  -fopenmp
+C++ compiler             | /Users/yuan/mpich-install/bin/mpicxx
+C++ compiler version     | 8.5.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp
+Static linking           | False
+64-bit integers          | False
+MPI parallelization      | True
+MPI launcher             | /Users/yuan/mpich-install/bin/mpiexec
+Math libraries           | /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.3.sdk/usr/lib/liblapack.tbd;/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.3.sdk/usr/lib/libblas.tbd
+Builtin BLAS library     | OFF
+Builtin LAPACK library   | OFF
+Explicit libraries       | unknown
+Compile definitions      | HAVE_MPI;HAVE_OPENMP;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;SYS_DARWIN;VAR_MFDS;PRG_DIRAC;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;HAS_STIELTJES;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
+
+EXACORR dependencies
+--------------------
+Exatensor source repo    | git@github.com:RelMBdev/ExaTENSOR.git
+Exatensor git hash       | 92dac91cf3258706a1c32b3813a98416b4e92f95
+Exatensor configuration  | WRAP=NOWRAP BUILD_TYPE=OPT   TOOLKIT=GNU EXA_OS=NO_LINUX  MPILIB=MPICH PATH_MPICH=/Users/yuan/mpich-install BLASLIB=NONE    
+
+
+ LAPACK integer*4/8 selftest passed
+ Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+
+Execution time and host
+-----------------------
+
+ 
+     Date and time (Mac OSX): Fri Apr 28 12:05:18 2023
+     Host name              : PCMTs-MacBook-Pro.local                 
+
+ * Opening checkpoint file 
+    - New checkpoint file created
+
+
+Contents of the input file
+--------------------------
+
+**DIRAC                                                                                             
+.WAVE FUNCTION                                                                                      
+.4INDEX                                                                                             
+**INTEGRALS                                                                                         
+*READIN                                                                                             
+.UNCONTRACT                                                                                         
+**HAMILTONIAN                                                                                       
+.X2C                                                                                                
+**WAVE FUNCTION                                                                                     
+.SCF                                                                                                
+.EXACC                                                                                              
+**MOLTRA                                                                                            
+.ACTIVE                                                                                             
+2..20                                                                                               
+.NO4IND                                                                                             
+.PRPTRA                                                                                             
+*PRPTRA                                                                                             
+.OPERATOR                                                                                           
+ XDIPLEN                                                                                            
+ COMFACTOR                                                                                          
+ 1.000                                                                                              
+.OPERATOR                                                                                           
+ YDIPLEN                                                                                            
+ COMFACTOR                                                                                          
+ 1.000                                                                                              
+.OPERATOR                                                                                           
+ ZDIPLEN                                                                                            
+ COMFACTOR                                                                                          
+ 1.000                                                                                              
+**EXACC                                                                                             
+.OCCUPIED                                                                                           
+2..3                                                                                                
+.VIRTUAL                                                                                            
+4..20                                                                                               
+.EXEOM                                                                                              
+1                                                                                                   
+.PRINT                                                                                              
+1                                                                                                   
+.TCONVERG                                                                                           
+1.0D-8                                                                                              
+.LAMBDA                                                                                             
+.CCCILR                                                                                             
+1                                                                                                   
+.LRFRE                                                                                              
+3                                                                                                   
+0.080,0.090,0.100                                                                                   
+0.001,0.001,0.001                                                                                   
+.AProp                                                                                              
+1                                                                                                   
+3                                                                                                   
+.BProp                                                                                              
+1                                                                                                   
+3                                                                                                   
+*CCDIAG                                                                                             
+.CONVERG                                                                                            
+1.0d-6                                                                                              
+.MAXSIZE                                                                                            
+100                                                                                                 
+.MAXITER                                                                                            
+100                                                                                                 
+**MOLECULE                                                                                          
+*SYMMETRY                                                                                           
+.NOSYM                                                                                              
+*BASIS                                                                                              
+.DEFAULT                                                                                            
+cc-pVDZ                                                                                             
+*END OF                                                                                             
+
+
+Contents of the molecule file
+-----------------------------
+
+2                                                                                                   
+H2O - geometry from Chem. Rev. paper MCSCF/CI/QCORR (2012).                                         
+B 0.00000000 0.00000000 0.0                                                                         
+H 0.00000000 0.00000000 1.2324                                                                      
+
+
+    *************************************************************************
+    ********************* DIRAC: No title specified !!! *********************
+    *************************************************************************
+
+ Jobs in this run:
+   * Wave function
+   * Transformation to Molecular Spinor basis
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 2018  
+             Peter J. Mohr, David B. Newell and Barry N. Taylor           
+         Reviews of Modern Physics, Vol. 93, 025010 (2021)                
+ * The speed of light :        137.0359992
+ * Running in two-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+ Default print level:        1
+ Using default nuclear model: Gaussian charge distribution.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+ Changes of defaults for *READIN
+ -------------------------------
+
+
+ Uncontracted basis forced, irrespective of basis input file.
+
+
+
+   ***************************************************************************
+   ****************** Output from MOLECULE input processing ******************
+   ***************************************************************************
+
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * One fermion irrep:   E1 
+   * Quaternionic group. NZ = 4
+   * Direct product decomposition:
+          E1  x E1  : A   + A   + A   + A  
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1
+      La  |  A  (1)  A  (1)  |
+      Sa  |  A  (1)  A  (1)  |
+      Lb  |  A  (1)  A  (1)  |
+      Sb  |  A  (1)  A  (1)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    A    1  i  j  k
+
+  Nuclear repulsion energy                       :      2.146937726805 Hartree
+
+  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000    2.328898475989 a.u.;  origin (0,0,0)
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    2
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  B           1       5      27      27      L  - [9s4p1d|9s4p1d]                                                
+  H           1       1       7       7      L  - [4s1p|4s1p]                                                    
+  ----------------------------------------------------------------------
+                             34      34      L  - large components
+  ----------------------------------------------------------------------
+  total:      2       6      34      34
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1   2
+   Elements                             References                                
+   --------                             ----------                                
+   H      : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   He     : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).      
+   Li - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   Na - Mg: D.E. Woon and T.H. Dunning, Jr.  (to be published)                    
+   Al - Ar: D.E. Woon and T.H. Dunning, Jr.  J. Chem. Phys. 98, 1358 (1993).      
+   Ca     : J. Koput and K.A. Peterson, J. Phys. Chem. A, 106, 9595 (2002).       
+   Ga - Kr: A.K. Wilson, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr.,             
+            J. Chem. Phys., 110, 7667 (1999)                                      
+
+
+  Cartesian Coordinates (bohr)
+  ----------------------------
+
+  Total number of coordinates:  6
+
+
+   1   B        x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+   4   H        x      0.0000000000
+   5            y      0.0000000000
+   6            z      2.3288984760
+
+
+
+  Cartesian coordinates in XYZ format (Angstrom)
+  ----------------------------------------------
+
+    2
+
+B      0.0000000000   0.0000000000   0.0000000000
+H      0.0000000000   0.0000000000   1.2324000000
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            B           H   
+
+   B       0.000000
+   H       1.232400    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H          B                              1.232400
+
+
+
+   Nuclear repulsion energy                          :    2.146937726805 Hartree
+
+                       * Total mass:    12.017130 amu
+                       * Natural abundance:  80.088 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.195314697150103
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.103356086686255
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:   14
+     1  L B   1 s        2  L B   1 px       3  L B   1 py       4  L B   1 pz       5  L B   1 dxx      6  L B   1 dxy 
+     7  L B   1 dxz      8  L B   1 dyy      9  L B   1 dyz     10  L B   1 dzz     11  L H   1 s       12  L H   1 px  
+    13  L H   1 py      14  L H   1 pz  
+   * Small components:    0
+
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:           34
+  Number of large orbitals in each symmetry:     34
+  Number of small orbitals in each symmetry:      0
+
+* Large component functions
+
+  Symmetry  A  ( 1)
+
+        9 functions:    B  s   
+        4 functions:    B  px  
+        4 functions:    B  py  
+        4 functions:    B  pz  
+        1 functions:    B  dxx 
+        1 functions:    B  dxy 
+        1 functions:    B  dxz 
+        1 functions:    B  dyy 
+        1 functions:    B  dyz 
+        1 functions:    B  dzz 
+        4 functions:    H  s   
+        1 functions:    H  px  
+        1 functions:    H  py  
+        1 functions:    H  pz  
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+
+ One-electron operator origins:
+ - General operator origin (a.u.)       :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Magnetic gauge origin (a.u.)         :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Dipole (and multipole) origin (a.u.) :   0.000000000000000   0.000000000000000   0.000000000000000
+ * Print level:    0
+ * Exact-Two-Component (X2C) Hamiltonian
+   Reference: 
+    M. Ilias and T. Saue:
+    "Implementation of an infinite-order two-component relativistic Hamiltonian 
+    by a simple one-step transformation." 
+    J. Chem. Phys., 126 (2007) 064102.
+   additional reference for the new X2C module:
+    S. Knecht and T. Saue:
+    manuscript in preparation, Strasbourg 2010.
+
+ * Running in two-component mode
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     0
+   - SS-integrals:     0
+   - GT-integrals:     0
+===========================================================================
+   Set-up for AMFI/RELSCF calculations
+===========================================================================
+  ...no reading under "*AMFI  ", thus default settings
+ * AMFI   code print level:    0
+ * RELSCF code print level:    0
+ * RELSCF maximum number of iterations:   50
+ * All AMFI mean-field summations are on neutral individual atoms.
+ * order of AMFI contributions to the X2C Hamiltonian:  2
+  --> adding spin-same orbit MFSSO2 terms.
+ debug: setting up eom inputs:           1
+ debug: allocated            1  input decks for eom
+ debug: initialized eom input block           1
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Wave function types requested (in input order):
+     HF        
+     EXA_CC    
+
+ Wave function jobs in execution order (expanded):
+ * Hartree-Fock calculation
+
+ * Initial Automatic occupation based on:
+   Total charge of atoms =   6
+   Charge of molecule    =   0
+   i.e. no. of electrons =   6
+===========================================================================
+ *SCF: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 1
+ * Closed shell SCF calculation with     6 electrons in    3 orbitals.
+ * Charge of molecule : 0
+ * Sum of atomic potentials used for start guess
+ * General print level   :   0
+
+ ***** INITIAL TRIAL SCF FUNCTION *****
+ * Trial vectors read from CHECKPOINT
+ * Scaling of active-active block correction to open shell Fock operator    0.500000
+   to improve convergence (default value).
+
+ ***** SCF CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-07
+   Allowed convergence:1.000D-06
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+    ---> this is default setting from Hamiltonian input
+ * NB!!! No e-p rotations in 2nd order optimization.
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+===========================================================================
+ TRPINP: Property integral transformation
+===========================================================================
+ * Print level:    0
+ *The following operators will be transformed:
+    1  XDIPLEN              A       T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : XDIPLEN  +00+     1.0000000000000 (real)     
+...........................................................................
+    2  YDIPLEN              A       T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : YDIPLEN  +00+     1.0000000000000 (real)     
+...........................................................................
+    3  ZDIPLEN              A       T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : ZDIPLEN  +00+     1.0000000000000 (real)     
+...........................................................................
+---------------------------------------------------------------------------
+
+
+
+===========================================================================
+ TRAINP: Set-up for index transformation
+===========================================================================
+
+ * General print level   :   0
+ * Electronic orbitals only.
+ * Skip 4-index transformation.
+ * Total active space.
+    Fermion ircop:E1 
+    2..20                                                                   
+
+ * Set-up for 2-index transformation
+ * LS Integrals not included in core Fock-matrix
+ * SS Integrals not included in core Fock-matrix
+ * Active spaces:
+    Fermion ircop:E1 
+    - Index  1:  2..20                                                                   
+    - Index  2:  2..20                                                                   
+
+ * Set-up for 4-index transformation
+ * Following scheme      :   4
+ - write (rs)-batches of half-transformed integrals 
+ (ij|rs) to disk; parallel scheme
+ * Screening threshold :1.00E-14
+ * MO integral threshold :1.00E-14
+ * LS Integrals not transformed.
+ * SS Integrals not transformed.
+ * Gaunt Integrals not transformed.
+ * Active spaces:
+    Fermion ircop:E1 
+    - Index  1:  2..20                                                                   
+    - Index  2:  2..20                                                                   
+    - Index  3:  2..20                                                                   
+    - Index  4:  2..20                                                                   
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+
+   ***************************************************************************
+   ****************** Output from MOLECULE input processing ******************
+   ***************************************************************************
+
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * One fermion irrep:   E1 
+   * Quaternionic group. NZ = 4
+   * Direct product decomposition:
+          E1  x E1  : A   + A   + A   + A  
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1
+      La  |  A  (1)  A  (1)  |
+      Sa  |  A  (1)  A  (1)  |
+      Lb  |  A  (1)  A  (1)  |
+      Sb  |  A  (1)  A  (1)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    A    1  i  j  k
+
+  Nuclear repulsion energy                       :      2.146937726805 Hartree
+
+  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000    2.328898475989 a.u.;  origin (0,0,0)
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    2
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  B           1       5      27      27      L  - [9s4p1d|9s4p1d]                                                
+  H           1       1       7       7      L  - [4s1p|4s1p]                                                    
+  ----------------------------------------------------------------------
+                             34      34      L  - large components
+                             87      87      S  - small components
+  ----------------------------------------------------------------------
+  total:      2       6     121     121
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1   2
+   Elements                             References                                
+   --------                             ----------                                
+   H      : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   He     : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).      
+   Li - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   Na - Mg: D.E. Woon and T.H. Dunning, Jr.  (to be published)                    
+   Al - Ar: D.E. Woon and T.H. Dunning, Jr.  J. Chem. Phys. 98, 1358 (1993).      
+   Ca     : J. Koput and K.A. Peterson, J. Phys. Chem. A, 106, 9595 (2002).       
+   Ga - Kr: A.K. Wilson, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr.,             
+            J. Chem. Phys., 110, 7667 (1999)                                      
+
+
+  Cartesian Coordinates (bohr)
+  ----------------------------
+
+  Total number of coordinates:  6
+
+
+   1   B        x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+   4   H        x      0.0000000000
+   5            y      0.0000000000
+   6            z      2.3288984760
+
+
+
+  Cartesian coordinates in XYZ format (Angstrom)
+  ----------------------------------------------
+
+    2
+
+B      0.0000000000   0.0000000000   0.0000000000
+H      0.0000000000   0.0000000000   1.2324000000
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            B           H   
+
+   B       0.000000
+   H       1.232400    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H          B                              1.232400
+
+
+
+   Nuclear repulsion energy                          :    2.146937726805 Hartree
+
+                       * Total mass:    12.017130 amu
+                       * Natural abundance:  80.088 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.195314697150103
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.103356086686255
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                               au             Debye
+
+                    x      0.00000000      0.00000000
+                    y      0.00000000      0.00000000
+                    z      2.32889848      5.91952428
+
+                        1 Debye =   2.54177000 a.u. 
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   A     * Deleted:          1(Proj:          1, Lindep:          0) Smin: 0.15E-01
+   S   A     * Deleted:          8(Proj:          8, Lindep:          0) Smin: 0.91E-02
+
+                   *********************************************************************
+                   ***   Entering the Exact-Two-Component (X2C) interface in DIRAC   ***
+                   ***                                                               ***
+                   *** library version:  1.2 (August  2013)                          ***
+                   ***                                                               ***
+                   *** authors:          - Stefan Knecht                             ***
+                   ***                   - Trond Saue                                ***
+                   *** contributors:     - Hans Joergen Aagaard Jensen               ***
+                   ***                   - Michal Repisky                            ***
+                   ***                   - Miroslav Ilias                            ***
+                   *** features:         - X2C                                       ***
+                   ***                   - X2C-atomic/fragment (X2C-LU)              ***
+                   ***                   - X2C-spinfree                              ***
+                   ***                   - X2C-molecular-mean-field (X2Cmmf)         ***
+                   ***                                                               ***
+                   ***                      Universities of                          ***
+                   ***     Zuerich, Toulouse, Odense, Banska Bystrica and Tromsoe    ***
+                   ***                                                               ***
+                   *** contact: stefan.knecht@gmail.com                              ***
+                   *********************************************************************
+
+
+                   *** chosen path in X2C module: molecular X2C (with spin-orbit contributions)      
+
+
+                                Output from AMFIIN
+                                ------------------
+
+
+  *** number of unique nuclei (from file MNF.INP): 2
+
+  *** calculate AMFI for atom type 1 with atomic charge     5
+  *** number of nuclei with identical atom type:   1
+   unique nuclei index: 1
+  *** file with AMFI integrals for this center: AOPROPER_MNF.5.1    
+
+
+                         ATOMIC NO-PAIR SO-MF CODE starts
+                         --------------------------------
+
+   Douglas-Kroll type operators 
+  charge on the calculated atom:  0
+  Mean-field summation for electrons #:   5
+    ...electronic occupation of  B: [He]2s^2 2p^1             
+ ****  Written to the file TOSCF for "relscf" ****
+        charge:  5.000
+      nprimit:   9  4  1  0
+   closed sh.:   2  0  0  0
+     open sh.:   0  1  0  0
+
+
+                       *** PROGRAM AT34 - ALLIANT - @V ***
+                       -----------------------------------
+
+
+      SYMMETRY SPECIES            S       P       D       F
+      NUMBER OF BASIS FUNCTIONS:  9       4       1
+      NUMBER OF CLOSED SHELLS  :  2       0       0
+      OPEN SHELL OCCUPATION    :  0       1       0
+  ### SCF ITERATIONS           ###
+  ### NON-RELATIVISTIC APPROX. ###
+    1. iteration,  total energy:             0.000000000000
+    2. iteration,  total energy:           -24.505654039126
+    3. iteration,  total energy:           -24.526117348711
+    4. iteration,  total energy:           -24.526482358025
+    5. iteration,  total energy:           -24.526520080572
+    6. iteration,  total energy:           -24.526554258273
+    7. iteration,  total energy:           -24.526561726125
+    8. iteration,  total energy:           -24.526563373443
+    9. iteration,  total energy:           -24.526563588987
+   10. iteration,  total energy:           -24.526563784861
+   11. iteration,  total energy:           -24.526563828326
+   12. iteration,  total energy:           -24.526563837934
+   13. iteration,  total energy:           -24.526563839960
+   14. iteration,  total energy:           -24.526563840335
+   15. iteration,  total energy:           -24.526563840588
+   16. iteration,  total energy:           -24.526563840645
+   17. iteration,  total energy:           -24.526563841425
+   17. iteration,  total energy:           -24.526563840659
+  ### NON-RELATIVISTIC APPROX. ###
+        17      -0.2452656384D+02      -0.4905307076D+02       0.2452650692D+02      -0.2000002321D+01
+  ### SCF ITERATIONS           ###
+  ### EV APPROX.               ###
+    1. iteration,  total energy:           -24.533044092575
+    2. iteration,  total energy:           -24.533296470847
+    3. iteration,  total energy:           -24.533296495660
+    4. iteration,  total energy:           -24.533296497935
+    5. iteration,  total energy:           -24.533296498998
+    6. iteration,  total energy:           -24.533296498495
+    7. iteration,  total energy:           -24.533296498554
+    8. iteration,  total energy:           -24.533296498567
+    9. iteration,  total energy:           -24.533296499339
+   10. iteration,  total energy:           -24.533296498570
+   11. iteration,  total energy:           -24.533296498570
+   11. iteration,  total energy:           -24.533296498570
+  ### EV  OPERATOR RESULT      ###
+        11      -0.2453329650D+02      -0.4908042285D+02       0.2454712636D+02      -0.1999436600D+01
+      *** AMFIIN: ADDING nucleus    1 with charge   5 to the BSSn Hamiltonian.
+
+  *** calculate AMFI for atom type 2 with atomic charge     1
+  *** number of nuclei with identical atom type:   1
+  no 2e-SO corrections for hydrogen or hydrogen-like 1e-systems. AMFI is skipped.
+   unique nuclei index: 2
+
+       *** This (AMFI) unique nuclei is not to be calculated ! Only pass (to read input basis) through the AMFI routine.
+
+
+
+                         ATOMIC NO-PAIR SO-MF CODE starts
+                         --------------------------------
+
+   Douglas-Kroll type operators 
+  skip explicit AMFI - reading AMFI integrals from file AOPROPER_MNF.xxx!
+
+                   *********************************************************************
+                   ***               X2C transformation ended properly.              ***
+                   ***          Calculation continues in two-component mode.         ***
+                   *********************************************************************
+
+ >>> CPU  time used in mk_h2c is   0.10 seconds
+ >>> WALL time used in mk_h2c is   0.36 seconds
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                               au             Debye
+
+                    x      0.00000000      0.00000000
+                    y      0.00000000      0.00000000
+                    z      2.32889848      5.91952428
+
+                        1 Debye =   2.54177000 a.u. 
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   A     * Deleted:          1(Proj:          1, Lindep:          0) Smin: 0.15E-01
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+No. of positive energy orbitals (NESH):    33
+No. of negative energy orbitals (NPSH):     0
+Total no. of orbitals           (NORB):    33
+ >>> CPU  time used in PAMSET is   0.16 seconds
+ >>> WALL time used in PAMSET is   0.71 seconds
+
+
+ *******************************************************************************
+ *********************** X2C relativistic HF calculation ***********************
+ *******************************************************************************
+
+
+*** INFO *** No trial vectors found.
+ Using sum of fitted atomic potentials as start potential.
+
+ Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
+
+
+########## START ITERATION NO.   1 ##########   Fri Apr 28 12:05:19 2023
+
+E_HOMO...E_LUMO, symmetry 1:                                  3  -0.27344    4  -0.19609
+
+=> Calculating sum of orbital energies
+It.    1    -12.91419742931      0.00D+00  0.00D+00  0.00D+00               0.01048900s   Atom. scrpot   Fri Apr 28
+
+########## START ITERATION NO.   2 ##########   Fri Apr 28 12:05:19 2023
+
+
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   67.48%    0.00%    4.39%   0.02497000s
+E_HOMO...E_LUMO, symmetry 1:                                  3  -0.32061    4   0.08127
+>>> Total wall time:  0.09100000s, and total CPU time :  0.05754800s
+
+########## END ITERATION NO.   2 ##########   Fri Apr 28 12:05:19 2023
+
+It.    2    -25.10500990726      1.22D+01  2.40D+00  4.39D-01               0.09100000s   LL             Fri Apr 28
+
+########## START ITERATION NO.   3 ##########   Fri Apr 28 12:05:19 2023
+
+    3 *** Differential density matrix. DCOVLP     = 0.9262
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   67.59%    0.00%    4.37%   0.02392602s
+E_HOMO...E_LUMO, symmetry 1:                                  3  -0.34527    4   0.05804
+>>> Total wall time:  0.04500000s, and total CPU time :  0.03571500s
+
+########## END ITERATION NO.   3 ##########   Fri Apr 28 12:05:19 2023
+
+It.    3    -25.13227244262      2.73D-02 -8.56D-02  3.85D-02   DIIS   2    0.04500000s   LL             Fri Apr 28
+
+########## START ITERATION NO.   4 ##########   Fri Apr 28 12:05:19 2023
+
+    4 *** Differential density matrix. DCOVLP     = 0.9753
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   67.74%    0.00%    5.53%   0.01542500s
+E_HOMO...E_LUMO, symmetry 1:                                  3  -0.34570    4   0.05746
+>>> Total wall time:  0.02500000s, and total CPU time :  0.02098500s
+
+########## END ITERATION NO.   4 ##########   Fri Apr 28 12:05:19 2023
+
+It.    4    -25.13278536397      5.13D-04 -1.13D-02  5.55D-03   DIIS   3    0.02500000s   LL             Fri Apr 28
+
+########## START ITERATION NO.   5 ##########   Fri Apr 28 12:05:19 2023
+
+    5 *** Differential density matrix. DCOVLP     = 0.9923
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   67.91%    0.00%    5.19%   0.02160901s
+E_HOMO...E_LUMO, symmetry 1:                                  3  -0.34580    4   0.05739
+>>> Total wall time:  0.03400000s, and total CPU time :  0.02903000s
+
+########## END ITERATION NO.   5 ##########   Fri Apr 28 12:05:19 2023
+
+It.    5    -25.13280493944      1.96D-05 -1.11D-03  9.56D-04   DIIS   4    0.03400000s   LL             Fri Apr 28
+
+########## START ITERATION NO.   6 ##########   Fri Apr 28 12:05:19 2023
+
+    6 *** Differential density matrix. DCOVLP     = 0.9982
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   68.25%    0.00%    5.44%   0.01268801s
+E_HOMO...E_LUMO, symmetry 1:                                  3  -0.34578    4   0.05740
+>>> Total wall time:  0.02300000s, and total CPU time :  0.01959000s
+
+########## END ITERATION NO.   6 ##########   Fri Apr 28 12:05:19 2023
+
+It.    6    -25.13280563517      6.96D-07 -1.07D-04  1.08D-04   DIIS   5    0.02300000s   LL             Fri Apr 28
+
+########## START ITERATION NO.   7 ##########   Fri Apr 28 12:05:19 2023
+
+    7 *** Differential density matrix. DCOVLP     = 0.9998
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   68.97%    0.00%    6.22%   0.02186799s
+E_HOMO...E_LUMO, symmetry 1:                                  3  -0.34578    4   0.05740
+>>> Total wall time:  0.03200000s, and total CPU time :  0.02862900s
+
+########## END ITERATION NO.   7 ##########   Fri Apr 28 12:05:19 2023
+
+It.    7    -25.13280564517      1.00D-08  1.29D-05  1.59D-05   DIIS   6    0.03200000s   LL             Fri Apr 28
+
+########## START ITERATION NO.   8 ##########   Fri Apr 28 12:05:19 2023
+
+    8 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   70.22%    0.00%    6.16%   0.01872501s
+E_HOMO...E_LUMO, symmetry 1:                                  3  -0.34578    4   0.05740
+>>> Total wall time:  0.03000000s, and total CPU time :  0.02638100s
+
+########## END ITERATION NO.   8 ##########   Fri Apr 28 12:05:19 2023
+
+It.    8    -25.13280564542      2.49D-10 -1.51D-06  3.17D-06   DIIS   7    0.03000000s   LL             Fri Apr 28
+
+########## START ITERATION NO.   9 ##########   Fri Apr 28 12:05:19 2023
+
+    9 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   71.27%    0.00%    3.20%   0.01725399s
+E_HOMO...E_LUMO, symmetry 1:                                  3  -0.34578    4   0.05740
+>>> Total wall time:  0.02600000s, and total CPU time :  0.02225000s
+
+########## END ITERATION NO.   9 ##########   Fri Apr 28 12:05:19 2023
+
+It.    9    -25.13280564543      8.81D-12 -4.36D-07  1.94D-07   DIIS   8    0.02600000s   LL             Fri Apr 28
+
+########## START ITERATION NO.  10 ##########   Fri Apr 28 12:05:19 2023
+
+   10 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   73.64%    0.01%    5.54%   0.02152798s
+>>> Total wall time:  0.02400000s, and total CPU time :  0.02321000s
+
+########## END ITERATION NO.  10 ##########   Fri Apr 28 12:05:19 2023
+
+It.   10    -25.13280564543      2.74D-13  1.62D-08  4.72D-08   DIIS   8    0.02400000s   LL             Fri Apr 28
+
+
+                                   SCF - CYCLE
+                                   -----------
+
+* Convergence on norm of error vector (gradient).
+  Desired convergence:1.000D-07
+  Allowed convergence:1.000D-06
+
+* ERGVAL - convergence in total energy
+* FCKVAL - convergence in maximum change in total Fock matrix
+* EVCVAL - convergence in error vector (gradient)
+--------------------------------------------------------------------------------------------------------------------------------
+           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
+--------------------------------------------------------------------------------------------------------------------------------
+It.    1    -12.91419742931      0.00D+00  0.00D+00  0.00D+00               0.01048900s   Atom. scrpot   Fri Apr 28
+It.    2    -25.10500990726      1.22D+01  2.40D+00  4.39D-01               0.09100000s   LL             Fri Apr 28
+It.    3    -25.13227244262      2.73D-02 -8.56D-02  3.85D-02   DIIS   2    0.04500000s   LL             Fri Apr 28
+It.    4    -25.13278536397      5.13D-04 -1.13D-02  5.55D-03   DIIS   3    0.02500000s   LL             Fri Apr 28
+It.    5    -25.13280493944      1.96D-05 -1.11D-03  9.56D-04   DIIS   4    0.03400000s   LL             Fri Apr 28
+It.    6    -25.13280563517      6.96D-07 -1.07D-04  1.08D-04   DIIS   5    0.02300000s   LL             Fri Apr 28
+It.    7    -25.13280564517      1.00D-08  1.29D-05  1.59D-05   DIIS   6    0.03200000s   LL             Fri Apr 28
+It.    8    -25.13280564542      2.49D-10 -1.51D-06  3.17D-06   DIIS   7    0.03000000s   LL             Fri Apr 28
+It.    9    -25.13280564543      8.81D-12 -4.36D-07  1.94D-07   DIIS   8    0.02600000s   LL             Fri Apr 28
+It.   10    -25.13280564543      2.74D-13  1.62D-08  4.72D-08   DIIS   8    0.02400000s   LL             Fri Apr 28
+--------------------------------------------------------------------------------------------------------------------------------
+* Convergence after   10 iterations.
+* Average elapsed time per iteration: 
+      No 2-ints    :    0.01200000s
+      LL           :    0.03666667s
+
+
+                                   TOTAL ENERGY
+                                   ------------
+
+   Charge of molecule : 0
+
+   Electronic energy                        :    -27.279743372235497
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :      2.146937726805420
+
+   Sum of all contributions to the energy
+   Total energy                             :    -25.132805645430079
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1 
+  * Closed shell, f = 1.0000
+   -7.686627387611  ( 2)      -0.647618577013  ( 2)      -0.345775920549  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+    0.057403845715  ( 2)       0.057433023588  ( 2)       0.252259030183  ( 2)       0.355676455946  ( 2)       0.457379176636  ( 2)
+    0.457447552260  ( 2)       0.487596804776  ( 2)       0.749175477170  ( 2)       0.868797512954  ( 2)       0.868812774843  ( 2)
+    0.902007888735  ( 2)       0.902025510158  ( 2)       1.212014772947  ( 2)       1.829964118231  ( 2)       1.830018026532  ( 2)
+    2.170394520128  ( 2)       2.170692953613  ( 2)       2.233209393281  ( 2)       2.425838002845  ( 2)       3.589031640923  ( 2)
+    5.144197312952  ( 2)      11.523214779741  ( 2)      11.526592998756  ( 2)      11.599063409689  ( 2)      22.296115702622  ( 2)
+   24.438535146114  ( 2)      91.660393522696  ( 2)     340.825081041819  ( 2)    1416.729730007660  ( 2)    7294.993595675753  ( 2)
+* HOMO - LUMO gap:
+
+    E(LUMO) :     0.05740385 au (symmetry E1 )
+  - E(HOMO) :    -0.34577592 au (symmetry E1 )
+  ------------------------------------------
+    gap     :     0.40317977 au
+
+
+
+    **************************************************************************
+    **************** Transformation to Molecular Spinor Basis ****************
+    **************************************************************************
+
+
+          Written by Luuk Visscher, Jon Laerdahl & Trond Saue
+          Odense, 1997
+
+
+
+
+     ************************************************************************
+     **************** Transformation of 2-electron integrals ****************
+     ************************************************************************
+
+
+ Transformation started at : Fri Apr 28 12:05:19 2023
+
+* REACMO: Coefficients read from CHECKPOINT  - Total energy: -25.1328056454298050
+* Heading : Data read from the checkpoint file                                       
+
+* Orbital ranges for 4-index transformation:
+
+
+ * Fermion ircop E1 
+
+      Index 1   19 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18   19   20
+
+      Index 2   19 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18   19   20
+
+      Index 3   19 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18   19   20
+
+      Index 4   19 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18   19   20
+
+ (PAMTRA)  Orbitals read from CHECKPOINT
+
+* Core orbital ranges for 2-index transformation:
+
+
+ * Fermion ircop E1 
+
+      Index 1    1 orbitals
+          1
+
+
+    **************************************************************************
+    **************** Transformation to Molecular Spinor Basis ****************
+    **************************************************************************
+
+
+          Written by Luuk Visscher, Jon Laerdahl & Trond Saue
+          Odense, 1997
+
+
+
+
+      **********************************************************************
+      **************** Transformation of property integrals ****************
+      **********************************************************************
+
+
+ Transformation started at : Fri Apr 28 12:05:19 2023
+
+* REACMO: Coefficients read from CHECKPOINT  - Total energy: -25.1328056454298050
+* Heading : Data read from the checkpoint file                                       
+
+
+ * Fermion ircop E1 
+
+      Index 1   19 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18   19   20
+
+      Index 2   19 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18   19   20
+
+
+    **************************************************************************
+    **************** Transformation to Molecular Spinor Basis ****************
+    **************************************************************************
+
+
+          Written by Luuk Visscher, Jon Laerdahl & Trond Saue
+          Odense, 1997
+
+
+
+
+       ********************************************************************
+       **************** Transformation of core Fock matrix ****************
+       ********************************************************************
+
+
+ Transformation started at : Fri Apr 28 12:05:19 2023
+
+* REACMO: Coefficients read from CHECKPOINT  - Total energy: -25.1328056454298050
+* Heading : Data read from the checkpoint file                                       
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   68.03%    0.00%    9.29%   0.01598102s
+
+* REAFCK: Fock matrix read from file DFFCK1                                                      
+* Heading :DIRAC: No title specified !!!                     Fri Apr 28 12:05:19 2023
+
+
+ Core energy (includes nuclear repulsion) :            -20.7034353942
+ - Electronic part :                                   -22.8503731210
+   - One-electron terms :                              -25.7434771159
+   - Two-electron terms :                                2.8931039949
+
+
+ MOLFDIR file MRCONEE is written
+
+
+ Total wall time used in PAMTRA :   00:00:00
+ Total CPU  time used in PAMTRA (master only) :   00:00:00
+
+ Transformation ended at : Fri Apr 28 12:05:19 2023
+
+ 
+ 
+                    *****************************************************
+                    ***     Entering the ExaCorr module in DIRAC      ***
+                    ***                                               ***
+                    ***  Authors:         - Lucas Visscher            ***
+                    ***                   - Anastasios Papadopoulos   ***
+                    ***  Contributors:    - Johann Pototschnig        ***
+                    ***                   - Michal Repisky            ***
+                    ***                   - Andre Severo Pereira Gomes***
+                    ***                   - Loic Halbert              ***
+                    ***                   - Xiang Yuan                ***
+                    ***                   - Chima Chibueze            ***
+                    ***  Features:        - CCD/CC2/CCSD              ***
+                    ***                   - MP2 NOs                   ***
+                    ***                   - 1DM                       ***
+                    ***                   - ReSpect interface         ***
+                    ***                                               ***
+                    ***  Relativistic Coupled Cluster code using the  ***
+                    ***  TALSH and ExaTensor libraries developed by   ***
+                    ***  Dmitry Lyakh                                 ***
+                    ***                                               ***
+                    ***  Reference DOI: 10.1021/acs.jctc.1c00260      ***
+                    ***                                               ***
+                    *****************************************************
+ 
+ 
+  28 Apr 23 12:05:19 Found Dirac SCF orbitals file. using it.
+  28 Apr 23 12:05:19 scf data read from the checkpoint file
+  28 Apr 23 12:05:19 retrieved basis set information
+  28 Apr 23 12:05:19 read one el. integrals from MRCONEE
+  28 Apr 23 12:05:19 read property integrals from MDPROP
+  28 Apr 23 12:05:19 Initialized global data
+  28 Apr 23 12:05:19 Entered cc_driver routine
+ Checking Nvidia GPU availability ... Status           0: Number of GPUs =   0
+  28 Apr 23 12:05:19 Initialized talsh library
+  Status           0: Size (Bytes) =   53686566912: Max args in HAB =   12288
+
+  Integral module InteRest is initialized
+  Last commit rev         | af67681897b1ecc14a7668475bd13b62471f8211
+  Last commit author      | Michal Repisky 
+  Last commit time        | Oct 16 14:37:58 2018 +0200
+  Last update time        | Feb 20 15:39:00 2020 +0200
+
+  28 Apr 23 12:05:19 Initialized interest library
+  28 Apr 23 12:05:19 MO occupation data to EXACC file
+ 
+-----------------------------------------------
+      Characteristics of this calculation      
+-----------------------------------------------
+ - Solve CCD equations :                F
+ - Solve Lambda equations :             T
+ - Compute perturbative corrections :   T
+ - Integral transformation scheme :     4
+ - Maximum number of cycles :          30
+ - Target precision of amplitudes :     1.0E-08
+ 
+ - Number of atomic orbitals :         34
+ - Number of occupied spinors :         4
+ - Number of virtual spinors :         34
+ 
+ Using the single-node TALSH library 
+ - TALSH buffer size:                  50 GB
+ 
+ - Print Level :                        1
+ 
+ - Estimating memory requirements
+ -- nao  ( scheme 1-3  ) :         0 GB
+ -- nvir ( scheme 4/42 ) :         0 GB
+-----------------------------------------------
+ 
+  28 Apr 23 12:05:19 Getting orbital energies
+  28 Apr 23 12:05:19 Retrieved orbital energies
+  28 Apr 23 12:05:19 -Start- Integral Transformation
+  28 Apr 23 12:05:19 allocated AO integral tensor
+  28 Apr 23 12:05:19 finished ao integral calculation
+  28 Apr 23 12:05:20 finished oovv integrals
+  28 Apr 23 12:05:20 finished oooo integrals
+  28 Apr 23 12:05:21 finished vovo integrals
+  28 Apr 23 12:05:24 finished vvvv integrals
+  28 Apr 23 12:05:24 finished ooov integrals
+  28 Apr 23 12:05:26 finished vovv integrals
+  28 Apr 23 12:05:26 -End- Integral Transformation
+  28 Apr 23 12:05:26 one electron integrals added to Fock Matrix
+  28 Apr 23 12:05:26 two electron integrals added to Fock Matrix
+  28 Apr 23 12:05:26 Fock matrix initialized
+  28 Apr 23 12:05:26 Succesfully allocated all tensors
+ 
+     MP2 energy =   -5.7840413241949405E-002
+ 
+
+ =======================================
+   Matrix of pair correlation energies
+ =============================================
+  0.00E+00 -1.83E-02 -1.87E-03 -7.25E-03
+ -1.83E-02  0.00E+00 -7.25E-03 -1.87E-03
+ -1.87E-03 -7.25E-03  0.00E+00 -2.13E-02
+ -7.25E-03 -1.87E-03 -2.13E-02  0.00E+00
+ Sum of pair correlation energies :  -0.11568082648389441     
+ Correlation energy               :   -5.7840413241947206E-002
+ =============================================
+ =======================================
+
+ 
+   Recomputed energy (single determinant, calculated) =     -25.132805645429819
+ 
+
+     Norm of Fock matrix (OO, no diagonal) =    1.0827747928900829E-019
+     Norm of Fock matrix (OV, all        ) =    1.0714898188912083E-015
+     Norm of Fock matrix (VV, no diagonal) =    2.6826237371585367E-016
+
+  28 Apr 23 12:05:26 -Start- CC Iterations
+ The wavefunction chosen is CC(           2 ,          21 )
+ 
+ -----------------------------------------------
+   It.     Energy                  Convergence  
+ -----------------------------------------------
+    1      -0.073618608255967      0.1E+00
+    2      -0.083223261816917      0.7E-01
+    3      -0.084226243072023      0.2E-01
+    4      -0.084322351760595      0.5E-02
+    5      -0.084310601095917      0.2E-02
+    6      -0.084304449967110      0.5E-03
+    7      -0.084305666167725      0.1E-03
+    8      -0.084306473473606      0.3E-04
+    9      -0.084307055473329      0.1E-04
+   10      -0.084307306377967      0.6E-05
+   11      -0.084307326252357      0.3E-05
+   12      -0.084307343617102      0.2E-05
+   13      -0.084307364053390      0.2E-05
+   14      -0.084307353747655      0.7E-06
+   15      -0.084307342068463      0.4E-06
+   16      -0.084307338545589      0.2E-06
+   17      -0.084307338304760      0.1E-06
+   18      -0.084307338456118      0.1E-06
+   19      -0.084307338978263      0.6E-07
+   20      -0.084307339361189      0.6E-07
+   21      -0.084307339604280      0.3E-07
+   22      -0.084307339552745      0.2E-07
+   23      -0.084307339448192      0.1E-07
+   24      -0.084307339384937      0.9E-08
+ -----------------------------------------------
+ 
+ 
+  28 Apr 23 12:05:32 -End- CC Iterations
+  28 Apr 23 12:05:32 -Start- Triples
+  28 Apr 23 12:05:32 -End- Triples
+ 
+-----------------------------------------------
+     -     Final results from EXACORR     -    
+-----------------------------------------------
+ Using the single-node TALSH library 
+ 
+  MP2 energy :                        -0.057840413241949
+  Final CCSD energy :                 -0.084307339384937
+  4th order triples correction :      -0.001350903627311
+  5th order triples (T) correction :   0.000014906864804
+  5th order triples -T  correction :   0.000014409744125
+  CCSD+T  correlation energy :        -0.085658243012248
+  CCSD(T) correlation energy :        -0.085643336147444
+  CCSD-T  correlation energy :        -0.085643833268123
+  T1 diagnostic      :                 0.000713657416906
+ 
+  SCF energy :                       -25.132805645429819
+  Total MP2 energy :                 -25.190646058671767
+  Total CCSD energy :                -25.217112984814758
+  Total CCSD+T  energy :             -25.218463888442070
+  Total CCSD(T) energy :             -25.218448981577264
+  Total CCSD-T  energy :             -25.218449478697945
+ 
+-----------------------------------------------
+ 
+  28 Apr 23 12:05:32 -Start- Lambda Equations
+ 
+*******************************************************************************
+********************** Solving Left Eigenvector Equation **********************
+*******************************************************************************
+ 
+  28 Apr 23 12:05:32 Finished calculating common blocks
+  28 Apr 23 12:05:33 Finished calculating fixed intermediates
+ T1amp      =    1.4273148338114000E-003
+ T2amp      =    9.1603055163400685E-002
+ Fbar_oo    =    6.8820783725032234E-003
+ Fbar_ov    =    8.6034797416020286E-006
+ Fbar_vv    =    3.4035209046840249E-003
+ wbar_vovo  =    21.707949672414411     
+ w_vvvo     =    1.5718035230769973     
+ w_vovv     =    1.7894712761563218     
+ w_vovo     =    21.756984804026658     
+ w_ovoo     =   0.11875757521011120     
+ w_ooov     =   0.13353109075581612     
+ w_oooo     =    1.0019589696584554     
+ 
+ ------------------------
+   It.      Convergence  
+ ------------------------
+    1       0.3E-01
+    2       0.8E-02
+    3       0.3E-02
+    4       0.1E-02
+    5       0.3E-03
+    6       0.1E-03
+    7       0.3E-04
+    8       0.1E-04
+    9       0.1E-04
+   10       0.2E-05
+   11       0.2E-05
+   12       0.1E-05
+   13       0.8E-06
+   14       0.8E-06
+   15       0.3E-06
+   16       0.2E-06
+   17       0.7E-07
+   18       0.4E-07
+   19       0.2E-07
+   20       0.1E-07
+   21       0.7E-08
+ ------------------------
+ 
+  Final L1amp = 1.1526837983670210E-03
+  Final L2amp = 8.0206033670981239E-02
+ 
+  28 Apr 23 12:05:38 Created 1RDM storage
+  28 Apr 23 12:05:38 Calculated 1-RDM density matrices in MO basis
+  Storing the CCSD density matrix (AO) on file
+  Wrote 1RDM(o+v,o+v)         (MO) to binary file CCSD1RDM
+ 
+  28 Apr 23 12:05:38 Writing CCDENS data to EXACC file
+  Opening HDF5 EXACC file
+  28 Apr 23 12:05:38 Destroyed 1RDM storage
+  28 Apr 23 12:05:38 -End- Lambda Equations
+  28 Apr 23 12:05:38 one electron integrals added to Fock Matrix
+  28 Apr 23 12:05:38 two electron integrals added to Fock Matrix
+  28 Apr 23 12:05:38 Fock matrix initialized
+ foo_tensor norm    1.0779416186458326     
+ fov_tensor norm    1.0714898188912083E-015
+ fvv_tensor norm    44.280700751154704     
+ copying t2 tensor, norm   0.36641222065360274       0.36641222065360274     
+ g_oo      tensor norm   9.6325172665697074E-003
+ g_vv      tensor norm   3.9893524463307205E-003
+ t1        tensor norm   1.4273148338114000E-003
+ t2        tensor norm  0.36641222065360274     
+ fbar_oo   tensor norm   1.2374004016705966     
+ fbar_ov   tensor norm   8.6034797416020286E-006
+ fbar_vv   tensor norm   44.611668868366550     
+ w_oooo    tensor norm   4.0078358786338217     
+ w_ooov    tensor norm  0.26706218151163225     
+ w_ovoo    tensor norm  0.23751515042022239     
+ w_vovo    tensor norm   21.756984804026658     
+ wbar_vovo tensor norm   21.707949672414411     
+ w_vvvv    tensor norm   317.84869473215463     
+ w_vvvo    tensor norm   3.1436070461539947     
+ w_vovv    tensor norm   3.5789425523126437     
+  28 Apr 23 12:05:39 Activate CC-CC(LR-CC) response
+  28 Apr 23 12:05:39 Do linear response
+  28 Apr 23 12:05:39 Constructed intermediates needed in CC Linear Response
+ Read frequency1:   (8.00000000000000017E-002,1.00000000000000002E-003)
+ Read frequency2: (-8.00000000000000017E-002,-1.00000000000000002E-003)
+ Read frequency min_1:  (-8.00000000000000017E-002,1.00000000000000002E-003)
+ Read frequency min_2:  (8.00000000000000017E-002,-1.00000000000000002E-003)
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    9.9999999999999995E-007
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  28 Apr 23 12:05:39 Entering CC-CI Right Linear Systems calculation
+ excitation_manifold_size:       18632
+ max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions : 18632  x    2048
+    Requested      5 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.181672E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.551527E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.239934E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.109944E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.518974E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.189840E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.531961E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.181749E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.208657E-02
+  
+ Iteration           10
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.481950E-02
+  
+ Iteration           11
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.538516E-03
+  
+ Iteration           12
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.176073E-03
+  
+ Iteration           13
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.751456E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.308753E-04
+  
+ Iteration           15
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.205817E-04
+  
+ Iteration           16
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.119016E-04
+  
+ Iteration           17
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.300239E-05
+  
+ Iteration           18
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.549664E-06     <<< converged ! 
+  
+ Root converged.
+ Final size of reduced subspace :           22
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  28 Apr 23 12:05:47 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    9.9999999999999995E-007
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  28 Apr 23 12:05:47 Entering CC-CI Right Linear Systems calculation
+ excitation_manifold_size:       18632
+ max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions : 18632  x    2048
+    Requested      5 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.149198E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.372562E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.124678E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.392477E-01
+  
+ Iteration            5
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.137134E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.406982E-02
+  
+ Iteration            7
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.952854E-03
+  
+ Iteration            8
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.225538E-03
+  
+ Iteration            9
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.437393E-04
+  
+ Iteration           10
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.110579E-04
+  
+ Iteration           11
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.820752E-05
+  
+ Iteration           12
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.261183E-05
+  
+ Iteration           13
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.804217E-06     <<< converged ! 
+  
+ Root converged.
+ Final size of reduced subspace :           17
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  28 Apr 23 12:05:51 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    9.9999999999999995E-007
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  28 Apr 23 12:05:51 Entering CC-CI Right Linear Systems calculation
+ excitation_manifold_size:       18632
+ max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions : 18632  x    2048
+    Requested      5 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.149198E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.372562E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.124678E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.392477E-01
+  
+ Iteration            5
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.137134E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.406982E-02
+  
+ Iteration            7
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.952854E-03
+  
+ Iteration            8
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.225538E-03
+  
+ Iteration            9
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.437393E-04
+  
+ Iteration           10
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.110579E-04
+  
+ Iteration           11
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.820752E-05
+  
+ Iteration           12
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.261183E-05
+  
+ Iteration           13
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.804220E-06     <<< converged ! 
+  
+ Root converged.
+ Final size of reduced subspace :           17
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  28 Apr 23 12:05:56 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    9.9999999999999995E-007
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  28 Apr 23 12:05:56 Entering CC-CI Right Linear Systems calculation
+ excitation_manifold_size:       18632
+ max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions : 18632  x    2048
+    Requested      5 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.181672E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.551527E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.239934E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.109944E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.518974E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.189840E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.531961E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.181749E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.208657E-02
+  
+ Iteration           10
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.481950E-02
+  
+ Iteration           11
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.538516E-03
+  
+ Iteration           12
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.176073E-03
+  
+ Iteration           13
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.751456E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.308753E-04
+  
+ Iteration           15
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.205817E-04
+  
+ Iteration           16
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.119016E-04
+  
+ Iteration           17
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.300239E-05
+  
+ Iteration           18
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.549664E-06     <<< converged ! 
+  
+ Root converged.
+ Final size of reduced subspace :           22
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  28 Apr 23 12:06:03 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+  28 Apr 23 12:06:03 Solved All 1st response right equations
+ linrsp +w:        (-21.803653758902470,-2.62632138877714680E-002)
+ linrsp -w:         (-21.803653758902556,2.62632137506141616E-002)
+ <<X3;X3>> = 
+    -21.80365376 \     -0.02626321
+ Read frequency1:   (8.99999999999999967E-002,1.00000000000000002E-003)
+ Read frequency2: (-8.99999999999999967E-002,-1.00000000000000002E-003)
+ Read frequency min_1:  (-8.99999999999999967E-002,1.00000000000000002E-003)
+ Read frequency min_2:  (8.99999999999999967E-002,-1.00000000000000002E-003)
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    9.9999999999999995E-007
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  28 Apr 23 12:06:04 Entering CC-CI Right Linear Systems calculation
+ excitation_manifold_size:       18632
+ max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions : 18632  x    2048
+    Requested      5 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.184804E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.569195E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.252101E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.119077E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.575884E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.214299E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.611045E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.224278E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.366717E-02
+  
+ Iteration           10
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.339312E-02
+  
+ Iteration           11
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.490941E-03
+  
+ Iteration           12
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.168398E-03
+  
+ Iteration           13
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.734548E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.319834E-04
+  
+ Iteration           15
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.226170E-04
+  
+ Iteration           16
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.129495E-04
+  
+ Iteration           17
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.326681E-05
+  
+ Iteration           18
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.603003E-06     <<< converged ! 
+  
+ Root converged.
+ Final size of reduced subspace :           22
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  28 Apr 23 12:06:11 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    9.9999999999999995E-007
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  28 Apr 23 12:06:11 Entering CC-CI Right Linear Systems calculation
+ excitation_manifold_size:       18632
+ max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions : 18632  x    2048
+    Requested      5 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.147876E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.365345E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.120467E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.372297E-01
+  
+ Iteration            5
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.128061E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.376106E-02
+  
+ Iteration            7
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.873489E-03
+  
+ Iteration            8
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.204376E-03
+  
+ Iteration            9
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.390268E-04
+  
+ Iteration           10
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.895073E-05
+  
+ Iteration           11
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.618584E-05
+  
+ Iteration           12
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.205415E-05
+  
+ Iteration           13
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.624647E-06     <<< converged ! 
+  
+ Root converged.
+ Final size of reduced subspace :           17
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  28 Apr 23 12:06:17 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    9.9999999999999995E-007
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  28 Apr 23 12:06:17 Entering CC-CI Right Linear Systems calculation
+ excitation_manifold_size:       18632
+ max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions : 18632  x    2048
+    Requested      5 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.147876E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.365345E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.120467E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.372297E-01
+  
+ Iteration            5
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.128061E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.376106E-02
+  
+ Iteration            7
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.873489E-03
+  
+ Iteration            8
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.204376E-03
+  
+ Iteration            9
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.390268E-04
+  
+ Iteration           10
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.895073E-05
+  
+ Iteration           11
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.618584E-05
+  
+ Iteration           12
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.205414E-05
+  
+ Iteration           13
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.624651E-06     <<< converged ! 
+  
+ Root converged.
+ Final size of reduced subspace :           17
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  28 Apr 23 12:06:22 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    9.9999999999999995E-007
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  28 Apr 23 12:06:22 Entering CC-CI Right Linear Systems calculation
+ excitation_manifold_size:       18632
+ max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions : 18632  x    2048
+    Requested      5 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.184804E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.569195E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.252101E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.119077E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.575884E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.214299E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.611045E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.224278E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.366717E-02
+  
+ Iteration           10
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.339312E-02
+  
+ Iteration           11
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.490941E-03
+  
+ Iteration           12
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.168398E-03
+  
+ Iteration           13
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.734548E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.319834E-04
+  
+ Iteration           15
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.226170E-04
+  
+ Iteration           16
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.129495E-04
+  
+ Iteration           17
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.326681E-05
+  
+ Iteration           18
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.603003E-06     <<< converged ! 
+  
+ Root converged.
+ Final size of reduced subspace :           22
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  28 Apr 23 12:06:29 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+  28 Apr 23 12:06:29 Solved All 1st response right equations
+ linrsp +w:        (-22.086703966830143,-3.04027908355404587E-002)
+ linrsp -w:         (-22.086703966830207,3.04027906961317415E-002)
+ <<X3;X3>> = 
+    -22.08670397 \     -0.03040279
+ Read frequency1:        (0.10000000000000001,1.00000000000000002E-003)
+ Read frequency2:      (-0.10000000000000001,-1.00000000000000002E-003)
+ Read frequency min_1:       (-0.10000000000000001,1.00000000000000002E-003)
+ Read frequency min_2:       (0.10000000000000001,-1.00000000000000002E-003)
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    9.9999999999999995E-007
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  28 Apr 23 12:06:30 Entering CC-CI Right Linear Systems calculation
+ excitation_manifold_size:       18632
+ max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions : 18632  x    2048
+    Requested      5 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.188139E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.588132E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.265240E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.129284E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.641336E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.242975E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.706149E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.283809E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.735793E-02
+  
+ Iteration           10
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.293601E-02
+  
+ Iteration           11
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.477687E-03
+  
+ Iteration           12
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.171544E-03
+  
+ Iteration           13
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.764778E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.354541E-04
+  
+ Iteration           15
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.265293E-04
+  
+ Iteration           16
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.150995E-04
+  
+ Iteration           17
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.381248E-05
+  
+ Iteration           18
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.713199E-06     <<< converged ! 
+  
+ Root converged.
+ Final size of reduced subspace :           22
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  28 Apr 23 12:06:37 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    9.9999999999999995E-007
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  28 Apr 23 12:06:37 Entering CC-CI Right Linear Systems calculation
+ excitation_manifold_size:       18632
+ max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions : 18632  x    2048
+    Requested      5 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.146609E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.358417E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.116469E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.353522E-01
+  
+ Iteration            5
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.119739E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.348084E-02
+  
+ Iteration            7
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.802095E-03
+  
+ Iteration            8
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.185556E-03
+  
+ Iteration            9
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.349552E-04
+  
+ Iteration           10
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.738748E-05
+  
+ Iteration           11
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.468013E-05
+  
+ Iteration           12
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.162104E-05
+  
+ Iteration           13
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.487571E-06     <<< converged ! 
+  
+ Root converged.
+ Final size of reduced subspace :           17
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  28 Apr 23 12:06:43 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    9.9999999999999995E-007
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  28 Apr 23 12:06:43 Entering CC-CI Right Linear Systems calculation
+ excitation_manifold_size:       18632
+ max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions : 18632  x    2048
+    Requested      5 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.146609E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.358417E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.116469E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.353522E-01
+  
+ Iteration            5
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.119739E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.348084E-02
+  
+ Iteration            7
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.802095E-03
+  
+ Iteration            8
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.185556E-03
+  
+ Iteration            9
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.349552E-04
+  
+ Iteration           10
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.738748E-05
+  
+ Iteration           11
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.468013E-05
+  
+ Iteration           12
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.162103E-05
+  
+ Iteration           13
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.487574E-06     <<< converged ! 
+  
+ Root converged.
+ Final size of reduced subspace :           17
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  28 Apr 23 12:06:47 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    9.9999999999999995E-007
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  28 Apr 23 12:06:47 Entering CC-CI Right Linear Systems calculation
+ excitation_manifold_size:       18632
+ max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions : 18632  x    2048
+    Requested      5 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.188139E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.588132E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.265240E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.129284E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.641336E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.242975E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.706149E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.283809E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.735793E-02
+  
+ Iteration           10
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.293601E-02
+  
+ Iteration           11
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.477687E-03
+  
+ Iteration           12
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.171544E-03
+  
+ Iteration           13
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.764778E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.354541E-04
+  
+ Iteration           15
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.265293E-04
+  
+ Iteration           16
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.150995E-04
+  
+ Iteration           17
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.381248E-05
+  
+ Iteration           18
+ 
+ workspce_tensor:          34           4
+    Root      1  ||q_k,M||   0.713199E-06     <<< converged ! 
+  
+ Root converged.
+ Final size of reduced subspace :           22
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  28 Apr 23 12:06:54 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+  28 Apr 23 12:06:54 Solved All 1st response right equations
+ linrsp +w:        (-22.412871559182474,-3.48985153837582662E-002)
+ linrsp -w:         (-22.412871559182534,3.48985152416321637E-002)
+ <<X3;X3>> = 
+    -22.41287156 \     -0.03489852
+*************CC-CC(LR-CC) linear response*************
+ <<X3;X3>> = 
+    -21.80365376 \     -0.02626321
+ <<X3;X3>> = 
+    -22.08670397 \     -0.03040279
+ <<X3;X3>> = 
+    -22.41287156 \     -0.03489852
+******************************************************
+  28 Apr 23 12:06:55 Finish CC-CC Linear Response Calculations
+  28 Apr 23 12:06:55 Leave CC response
+#MSG(TAL-SH::CP-TAL): Statistics on CPU:
+ Number of Flops processed    :      0.10946674377600D+12
+ Average GEMM GFlop/s rate    :      0.16229442452979D+01
+ Number of Bytes permuted     :      0.13410209843200D+12
+ Average permute GB/s rate    :      0.93536017563420D+01
+ Average contract GFlop/s rate:      0.13646545915170D+01
+#END_MSG
+ 
+  28 Apr 23 12:06:56 Leaving cc_driver routine
+
+ * Closing HDF5 checkpoint file 
+    - Checkpoint file contains all required data, can be used for restarts
+    - Checkpoint file closed
+
+*****************************************************
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+
+ 
+     Date and time (Mac OSX): Fri Apr 28 12:06:56 2023
+     Host name              : PCMTs-MacBook-Pro.local                 
+
+>>>> Node 0, utime: 91, stime: 2, minflt: 872470, majflt: 0, nvcsw: 187, nivcsw: 204104, maxrss: 3562500096
+>>>> Total WALL time used in DIRAC: 1min38s
+  
+  Dynamical Memory Usage Summary for Master
+  
+  Mean allocation size (Mb) :        87.72
+  
+  Largest          10  allocations
+  
+      488.28 Mb at subroutine unknown                                    for WORK in PAMTRA                            
+      488.28 Mb at subroutine unknown                                    for WORK in PSISCF                            
+      488.28 Mb at subroutine unknown                                    for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine unknown                                    for WORK in GMOTRA - part 2                   
+      488.28 Mb at subroutine unknown                                    for WORK in GMOTRA                            
+      488.28 Mb at subroutine unknown                                    for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine unknown                                    for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine unknown                                    for PAMINP WORK array                         
+        0.24 Mb at subroutine unknown                                    for QTRANS90-buffer-space                     
+        0.24 Mb at subroutine unknown                                    for QTRANS90-buffer-space                     
+  
+  Peak memory usage:       488.29 MB
+  Peak memory usage:        0.477 GB
+       reached at subroutine : unknown                                   
+              for variable   : buf in butobs                             
+  
+ MEMGET high-water mark:    0.00 MB
+
+*****************************************************
+DIRAC pam run in /Users/yuan/Desktop/lille/Research/DIRAC/test_ccci_lr/ccp/testset
+
+ ====  below this line is the stderr stream  ====
+
+OPENMP DISPLAY ENVIRONMENT BEGIN
+  _OPENMP = '201511'
+  OMP_DYNAMIC = 'FALSE'
+  OMP_NESTED = 'TRUE'
+  OMP_NUM_THREADS = '1'
+  OMP_SCHEDULE = 'DYNAMIC'
+  OMP_PROC_BIND = 'FALSE'
+  OMP_PLACES = ''
+  OMP_STACKSIZE = '2097152'
+  OMP_WAIT_POLICY = 'PASSIVE'
+  OMP_THREAD_LIMIT = '256'
+  OMP_MAX_ACTIVE_LEVELS = '3'
+  OMP_CANCELLATION = 'FALSE'
+  OMP_DEFAULT_DEVICE = '0'
+  OMP_MAX_TASK_PRIORITY = '0'
+  OMP_DISPLAY_AFFINITY = 'FALSE'
+  OMP_AFFINITY_FORMAT = 'level %L thread %i affinity %A'
+  OMP_ALLOCATOR = 'omp_default_mem_alloc'
+  OMP_TARGET_OFFLOAD = 'DEFAULT'
+OPENMP DISPLAY ENVIRONMENT END

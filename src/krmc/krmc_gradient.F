@@ -39,7 +39,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       PARAMETER (D0 = 0.0D00)
 C
@@ -109,8 +108,6 @@ C
       PARAMETER ( THRZER = 1.0D-12 )
 C
 #include "dcbopt.h"
-#include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION CREF(*), FCAC(*), H2AC(*), GCI(*), WORK(*)
 C
@@ -135,19 +132,20 @@ C
          IF (ABS(EMCACT-EMCACX) .GT. THRSML) THEN
             WRITE(LUPRI,9000)
      &           '*** ERROR in RCIGRAD ***',
-     &           EMCACT,EMCACX
+     &           EMCACT,EMCACX,EMCACT-EMCACX
 cmvh
             WRITE(LUPRI,*) 'ratio ', EMCACT/EMCACX
 CTROND            CALL QUIT('*** ERROR in RCIGRAD ***')
          ELSE
             WRITE(LUPRI,9000)
      &           '*** WARNING in RCIGRAD ***',
-     &           EMCACT,EMCACX
+     &           EMCACT,EMCACX,EMCACT-EMCACX
          END IF
       END IF
  9000 FORMAT(1P,//,A,
-     &     /,1X,'(RCIGRAD) Active energy from DV and PV:',D25.15,
-     &     /,1X,'(RCIGRAD) Active energy from RCIGRAD:  ',D25.15,/)
+     &     /' (RCIGRAD) Active energy from DV and PV:',D25.15,
+     &     /' (RCIGRAD) Active energy from RCIGRAD:  ',D25.15,
+     &     /' (RCIGRAD) Difference:                  ',D25.15,/)
 C
       CALL RTKTIME(.FALSE.,10)
       CALL QEXIT('RCIGRAD')
@@ -277,16 +275,15 @@ C
       IF (IPRINT .GE. 0 .OR. EMC(2) .NE. D0) THEN
          WRITE(LUPRI,9000)
      &        '(RCIGRD1) Active energy from CI gradient module:',
-     &        'Real part: ', EMC(1),
-     &        'Imag part: ', EMC(2)
+     &        'Real part:', EMC(1),'; Imag part:', EMC(2)
          IF ( ABS(EMC(2)) .GT. THRZER) THEN
             WRITE(LUPRI,'(//,2A,//)')
      &           '*** WARNING ***',
-     &           'Active energy is imaginary!'
+     &           'Active energy is complex!'
          END IF
       END IF
 C
- 9000 FORMAT(1P,//,1X,A,2(/,5X,A,D25.15),//)
+ 9000 FORMAT(1P,/,1X,A/,2(5X,A,D25.15))
 #ifdef UNDEF
 C
 C     Allocate memory for matrices:
@@ -348,7 +345,7 @@ C MVH DEBUG
          WRITE(LUPRI,9000)
      &        '(RCIGRD1) Active energy from CI gradient module:',
      &        'Real part: ', EMC(1),
-     &        'Imag part: ', EMC(2)
+     &        '; Imag part: ', EMC(2)
          IF ( ABS(EMC(2)) .GT. THRZER) THEN
             WRITE(LUPRI,'(//,2A,//)')
      &           '*** WARNING ***',
@@ -432,7 +429,6 @@ C
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION G(NZHOPE,*), GR(*)
 C
@@ -476,7 +472,6 @@ C
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION G(NZHOPE,*), GR(*)
 C

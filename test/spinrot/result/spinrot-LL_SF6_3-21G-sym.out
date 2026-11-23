@@ -1,5 +1,4 @@
-DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB)
- of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
 
 Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 
@@ -80,22 +79,24 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *                                                                             *
  *    Written by:                                                              *
  *                                                                             *
- *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
- *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
- *    Trond Saue               Universite Toulouse III           France        *
- *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
  *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *    Trond Saue               Universite Toulouse III           France        *
+ *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
  *                                                                             *
  *    with contributions from:                                                 *
  *                                                                             *
  *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
  *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joel Creutzberg          University of Southern Denmark    Denmark       *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
  *    Sebastien Dubillard      University of Strasbourg          France        *
  *    Ulf Ekstroem             University of Oslo                Norway        *
  *    Ephraim Eliav            University of Tel Aviv            Israel        *
  *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
- *    Elke Fasshauer           University of Aarhus              Denmark       *
+ *    Elke Fasshauer           University of Tubingen            Germany       *
  *    Timo Fleig               Universite Toulouse III           France        *
  *    Olav Fossgaard           UiT The Arctic University of      Norway        *
  *    Loic Halbert             Universite de Lille               France        *
@@ -103,18 +104,20 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Trygve Helgaker          University of Oslo                Norway        *
  *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
  *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Martin van Horn          Universite Toulouse III           France        *
  *    Miroslav Ilias           Matej Bel University              Slovakia      *
  *    Christoph R. Jacob       TU Braunschweig                   Germany       *
- *    Stefan Knecht            ETH Zuerich                       Switzerland   *
+ *    Stefan Knecht            Algorithmiq Ltd / ETH Zuerich     Finland/CH    *
  *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
  *    Ossama Kullie            University of Kassel              Germany       *
  *    Jon K. Laerdahl          University of Oslo                Norway        *
  *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
  *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
- *    Nanna Holmgaard List     Stanford University               USA           *
+ *    Nanna Holmgaard List     Stockholm Inst. of Technology     Sweden        *
  *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
  *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
  *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
+ *    Andreas Nyvang           Aarhus University                 Denmark       *
  *    Malgorzata Olejniczak    University of Warsaw              Poland        *
  *    Jeppe Olsen              Aarhus University                 Denmark       *
  *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
@@ -123,50 +126,52 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
  *    Markus Pernpointner      University of Heidelberg          Germany       *
  *    Johann V. Pototschnig    Technical University Graz         Austria       *
- *    Roberto Di Remigio       UiT The Arctic University of      Norway        *
+ *    Roberto Di Remigio       EuroCC National Competence Centre Sweden        *
  *    Michal Repisky           UiT The Arctic University of      Norway        *
  *    Kenneth Ruud             UiT The Arctic University of      Norway        *
  *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
  *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
- *    Bruno Senjean            University of Leiden              Netherlands   *
- *    Avijit Shee              University of Michigan            USA           *
+ *    Bruno Senjean            CNRS/Universite de Montpellier    France        *
+ *    Avijit Shee              University of Berkeley            USA           *
  *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
  *    Ayaki Sunaga             Kyoto University                  Japan         *
  *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
  *    Joern Thyssen            University of Southern Denmark    Denmark       *
  *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
- *    Marta L. Vidal           Technical University of Denmark   Denmark       *
+ *    Marta L. Vidal           Cardiff University                UK            *
  *    Sebastien Villaume       Linkoeping University             Sweden        *
  *    Olivier Visser           University of Groningen           Netherlands   *
  *    Toke Winther             University of Southern Denmark    Denmark       *
  *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *    Xiang Yuan               Universite de Lille               France        *
  *                                                                             *
  *    For more information about the DIRAC code see http://diracprogram.org    *
  *                                                                             *
  *    This is an experimental code. The authors accept no responsibility       *
  *    for the performance of the code or for the correctness of the results.   *
  *                                                                             *
- *    The code (in whole or part) is not to be reproduced for further          *
- *    distribution without the written permission of the authors or            *
- *    their representatives.                                                   *
+ *    This program is free software; you can redistribute it and/or            *
+ *    modify it under the terms of the GNU Lesser General Public               *
+ *    License version 2.1 as published by the Free Software Foundation.        *
  *                                                                             *
  *    If results obtained with this code are published, an                     *
  *    appropriate citation would be:                                           *
  *                                                                             *
  *    DIRAC, a relativistic ab initio electronic structure program,            *
- *    Release DIRAC21 (2021), written by                                       *
- *    T. Saue, L. Visscher, H. J. Aa. Jensen, R. Bast, and A. S. P. Gomes      *
- *    with contributions from I. A. Aucar, V. Bakken, K. G. Dyall,             *
- *    S. Dubillard, U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer,        *
- *    T. Fleig, O. Fossgaard, L. Halbert, E. D. Hedegaard, T. Helgaker,        *
- *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *
- *    O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee, N. H. List,          *
- *    H. S. Nataraj, M. K. Nayak, P. Norman, M. Olejniczak, J. Olsen,          *
- *    J. M. H. Olsen, A. Papadopoulos, Y. C. Park, J. K. Pedersen,             *
- *    M. Pernpointner, J. V. Pototschnig, R. Di Remigio, M. Repisky, K. Ruud,  *
- *    P. Salek, B. Schimmelpfennig, B. Senjean, A. Shee, J. Sikkema, A. Sunaga,*
+ *    Release DIRAC23 (2023), written by                                       *
+ *    R. Bast, A. S. P. Gomes, T. Saue, L. Visscher, and H. J. Aa. Jensen,     *
+ *    with contributions from I. A. Aucar, V. Bakken, C. Chibueze,             *
+ *    J. Creutzberg, K. G. Dyall, S. Dubillard, U. Ekstroem, E. Eliav,         *
+ *    T. Enevoldsen, E. Fasshauer, T. Fleig, O. Fossgaard, L. Halbert,         *
+ *    E. D. Hedegaard, T. Helgaker, J. Henriksson, M. van Horn, M. Ilias,      *
+ *    Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie, J. K. Laerdahl,       *
+ *    C. V. Larsen, Y. S. Lee, N. H. List, H. S. Nataraj, M. K. Nayak,         *
+ *    P. Norman, A. Nyvang, M. Olejniczak, J. Olsen, J. M. H. Olsen,           *
+ *    A. Papadopoulos, Y. C. Park, J. K. Pedersen, M. Pernpointner,            *
+ *    J. V. Pototschnig, R. Di Remigio, M. Repisky, K. Ruud, P. Salek,         *
+ *    B. Schimmelpfennig, B. Senjean, A. Shee, J. Sikkema, A. Sunaga,          *
  *    A. J. Thorvaldsen, J. Thyssen, J. N. P. van Stralen, M. L. Vidal,        *
- *    S. Villaume, O. Visser, T. Winther, and S. Yamamoto,                     *
+ *    S. Villaume, O. Visser, T. Winther, S. Yamamoto and X. Yuan              *
  *    (see http://diracprogram.org).                                           *
  *                                                                             *
  *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104.        *
@@ -177,61 +182,60 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 Version information
 -------------------
 
-Branch        | new-tests-SR-Levyleb
-Commit hash   | e4849bcdc
-Commit author | Trond Saue
-Commit date   | Wed May 26 15:14:55 2021 +0000
+Branch        | PV-prop
+Commit hash   | a94b66f0c
+Commit author | Agustin Aucar
+Commit date   | Fri Dec 15 10:27:22 2023 +0100
 
 
 Configuration and build information
 -----------------------------------
 
 Who compiled             | agustin
-Compiled on server       | agustin-laptop
-Operating system         | Linux-5.4.0-73-generic
-CMake version            | 3.16.3
+Compiled on server       | aucaria
+Operating system         | Linux-6.2.0-39-generic
+CMake version            | 3.27.5
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2021-05-26 15:19:50.759616
-Python version           | 3.8.5
+Configuration time       | 2023-12-15 10:37:46.109450
 Fortran compiler         | /usr/bin/gfortran
-Fortran compiler version | 9.3.0
-Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fopenmp
+Fortran compiler version | 11.4.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto
 C compiler               | /usr/bin/gcc
-C compiler version       | 9.3.0
-C compiler flags         |  -g -fopenmp
+C compiler version       | 11.4.0
+C compiler flags         |  -g -fopenmp -fno-lto
 C++ compiler             | /usr/bin/g++
-C++ compiler version     | 9.3.0
-C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp
+C++ compiler version     | 11.4.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto
 Static linking           | False
 64-bit integers          | False
 MPI parallelization      | False
 MPI launcher             | unknown
-Math libraries           | /home/agustin/openblas32/lib/libopenblas.so;/home/agustin/openblas32/lib/libopenblas.so
+Math libraries           | unknown
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | HAVE_OPENBLAS_BLAS;HAVE_OPENBLAS_LAPACK;HAVE_OPENMP;MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;HAS_LAPLACE;MOD_EXACORR
+Compile definitions      | USE_BUILTIN_BLAS;USE_BUILTIN_LAPACK;HAVE_OPENMP;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;HAS_PELIB;HAS_STIELTJES;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT
 
 EXACORR dependencies
 --------------------
-Exatensor source repo    | https://gitlab.com/DmitryLyakh/ExaTensor.git
-Exatensor git hash       | d304c03b7289525f250245ece1b4a13a5973fef4
-Exatensor configuration  | WRAP=NOWRAP BUILD_TYPE=OPT EXA_TALSH_ONLY=YES CMAKE_Fortran_COMPILER=/usr/bin/gfortran CMAKE_C_COMPILER=/usr/bin/gcc CMAKE_CXX_COMPILER=/usr/bin/g++ TOOLKIT=GNU EXA_OS=LINUX GPU_CUDA=NOCUDA 
+Exatensor source repo    | unknown
+Exatensor git hash       | unknown
+Exatensor configuration  | unknown
 
 
  LAPACK integer*4/8 selftest passed
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
 
-
- * openMP activated,  thread limit - # processes - # threads: *****    4    1
-
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed May 26 12:34:20 2021
-     Host name              : agustin-laptop                          
+     Date and time (Linux)  : Fri Dec 15 12:04:07 2023
+     Host name              : aucaria                                 
+
+ * Opening checkpoint file 
+    - New checkpoint file created
 
 
 Contents of the input file
@@ -290,11 +294,9 @@ FINISH
     ************************** General DIRAC set-up **************************
     **************************************************************************
 
- The 2018 CODATA Recommended Values of the Fundamental Physical Constants (Web Version 8.1)
-        Eite Tiesinga, Peter J. Mohr, David B. Newell, and Barry N. Taylor                 
-        Database developed by J. Baker, M. Douma, and S. Kotochigova                       
-  Available at http://physics.nist.gov/constants                                           
-  National Institute of Standards and Technology, Gaithersburg, MD 20899                   
+   CODATA Recommended Values of the Fundamental Physical Constants: 2018  
+             Peter J. Mohr, David B. Newell and Barry N. Taylor           
+         Reviews of Modern Physics, Vol. 93, 025010 (2021)                
  * The speed of light :        137.0359992
  * Running in four-component mode
  * Direct evaluation of the following two-electron integrals:
@@ -363,7 +365,7 @@ FINISH
 
  Symmetry test threshold:  5.00E-06
 
-    The molecule has been centered at center of mass
+    The molecule has been centered at center of mass.
 
  Symmetry point group found: O(h)           
 
@@ -501,8 +503,9 @@ Represented as: D2h
     B3g  k
     Au   1
 
-  QM-QM nuclear repulsion energy :    567.079924012808
+  Nuclear repulsion energy                       :    567.079924012808 Hartree
 
+  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000    0.000000000000 a.u.;  origin (0,0,0)
 
 
   Atoms and basis sets
@@ -704,7 +707,7 @@ F5     0.0000000000   0.0000000000  -1.5610000000
 
 
 
-   Nuclear repulsion energy :  567.079924012808 Hartree
+   Nuclear repulsion energy                          :  567.079924012808 Hartree
 
                        * Total mass:   145.962490 amu
                        * Natural abundance:  95.020 %
@@ -960,11 +963,12 @@ F5     0.0000000000   0.0000000000  -1.5610000000
  *SCF: Set-up for Hartree-Fock calculation:
 ===========================================================================
  * Number of fermion irreps: 2
+ * Charge of molecule : 0
  * Sum of atomic potentials used for start guess
  * General print level   :   0
 
  ***** INITIAL TRIAL SCF FUNCTION *****
- * Trial vectors read from file DFCOEF
+ * Trial vectors read from CHECKPOINT
  * Scaling of active-active block correction to open shell Fock operator    0.500000
    to improve convergence (default value).
 
@@ -1695,8 +1699,6 @@ F5     0.0000000000   0.0000000000  -1.5610000000
 
                     All dipole components are zero by symmetry
 
-Total time used in ONEGEN (CPU)  0.11821900s and (WALL)  0.11800000s
-
 
                        Generating Lowdin canonical matrix:
                        -----------------------------------
@@ -1732,8 +1734,6 @@ Total time used in ONEGEN (CPU)  0.11821900s and (WALL)  0.11800000s
 No. of electronic orbitals (NESH):    54      63     117
 No. of positronic orbitals (NPSH):     0       0       0
 Total no. of orbitals      (NORB):    54      63     117
- >>> CPU  time used in PAMSET is   0.14 seconds
- >>> WALL time used in PAMSET is   0.14 seconds
 
 
    ****************************************************************************
@@ -1747,7 +1747,7 @@ Total no. of orbitals      (NORB):    54      63     117
  Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
 
 
-########## START ITERATION NO.   1 ##########   Wed May 26 12:34:21 2021
+########## START ITERATION NO.   1 ##########   Fri Dec 15 12:04:07 2023
 
 
 * AUTOCC( 0) : Initial occupation:
@@ -1758,154 +1758,138 @@ E_HOMO...E_LUMO, symmetry 1:                                 17  -0.61465   18  
 E_HOMO...E_LUMO, symmetry 2:                                 72  -0.65538   73  -0.22862
 
 => Calculating sum of orbital energies
-It.    1    -9.738843444639      0.00D+00  0.00D+00  0.00D+00               0.04976700s   Atom. scrpot   Wed May 26
+It.    1    -9.738843444639      0.00D+00  0.00D+00  0.00D+00               0.02831100s   Atom. scrpot   Fri Dec 15
 
-########## START ITERATION NO.   2 ##########   Wed May 26 12:34:21 2021
+########## START ITERATION NO.   2 ##########   Fri Dec 15 12:04:07 2023
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   27.72%    0.00%    0.12%   0.10117400s
- >>> CPU  time used in SO Fock is   0.24 seconds
- >>> WALL time used in SO Fock is   0.24 seconds
+SOfock:LL  1.00D-12    0.00%   27.72%    0.00%    0.12%   0.05679700s
+ >>> CPU  time used in SO Fock is   0.13 seconds
+ >>> WALL time used in SO Fock is   0.13 seconds
 E_HOMO...E_LUMO, symmetry 1:                                 17  -0.60537   18   0.20603
 E_HOMO...E_LUMO, symmetry 2:                                 72  -0.65575   73   0.40753
->>> Total wall time:  0.25800000s, and total CPU time :  0.25582500s
+>>> Total wall time:  0.13800000s, and total CPU time :  0.13803600s
 
-########## END ITERATION NO.   2 ##########   Wed May 26 12:34:21 2021
+########## END ITERATION NO.   2 ##########   Fri Dec 15 12:04:07 2023
 
-It.    2    -988.7768793901      9.79D+02  6.03D+00  4.38D+00               0.25800000s   LL             Wed May 26
+It.    2    -988.7768793901      9.79D+02  6.03D+00  4.38D+00               0.13800000s   LL             Fri Dec 15
 
-########## START ITERATION NO.   3 ##########   Wed May 26 12:34:21 2021
+########## START ITERATION NO.   3 ##########   Fri Dec 15 12:04:07 2023
 
     3 *** Differential density matrix. DCOVLP     = 0.9032
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   29.96%    0.00%    0.12%   0.10042995s
- >>> CPU  time used in SO Fock is   0.11 seconds
- >>> WALL time used in SO Fock is   0.10 seconds
+SOfock:LL  1.00D-12    0.00%   29.96%    0.00%    0.12%   0.05437198s
 E_HOMO...E_LUMO, symmetry 1:                                 17  -0.68770   18   0.08224
 E_HOMO...E_LUMO, symmetry 2:                                 72  -0.72304   73   0.27337
->>> Total wall time:  0.12400000s, and total CPU time :  0.12219500s
+>>> Total wall time:  0.06700000s, and total CPU time :  0.06662500s
 
-########## END ITERATION NO.   3 ##########   Wed May 26 12:34:21 2021
+########## END ITERATION NO.   3 ##########   Fri Dec 15 12:04:08 2023
 
-It.    3    -989.0884918116      3.12D-01 -3.29D-01  2.15D-01   DIIS   2    0.12400000s   LL             Wed May 26
+It.    3    -989.0884918117      3.12D-01 -3.29D-01  2.15D-01   DIIS   2    0.06700000s   LL             Fri Dec 15
 
-########## START ITERATION NO.   4 ##########   Wed May 26 12:34:21 2021
+########## START ITERATION NO.   4 ##########   Fri Dec 15 12:04:08 2023
 
     4 *** Differential density matrix. DCOVLP     = 1.0176
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   33.28%    0.00%    0.12%   0.10119796s
- >>> CPU  time used in SO Fock is   0.11 seconds
- >>> WALL time used in SO Fock is   0.11 seconds
+SOfock:LL  1.00D-12    0.00%   33.28%    0.00%    0.12%   0.05444100s
 E_HOMO...E_LUMO, symmetry 1:                                 17  -0.68352   18   0.10195
 E_HOMO...E_LUMO, symmetry 2:                                 72  -0.72129   73   0.29465
->>> Total wall time:  0.12500000s, and total CPU time :  0.12280000s
+>>> Total wall time:  0.06600000s, and total CPU time :  0.06621500s
 
-########## END ITERATION NO.   4 ##########   Wed May 26 12:34:21 2021
+########## END ITERATION NO.   4 ##########   Fri Dec 15 12:04:08 2023
 
-It.    4    -989.0958460636      7.35D-03  1.03D-01  6.83D-02   DIIS   3    0.12500000s   LL             Wed May 26
+It.    4    -989.0958460636      7.35D-03  1.03D-01  6.83D-02   DIIS   3    0.06600000s   LL             Fri Dec 15
 
-########## START ITERATION NO.   5 ##########   Wed May 26 12:34:21 2021
+########## START ITERATION NO.   5 ##########   Fri Dec 15 12:04:08 2023
 
     5 *** Differential density matrix. DCOVLP     = 0.9967
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   36.24%    0.00%    0.12%   0.10081601s
- >>> CPU  time used in SO Fock is   0.11 seconds
- >>> WALL time used in SO Fock is   0.11 seconds
+SOfock:LL  1.00D-12    0.00%   36.24%    0.00%    0.12%   0.05427897s
 E_HOMO...E_LUMO, symmetry 1:                                 17  -0.68112   18   0.10404
 E_HOMO...E_LUMO, symmetry 2:                                 72  -0.71949   73   0.29567
->>> Total wall time:  0.12500000s, and total CPU time :  0.12259000s
+>>> Total wall time:  0.06600000s, and total CPU time :  0.06608400s
 
-########## END ITERATION NO.   5 ##########   Wed May 26 12:34:21 2021
+########## END ITERATION NO.   5 ##########   Fri Dec 15 12:04:08 2023
 
-It.    5    -989.0965367357      6.91D-04 -2.90D-02  2.26D-02   DIIS   4    0.12500000s   LL             Wed May 26
+It.    5    -989.0965367357      6.91D-04 -2.90D-02  2.26D-02   DIIS   4    0.06600000s   LL             Fri Dec 15
 
-########## START ITERATION NO.   6 ##########   Wed May 26 12:34:21 2021
+########## START ITERATION NO.   6 ##########   Fri Dec 15 12:04:08 2023
 
     6 *** Differential density matrix. DCOVLP     = 1.0008
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   39.02%    0.00%    0.12%   0.10037899s
- >>> CPU  time used in SO Fock is   0.11 seconds
- >>> WALL time used in SO Fock is   0.11 seconds
+SOfock:LL  1.00D-12    0.00%   39.02%    0.00%    0.12%   0.05492496s
 E_HOMO...E_LUMO, symmetry 1:                                 17  -0.68146   18   0.10372
 E_HOMO...E_LUMO, symmetry 2:                                 72  -0.72009   73   0.29511
->>> Total wall time:  0.12400000s, and total CPU time :  0.12243100s
+>>> Total wall time:  0.06700000s, and total CPU time :  0.06684400s
 
-########## END ITERATION NO.   6 ##########   Wed May 26 12:34:21 2021
+########## END ITERATION NO.   6 ##########   Fri Dec 15 12:04:08 2023
 
-It.    6    -989.0966085255      7.18D-05  4.75D-03  3.46D-03   DIIS   5    0.12400000s   LL             Wed May 26
+It.    6    -989.0966085255      7.18D-05  4.75D-03  3.46D-03   DIIS   5    0.06700000s   LL             Fri Dec 15
 
-########## START ITERATION NO.   7 ##########   Wed May 26 12:34:21 2021
+########## START ITERATION NO.   7 ##########   Fri Dec 15 12:04:08 2023
 
     7 *** Differential density matrix. DCOVLP     = 1.0001
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   41.70%    0.00%    0.12%   0.10160601s
- >>> CPU  time used in SO Fock is   0.11 seconds
- >>> WALL time used in SO Fock is   0.11 seconds
+SOfock:LL  1.00D-12    0.00%   41.70%    0.00%    0.12%   0.05493701s
 E_HOMO...E_LUMO, symmetry 1:                                 17  -0.68132   18   0.10388
 E_HOMO...E_LUMO, symmetry 2:                                 72  -0.72003   73   0.29520
->>> Total wall time:  0.12600000s, and total CPU time :  0.12351000s
+>>> Total wall time:  0.06700000s, and total CPU time :  0.06683500s
 
-########## END ITERATION NO.   7 ##########   Wed May 26 12:34:21 2021
+########## END ITERATION NO.   7 ##########   Fri Dec 15 12:04:08 2023
 
-It.    7    -989.0966127564      4.23D-06  7.30D-04  7.51D-04   DIIS   6    0.12600000s   LL             Wed May 26
+It.    7    -989.0966127563      4.23D-06  7.30D-04  7.51D-04   DIIS   6    0.06700000s   LL             Fri Dec 15
 
-########## START ITERATION NO.   8 ##########   Wed May 26 12:34:21 2021
+########## START ITERATION NO.   8 ##########   Fri Dec 15 12:04:08 2023
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.08%   46.30%    0.00%    0.12%   0.10007000s
- >>> CPU  time used in SO Fock is   0.10 seconds
- >>> WALL time used in SO Fock is   0.11 seconds
+SOfock:LL  1.00D-12    0.08%   46.30%    0.00%    0.12%   0.05445403s
 E_HOMO...E_LUMO, symmetry 1:                                 17  -0.68128   18   0.10393
 E_HOMO...E_LUMO, symmetry 2:                                 72  -0.72002   73   0.29525
->>> Total wall time:  0.12300000s, and total CPU time :  0.12173600s
+>>> Total wall time:  0.06600000s, and total CPU time :  0.06615500s
 
-########## END ITERATION NO.   8 ##########   Wed May 26 12:34:22 2021
+########## END ITERATION NO.   8 ##########   Fri Dec 15 12:04:08 2023
 
-It.    8    -989.0966129087      1.52D-07 -7.30D-05  1.68D-04   DIIS   7    0.12300000s   LL             Wed May 26
+It.    8    -989.0966129086      1.52D-07 -7.30D-05  1.68D-04   DIIS   7    0.06600000s   LL             Fri Dec 15
 
-########## START ITERATION NO.   9 ##########   Wed May 26 12:34:22 2021
+########## START ITERATION NO.   9 ##########   Fri Dec 15 12:04:08 2023
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.21%   50.17%    0.00%    0.12%   0.09903789s
- >>> CPU  time used in SO Fock is   0.10 seconds
- >>> WALL time used in SO Fock is   0.10 seconds
+SOfock:LL  1.00D-12    0.21%   50.17%    0.00%    0.12%   0.05405802s
 E_HOMO...E_LUMO, symmetry 1:                                 17  -0.68128   18   0.10393
 E_HOMO...E_LUMO, symmetry 2:                                 72  -0.72002   73   0.29525
->>> Total wall time:  0.12300000s, and total CPU time :  0.12109500s
+>>> Total wall time:  0.06600000s, and total CPU time :  0.06584400s
 
-########## END ITERATION NO.   9 ##########   Wed May 26 12:34:22 2021
+########## END ITERATION NO.   9 ##########   Fri Dec 15 12:04:08 2023
 
-It.    9    -989.0966129166      7.90D-09  1.77D-05  1.26D-05   DIIS   8    0.12300000s   LL             Wed May 26
+It.    9    -989.0966129166      7.95D-09  1.77D-05  1.26D-05   DIIS   8    0.06600000s   LL             Fri Dec 15
 
-########## START ITERATION NO.  10 ##########   Wed May 26 12:34:22 2021
+########## START ITERATION NO.  10 ##########   Fri Dec 15 12:04:08 2023
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    1.12%   57.15%    0.00%    0.12%   0.09755790s
- >>> CPU  time used in SO Fock is   0.10 seconds
- >>> WALL time used in SO Fock is   0.10 seconds
+SOfock:LL  1.00D-12    1.12%   57.15%    0.00%    0.12%   0.05286700s
 E_HOMO...E_LUMO, symmetry 1:                                 17  -0.68128   18   0.10393
 E_HOMO...E_LUMO, symmetry 2:                                 72  -0.72002   73   0.29525
->>> Total wall time:  0.12200000s, and total CPU time :  0.11983400s
+>>> Total wall time:  0.06500000s, and total CPU time :  0.06463800s
 
-########## END ITERATION NO.  10 ##########   Wed May 26 12:34:22 2021
+########## END ITERATION NO.  10 ##########   Fri Dec 15 12:04:08 2023
 
-It.   10    -989.0966129166      5.21D-11  1.84D-06  9.44D-07   DIIS   9    0.12200000s   LL             Wed May 26
+It.   10    -989.0966129166      3.32D-11  1.84D-06  9.44D-07   DIIS   9    0.06500000s   LL             Fri Dec 15
 
-########## START ITERATION NO.  11 ##########   Wed May 26 12:34:22 2021
+########## START ITERATION NO.  11 ##########   Fri Dec 15 12:04:08 2023
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    4.93%   64.37%    0.00%    0.13%   0.09376693s
->>> Total wall time:  0.10700000s, and total CPU time :  0.10657900s
+SOfock:LL  1.00D-12    4.93%   64.37%    0.00%    0.13%   0.05010700s
+>>> Total wall time:  0.05700000s, and total CPU time :  0.05667200s
 
-########## END ITERATION NO.  11 ##########   Wed May 26 12:34:22 2021
+########## END ITERATION NO.  11 ##########   Fri Dec 15 12:04:08 2023
 
-It.   11    -989.0966129166     -4.14D-11  5.96D-08  7.16D-08   DIIS   9    0.10700000s   LL             Wed May 26
+It.   11    -989.0966129166      4.55D-12  5.96D-08  7.16D-08   DIIS   9    0.05700000s   LL             Fri Dec 15
 
 
                                    SCF - CYCLE
@@ -1921,34 +1905,36 @@ It.   11    -989.0966129166     -4.14D-11  5.96D-08  7.16D-08   DIIS   9    0.10
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -9.738843444639      0.00D+00  0.00D+00  0.00D+00               0.04976700s   Atom. scrpot   Wed May 26
-It.    2    -988.7768793901      9.79D+02  6.03D+00  4.38D+00               0.25800000s   LL             Wed May 26
-It.    3    -989.0884918116      3.12D-01 -3.29D-01  2.15D-01   DIIS   2    0.12400000s   LL             Wed May 26
-It.    4    -989.0958460636      7.35D-03  1.03D-01  6.83D-02   DIIS   3    0.12500000s   LL             Wed May 26
-It.    5    -989.0965367357      6.91D-04 -2.90D-02  2.26D-02   DIIS   4    0.12500000s   LL             Wed May 26
-It.    6    -989.0966085255      7.18D-05  4.75D-03  3.46D-03   DIIS   5    0.12400000s   LL             Wed May 26
-It.    7    -989.0966127564      4.23D-06  7.30D-04  7.51D-04   DIIS   6    0.12600000s   LL             Wed May 26
-It.    8    -989.0966129087      1.52D-07 -7.30D-05  1.68D-04   DIIS   7    0.12300000s   LL             Wed May 26
-It.    9    -989.0966129166      7.90D-09  1.77D-05  1.26D-05   DIIS   8    0.12300000s   LL             Wed May 26
-It.   10    -989.0966129166      5.21D-11  1.84D-06  9.44D-07   DIIS   9    0.12200000s   LL             Wed May 26
-It.   11    -989.0966129166     -4.14D-11  5.96D-08  7.16D-08   DIIS   9    0.10700000s   LL             Wed May 26
+It.    1    -9.738843444639      0.00D+00  0.00D+00  0.00D+00               0.02831100s   Atom. scrpot   Fri Dec 15
+It.    2    -988.7768793901      9.79D+02  6.03D+00  4.38D+00               0.13800000s   LL             Fri Dec 15
+It.    3    -989.0884918117      3.12D-01 -3.29D-01  2.15D-01   DIIS   2    0.06700000s   LL             Fri Dec 15
+It.    4    -989.0958460636      7.35D-03  1.03D-01  6.83D-02   DIIS   3    0.06600000s   LL             Fri Dec 15
+It.    5    -989.0965367357      6.91D-04 -2.90D-02  2.26D-02   DIIS   4    0.06600000s   LL             Fri Dec 15
+It.    6    -989.0966085255      7.18D-05  4.75D-03  3.46D-03   DIIS   5    0.06700000s   LL             Fri Dec 15
+It.    7    -989.0966127563      4.23D-06  7.30D-04  7.51D-04   DIIS   6    0.06700000s   LL             Fri Dec 15
+It.    8    -989.0966129086      1.52D-07 -7.30D-05  1.68D-04   DIIS   7    0.06600000s   LL             Fri Dec 15
+It.    9    -989.0966129166      7.95D-09  1.77D-05  1.26D-05   DIIS   8    0.06600000s   LL             Fri Dec 15
+It.   10    -989.0966129166      3.32D-11  1.84D-06  9.44D-07   DIIS   9    0.06500000s   LL             Fri Dec 15
+It.   11    -989.0966129166      4.55D-12  5.96D-08  7.16D-08   DIIS   9    0.05700000s   LL             Fri Dec 15
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   11 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.04900000s
-      LL           :    0.13570000s
+      No 2-ints    :    0.02800000s
+      LL           :    0.07250000s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -1556.1765369293753
+   Charge of molecule : 0
+
+   Electronic energy                        :    -1556.1765369294035
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      567.0799240128075
 
    Sum of all contributions to the energy
-   Total energy                             :     -989.0966129165678
+   Total energy                             :     -989.0966129165960
 
 
                                    Eigenvalues
@@ -1961,9 +1947,9 @@ It.   11    -989.0966129166     -4.14D-11  5.96D-08  7.16D-08   DIIS   9    0.10
    -1.665275839742  ( 4)      -1.121581438343  ( 2)      -0.681279482048  ( 4)
   * Virtual eigenvalues, f = 0.0000
     0.103933874865  ( 2)       0.587026855934  ( 2)       2.153444987349  ( 2)       2.173779097563  ( 4)       2.953328417751  ( 4)
-    3.800025096123  ( 2)       4.669152377161  ( 2)      14.712112560807  ( 2)      14.763818293097  ( 4)      22.725169968774  ( 4)
-   23.813969588673  ( 2)      24.767008121753  ( 2)      95.818994608307  ( 4)      96.756030312614  ( 2)     113.476269062917  ( 2)
-  368.230267655424  ( 2)     621.591395933367  ( 4)     622.324154576742  ( 2)    1893.518712250958  ( 2)
+    3.800025096123  ( 2)       4.669152377160  ( 2)      14.712112560807  ( 2)      14.763818293097  ( 4)      22.725169968773  ( 4)
+   23.813969588671  ( 2)      24.767008121751  ( 2)      95.818994608306  ( 4)      96.756030312612  ( 2)     113.476269062912  ( 2)
+  368.230267655424  ( 2)     621.591395933366  ( 4)     622.324154576740  ( 2)    1893.518712250959  ( 2)
 
 * Boson symmetry B1g
   * Closed shell, f = 1.0000
@@ -1989,8 +1975,8 @@ It.   11    -989.0966129166     -4.14D-11  5.96D-08  7.16D-08   DIIS   9    0.10
    -0.720017043156  ( 2)
   * Virtual eigenvalues, f = 0.0000
     0.295249464794  ( 2)       0.611939058967  ( 2)       2.079230291922  ( 2)       2.160144317646  ( 2)       2.492499931802  ( 2)
-    3.179615360448  ( 2)       3.889734736683  ( 2)      14.416759271261  ( 2)      14.681983571797  ( 2)      14.795585434645  ( 2)
-   14.925094304574  ( 2)      23.353096865347  ( 2)      85.335222700694  ( 2)      96.346296327692  ( 2)     622.004969127446  ( 2)
+    3.179615360449  ( 2)       3.889734736683  ( 2)      14.416759271261  ( 2)      14.681983571797  ( 2)      14.795585434645  ( 2)
+   14.925094304574  ( 2)      23.353096865347  ( 2)      85.335222700694  ( 2)      96.346296327692  ( 2)     622.004969127445  ( 2)
 
 * Boson symmetry B2u
   * Closed shell, f = 1.0000
@@ -1999,7 +1985,7 @@ It.   11    -989.0966129166     -4.14D-11  5.96D-08  7.16D-08   DIIS   9    0.10
   * Virtual eigenvalues, f = 0.0000
     0.295249464794  ( 2)       0.611939058967  ( 2)       2.079230291922  ( 2)       2.160144317646  ( 2)       2.492499931802  ( 2)
     3.179615360448  ( 2)       3.889734736683  ( 2)      14.416759271260  ( 2)      14.681983571797  ( 2)      14.795585434645  ( 2)
-   14.925094304574  ( 2)      23.353096865348  ( 2)      85.335222700693  ( 2)      96.346296327691  ( 2)     622.004969127446  ( 2)
+   14.925094304574  ( 2)      23.353096865344  ( 2)      85.335222700694  ( 2)      96.346296327686  ( 2)     622.004969127445  ( 2)
 
 * Boson symmetry B1u
   * Closed shell, f = 1.0000
@@ -2007,8 +1993,8 @@ It.   11    -989.0966129166     -4.14D-11  5.96D-08  7.16D-08   DIIS   9    0.10
    -0.720017043156  ( 2)
   * Virtual eigenvalues, f = 0.0000
     0.295249464794  ( 2)       0.611939058967  ( 2)       2.079230291922  ( 2)       2.160144317646  ( 2)       2.492499931802  ( 2)
-    3.179615360448  ( 2)       3.889734736683  ( 2)      14.416759271260  ( 2)      14.681983571797  ( 2)      14.795585434645  ( 2)
-   14.925094304574  ( 2)      23.353096865347  ( 2)      85.335222700694  ( 2)      96.346296327688  ( 2)     622.004969127439  ( 2)
+    3.179615360448  ( 2)       3.889734736683  ( 2)      14.416759271261  ( 2)      14.681983571797  ( 2)      14.795585434645  ( 2)
+   14.925094304574  ( 2)      23.353096865347  ( 2)      85.335222700694  ( 2)      96.346296327689  ( 2)     622.004969127440  ( 2)
 
 * Boson symmetry Au 
   * No eigenvalues.
@@ -2018,16 +2004,16 @@ It.   11    -989.0966129166     -4.14D-11  5.96D-08  7.16D-08   DIIS   9    0.10
       Ag   Ag   Ag   Ag   Ag   Ag   Ag   Ag   Ag   B1g  B2g  B3g  B1g  B2g  B3g  Ag   Ag 
   * Virtual orbitals
       Ag   Ag   B1g  B2g  B3g  Ag   Ag   Ag   B1g  B2g  B3g  Ag   Ag   Ag   Ag   B2g  B3g  B1g
-      Ag   Ag   Ag   B2g  B1g  B3g  Ag   Ag   Ag   Ag   Ag   Ag   Ag   Ag   Ag   Ag   Ag   Ag 
+      Ag   Ag   Ag   B2g  B3g  B1g  Ag   Ag   Ag   Ag   Ag   Ag   Ag   Ag   Ag   Ag   Ag   Ag 
       Ag 
 
 * Occupation in fermion symmetry E1u
   * Inactive orbitals
-      B1u  B2u  B3u  B1u  B3u  B2u  B3u  B2u  B1u  B1u  B2u  B3u  B2u  B3u  B1u  B2u  B1u  B3u
+      B1u  B3u  B2u  B2u  B3u  B1u  B2u  B1u  B3u  B2u  B1u  B3u  B2u  B3u  B1u  B2u  B3u  B1u
   * Virtual orbitals
-      B2u  B3u  B1u  B1u  B3u  B2u  B2u  B3u  B1u  B2u  B3u  B1u  B1u  B3u  B2u  B1u  B3u  B2u
-      B2u  B1u  B3u  B1u  B2u  B3u  B3u  B2u  B1u  B1u  B2u  B3u  B1u  B3u  B2u  B3u  B1u  B2u
-      B2u  B1u  B3u  B1u  B2u  B3u  B1u  B3u  B2u
+      B2u  B1u  B3u  B1u  B3u  B2u  B2u  B3u  B1u  B1u  B2u  B3u  B1u  B3u  B2u  B1u  B2u  B3u
+      B1u  B2u  B3u  B2u  B1u  B3u  B3u  B2u  B1u  B1u  B2u  B3u  B2u  B3u  B1u  B2u  B3u  B1u
+      B2u  B3u  B1u  B2u  B1u  B3u  B1u  B2u  B3u
 
 * Occupation of subblocks
                        E1g:  Ag   B1g  B2g  B3g                                                             
@@ -2081,6 +2067,9 @@ tot.num. of pos.erg shells:   21   21   21    0
    * Additional contributions from:
       Thomas Enevoldsen, Miroslav Ilias (London orbitals)
 
+   * First-order exp. val. contribution from:
+      Chima Chibueze (KU DHF and KU CCSD)
+
 
 
 
@@ -2129,8 +2118,8 @@ tot.num. of pos.erg shells:   21   21   21    0
     - Active orbitals    : No electrons
     - Secondary orbitals :     19..    63                                          
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -989.096612916609160
-* Heading : spin-rotation constant                           Wed May 26 12:34:22 2021
+* REACMO: Coefficients read from CHECKPOINT  - Total energy: -989.096612916591425
+* Heading : Data read from the checkpoint file                                       
 
 
 
@@ -2141,72 +2130,72 @@ Z Orb. ang. mom. - Symmetry: B1g  T-
 * GETFCK: reading old two-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK2                                                      
-* Heading : spin-rotation constant                           Wed May 26 12:34:22 2021
+* Heading : spin-rotation constant                           Fri Dec 15 12:04:08 2023
 
 * GETFCK: reading old one-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading : spin-rotation constant                           Wed May 26 12:34:21 2021
+* Heading : spin-rotation constant                           Fri Dec 15 12:04:07 2023
 
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  5.83D-09
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 1.71D+03
 * Screening threshold in LR solver scaled with norm of property vector:  4.3408D+01
   and changed to:  2.5311D-07
 
-########## START MICROITERATION NO.   1 ##########   Wed May 26 12:34:22 2021
+########## START MICROITERATION NO.   1 ##########   Fri Dec 15 12:04:08 2023
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.53D-07    4.86%   44.96%    0.00%    0.00%   0.09065485s
+SOfock:LL  2.53D-07    4.86%   44.96%    0.00%    0.00%   0.05016702s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  4.13E+00  4.13E+00
 
-########## START MICROITERATION NO.   2 ##########   Wed May 26 12:34:22 2021
+########## START MICROITERATION NO.   2 ##########   Fri Dec 15 12:04:08 2023
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.53D-07    5.51%   52.97%    0.00%    0.00%   0.08852196s
+SOfock:LL  2.53D-07    5.51%   52.97%    0.00%    0.00%   0.04949903s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  5.26E-01  5.26E-01
 
-########## START MICROITERATION NO.   3 ##########   Wed May 26 12:34:22 2021
+########## START MICROITERATION NO.   3 ##########   Fri Dec 15 12:04:08 2023
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.53D-07    6.55%   58.13%    0.00%    0.00%   0.09016192s
+SOfock:LL  2.53D-07    6.55%   58.13%    0.00%    0.00%   0.04859602s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  1.29E-01  1.29E-01
 
-########## START MICROITERATION NO.   4 ##########   Wed May 26 12:34:22 2021
+########## START MICROITERATION NO.   4 ##########   Fri Dec 15 12:04:08 2023
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.53D-07    8.59%   61.88%    0.00%    0.00%   0.08716488s
+SOfock:LL  2.53D-07    8.59%   61.88%    0.00%    0.00%   0.04724503s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  2.56E-02  2.56E-02
 
-########## START MICROITERATION NO.   5 ##########   Wed May 26 12:34:22 2021
+########## START MICROITERATION NO.   5 ##########   Fri Dec 15 12:04:08 2023
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.53D-07   12.98%   64.61%    0.00%    0.00%   0.08223391s
+SOfock:LL  2.53D-07   12.98%   64.61%    0.00%    0.00%   0.04484999s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  2.40E-03  2.40E-03
 
-########## START MICROITERATION NO.   6 ##########   Wed May 26 12:34:23 2021
+########## START MICROITERATION NO.   6 ##########   Fri Dec 15 12:04:08 2023
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.53D-07   19.73%   66.58%    0.00%    0.01%   0.07581711s
+SOfock:LL  2.53D-07   19.73%   66.58%    0.00%    0.01%   0.04056501s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
@@ -2222,27 +2211,27 @@ SOfock:LL  2.53D-07   19.73%   66.58%    0.00%    0.01%   0.07581711s
 
             Freq.(au)   Total norm    E- norm 
 ==============================================
-* It.  1   0.11016500s  (LL       )     [  1]
+* It.  1   0.06063104s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   4.13D+00 |   4.13D+00
 ==============================================
-* It.  2   0.10698009s  (LL       )     [  1]
+* It.  2   0.05986297s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   5.26D-01 |   5.26D-01
 ==============================================
-* It.  3   0.10929298s  (LL       )     [  1]
+* It.  3   0.05916810s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.29D-01 |   1.29D-01
 ==============================================
-* It.  4   0.10862207s  (LL       )     [  1]
+* It.  4   0.05779707s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   2.56D-02 |   2.56D-02
 ==============================================
-* It.  5   0.10040808s  (LL       )     [  1]
+* It.  5   0.05539596s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   2.40D-03 |   2.40D-03
 ==============================================
-* It.  6   0.09363317s  (LL       )     [  1]
+* It.  6   0.05104208s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.62D-04 |   1.62D-04
 ==============================================
@@ -2267,60 +2256,60 @@ Y Orb. ang. mom. - Symmetry: B2g  T-
 * Screening threshold in LR solver scaled with norm of property vector:  4.3408D+01
   and changed to:  2.5311D-07
 
-########## START MICROITERATION NO.   1 ##########   Wed May 26 12:34:23 2021
+########## START MICROITERATION NO.   1 ##########   Fri Dec 15 12:04:08 2023
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.53D-07    4.86%   44.96%    0.00%    0.00%   0.09237981s
+SOfock:LL  2.53D-07    4.86%   44.96%    0.00%    0.00%   0.05051088s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  4.13E+00  4.13E+00
 
-########## START MICROITERATION NO.   2 ##########   Wed May 26 12:34:23 2021
+########## START MICROITERATION NO.   2 ##########   Fri Dec 15 12:04:09 2023
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.53D-07    5.50%   52.98%    0.00%    0.00%   0.09064913s
+SOfock:LL  2.53D-07    5.50%   52.98%    0.00%    0.00%   0.04951501s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  5.26E-01  5.26E-01
 
-########## START MICROITERATION NO.   3 ##########   Wed May 26 12:34:23 2021
+########## START MICROITERATION NO.   3 ##########   Fri Dec 15 12:04:09 2023
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.53D-07    6.52%   58.14%    0.00%    0.00%   0.09045911s
+SOfock:LL  2.53D-07    6.52%   58.14%    0.00%    0.00%   0.04852998s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  1.29E-01  1.29E-01
 
-########## START MICROITERATION NO.   4 ##########   Wed May 26 12:34:23 2021
+########## START MICROITERATION NO.   4 ##########   Fri Dec 15 12:04:09 2023
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.53D-07    8.53%   61.92%    0.00%    0.00%   0.08648896s
+SOfock:LL  2.53D-07    8.53%   61.92%    0.00%    0.00%   0.04704893s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  2.56E-02  2.56E-02
 
-########## START MICROITERATION NO.   5 ##########   Wed May 26 12:34:23 2021
+########## START MICROITERATION NO.   5 ##########   Fri Dec 15 12:04:09 2023
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.53D-07   12.95%   64.64%    0.00%    0.00%   0.08229709s
+SOfock:LL  2.53D-07   12.95%   64.64%    0.00%    0.00%   0.04481387s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  2.40E-03  2.40E-03
 
-########## START MICROITERATION NO.   6 ##########   Wed May 26 12:34:23 2021
+########## START MICROITERATION NO.   6 ##########   Fri Dec 15 12:04:09 2023
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.53D-07   19.73%   66.58%    0.00%    0.01%   0.07600904s
+SOfock:LL  2.53D-07   19.73%   66.58%    0.00%    0.01%   0.04048800s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
@@ -2336,27 +2325,27 @@ SOfock:LL  2.53D-07   19.73%   66.58%    0.00%    0.01%   0.07600904s
 
             Freq.(au)   Total norm    E- norm 
 ==============================================
-* It.  1   0.11082602s  (LL       )     [  1]
+* It.  1   0.06106389s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   4.13D+00 |   4.13D+00
 ==============================================
-* It.  2   0.10905504s  (LL       )     [  1]
+* It.  2   0.05987811s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   5.26D-01 |   5.26D-01
 ==============================================
-* It.  3   0.10886693s  (LL       )     [  1]
+* It.  3   0.05901706s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.29D-01 |   1.29D-01
 ==============================================
-* It.  4   0.10494900s  (LL       )     [  1]
+* It.  4   0.05745196s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   2.56D-02 |   2.56D-02
 ==============================================
-* It.  5   0.10002208s  (LL       )     [  1]
+* It.  5   0.05528998s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   2.40D-03 |   2.40D-03
 ==============================================
-* It.  6   0.09432507s  (LL       )     [  1]
+* It.  6   0.05096006s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.62D-04 |   1.62D-04
 ==============================================
@@ -2381,60 +2370,60 @@ X Orb. ang. mom. - Symmetry: B3g  T-
 * Screening threshold in LR solver scaled with norm of property vector:  4.3408D+01
   and changed to:  2.5311D-07
 
-########## START MICROITERATION NO.   1 ##########   Wed May 26 12:34:23 2021
+########## START MICROITERATION NO.   1 ##########   Fri Dec 15 12:04:09 2023
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.53D-07    4.86%   44.96%    0.00%    0.00%   0.09118009s
+SOfock:LL  2.53D-07    4.86%   44.96%    0.00%    0.00%   0.05033898s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  4.13E+00  4.13E+00
 
-########## START MICROITERATION NO.   2 ##########   Wed May 26 12:34:23 2021
+########## START MICROITERATION NO.   2 ##########   Fri Dec 15 12:04:09 2023
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.53D-07    5.50%   52.98%    0.00%    0.00%   0.08920479s
+SOfock:LL  2.53D-07    5.50%   52.98%    0.00%    0.00%   0.04964304s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  5.26E-01  5.26E-01
 
-########## START MICROITERATION NO.   3 ##########   Wed May 26 12:34:23 2021
+########## START MICROITERATION NO.   3 ##########   Fri Dec 15 12:04:09 2023
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.53D-07    6.53%   58.14%    0.00%    0.00%   0.08742785s
+SOfock:LL  2.53D-07    6.53%   58.14%    0.00%    0.00%   0.04814911s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  1.29E-01  1.29E-01
 
-########## START MICROITERATION NO.   4 ##########   Wed May 26 12:34:24 2021
+########## START MICROITERATION NO.   4 ##########   Fri Dec 15 12:04:09 2023
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.53D-07    8.55%   61.90%    0.00%    0.00%   0.08492994s
+SOfock:LL  2.53D-07    8.55%   61.90%    0.00%    0.00%   0.04708493s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  2.56E-02  2.56E-02
 
-########## START MICROITERATION NO.   5 ##########   Wed May 26 12:34:24 2021
+########## START MICROITERATION NO.   5 ##########   Fri Dec 15 12:04:09 2023
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.53D-07   12.96%   64.63%    0.00%    0.00%   0.07940698s
+SOfock:LL  2.53D-07   12.96%   64.63%    0.00%    0.00%   0.04496908s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  2.40E-03  2.40E-03
 
-########## START MICROITERATION NO.   6 ##########   Wed May 26 12:34:24 2021
+########## START MICROITERATION NO.   6 ##########   Fri Dec 15 12:04:09 2023
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.53D-07   19.72%   66.59%    0.00%    0.01%   0.07186604s
+SOfock:LL  2.53D-07   19.72%   66.59%    0.00%    0.01%   0.04086304s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
@@ -2450,27 +2439,27 @@ SOfock:LL  2.53D-07   19.72%   66.59%    0.00%    0.01%   0.07186604s
 
             Freq.(au)   Total norm    E- norm 
 ==============================================
-* It.  1   0.10975099s  (LL       )     [  1]
+* It.  1   0.06083798s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   4.13D+00 |   4.13D+00
 ==============================================
-* It.  2   0.10738230s  (LL       )     [  1]
+* It.  2   0.06021714s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   5.26D-01 |   5.26D-01
 ==============================================
-* It.  3   0.10581088s  (LL       )     [  1]
+* It.  3   0.05879402s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.29D-01 |   1.29D-01
 ==============================================
-* It.  4   0.10321403s  (LL       )     [  1]
+* It.  4   0.05743802s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   2.56D-02 |   2.56D-02
 ==============================================
-* It.  5   0.09886312s  (LL       )     [  1]
+* It.  5   0.05541503s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   2.40D-03 |   2.40D-03
 ==============================================
-* It.  6   0.09042907s  (LL       )     [  1]
+* It.  6   0.05134094s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.62D-04 |   1.62D-04
 ==============================================
@@ -2506,7 +2495,7 @@ WARNING: Skipping B property X Spin ang.mom.
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    0.00000000E+00 a.u.                       2.56E-05   (**NOT** converged!)
+  0.00000000 a.u.    0.00000000E+00 a.u.                      -2.56E-05   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 6),B( 3)>> - linear response function (real):
@@ -2516,7 +2505,7 @@ WARNING: Skipping B property X Spin ang.mom.
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -25.09423171243 a.u.                       3.74E-06   (converged)
+  0.00000000 a.u.   -25.09423171244 a.u.                       3.74E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 6),B( 6)>> - linear response function (real):
@@ -2526,7 +2515,7 @@ WARNING: Skipping B property X Spin ang.mom.
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    0.00000000E+00 a.u.                       2.56E-05   (**NOT** converged!)
+  0.00000000 a.u.    0.00000000E+00 a.u.                      -2.56E-05   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 7),B( 3)>> - linear response function (real):
@@ -2536,7 +2525,7 @@ WARNING: Skipping B property X Spin ang.mom.
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -25.09423171244 a.u.                       3.74E-06   (converged)
+  0.00000000 a.u.   -25.09423171245 a.u.                       3.74E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 7),B( 6)>> - linear response function (real):
@@ -2546,7 +2535,7 @@ WARNING: Skipping B property X Spin ang.mom.
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    0.00000000E+00 a.u.                       2.56E-05   (**NOT** converged!)
+  0.00000000 a.u.    0.00000000E+00 a.u.                      -2.56E-05   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 8),B( 3)>> - linear response function (real):
@@ -2566,7 +2555,7 @@ WARNING: Skipping B property X Spin ang.mom.
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    0.00000000E+00 a.u.                       2.56E-05   (**NOT** converged!)
+  0.00000000 a.u.    0.00000000E+00 a.u.                      -2.56E-05   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A(11),B( 2)>> - linear response function (real):
@@ -2586,7 +2575,7 @@ WARNING: Skipping B property X Spin ang.mom.
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    0.00000000E+00 a.u.                      -1.55E-05   (converged)
+  0.00000000 a.u.    0.00000000E+00 a.u.                       1.55E-05   (**NOT** converged!)
 -----------------------------------------------------------------------------------------------
 
 <<A(12),B( 2)>> - linear response function (real):
@@ -2606,7 +2595,7 @@ WARNING: Skipping B property X Spin ang.mom.
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    0.00000000E+00 a.u.                      -1.55E-05   (converged)
+  0.00000000 a.u.    0.00000000E+00 a.u.                       1.55E-05   (**NOT** converged!)
 -----------------------------------------------------------------------------------------------
 
 <<A(13),B( 2)>> - linear response function (real):
@@ -2616,7 +2605,7 @@ WARNING: Skipping B property X Spin ang.mom.
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -25.09423171244 a.u.                       3.74E-06   (converged)
+  0.00000000 a.u.   -25.09423171245 a.u.                       3.74E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A(13),B( 5)>> - linear response function (real):
@@ -2626,7 +2615,7 @@ WARNING: Skipping B property X Spin ang.mom.
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    0.00000000E+00 a.u.                      -1.55E-05   (converged)
+  0.00000000 a.u.    0.00000000E+00 a.u.                       1.55E-05   (**NOT** converged!)
 -----------------------------------------------------------------------------------------------
 
 <<A(14),B( 2)>> - linear response function (real):
@@ -2636,7 +2625,7 @@ WARNING: Skipping B property X Spin ang.mom.
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -25.09423171245 a.u.                       3.74E-06   (converged)
+  0.00000000 a.u.   -25.09423171246 a.u.                       3.74E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A(14),B( 5)>> - linear response function (real):
@@ -2646,7 +2635,7 @@ WARNING: Skipping B property X Spin ang.mom.
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    0.00000000E+00 a.u.                      -1.55E-05   (converged)
+  0.00000000 a.u.    0.00000000E+00 a.u.                       1.55E-05   (**NOT** converged!)
 -----------------------------------------------------------------------------------------------
 
 <<A(15),B( 1)>> - linear response function (real):
@@ -2666,7 +2655,7 @@ WARNING: Skipping B property X Spin ang.mom.
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    0.00000000E+00 a.u.                       3.05E-05   (**NOT** converged!)
+  0.00000000 a.u.    0.00000000E+00 a.u.                      -3.05E-05   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A(16),B( 1)>> - linear response function (real):
@@ -2676,7 +2665,7 @@ WARNING: Skipping B property X Spin ang.mom.
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -25.09423171244 a.u.                       3.74E-06   (converged)
+  0.00000000 a.u.   -25.09423171245 a.u.                       3.74E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A(16),B( 4)>> - linear response function (real):
@@ -2686,7 +2675,7 @@ WARNING: Skipping B property X Spin ang.mom.
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    0.00000000E+00 a.u.                       3.05E-05   (**NOT** converged!)
+  0.00000000 a.u.    0.00000000E+00 a.u.                      -3.05E-05   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A(17),B( 1)>> - linear response function (real):
@@ -2706,7 +2695,7 @@ WARNING: Skipping B property X Spin ang.mom.
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    0.00000000E+00 a.u.                       3.05E-05   (**NOT** converged!)
+  0.00000000 a.u.    0.00000000E+00 a.u.                      -3.05E-05   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A(18),B( 1)>> - linear response function (real):
@@ -2716,7 +2705,7 @@ WARNING: Skipping B property X Spin ang.mom.
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -25.09423171245 a.u.                       3.74E-06   (converged)
+  0.00000000 a.u.   -25.09423171246 a.u.                       3.74E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A(18),B( 4)>> - linear response function (real):
@@ -2726,7 +2715,7 @@ WARNING: Skipping B property X Spin ang.mom.
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    0.00000000E+00 a.u.                       3.05E-05   (**NOT** converged!)
+  0.00000000 a.u.    0.00000000E+00 a.u.                      -3.05E-05   (converged)
 -----------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------
 
@@ -2770,29 +2759,34 @@ WARNING: Skipping B property X Spin ang.mom.
 
   Prolate symmetric top molecule
 
-  Results are valid only for molecules in their equilibrium geometry
+  WARNING: Nuclear contributions to the NSR tensors/constants are
+           only valid for molecules in their equilibrium geometry.
+
+           To get valid results out of the equilibrium, please use
+           the .PRINT keyword of the **PROPERTIES module with
+           at least a value of 4.
 
 
  Principal moments of inertia (a.u.) and principal axes
  ------------------------------------------------------
 
-   IA1205426.48463898            1.00000000      0.00000000      0.00000000
-   IB1205426.48463898            0.00000000      1.00000000      0.00000000
-   IC1205426.48463898            0.00000000      0.00000000      1.00000000
+   IA 1205426.48463898            1.00000000      0.00000000      0.00000000
+   IB 1205426.48463898            0.00000000      1.00000000      0.00000000
+   IC 1205426.48463898            0.00000000      0.00000000      1.00000000
 
-  Components of spin-rotation tensor in the principal axis system
+  Nuclear spin-rotation tensor elements are given in the principal axis system.
 
 
-                  Artificial spin-rotation constants (kHz) for S
-                  ----------------------------------------------
+             Artificial nuclear spin-rotation constant (in kHz) for S
+             --------------------------------------------------------
 
   WARNING: Nuclear g-value NOT available for isotope of mass   31.972
   Nuclear g-value is artificially set equal to 1
 
 
 
-                           Total spin-rotation constant
-                           ----------------------------
+                    Total nuclear spin-rotation tensor (NSRT)
+                    -----------------------------------------
 
    A           -1.06116181      0.00000000      0.00000000
    B            0.00000000     -1.06116181      0.00000000
@@ -2801,8 +2795,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso         -1.06116181
 
 
-                       Nuclear contribution to SRC (M^nuc)
-                       -----------------------------------
+                       Nuclear contribution to NSRT (M^nuc)
+                       ------------------------------------
 
    A            0.96595502      0.00000000      0.00000000
    B            0.00000000      0.96595502      0.00000000
@@ -2811,8 +2805,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso          0.96595502
 
 
-                      Electronic contribution to SRC (M^LR)
-                      -------------------------------------
+                      Electronic contribution to NSRT (M^LR)
+                      --------------------------------------
 
    A           -2.02711684      0.00000000      0.00000000
    B            0.00000000     -2.02711684      0.00000000
@@ -2885,13 +2879,13 @@ WARNING: Skipping B property X Spin ang.mom.
 *************************************************************
 
 
-                      Spin-rotation constants (in ppm) for S
-                      --------------------------------------
+                   Nuclear spin-rotation constant (in ppm) forS
+                   --------------------------------------------
 
 
 
-                           Total spin-rotation constant
-                           ----------------------------
+                    Total nuclear spin-rotation tensor (NSRT)
+                    -----------------------------------------
 
    A         -356.96538103      0.00000000      0.00000000
    B            0.00000000   -356.96538103      0.00000000
@@ -2900,8 +2894,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso       -356.96538103
 
 
-                       Nuclear contribution to SRC (M^nuc)
-                       -----------------------------------
+                       Nuclear contribution to NSRT (M^nuc)
+                       ------------------------------------
 
    A          324.93866630      0.00000000      0.00000000
    B            0.00000000    324.93866630      0.00000000
@@ -2910,8 +2904,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso        324.93866630
 
 
-                      Electronic contribution to SRC (M^LR)
-                      -------------------------------------
+                      Electronic contribution to NSRT (M^LR)
+                      --------------------------------------
 
    A         -681.90404733      0.00000000      0.00000000
    B            0.00000000   -681.90404733      0.00000000
@@ -2984,15 +2978,15 @@ WARNING: Skipping B property X Spin ang.mom.
 *************************************************************
 
 
-                     Spin-rotation constants (kHz) for F1   1
-                     ----------------------------------------
+                Nuclear spin-rotation constant (in kHz) for F1   1
+                --------------------------------------------------
 
   Nuclear g-value:     5.257736
 
 
 
-                           Total spin-rotation constant
-                           ----------------------------
+                    Total nuclear spin-rotation tensor (NSRT)
+                    -----------------------------------------
 
    A           -4.00631972      0.00000000      0.00000000
    B            0.00000000      0.49304856      0.00000000
@@ -3001,8 +2995,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso         -2.50653029
 
 
-                       Nuclear contribution to SRC (M^nuc)
-                       -----------------------------------
+                       Nuclear contribution to NSRT (M^nuc)
+                       ------------------------------------
 
    A            1.21522329      0.00000000      0.00000000
    B            0.00000000      1.79560451      0.00000000
@@ -3011,8 +3005,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso          1.40868370
 
 
-                      Electronic contribution to SRC (M^LR)
-                      -------------------------------------
+                      Electronic contribution to NSRT (M^LR)
+                      --------------------------------------
 
    A           -5.22154300      0.00000000      0.00000000
    B            0.00000000     -1.30255595      0.00000000
@@ -3085,13 +3079,13 @@ WARNING: Skipping B property X Spin ang.mom.
 *************************************************************
 
 
-                   Spin-rotation constants (in ppm) for F1   1
-                   -------------------------------------------
+                Nuclear spin-rotation constant (in ppm) forF1   1
+                -------------------------------------------------
 
 
 
-                           Total spin-rotation constant
-                           ----------------------------
+                    Total nuclear spin-rotation tensor (NSRT)
+                    -----------------------------------------
 
    A         -256.32520668      0.00000000      0.00000000
    B            0.00000000     31.54535431      0.00000000
@@ -3100,8 +3094,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso       -160.36835302
 
 
-                       Nuclear contribution to SRC (M^nuc)
-                       -----------------------------------
+                       Nuclear contribution to NSRT (M^nuc)
+                       ------------------------------------
 
    A           77.75025025      0.00000000      0.00000000
    B            0.00000000    114.88316721      0.00000000
@@ -3110,8 +3104,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso         90.12788923
 
 
-                      Electronic contribution to SRC (M^LR)
-                      -------------------------------------
+                      Electronic contribution to NSRT (M^LR)
+                      --------------------------------------
 
    A         -334.07545693      0.00000000      0.00000000
    B            0.00000000    -83.33781289      0.00000000
@@ -3184,15 +3178,15 @@ WARNING: Skipping B property X Spin ang.mom.
 *************************************************************
 
 
-                     Spin-rotation constants (kHz) for F1   2
-                     ----------------------------------------
+                Nuclear spin-rotation constant (in kHz) for F1   2
+                --------------------------------------------------
 
   Nuclear g-value:     5.257736
 
 
 
-                           Total spin-rotation constant
-                           ----------------------------
+                    Total nuclear spin-rotation tensor (NSRT)
+                    -----------------------------------------
 
    A           -4.00631972      0.00000000      0.00000000
    B            0.00000000      0.49304856      0.00000000
@@ -3201,8 +3195,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso         -2.50653029
 
 
-                       Nuclear contribution to SRC (M^nuc)
-                       -----------------------------------
+                       Nuclear contribution to NSRT (M^nuc)
+                       ------------------------------------
 
    A            1.21522329      0.00000000      0.00000000
    B            0.00000000      1.79560451      0.00000000
@@ -3211,8 +3205,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso          1.40868370
 
 
-                      Electronic contribution to SRC (M^LR)
-                      -------------------------------------
+                      Electronic contribution to NSRT (M^LR)
+                      --------------------------------------
 
    A           -5.22154300      0.00000000      0.00000000
    B            0.00000000     -1.30255595      0.00000000
@@ -3285,13 +3279,13 @@ WARNING: Skipping B property X Spin ang.mom.
 *************************************************************
 
 
-                   Spin-rotation constants (in ppm) for F1   2
-                   -------------------------------------------
+                Nuclear spin-rotation constant (in ppm) forF1   2
+                -------------------------------------------------
 
 
 
-                           Total spin-rotation constant
-                           ----------------------------
+                    Total nuclear spin-rotation tensor (NSRT)
+                    -----------------------------------------
 
    A         -256.32520668      0.00000000      0.00000000
    B            0.00000000     31.54535431      0.00000000
@@ -3300,8 +3294,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso       -160.36835302
 
 
-                       Nuclear contribution to SRC (M^nuc)
-                       -----------------------------------
+                       Nuclear contribution to NSRT (M^nuc)
+                       ------------------------------------
 
    A           77.75025025      0.00000000      0.00000000
    B            0.00000000    114.88316721      0.00000000
@@ -3310,8 +3304,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso         90.12788923
 
 
-                      Electronic contribution to SRC (M^LR)
-                      -------------------------------------
+                      Electronic contribution to NSRT (M^LR)
+                      --------------------------------------
 
    A         -334.07545693      0.00000000      0.00000000
    B            0.00000000    -83.33781289      0.00000000
@@ -3384,15 +3378,15 @@ WARNING: Skipping B property X Spin ang.mom.
 *************************************************************
 
 
-                     Spin-rotation constants (kHz) for F4   1
-                     ----------------------------------------
+                Nuclear spin-rotation constant (in kHz) for F4   1
+                --------------------------------------------------
 
   Nuclear g-value:     5.257736
 
 
 
-                           Total spin-rotation constant
-                           ----------------------------
+                    Total nuclear spin-rotation tensor (NSRT)
+                    -----------------------------------------
 
    A           -4.00631972      0.00000000      0.00000000
    B            0.00000000     -4.00631972      0.00000000
@@ -3401,8 +3395,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso         -2.50653029
 
 
-                       Nuclear contribution to SRC (M^nuc)
-                       -----------------------------------
+                       Nuclear contribution to NSRT (M^nuc)
+                       ------------------------------------
 
    A            1.21522329      0.00000000      0.00000000
    B            0.00000000      1.21522329      0.00000000
@@ -3411,8 +3405,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso          1.40868370
 
 
-                      Electronic contribution to SRC (M^LR)
-                      -------------------------------------
+                      Electronic contribution to NSRT (M^LR)
+                      --------------------------------------
 
    A           -5.22154300      0.00000000      0.00000000
    B            0.00000000     -5.22154300      0.00000000
@@ -3485,13 +3479,13 @@ WARNING: Skipping B property X Spin ang.mom.
 *************************************************************
 
 
-                   Spin-rotation constants (in ppm) for F4   1
-                   -------------------------------------------
+                Nuclear spin-rotation constant (in ppm) forF4   1
+                -------------------------------------------------
 
 
 
-                           Total spin-rotation constant
-                           ----------------------------
+                    Total nuclear spin-rotation tensor (NSRT)
+                    -----------------------------------------
 
    A         -256.32520668      0.00000000      0.00000000
    B            0.00000000   -256.32520668      0.00000000
@@ -3500,8 +3494,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso       -160.36835302
 
 
-                       Nuclear contribution to SRC (M^nuc)
-                       -----------------------------------
+                       Nuclear contribution to NSRT (M^nuc)
+                       ------------------------------------
 
    A           77.75025025      0.00000000      0.00000000
    B            0.00000000     77.75025025      0.00000000
@@ -3510,8 +3504,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso         90.12788923
 
 
-                      Electronic contribution to SRC (M^LR)
-                      -------------------------------------
+                      Electronic contribution to NSRT (M^LR)
+                      --------------------------------------
 
    A         -334.07545693      0.00000000      0.00000000
    B            0.00000000   -334.07545693      0.00000000
@@ -3584,15 +3578,15 @@ WARNING: Skipping B property X Spin ang.mom.
 *************************************************************
 
 
-                     Spin-rotation constants (kHz) for F4   2
-                     ----------------------------------------
+                Nuclear spin-rotation constant (in kHz) for F4   2
+                --------------------------------------------------
 
   Nuclear g-value:     5.257736
 
 
 
-                           Total spin-rotation constant
-                           ----------------------------
+                    Total nuclear spin-rotation tensor (NSRT)
+                    -----------------------------------------
 
    A           -4.00631972      0.00000000      0.00000000
    B            0.00000000     -4.00631972      0.00000000
@@ -3601,8 +3595,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso         -2.50653029
 
 
-                       Nuclear contribution to SRC (M^nuc)
-                       -----------------------------------
+                       Nuclear contribution to NSRT (M^nuc)
+                       ------------------------------------
 
    A            1.21522329      0.00000000      0.00000000
    B            0.00000000      1.21522329      0.00000000
@@ -3611,8 +3605,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso          1.40868370
 
 
-                      Electronic contribution to SRC (M^LR)
-                      -------------------------------------
+                      Electronic contribution to NSRT (M^LR)
+                      --------------------------------------
 
    A           -5.22154300      0.00000000      0.00000000
    B            0.00000000     -5.22154300      0.00000000
@@ -3685,13 +3679,13 @@ WARNING: Skipping B property X Spin ang.mom.
 *************************************************************
 
 
-                   Spin-rotation constants (in ppm) for F4   2
-                   -------------------------------------------
+                Nuclear spin-rotation constant (in ppm) forF4   2
+                -------------------------------------------------
 
 
 
-                           Total spin-rotation constant
-                           ----------------------------
+                    Total nuclear spin-rotation tensor (NSRT)
+                    -----------------------------------------
 
    A         -256.32520668      0.00000000      0.00000000
    B            0.00000000   -256.32520668      0.00000000
@@ -3700,8 +3694,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso       -160.36835302
 
 
-                       Nuclear contribution to SRC (M^nuc)
-                       -----------------------------------
+                       Nuclear contribution to NSRT (M^nuc)
+                       ------------------------------------
 
    A           77.75025025      0.00000000      0.00000000
    B            0.00000000     77.75025025      0.00000000
@@ -3710,8 +3704,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso         90.12788923
 
 
-                      Electronic contribution to SRC (M^LR)
-                      -------------------------------------
+                      Electronic contribution to NSRT (M^LR)
+                      --------------------------------------
 
    A         -334.07545693      0.00000000      0.00000000
    B            0.00000000   -334.07545693      0.00000000
@@ -3784,15 +3778,15 @@ WARNING: Skipping B property X Spin ang.mom.
 *************************************************************
 
 
-                     Spin-rotation constants (kHz) for F5   1
-                     ----------------------------------------
+                Nuclear spin-rotation constant (in kHz) for F5   1
+                --------------------------------------------------
 
   Nuclear g-value:     5.257736
 
 
 
-                           Total spin-rotation constant
-                           ----------------------------
+                    Total nuclear spin-rotation tensor (NSRT)
+                    -----------------------------------------
 
    A            0.49304856      0.00000000      0.00000000
    B            0.00000000     -4.00631972      0.00000000
@@ -3801,8 +3795,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso         -2.50653029
 
 
-                       Nuclear contribution to SRC (M^nuc)
-                       -----------------------------------
+                       Nuclear contribution to NSRT (M^nuc)
+                       ------------------------------------
 
    A            1.79560451      0.00000000      0.00000000
    B            0.00000000      1.21522329      0.00000000
@@ -3811,8 +3805,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso          1.40868370
 
 
-                      Electronic contribution to SRC (M^LR)
-                      -------------------------------------
+                      Electronic contribution to NSRT (M^LR)
+                      --------------------------------------
 
    A           -1.30255595      0.00000000      0.00000000
    B            0.00000000     -5.22154300      0.00000000
@@ -3885,13 +3879,13 @@ WARNING: Skipping B property X Spin ang.mom.
 *************************************************************
 
 
-                   Spin-rotation constants (in ppm) for F5   1
-                   -------------------------------------------
+                Nuclear spin-rotation constant (in ppm) forF5   1
+                -------------------------------------------------
 
 
 
-                           Total spin-rotation constant
-                           ----------------------------
+                    Total nuclear spin-rotation tensor (NSRT)
+                    -----------------------------------------
 
    A           31.54535431      0.00000000      0.00000000
    B            0.00000000   -256.32520668      0.00000000
@@ -3900,8 +3894,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso       -160.36835302
 
 
-                       Nuclear contribution to SRC (M^nuc)
-                       -----------------------------------
+                       Nuclear contribution to NSRT (M^nuc)
+                       ------------------------------------
 
    A          114.88316721      0.00000000      0.00000000
    B            0.00000000     77.75025025      0.00000000
@@ -3910,8 +3904,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso         90.12788923
 
 
-                      Electronic contribution to SRC (M^LR)
-                      -------------------------------------
+                      Electronic contribution to NSRT (M^LR)
+                      --------------------------------------
 
    A          -83.33781289      0.00000000      0.00000000
    B            0.00000000   -334.07545693      0.00000000
@@ -3984,15 +3978,15 @@ WARNING: Skipping B property X Spin ang.mom.
 *************************************************************
 
 
-                     Spin-rotation constants (kHz) for F5   2
-                     ----------------------------------------
+                Nuclear spin-rotation constant (in kHz) for F5   2
+                --------------------------------------------------
 
   Nuclear g-value:     5.257736
 
 
 
-                           Total spin-rotation constant
-                           ----------------------------
+                    Total nuclear spin-rotation tensor (NSRT)
+                    -----------------------------------------
 
    A            0.49304856      0.00000000      0.00000000
    B            0.00000000     -4.00631972      0.00000000
@@ -4001,8 +3995,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso         -2.50653029
 
 
-                       Nuclear contribution to SRC (M^nuc)
-                       -----------------------------------
+                       Nuclear contribution to NSRT (M^nuc)
+                       ------------------------------------
 
    A            1.79560451      0.00000000      0.00000000
    B            0.00000000      1.21522329      0.00000000
@@ -4011,8 +4005,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso          1.40868370
 
 
-                      Electronic contribution to SRC (M^LR)
-                      -------------------------------------
+                      Electronic contribution to NSRT (M^LR)
+                      --------------------------------------
 
    A           -1.30255595      0.00000000      0.00000000
    B            0.00000000     -5.22154300      0.00000000
@@ -4085,13 +4079,13 @@ WARNING: Skipping B property X Spin ang.mom.
 *************************************************************
 
 
-                   Spin-rotation constants (in ppm) for F5   2
-                   -------------------------------------------
+                Nuclear spin-rotation constant (in ppm) forF5   2
+                -------------------------------------------------
 
 
 
-                           Total spin-rotation constant
-                           ----------------------------
+                    Total nuclear spin-rotation tensor (NSRT)
+                    -----------------------------------------
 
    A           31.54535431      0.00000000      0.00000000
    B            0.00000000   -256.32520668      0.00000000
@@ -4100,8 +4094,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso       -160.36835302
 
 
-                       Nuclear contribution to SRC (M^nuc)
-                       -----------------------------------
+                       Nuclear contribution to NSRT (M^nuc)
+                       ------------------------------------
 
    A          114.88316721      0.00000000      0.00000000
    B            0.00000000     77.75025025      0.00000000
@@ -4110,8 +4104,8 @@ WARNING: Skipping B property X Spin ang.mom.
    iso         90.12788923
 
 
-                      Electronic contribution to SRC (M^LR)
-                      -------------------------------------
+                      Electronic contribution to NSRT (M^LR)
+                      --------------------------------------
 
    A          -83.33781289      0.00000000      0.00000000
    B            0.00000000   -334.07545693      0.00000000
@@ -4182,6 +4176,10 @@ WARNING: Skipping B property X Spin ang.mom.
 
    iso       -157.12293524
 *************************************************************
+
+ * Closing HDF5 checkpoint file 
+    - Checkpoint file contains all required data, can be used for restarts
+    - Checkpoint file closed
 
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
@@ -4189,11 +4187,11 @@ WARNING: Skipping B property X Spin ang.mom.
 
 
  
-     Date and time (Linux)  : Wed May 26 12:34:24 2021
-     Host name              : agustin-laptop                          
+     Date and time (Linux)  : Fri Dec 15 12:04:09 2023
+     Host name              : aucaria                                 
 
->>>> Node 0, utime: 3, stime: 0, minflt: 31024, majflt: 0, nvcsw: 18, nivcsw: 24, maxrss: 120944
->>>> Total WALL time used in DIRAC: 4s
+>>>> Node 0, utime: 1, stime: 0, minflt: 19048, majflt: 0, nvcsw: 0, nivcsw: 5, maxrss: 77448
+>>>> Total WALL time used in DIRAC: 2s
   
   Dynamical Memory Usage Summary for Master
   
@@ -4217,7 +4215,7 @@ WARNING: Skipping B property X Spin ang.mom.
        reached at subroutine : __allocator_track_if_MOD_allocator_registe
               for variable   : buf in butobs                             
   
- MEMGET high-water mark:     0.00 MB
+ MEMGET high-water mark:    0.00 MB
 
 *****************************************************
-DIRAC pam run in /home/agustin/dirac/test/spinrot
+DIRAC pam run in /home/agustin/dirac/build/test/spinrot

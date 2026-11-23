@@ -6,8 +6,9 @@ star(OPTIMIZE)
 Geometry optimization directives.
 
 This section controls the geometry optimization. The geometry optimization
-algorithm is based on the one of `Dalton <http://www.daltonprogram.org>`_. The
-directives are therefore similar except for these few changes:
+algorithm is based on the one of `Dalton <http://www.daltonprogram.org>`_
+implemented by Vebjørn Bakken, University of Oslo.
+The directives are therefore similar except for these few changes:
 
 -  No second-order algorithms are available since the molecular Hessian
    is not implemented.
@@ -20,6 +21,11 @@ in each optimization iteration and at the converged geometry.
 Depending on convergence criteria for energies and gradients the values of the
 thresholds may be automatically adjusted.
 
+Geometry optimization works for closed-shell and single open-shell Hartee-Fock method with analytical molecular gradient both with and without symmetry
+and for closed-shell DFT method without symmetry.
+Geometry optimization for other SCF methods (e.g. DFT with symmetry or open shells; and HF with Gaunt or open shells with more than one electron in one orbital) works with numerical gradient (.NUMGRA).
+Non-SCF methods should also work with numerical gradient, but not all possibilities are tested.
+Please report to dirac-users mailing list if you encounter problems.
 
 keyword(NO SKIP)
 
@@ -62,17 +68,17 @@ less 3.0D-4.
 
 keyword(GRADIENT)
 
-Convergence threshold for the gradient. The default is 1.0D-5.
+Convergence threshold for the molecular gradient. The default is 1.0D-4 Hartree/bohr.
 
 
 keyword(ENERGY)
 
-Convergence threshold for the energy. The default is 1.0D-6.
+Convergence threshold for the energy change. The default is 1.0D-6 Hartree.
 
 
 keyword(STEP THRESHOLD)
 
-Convergence threshold for the step. The default is 1.0D-5.
+Convergence threshold for the geometry step length. The default is 1.0D-4 bohr.
 
 
 keyword(PRINT)

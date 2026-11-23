@@ -1,0 +1,35 @@
+Voir Gwaltney :
+Chemical Physics Letters 248 (1996) 189-198 
+ doi : 10.1016/0009-2614(95)01329-6
+
+4 Systèmes sont étudiés ici :
+- L'atome de Beryllium, D2h-Cs
+- L'éthylène, D2h
+- Le methanal, C2v
+- Le buta-1,3-diène,C2h
+
+Les symétries sont automatiquement générées.
+
+Les bases sont des bases spéciales :
+- Pour Beryllium c’est une base spéciale, décrite dans l'article de Graham : [9s,9p,5d]    
+Citation: The Journal of Chemical Physics 85, 6544 (1986); doi: 10.1063/1.451436    
+- Pour les autres ce sont les bases décrites dans l’article de Wiberg : The Journal of Physical Chemistry, Vol. 96, No. 26, 1992 
+Doi :10.1021/j100205a032
+C’est la base : 6-311(2+,2+)G** pour méthanal et éthylène
+Et la base 6-311(2+)G** pour le buta-1,3-diène
+
+Les géométries sont optimisées :
+- pour l’éthylène ce sont celles de Wiberg, MP2/6-31G*.
+- pour le méthanal ce sont celles de Hadad (The Journal of Physical Chemistry, Vol. 97, No. 17, 1993 / doi : 10.1021/j100119a010)
+ MP2/6-31G*.
+- pour le buta-1,3-diène ce sont celles de  CCCBDB (optimisation avec MP2/6-31G** )
+
+Les méthodes  : 4
+eomcc-ee                .EE
+p_eomcc-ee              .EEH0DD
+eomcc_MBPT(2)           .EEMBPT2
+p_eomcc_MBPT(2)         .EEpMBPT2
+
+Pour le Beryllium Gwaltney donne les resultats pour les 4 méthodes, pour les molécules les résultats pour "eomcc_MBPT(2)" ne sont pas donnés.
+
+

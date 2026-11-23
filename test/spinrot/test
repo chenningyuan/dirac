@@ -10,7 +10,7 @@ from runtest_config import configure
 assert version_info.major == 2
 
 f = [
-    get_filter(from_string='Spin-rotation constants (kHz) for',
+    get_filter(from_string='Nuclear spin-rotation constant (in kHz) for',
                to_string='E N D   of   D I R A C  output',
                rel_tolerance=1.0e-4)
 ]
@@ -19,7 +19,15 @@ options = cli()
 
 ierr = 0
 for inp in ['spinrot.inp', 'spinrot-LL.inp']:
-    for mol in ['H2_cc-pVDZ-sym.mol', 'HF_cc-pVDZ-sym.mol', 'SF6_3-21G-sym.mol']:
+    for mol in ['H2_cc-pVDZ-sym.mol', 'HF_3-21G-sym.mol']:
+        ierr += run(options,
+                    configure,
+                    input_files=[inp, mol],
+                    extra_args='--mw=100 --aw=128',
+                    filters={'out': f})
+
+for inp in ['spinrot-LL.inp']:
+    for mol in ['SF6_3-21G-sym.mol']:
         ierr += run(options,
                     configure,
                     input_files=[inp, mol],

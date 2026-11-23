@@ -54,7 +54,7 @@ endif()
 
 add_library(
     lucita
-    OBJECT
+    STATIC
     ${FIXED_LUCITA_FORTRAN_SOURCES}
     ${FIXED_LUCITA_FORTRAN_SOURCES_noruntimecheck}
     ${FREE_LUCITA_FORTRAN_SOURCES}

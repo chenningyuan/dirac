@@ -1,7 +1,7 @@
 INTGRL
  Be atom in uncontracted Pierloot basis set, MOLCAS 5, ANO-S
  Generated small component via RKB
-C   1    2XY Y         .10D-15
+C   1    2XY Y         1.0D-15
         4.    1
 Be 1           .00000000           .00000000           .00000000
 LARGE    3    2    1    1

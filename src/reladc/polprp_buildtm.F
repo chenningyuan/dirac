@@ -1260,7 +1260,7 @@
 !  D_ab,ki array in vovo2. Result goes to vovo3
 !
       if(IVVOO(nrep+1).ne.JVOVO(nrep+1)) then
-        write(*,*) 'Array lenghts are mismatching for energy denoms!'
+        write(*,*) 'Array lengths are mismatching for energy denoms!'
         stop
       endif
       n1 = JVOVO(nrep+1)
@@ -1352,7 +1352,7 @@
 !  multiplications.
 !
       if(IVVOO(nrep+1).ne.JVOVO(nrep+1)) then
-        write(*,*) 'Array lenghts are mismatching for energy denoms!'
+        write(*,*) 'Array lengths are mismatching for energy denoms!'
         stop
       endif
       n1 = JVOVO(nrep+1)

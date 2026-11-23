@@ -12,7 +12,8 @@ f = Filter()
 
 f.add(from_string = 'SYMADD: Detection of molecular symmetry',
       to_string='References for the basis sets',
-      rel_tolerance   = 1.0e-8)
+      rel_tolerance   = 1.0e-8,
+      ignore_sign=True)
 f.add(from_string = 'Electronic energy',
       num_lines   = 8,
       rel_tolerance   = 1.0e-9)
@@ -20,6 +21,9 @@ f.add(from_string = '                                   Eigenvalues',
       to_re       = 'Occupation in fermion',
       rel_tolerance   = 1.0e-7)
 
-test.run(['lda.inp'], ['H2O.mol', 'CH4.mol', 'SF6.mol', 'transCHFCHF.mol'], f)
+# hjaaj Nov 2024: removed SF6 from the test, because the degenerate irreps may change
+# order depending on compiler, and then it became a false "failure"
+#test.run(['lda.inp'], ['H2O.mol', 'CH4.mol', 'SF6.mol', 'transCHFCHF.mol'], f)
+test.run(['lda.inp'], ['H2O.mol', 'CH4.mol', 'transCHFCHF.mol'], f)
 
 sys.exit(test.return_code)

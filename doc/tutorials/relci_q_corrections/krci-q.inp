@@ -1,6 +1,6 @@
 **DIRAC
 .TITLE
-qcorr
+qcorr step 2 - MR-SDCI + Q
 .WAVE FUNCTION
 **INTEGRALS
 *READIN
@@ -10,7 +10,7 @@ qcorr
 .DOSSSS
 **WAVE FUNCTION
 .KR CI
-*KRCICALC
+*KRCI
 .CI PROGRAM
 LUCIAREL
 .INACTIVE
@@ -28,8 +28,8 @@ LUCIAREL
 36
 .NOOCCN
 *QCORR
-.REFFILE
-.CVORB
+.REFFILE   ! read the GASSCF wave funtion from step 1
+.CVORB     ! the number of inactive orbitals in the GASSCF calculation from step 1
 3 0
 **MOLECULE
 *BASIS

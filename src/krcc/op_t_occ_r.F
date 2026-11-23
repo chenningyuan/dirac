@@ -11,7 +11,7 @@
 *. The only allowed open shell reference allowed is 
 *  the high spin state with all singly occupied electrons having alpha spin
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "orbinp.inc"

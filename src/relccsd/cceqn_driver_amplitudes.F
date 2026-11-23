@@ -36,8 +36,6 @@ C---------------Common Blocks--------------------------------------
 #include "inpt.inc"
 #include "ihm.inc"
 #include "results.inc"
-#include "complex.inc"
-#include "ccpar.inc"
 #if defined (VAR_MPI)
       integer ISTAT(df_MPI_STATUS_SIZE)
 #endif
@@ -242,6 +240,7 @@ C
          ENDIF
          WRITE(IW,6076) ETOT
          IF (IPRNT.GE.2) CALL PAIREN (T1,T2,FVO,BUF1,BUF2)
+         IF (IPRNT.GE.2) CALL PRINT_AMPLITUDES (T1,T2,1.D-2)
       ENDIF
 C
       WRITE(IW,6077) DIAG

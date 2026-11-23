@@ -51,7 +51,8 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "ccpar.inc" ! not needed, because there is no parallelization in this subroutine
+! ccpar.inc not needed, because there is no parallelization in this subroutine
+! include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -295,8 +296,6 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "ccpar.inc"
-#include "files.inc"
 C
 C---------------Local variables -----------------------------------
       integer ndimh,ipr,eps,ind,indx_all,irp,irps_all,ndt_all,ndimh2
@@ -596,7 +595,6 @@ C     Write the effective Hamiltonian to file for post-processing
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
 #include "files.inc"
@@ -691,12 +689,10 @@ C     compute oscilator strengths.
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "inpt.inc"
 #include "complex.inc"
 #include "symm.inc"
 #include "results.inc"
-#include "ccpar.inc"
 #include "files.inc"
 C
 C---------------Calling variables--------------------------------------
@@ -812,7 +808,6 @@ C
 #include "complex.inc"
 #include "param.inc"
 #include "ihm.inc"
-#include "eqns.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1827,7 +1822,6 @@ C
 #include "symm.inc"
 #include "files.inc"
 #include "complex.inc"
-#include "param.inc"
 #include "eqns.inc"
 C
 C---------------Local variables--------------------------------------
@@ -2489,8 +2483,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "param.inc"
-#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2592,11 +2584,8 @@ C---------------Common Blocks------------------------------------
 C
 #include "inpt.inc"
 #include "symm.inc"
-#include "param.inc"
 #include "complex.inc"
 #include "files.inc"
-#include "ccpar.inc"
-#include "dcbxpr.h"
 c
 c---------------Calling Variables-----------------------------------
 c 
@@ -2748,8 +2737,6 @@ c
 #include "param.inc"
 #include "complex.inc"
 #include "files.inc"
-#include "ccpar.inc"
-#include "dcbxpr.h"
 c
 c-------------------Calling Variables-------------------------------------------------
 c
@@ -2872,13 +2859,8 @@ c
 c
 c     Contraction of dipole integrals with coefficients for sector (1,1)
 c
-#include "inpt.inc"
 #include "symm.inc"
-#include "param.inc"
 #include "complex.inc"
-#include "files.inc"
-#include "ccpar.inc"
-#include "dcbxpr.h"
 c
 c-------------------Calling Variables-------------------------------------------------
 c
@@ -2944,10 +2926,8 @@ C
 C This routine is analogous to RDPROP in relccsd/ccints.F (without the sorting).
 C
 #include "param.inc"
-#include "symm.inc"
 #include "complex.inc"
 #include "files.inc"
-#include "ccpar.inc"
 #include "inpt.inc"
 C
 C---------------Calling variables------------------------------------
@@ -3061,13 +3041,8 @@ c Takes out symmetry block as needed in subroutine Transition_EA_IP
 c                                                      
 c----------------Common Blocks-----------------------------------------
 c 
-#include "inpt.inc"
 #include "symm.inc"
-#include "param.inc"
 #include "complex.inc"
-#include "files.inc"
-#include "ccpar.inc"
-#include "dcbxpr.h"
 c
 c----------------Calling variables---------------------------------------------
 c
@@ -3114,14 +3089,8 @@ c
 c define offsets of property matrix needed in subroutine Transition_OneOne
 c                                                      
 c----------------Common Blocks-----------------------------------------
-c 
-#include "inpt.inc"
+c
 #include "symm.inc"
-#include "param.inc"
-#include "complex.inc"
-#include "files.inc"
-#include "ccpar.inc"
-#include "dcbxpr.h"
 c
 c----------------Calling variables---------------------------------------------
 c
@@ -3165,7 +3134,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "symm.inc"
-#include "files.inc"
 C
 C---------------Variables-----------------------------------------------
 C

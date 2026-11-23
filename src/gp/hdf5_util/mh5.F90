@@ -800,16 +800,16 @@ end function mh5_is_hdf5
 
 ! group
 
-function mh5_exists_group(lu,groupname) result(groupid)
+function mh5_exists_group(lu,groupname) result(exists)
   !LV: Added this "missing" HDF5 function for convenience.
-  integer(kind=iwp) :: groupid
+  logical(kind=iwp) :: exists
   integer(kind=iwp), intent(in) :: lu
   character(len=*), intent(in) :: groupname
   character(len=MH5_MAX_LBL_LEN) :: mh5_lbl
-  logical(kind=iwp) :: exists
+  integer(kind=iwp) :: rc
   call f2c_string(groupname,mh5_lbl)
-  groupid = mh5_c_exists_group(lu,mh5_lbl)
-  !exists = groupid > 0
+  rc = mh5_c_exists_group(lu,mh5_lbl)
+  exists = rc > 0
 end function mh5_exists_group
 
 function mh5_open_group(lu,groupname) result(groupid)
@@ -872,7 +872,7 @@ end subroutine mh5_close_attr
 ! dset
 
 function mh5_exists_dset(id,dsetname) result(exists)
-  logical(kind=iwp) :: exists
+  logical :: exists
   integer(kind=iwp), intent(in) :: id
   character(len=*), intent(in) :: dsetname
   character(len=MH5_MAX_LBL_LEN) :: mh5_lbl
@@ -1603,5 +1603,10 @@ subroutine mh5_fetch_dset_array_real_3d(lu,dsetname,buffer,exts,offs)
   end if
   call mh5_close_dset(dsetid)
 end subroutine mh5_fetch_dset_array_real_3d
+
+subroutine abend
+   implicit none
+   error stop 'error in hdf5 I/O'
+end subroutine abend
 
 end module mh5

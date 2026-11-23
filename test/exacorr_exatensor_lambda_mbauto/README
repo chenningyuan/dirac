@@ -1,0 +1,2 @@
+! testing the lambda vector computation in the talsh cc implementation, using automatically generate code for t equations
+! requirements: talsh library (Dmitry Lyakh), efficent with CUDA / OPENMP

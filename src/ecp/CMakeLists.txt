@@ -50,7 +50,7 @@ endif()
 
 add_library(
     ecp
-    OBJECT
+    STATIC
     ${FIXED_ECP_FORTRAN_SOURCES}
     ${FREE_ECP_FORTRAN_SOURCES}
 )

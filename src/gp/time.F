@@ -26,8 +26,10 @@ C
 C Return elapsed CPU time (all threads) and elapsed real time.
 C
       real(8) :: timcpu,timwal
+      real(4) :: timcpu4
       integer :: clock_count, clock_rate, clock_max
-      call cpu_time (timcpu)
+      call cpu_time (timcpu4)
+      timcpu = timcpu4 ! convert to double precision
       call system_clock ( clock_count, clock_rate, clock_max )
       timwal = dble ( clock_count ) / dble ( clock_rate )
       return

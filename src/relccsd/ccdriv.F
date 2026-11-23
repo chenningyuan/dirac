@@ -80,7 +80,10 @@ C
      &"J. Chem. Phys. 149 (2018) 174113.",
      &/"  - Core spectra (CVS-EOM) :",T30,
      &"L. Halbert, M. L. Vidal, A. Shee, S. Coriani, and A.S.P. Gomes,",
-     &" arXiv:2011.08549")
+     &" J. Chem. Theory Comput. 27 (2021) 3583",
+     &/"  - Approx. EOM energies   :",T30,
+     &"L. Halbert and A.S.P. Gomes,",
+     &" Mol. Phys. (2023) e2246592")
 C
       RETURN
 C---------------Record of modifications made in the code-------------
@@ -165,11 +168,9 @@ C---------------Common Blocks--------------------------------------
 C
 #include "inpt.inc"
 #include "ihm.inc"
-#include "complex.inc"
 #include "symm.inc"
 #include "mxcent.h"
 #include "dcbprp.h"
-#include "dcbmp2no.h"
 #include "dcbham.h"
 C
 C---------------Local variables--------------------------------------
@@ -306,6 +307,17 @@ C     Switch on evaluation of property output if necessary
              PRP_WF(IPRP_WF) = 'CCSD'
           END IF
       END IF
+
+! the following section is to activate eom-cc functionality for energies
+
+! enable eom-cc module
+      DOEOMCCSD=relcc_do_eomcc
+
+! approximate eom models: P-EOM, EOM-MBPT(2) (using MP2 or CCSD T2 amplitudes) or P-EOM-MBPT(2) 
+      DOEOMH0DD=relcc_do_eom_peom
+      DOEOMPT2=relcc_do_eom_pt2
+      DOEOMPT2CC=relcc_do_eom_pt2_ccamp
+
 ! the following section is to activate excited state property evaluation module
 
       if (relcc_do_eomprop) then
@@ -591,6 +603,7 @@ c
       use relcc_cfg
       use xmlout
       use eom_driver
+      use mfsolver_dirac_input
 C
       IMPLICIT NONE
 C
@@ -609,14 +622,11 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "diis.inc"
 #include "inpt.inc"
 #include "symm.inc"
 #include "eqns.inc"
 #include "complex.inc"
 #include "ccpar.inc"
-#include "waio.h"
-#include "dcbmp2no.h"
 C
 C---------------Local variables--------------------------------------
 C
@@ -625,7 +635,7 @@ C     CC is the dynamic memory (when used as stand-alone code)
 C
 C
       INTEGER MAXSP
-      PARAMETER (MAXSP=1000)
+      PARAMETER (MAXSP=1102)
       INTEGER IREPSP(MAXSP*4),IREPSPI(MAXSP*MXREP*2)
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
       LOGICAL ALLOC_ME,CA
@@ -705,6 +715,7 @@ C     Read input from file (old namelist) / transfer input (new style) from relc
 !     sync co-workers and master with variables from new input...
 #ifdef VAR_MPI
       call relcc_sync_cw()
+      call mfsolver_dirac_input_sync_cw()
 #endif
 C
       CALL CCINPT (IN,IW)
@@ -843,9 +854,7 @@ C
 
 !! Activate EOMCC calculation 
 
-      DOEOMCCSD=.FALSE.
-      IF (relcc_do_eomcc) THEN
-         DOEOMCCSD=.TRUE.
+      IF (DOEOMCCSD) THEN
          MXCORR1 = 0
          CALL eom_ee(ICALC,MXCORR1,eps)
          MXCORR = MAX(MXCORR,MXCORR1)
@@ -933,7 +942,7 @@ C
       WALL1 = WALL2
       CALL FLSHFO (IW)
 
-      IF (relcc_do_eomcc) CALL eom_ee(ICALC,MXCORR,eps)
+      IF (DOEOMCCSD) CALL eom_ee(ICALC,MXCORR,eps)
       CALL GETTIM(CPU2,WALL2)
       CPUEOM = CPUEOM + CPU2 - CPU1
       CPU1 = CPU2
@@ -1072,11 +1081,9 @@ C     Author : Luuk Visscher
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "files.inc"
 #include "symm.inc"
 #include "freeze.inc"
-#include "complex.inc"
 #include "ihm.inc"
 #include "ccpar.inc"
 C---------------Calling variables--------------------------------------
@@ -2163,12 +2170,13 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "diis.inc"
 #include "inpt.inc"
 #include "symm.inc"
 #include "eqns.inc"
 #include "waio.h"
 #include "complex.inc"
+#include "results.inc"
+#include "ccpar.inc"
 C
 C---------------Calling variables--------------------------------------
 C
@@ -2177,8 +2185,8 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      LOGICAL ALLOC_ME,SRTALL
-      INTEGER*8 NVT
+      LOGICAL ALLOC_ME,SRTALL,ONEPAS
+      INTEGER*8 NVT,NV4MIN
       integer minbuf,nbuf,nvf,nvtmin
 Caspg, replacing memget
       integer,       allocatable, target :: a_kr(:),
@@ -2191,8 +2199,12 @@ Caspg, replacing memget
      &                              a_v2(:),     a_v2a(:),
      &                              a_v3a(:),    a_vt(:),
      &                              a_fvo(:),    a_v1a(:),
-     &                              a_v3(:),     a_vta(:)
-      real (kind=kreal), pointer ::     a_v4(:),     a_v4a(:)
+     &                              a_v3(:),     a_vta(:),
+     &                              a_v5(:),     a_v5a(:),
+     &                              a_v6(:),     a_v6a(:)
+      real (kind=kreal), pointer ::     a_v4(:),     a_v4a(:),
+     &                                  a_vovv(:),   a_vovva(:),
+     &                                  a_vvvv(:),   a_vvvva(:)
 c
       integer(kind=8)        :: mxcorr
       integer(kind=8)        :: current_mem_use = 0
@@ -2246,6 +2258,39 @@ C     The remaining space is
       call allocator_get_maxbuff(freemem,kind(a_VT))
       NVF = freemem / (2 * RCW)
 C
+C     Sort all classes while reading the integral file only once when
+C     the VOVO array and the local VOVV and VVVV integrals fit in memory
+C     at the same time (RDINTS), leaving 5% of the free memory unused.
+C     Not used when estimating memory, on restart of a partially sorted
+C     integral set, or with Breit (Gaunt) integrals.
+C
+      SRTALL = .TRUE.
+      IF (EQNS.NE.'FOCKSP') SRTALL = DOCCSD.OR.DOMP2GOLD
+      IF (EQNS.EQ.'RELADC') SRTALL = .TRUE.
+      NV4MIN = MAX(INT(NV4,8),INT(JOOOO(2),8),INT(JVOOO(2),8))
+      ONEPAS = ICALC.GE.2 .AND. SRTALL .AND. .NOT.BREIT .AND.
+     &         IMSTAT(1).NE.3 .AND. IMSTAT(2).NE.3 .AND.
+     &         IMSTAT(3).NE.3 .AND.
+     &         NV4MIN+MAX(NV5PAR,1_8)+MAX(NV6PAR,1_8).LE.NVF-NVF/20
+C
+      IF (ONEPAS) THEN
+         call alloc(a_VT ,NV4MIN*RCW, id="vt" )
+         call alloc(a_VTA,NV4MIN*RCW, id="vta" )
+         call alloc(a_V5 ,MAX(NV5PAR,1_8)*RCW, id="v5" )
+         call alloc(a_V5A,MAX(NV5PAR,1_8)*RCW, id="v5a" )
+         call alloc(a_V6 ,MAX(NV6PAR,1_8)*RCW, id="v6" )
+         call alloc(a_V6A,MAX(NV6PAR,1_8)*RCW, id="v6a" )
+         a_V4    => a_VT
+         a_V4A   => a_VTA
+         a_VOVV  => a_V5
+         a_VOVVA => a_V5A
+         a_VVVV  => a_V6
+         a_VVVVA => a_V6A
+C        NVT is not used for buffering, but checked in RDINTS
+         NVT = NWORDS_ON_RECORD / (RCW * IRW)
+         GOTO 440
+      ENDIF
+C
 C  Determine number of available buffers with respect to free memory
 C  Records are defined for integers, calculate how many real or
 C  complex words we can store on these in MINBUF
@@ -2268,10 +2313,14 @@ C
 C
       call alloc(a_VT ,NVTMIN*RCW, id="vt" )
       call alloc(a_VTA,NVTMIN*RCW, id="vta" )
-      a_V4  => a_VT
-      a_V4A => a_VTA
+      a_V4    => a_VT
+      a_V4A   => a_VTA
+      a_VOVV  => a_VT
+      a_VOVVA => a_VTA
+      a_VVVV  => a_VT
+      a_VVVVA => a_VTA
 
-      call allocator_get_words_inuse(current_mem_use)
+  440 call allocator_get_words_inuse(current_mem_use)
       mxcorr= current_mem_use - start_mem_use
 C
       IF (ICALC.EQ.1) THEN
@@ -2281,21 +2330,16 @@ C
 C
 C  Read integrals & make fock matrices
 C
-      SRTALL = .TRUE.
-C
-C  MP2 calculations need less integrals
+C  MP2 calculations need less integrals (SRTALL, set above)
 C  MP: DHF-ADC also needs all integral classes !
 C  MP: The eqns variable hereby turns on full sorting in this case.
-C
-      IF (EQNS.NE.'FOCKSP') SRTALL = DOCCSD.OR.DOMP2GOLD
-      IF (EQNS.EQ.'RELADC') SRTALL = .TRUE.
 C
       CALL RDINTS(IPRNT,NSP,a_KR,a_INDK,a_INDL,
      &            a_CBUF,a_IBUF,NVT,a_BUF1,a_BUF2,
      &            a_V1,a_V1A,
      &            a_V2,a_V2A,a_V3,a_V3A,a_V4,a_V4A,
-     &            a_VT,a_VTA,a_VT,a_VTA,EPS,a_FOO,a_FVO,
-     &            a_FVV,BREIT,SRTALL,INTERFACE)
+     &            a_VOVV,a_VOVVA,a_VVVV,a_VVVVA,EPS,a_FOO,a_FVO,
+     &            a_FVV,BREIT,SRTALL,INTERFACE,ONEPAS)
 
  450  CONTINUE
       call dealloc(a_kr, id="kr" )
@@ -2315,10 +2359,20 @@ C
       call dealloc(a_V3  , id="v3" )
       call dealloc(a_V3A , id="v3a" )
 
-      a_V4  => NULL()
-      a_V4A => NULL()
+      a_V4    => NULL()
+      a_V4A   => NULL()
+      a_VOVV  => NULL()
+      a_VOVVA => NULL()
+      a_VVVV  => NULL()
+      a_VVVVA => NULL()
       call dealloc(a_VT  , id="vt" )
       call dealloc(a_VTA , id="vta" )
+      IF (ONEPAS) THEN
+         call dealloc(a_V5  , id="v5" )
+         call dealloc(a_V5A , id="v5a" )
+         call dealloc(a_V6  , id="v6" )
+         call dealloc(a_V6A , id="v6a" )
+      ENDIF
 C
       RETURN
 1001  FORMAT (" Memory for ",A," :",T50,I15," 8-byte words")
@@ -2361,7 +2415,8 @@ C
 #include "eqns.inc"
 #include "results.inc"
 #include "complex.inc"
-#include "ccpar.inc" ! not needed, because there is no parallelization in this subroutine
+! ccpar.inc not needed, because there is no parallelization in this subroutine
+! include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2392,6 +2447,7 @@ c
       integer                :: maxit_save
       logical                :: is_ccsd_converged = .false.
       integer                :: dum,irp,nbuf1,nbuf2,nbuf3,nvovv
+
 C
 C---------------Executable code--------------------------------------
 C
@@ -2416,7 +2472,19 @@ C
 C This is all we need to calculate the MP2 energy
 C
       IF (DOMP2) MXCORR = MXCOR
-C
+
+      IF (DOEOMPT2) THEN
+         WRITE (IW,'(A)') " "
+         WRITE (IW,'(A)') " INFO: (P-)EOM-MBPT(2) requested"
+C        MAXIT=0 
+C        WRITE (IW,'(AI2)') " INFO:    Reset MAXIT to ",MAXIT
+         IF (DOCCSDT) then
+            DOCCSDT=.FALSE.
+            WRITE (IW,'(A)') ' INFO:    Disabled CCSD(T) calculation'
+         END IF
+         WRITE (IW,'(A)') " "
+      END IF
+
       IF (DOCCSD) THEN
          MAXDIM = MXDIMCC
          NBUF1 = MAX(JOOOO(NREP+1),JVOOO(NREP+1),
@@ -2758,7 +2826,6 @@ C
 #include "dgroup.h"
 #include "complex.inc"
 #include "ccpar.inc"
-#include "dcbmp2no.h"
 #include "mp1stpr.h"
 C
 C---------------Local variables--------------------------------------
@@ -4026,9 +4093,7 @@ C
 #include "files.inc"
 #include "results.inc"
 #include "inpt.inc"
-#include "symm.inc"
 #include "param.inc"
-#include "complex.inc"
 #include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
@@ -4056,7 +4121,11 @@ C
       RSBASF='MCCRES'
 C
 #if defined (VAR_MPI)
-      IF (MYPROC .LT. 10) THEN    !  MPI ID has one digit
+      IF (MYPROC .EQ. 0) THEN    !  MPI ID has one digit
+         ! do not write extension for master node
+         WRITE (RSFILN,'(A6)') RSBASF
+         LRSFIL=6
+      ELSEIF (MYPROC .LT. 10) THEN    !  MPI ID has one digit
          WRITE (RSFILN,'(A6,A1,I1)') RSBASF,'.',MYPROC
          LRSFIL=8
       ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
@@ -4165,7 +4234,7 @@ C
 C        ... if we don't want to restart we trash any existing files and start over
 C
             write (IW,*)
-            write (IW,*) 'INFO: Restart file(s) will be overwriten!'
+            write (IW,*) 'INFO: Restart file(s) will be overwritten!'
             write (IW,*)
             OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &            STATUS='REPLACE',RECL=IRECL)
@@ -4454,12 +4523,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "files.inc"
 #include "results.inc"
 #include "symm.inc"
 #include "inpt.inc"
-#include "complex.inc"
 #include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
@@ -4696,7 +4763,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "symm.inc"
 #include "complex.inc"
-#include "files.inc"
 #include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------

@@ -49,6 +49,8 @@ module density_eval
    public gga_london_distribute_r
    public get_s_lao
    public get_gs_lao
+   public lao_spin_buffer_add
+   public lao_spin_buffer_flush
    public get_jblao
    public get_gjblao
    public get_jblao_ll
@@ -66,6 +68,12 @@ module density_eval
 
   integer:: jxyz_start = 1  ! noncollinear
 ! integer:: jxyz_start = 3  ! collinear
+
+! points buffered by lao_spin_buffer_add before one dgemm per block
+  integer, parameter   :: lao_buffer_size = 32
+  integer              :: lao_nr_buffered = 0
+  real(8), allocatable :: lao_ao_buffer(:, :)
+  real(8), allocatable :: lao_f_buffer(:, :, :, :)
 
   save
 
@@ -1509,8 +1517,38 @@ contains
    
    end subroutine
 
+   subroutine lao_gram(nv, v, w, g, iblock, jxyz, irep, mat_dim, dmat)
+
+!    g(k, l) = v_k(st1)^T D(st1, st2) v_l(st2) for one (sigma, block) pair,
+!    with D*v for all nv vectors formed as one dgemm
+!    ----------------------------------------------------------------------------
+     integer, intent(in)  :: nv, iblock, jxyz, irep, mat_dim
+     real(8), intent(in)  :: v(mat_dim, nv)
+     real(8), intent(out) :: w(mat_dim, nv)
+     real(8), intent(out) :: g(nv, nv)
+     real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+!    ----------------------------------------------------------------------------
+     integer              :: nr1, nr2, st1, st2
+!    ----------------------------------------------------------------------------
+
+     g = 0.0d0
+     nr1 = ao_block_nr(iblock)
+     st1 = ao_block_start(iblock)
+     nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, irep))
+     st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep))
+     if ((nr1 < 1) .or. (nr2 < 1)) return
+
+     call dgemm('N', 'N', nr1, nv, nr2, 1.0d0, dmat(st1, st2, iq(jxyz)), mat_dim, &
+                v(st2, 1), mat_dim, 0.0d0, w, mat_dim)
+     call dgemm('T', 'N', nv, nv, nr1, llss_prefactor(iblock), v(st1, 1), mat_dim, &
+                w, mat_dim, 0.0d0, g, nv)
+
+   end subroutine
+
    subroutine get_s_lao(s, irep, mat_dim, dmat, ao, cx, cy, cz, buffer)
 
+!    s(sigma, B_a) = sum over blocks of f_a^T D ao - ao^T D f_a,
+!    f_a = r_c ao_m1(b) - r_b ao_m1(c)
 !    ----------------------------------------------------------------------------
      real(8), intent(out):: s(3, 3)
      integer, intent(in)  :: irep(*)
@@ -1520,76 +1558,30 @@ contains
      real(8), intent(in)  :: cx, cy, cz
      real(8), intent(in)  :: buffer(*)
 !    ----------------------------------------------------------------------------
-     integer              :: nr1, nr2, st1, st2, iblock, jxyz
-     integer              :: a, b, c, ii, i, j
-     real(8)              :: r_co(3), f(mat_dim), s1, s2
-     real(8), external    :: ddot
+     integer, parameter   :: nv = 4   ! ao, ao_m1(1:3)
+     integer              :: iblock, jxyz, a, b, c, mb, mc
+     real(8)              :: r_co(3), g(nv, nv)
+     real(8), allocatable, save :: v(:, :), w(:, :)
 !    ----------------------------------------------------------------------------
 
-     r_co(1) = cx
-     r_co(2) = cy
-     r_co(3) = cz
-
+     r_co = (/cx, cy, cz/)
      s = 0.0d0
-     f = 0.0d0
 
-     do a = 1, 3   ! Bx, By, Bz
+     call lao_vectors(nv, mat_dim, ao, .false., v, w)
 
-       select case (a)
-         case (1)
-           b = 2; c = 3
-         case (2)
-           b = 3; c = 1
-         case (3)
-           b = 1; c = 2
-       end select
-
-       do ii = 1, mat_dim
-         f(ii) = (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))
-       end do
-
-       do jxyz = jxyz_start, 3
-
-         do iblock = 1, nr_ao_blocks
-
-           nr1 = ao_block_nr(iblock)
-           st1 = ao_block_start(iblock)
-           nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, irep(a)))
-           st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep(a)))
-           if ((nr1 < 1) .or. (nr2 < 1)) cycle
-
-!          lao(st1) * dmat(st1, st2) * ao(st2)
-           call dgemv('N',                      &
-                      nr1,                      &
-                      nr2,                      &
-                      1.0d0,                    &
-                      dmat(st1, st2, iq(jxyz)), &
-                      mat_dim,                  &
-                      ao(st2),                  &
-                      1,                        &
-                      0.0d0,                    &
-                      buffer,                   &
-                      1)
-     
-           s1 = llss_prefactor(iblock)*ddot(nr1, f(st1), 1, buffer, 1)
-
-!          ao(st1) * dmat(st1, st2) * lao(st2)
-           call dgemv('N',                      &
-                      nr1,                      &
-                      nr2,                      &
-                      1.0d0,                    &
-                      dmat(st1, st2, iq(jxyz)), &
-                      mat_dim,                  &
-                      f(st2),                  &
-                      1,                        &
-                      0.0d0,                    &
-                      buffer,                   &
-                      1)
-     
-           s2 = llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
-
-           s(jxyz, a) = s(jxyz, a) + (s1-s2)
-
+     do jxyz = jxyz_start, 3
+       do iblock = 1, nr_ao_blocks
+         do a = 1, 3
+           if (a == 1) then
+             call lao_gram(nv, v, w, g, iblock, jxyz, irep(a), mat_dim, dmat)
+           else if (irep(a) /= irep(a-1)) then
+             call lao_gram(nv, v, w, g, iblock, jxyz, irep(a), mat_dim, dmat)
+           end if
+           b = mod(a, 3) + 1
+           c = mod(a + 1, 3) + 1
+           mb = 1 + b
+           mc = 1 + c
+           s(jxyz, a) = s(jxyz, a) + r_co(c)*(g(mb, 1) - g(1, mb)) - r_co(b)*(g(mc, 1) - g(1, mc))
          end do
        end do
      end do
@@ -1598,6 +1590,9 @@ contains
 
    subroutine get_gs_lao(s, gs, irep, mat_dim, dmat, ao, cx, cy, cz, buffer)
 
+!    s(sigma, B_a) and its gradient gs(R, sigma, B_a); same terms as in
+!    get_s_lao plus the nabla parts, all of them antisymmetric combinations
+!    x^T D y - y^T D x of the 16 vectors ao, nabla ao, ao_m1, nabla ao_m1
 !    ----------------------------------------------------------------------------
      real(8), intent(out):: s(3, 3)
      real(8), intent(out):: gs(3, 3, 3)
@@ -1608,218 +1603,173 @@ contains
      real(8), intent(in)  :: buffer(*)
      real(8), intent(in)  :: cx, cy, cz
 !    ----------------------------------------------------------------------------
-     integer              :: nr1, nr2, st1, st2, iblock, jxyz, ixyz
-     integer              :: a, b, c, ii, jj
-     real(8)              :: r_co(3), ff, ff_gn
-     real(8), external    :: ddot
-     real(8):: f_lda(mat_dim), f1_gga(mat_dim), f2_gga(mat_dim, 3), f3_gga(mat_dim, 3)
-     integer:: i, j, k
+     integer, parameter   :: nv = 16  ! ao, ao_g1(1:3), ao_m1(1:3), ao_g1_m1(1:3, 1:3)
+     integer              :: iblock, jxyz, ixyz, a, b, c, mb, mc
+     real(8)              :: r_co(3), g(nv, nv), x(nv, nv)
+     real(8), allocatable, save :: v(:, :), w(:, :)
 !    ----------------------------------------------------------------------------
 
-     r_co(1) = cx
-     r_co(2) = cy
-     r_co(3) = cz
-
+     r_co = (/cx, cy, cz/)
      s = 0.0d0
      gs = 0.0d0
-     ff = 0.0d0
 
-     do a = 1, 3   ! B_{x, y, z}
-       select case (a)
-         case (1)
-           b = 2; c = 3
-         case (2)
-           b = 3; c = 1
-         case (3)
-           b = 1; c = 2
-       end select
+     call lao_vectors(nv, mat_dim, ao, .true., v, w)
 
-       do jxyz = jxyz_start, 3  ! Sigma_{x, y, z}
-
-         do iblock = 1, nr_ao_blocks
-
-           nr1 = ao_block_nr(iblock)
-           st1 = ao_block_start(iblock)
-           nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, irep(a)))
-           st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep(a)))
-           if ((nr1 < 1) .or. (nr2 < 1)) cycle
-
-           do ii = 1, mat_dim
-             f_lda(ii)  = (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii)) 
-             do ixyz = 1, 3
-               f2_gga(ii, ixyz) =  &
-                  + (r_co(c)*ao(ao_off_g1_m1(ixyz, b) + ii) - r_co(b)*ao(ao_off_g1_m1(ixyz, c) + ii))
-             end do
+     do jxyz = jxyz_start, 3
+       do iblock = 1, nr_ao_blocks
+         do a = 1, 3
+           if (a == 1) then
+             call lao_gram(nv, v, w, g, iblock, jxyz, irep(a), mat_dim, dmat)
+             x = g - transpose(g)
+           else if (irep(a) /= irep(a-1)) then
+             call lao_gram(nv, v, w, g, iblock, jxyz, irep(a), mat_dim, dmat)
+             x = g - transpose(g)
+           end if
+           b = mod(a, 3) + 1
+           c = mod(a + 1, 3) + 1
+           mb = 4 + b
+           mc = 4 + c
+           s(jxyz, a) = s(jxyz, a) + r_co(c)*x(mb, 1) - r_co(b)*x(mc, 1)
+           do ixyz = 1, 3
+             gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a)                                        &
+                               + r_co(c)*x(7 + 3*(b - 1) + ixyz, 1)                      &
+                               - r_co(b)*x(7 + 3*(c - 1) + ixyz, 1)                      &
+                               + r_co(c)*x(mb, 1 + ixyz) - r_co(b)*x(mc, 1 + ixyz)
+             if (ixyz == b) gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) - x(mc, 1)
+             if (ixyz == c) gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) + x(mb, 1)
            end do
-
-!          lda
-           call dgemv('N',                      &
-                      nr1,                      &
-                      nr2,                      &
-                      1.0d0,                    &
-                      dmat(st1, st2, iq(jxyz)), &
-                      mat_dim,                  &
-                      ao(st2),                  &
-                      1,                        &
-                      0.0d0,                    &
-                      buffer,                   &
-                      1)
-     
-           s(jxyz, a) = s(jxyz, a) &
-                   + llss_prefactor(iblock)*ddot(nr1, f_lda(st1), 1, buffer, 1)
-
-           call dgemv('N',                      &
-                      nr1,                      &
-                      nr2,                      &
-                      1.0d0,                    &
-                      dmat(st1, st2, iq(jxyz)), &
-                      mat_dim,                  &
-                      f_lda(st2),               &
-                      1,                        &
-                      0.0d0,                    &
-                      buffer,                   &
-                      1)
-     
-           s(jxyz, a) = s(jxyz, a) &
-                   - llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
-
-
-!          gga
-           do ixyz = 1, 3  ! dR
-!            (1) [(R_M \times r)(\partial(ixyz)ao_M) ] * Dmat*ao_N
-             call dgemv('N',                      &
-                        nr1,                      &
-                        nr2,                      &
-                        1.0d0,                    &
-                        dmat(st1, st2, iq(jxyz)), &
-                        mat_dim,                  &
-                        ao(st2),                  &
-                        1,                        &
-                        0.0d0,                    &
-                        buffer,                   &
-                        1)
-             
-             gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
-                     + llss_prefactor(iblock)*ddot(nr1, f2_gga(st1, ixyz), 1, buffer, 1)
-
-             call dgemv('N',                      &
-                        nr1,                      &
-                        nr2,                      &
-                        1.0d0,                    &
-                        dmat(st1, st2, iq(jxyz)), &
-                        mat_dim,                  &
-                        f2_gga(st2, ixyz),        &
-                        1,                        &
-                        0.0d0,                    &
-                        buffer,                   &
-                        1)
-             
-             gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
-                     - llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
-             
-!            (2) [(R_M \times r)*ao_M] * Dmat * (\partial(ixyz) ao_N)
-             call dgemv('N',                             &
-                        nr1,                             &
-                        nr2,                             &
-                        1.0d0,                           &
-                        dmat(st1, st2, iq(jxyz)),        &
-                        mat_dim,                         &
-                        ao(ao_off_g1_m0(ixyz, 0) + st2), &
-                        1,                               &
-                        0.0d0,                           &
-                        buffer,                          &
-                        1)
-             
-             gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
-                     + llss_prefactor(iblock)*ddot(nr1, f_lda(st1), 1, buffer, 1)
-
-             call dgemv('N',                      &
-                        nr1,                      &
-                        nr2,                      &
-                        1.0d0,                    &
-                        dmat(st1, st2, iq(jxyz)), &
-                        mat_dim,                  &
-                        f_lda(st2),               &
-                        1,                        &
-                        0.0d0,                    &
-                        buffer,                   &
-                        1)
-             
-             gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
-                     - llss_prefactor(iblock)*ddot(nr1, ao(ao_off_g1_m0(ixyz, 0) + st1), 1, buffer, 1)
-
-!            (3) [R_M \times (\partial(ixyz) r)] ao_M*Dmat*ao_N
-             if (ixyz == b) then
-               call dgemv('N',                      &
-                          nr1,                      &
-                          nr2,                      &
-                          1.0d0,                    &
-                          dmat(st1, st2, iq(jxyz)), &
-                          mat_dim,                  &
-                          ao(st2),                  &
-                          1,                        &
-                          0.0d0,                    &
-                          buffer,                   &
-                          1)
-              
-               gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
-                       - llss_prefactor(iblock)*ddot(nr1, ao(ao_off_g0_m1(0, c) + st1), 1, buffer, 1)
-              
-               call dgemv('N',                          &
-                          nr1,                          &
-                          nr2,                          &
-                          1.0d0,                        &
-                          dmat(st1, st2, iq(jxyz)),     &
-                          mat_dim,                      &
-                          ao(ao_off_g0_m1(0, c) + st2), &
-                          1,                            &
-                          0.0d0,                        &
-                          buffer,                       &
-                          1)
-              
-               gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
-                       + llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
-
-             end if
-
-             if (ixyz == c) then
-               call dgemv('N',                      &
-                          nr1,                      &
-                          nr2,                      &
-                          1.0d0,                    &
-                          dmat(st1, st2, iq(jxyz)), &
-                          mat_dim,                  &
-                          ao(st2),                  &
-                          1,                        &
-                          0.0d0,                    &
-                          buffer,                   &
-                          1)
-              
-               gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
-                       + llss_prefactor(iblock)*ddot(nr1, ao(ao_off_g0_m1(0, b) + st1), 1, buffer, 1)
-              
-               call dgemv('N',                          &
-                          nr1,                          &
-                          nr2,                          &
-                          1.0d0,                        &
-                          dmat(st1, st2, iq(jxyz)),     &
-                          mat_dim,                      &
-                          ao(ao_off_g0_m1(0, b) + st2), &
-                          1,                            &
-                          0.0d0,                        &
-                          buffer,                       &
-                          1)
-              
-               gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
-                       - llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
-
-             end if
-
-           end do
-
          end do
        end do
      end do
+
+   end subroutine
+
+   subroutine lao_vectors(nv, mat_dim, ao, gga, v, w)
+
+!    gather the AO vectors used by get_s_lao/get_gs_lao into v(:, 1:nv):
+!    1: ao, 2-4: nabla ao (gga), then ao_m1(1:3), then nabla ao_m1 (gga)
+!    ----------------------------------------------------------------------------
+     integer, intent(in)  :: nv, mat_dim
+     real(8), intent(in)  :: ao(*)
+     logical, intent(in)  :: gga
+     real(8), allocatable, intent(inout) :: v(:, :), w(:, :)
+!    ----------------------------------------------------------------------------
+     integer              :: off(nv), k, ixyz, iv
+!    ----------------------------------------------------------------------------
+
+     if (allocated(v)) then
+       if (size(v, 1) /= mat_dim) deallocate(v, w)
+     end if
+     if (.not. allocated(v)) allocate(v(mat_dim, nv), w(mat_dim, nv))
+
+     off(1) = 0
+     iv = 1
+     if (gga) then
+       do ixyz = 1, 3
+         iv = iv + 1
+         off(iv) = ao_off_g1_m0(ixyz, 0)
+       end do
+     end if
+     do k = 1, 3
+       iv = iv + 1
+       off(iv) = ao_off_g0_m1(0, k)
+     end do
+     if (gga) then
+       do k = 1, 3
+         do ixyz = 1, 3
+           iv = iv + 1
+           off(iv) = ao_off_g1_m1(ixyz, k)
+         end do
+       end do
+     end if
+
+     do iv = 1, nv
+       v(1:mat_dim, iv) = ao(off(iv) + 1:off(iv) + mat_dim)
+     end do
+
+   end subroutine
+
+
+   subroutine lao_spin_buffer_add(fmat, fmat_pg_sym, mat_dim, nz, nr_fmat, u, v, gga, ao)
+
+!    same contribution as nabla_omega_imag(fmat, im, ..., u(:, im), v(:, :, im), ao)
+!    for all im, but buffered over points and added as rank-k updates
+!    ----------------------------------------------------------------------------
+     integer, intent(in)    :: mat_dim, nz, nr_fmat
+     real(8), intent(inout) :: fmat(mat_dim, mat_dim, nz, *)
+     integer, intent(in)    :: fmat_pg_sym(nr_fmat)
+     real(8), intent(in)    :: u(3, nr_fmat)
+     real(8), intent(in)    :: v(3, 3, nr_fmat)
+     logical, intent(in)    :: gga
+     real(8), intent(in)    :: ao(*)
+!    ----------------------------------------------------------------------------
+     integer                :: k, im, jxyz, ixyz, off
+!    ----------------------------------------------------------------------------
+
+     if (lao_nr_buffered == 0) then
+       if (allocated(lao_ao_buffer)) then
+         if (size(lao_ao_buffer, 1) /= mat_dim .or. size(lao_f_buffer, 4) /= nr_fmat) &
+           deallocate(lao_ao_buffer, lao_f_buffer)
+       end if
+       if (.not. allocated(lao_ao_buffer)) then
+         allocate(lao_ao_buffer(mat_dim, lao_buffer_size))
+         allocate(lao_f_buffer(mat_dim, lao_buffer_size, 3, nr_fmat))
+         lao_f_buffer = 0.0d0
+       end if
+     end if
+
+     k = lao_nr_buffered + 1
+     lao_ao_buffer(:, k) = ao(1:mat_dim)
+     do im = 1, nr_fmat
+       do jxyz = jxyz_start, 3
+         lao_f_buffer(:, k, jxyz, im) = u(jxyz, im)*ao(1:mat_dim)
+         if (gga) then
+           do ixyz = 1, 3
+             off = ao_off_g1_m0(ixyz, 0)
+             lao_f_buffer(:, k, jxyz, im) = lao_f_buffer(:, k, jxyz, im) &
+                                          + 2.0d0*v(ixyz, jxyz, im)*ao(off + 1:off + mat_dim)
+           end do
+         end if
+       end do
+     end do
+     lao_nr_buffered = k
+
+     if (lao_nr_buffered == lao_buffer_size) then
+       call lao_spin_buffer_flush(fmat, fmat_pg_sym, mat_dim, nz, nr_fmat)
+     end if
+
+   end subroutine
+
+   subroutine lao_spin_buffer_flush(fmat, fmat_pg_sym, mat_dim, nz, nr_fmat)
+
+!    ----------------------------------------------------------------------------
+     integer, intent(in)    :: mat_dim, nz, nr_fmat
+     real(8), intent(inout) :: fmat(mat_dim, mat_dim, nz, *)
+     integer, intent(in)    :: fmat_pg_sym(nr_fmat)
+!    ----------------------------------------------------------------------------
+     integer                :: im, jxyz, iblock, irep, nr1, nr2, st1, st2
+!    ----------------------------------------------------------------------------
+
+     if (lao_nr_buffered == 0) return
+
+     do im = 1, nr_fmat
+       irep = fmat_pg_sym(im) - 1
+       do jxyz = jxyz_start, 3
+         do iblock = 1, nr_ao_blocks
+           nr1 = ao_block_nr(iblock)
+           st1 = ao_block_start(iblock)
+           nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, irep))
+           st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep))
+           if ((nr1 < 1) .or. (nr2 < 1)) cycle
+           call dgemm('N', 'T', nr1, nr2, lao_nr_buffered, llss_prefactor(iblock), &
+                      lao_ao_buffer(st1, 1), mat_dim,                             &
+                      lao_f_buffer(st2, 1, jxyz, im), mat_dim,                    &
+                      1.0d0, fmat(st1, st2, iq(jxyz), im), mat_dim)
+         end do
+       end do
+     end do
+
+     lao_nr_buffered = 0
 
    end subroutine
 

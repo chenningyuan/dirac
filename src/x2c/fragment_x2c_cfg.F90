@@ -19,7 +19,7 @@ module fragment_x2c_cfg
 ! stefan: this module contains all required internal basis set, offset and 
 !         pointer informations for the fragment-/or atomic-X2C approach.
 
-  use x2c_fio
+  !use x2c_fio
 
   implicit none
 

@@ -1,16 +1,16 @@
-# Compile time options:
+# Compile time options for Nvidia NVHPC (was previously PGI):
 # -DNDEBUG Turn off run time checks in production calculations to gain speed
 
 # C compiler and flags
-CC=pgcc
+CC=nvc
 CFLAGS=-g -fastsse
 
 # C++ compiler and flags
-CXX=pgcpp
+CXX=nvc++
 CXXFLAGS=$(CFLAGS) --no_warnings
 
 # Fortran compiler and flags (used for fortran/example.F90)
-FC=pgf90
+FC=nvfortran
 FFLAGS=-g -fastsse
 
 include Makefile.common

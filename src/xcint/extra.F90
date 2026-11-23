@@ -1,4 +1,4 @@
-module extra
+module xcint_extra
 
    use interface_ao
    use interface_mo

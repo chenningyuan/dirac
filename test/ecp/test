@@ -24,4 +24,11 @@ f.add(string = 'Total energy                             :',
 
 test.run(['DFT.inp'], ['Bi2.xyz'], f)
 
+# general contraction blocks with unsorted exponents (issue #200)
+f = Filter()
+f.add(string = 'Total energy                             :',
+      rel_tolerance = 1.0e-7)
+
+test.run(['I_open.inp'], ['I_gencontr.mol'], f)
+
 sys.exit(test.return_code)

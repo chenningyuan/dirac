@@ -24,7 +24,7 @@
 !
 module x2c_get_h1inf2c_mo
 
-  use x2c_fio
+ !use x2c_fio
   use x2c_utils,        only:         &
       print_x2cmat,                   &
       make_spinfree_h1_onmo,          &

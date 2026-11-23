@@ -191,7 +191,7 @@ very similar to that of the BASIS::
 After the keyword an integer with the number of files to be read should
 be specified. It is followed by the name of the different basis set
 files, each separated by a whitespace. The only limitation for the
-number of basis set files is that the total lenght of this line should
+number of basis set files is that the total length of this line should
 not exceed Fortran's maximum allowed line size (80 characters).
 
 

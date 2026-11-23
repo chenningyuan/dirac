@@ -48,9 +48,7 @@ C
 #include "nuclei.h"
 #include "orgcom.h"
 #include "huckel.h"
-#include "ccom.h"
-#include "hrunit.h"
-
+C
 #ifdef BUILD_GEN1INT
 #include "gen1int.h"
 #endif
@@ -708,7 +706,7 @@ C&&& MAGCOR - print magnetic coordinates
             END IF
          END IF
          IF (KINENE) WRITE (LUPRI,'(10X,A)')
-     &      '- electronic kinetic energy'
+     &       '- NR electronic kinetic energy'
          IF (MASSVL) WRITE (LUPRI,'(10X,A)')
      &       '- mass velocity integrals'
          IF (DARWIN) WRITE (LUPRI,'(10X,A)')
@@ -789,7 +787,7 @@ C&&& MAGCOR - print magnetic coordinates
          IF (NSTTST) WRITE (LUPRI,'(10X,A)')
      &     '- Test of nuclear shielding tensor integrals'
          IF (EFGCAR) WRITE (LUPRI,'(10X,A)')
-     &            '- Cartesien electric field gradient integrals'
+     &            '- Cartesian electric field gradient integrals'
          IF (EFGSPH) WRITE (LUPRI,'(10X,A)')
      &            '- Spherical electric field gradient integrals'
          IF (S1MAGL) WRITE (LUPRI,'(10X,A)')
@@ -811,7 +809,7 @@ C&&& MAGCOR - print magnetic coordinates
          IF (SQHDOR) WRITE (LUPRI,'(10X,A)')
      &        '- Ket differentiated half-derivative overlap matrix'
          IF (NUCPOT) WRITE (LUPRI,'(10X,A)')
-     &    '- Potenial energy of interaction of electrons with a nucleus'
+     &   '- Potential energy of interaction of electrons with a nucleus'
          IF (NPOTST) WRITE (LUPRI,'(10X,A)')
      &            '- Test of nuclear potential energy'
          IF (MGMO2T) WRITE (LUPRI,'(10X,A)')
@@ -926,7 +924,7 @@ C
     5   CALL HRSINP(WORD)
 #else
     5   CALL QUIT('*SUPINT not implemented in Dirac')
-#endif /* ifndef PRG_DIRAC */
+#endif
       GO TO 201
     6 CONTINUE
 C
@@ -936,7 +934,7 @@ C
       CALL HR2INP(WORD)
 #ifndef PRG_DIRAC
       CALL HRSINP(WORD)
-#endif /* ifndef PRG_DIRAC */
+#endif
  1000 CONTINUE
 C     We should check if LUONEL is opened and closed properly,
 C     kr and vb, April-96
@@ -1424,7 +1422,7 @@ C
       END IF
       RETURN
       END
-#endif /* ifndef PRG_DIRAC */
+#endif
 C  /* Deck setdch */
       SUBROUTINE SETDCH
 C

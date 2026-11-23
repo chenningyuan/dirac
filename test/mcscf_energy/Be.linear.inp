@@ -1,6 +1,6 @@
 **DIRAC
 .TITLE
- Testing KRMC and KR-CI for Be in Pierloot basis
+ Testing KRMC for Be in Pierloot basis, linear symmetry
 .ANALYZE
 .WAVE FUNCTION
 **HAMILTONIAN
@@ -14,7 +14,6 @@
 **WAVE FUNCTION
 .SCF
 .KRMCSCF
-.KR CI
 *SCF
 .CLOSED SHELL
  4 0

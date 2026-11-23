@@ -6,6 +6,11 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from runtest_dirac import Filter, TestRun
 
+# keep large allocations off mmap: LUCITA needs WORK within an i*4 offset of static memory (gp/gplucia.F).
+# Serial runs only.
+if not os.environ.get('DIRAC_MPI_COMMAND', '').strip():
+    os.environ['MALLOC_MMAP_MAX_'] = '0'
+
 test = TestRun(__file__, sys.argv)
 
 f = Filter()

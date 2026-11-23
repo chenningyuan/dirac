@@ -5842,6 +5842,8 @@ C     INTEGER NOOSP(NOCTPA,NOCTPB,NSMST)
         WRITE(6,*) '   PART_CIV2_SPC   '
         WRITE(6,*) ' =================='
         WRITE(6,*) ' IDC = ', IDC
+        write(6,*) ' noctpa, noctpb = ',noctpa,noctpb
+        WRITE(6,*) ' nsmst, mxlng   = ',nsmst,mxlng
         WRITE(6,*)
         WRITE(6,*) ' IOCOC Array '
         CALL IWRTMA(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB)

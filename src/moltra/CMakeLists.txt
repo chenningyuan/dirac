@@ -19,7 +19,7 @@ set(FIXED_MOLTRA_FORTRAN_SOURCES
    trapam.F
    traprp.F
    # traone.F depends on spfao
-   ${PROJECT_SOURCE_DIR}/src/dirac/dirspf.F
+#  ${PROJECT_SOURCE_DIR}/src/dirac/dirspf.F
 )
 
 set(FREE_MOLTRA_FORTRAN_SOURCES
@@ -42,14 +42,14 @@ endif()
 
 add_library(
     moltra
-    OBJECT
+    STATIC
     ${FREE_MOLTRA_FORTRAN_SOURCES}
     ${FIXED_MOLTRA_FORTRAN_SOURCES}
 )
 
 # deal with intermodule dependencies
 # moltra depends on:
-add_dependencies(moltra main)
+add_dependencies(moltra dirac_main)
 add_dependencies(moltra dirac)
 add_dependencies(moltra dirrci)
 if(ENABLE_EXATENSOR)

@@ -14,14 +14,17 @@ Setting up DIRAC
 
 * **Installation:**
   :doc:`Requirements <installation/requirements>` |
+  :doc:`EasyBuild <installation/easybuild>` |
+  :doc:`System administrators <installation/sysadmins>` |
   :doc:`Linux, Unix, Mac <installation/general>` |
   :doc:`Windows <installation/windows>` |
-  :doc:`Expert options <installation/expert>` |
-  :doc:`System administrators <installation/sysadmins>`
+  :doc:`Expert options <installation/expert>`
+
 
 * **Math libraries:**
   :doc:`Detection and linking <installation/math>` |
-  :doc:`MKL environment variables <installation/mkl>`
+  :doc:`MKL environment variables <installation/mkl>` |
+  :doc:`Tensor libraries <installation/tensor_libraries>` 
 
 * **MPI:**
   :doc:`Forwarding environment variables <installation/mpi>`
@@ -36,7 +39,9 @@ Setting up DIRAC
   :doc:`Running the test set <installation/testing>`
 
 * **Example installations and run scripts:**
-  :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>`
+  :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>` | 
+  :doc:`HPC cluster (Lille) <installation/examples/hpc-ulille>` | 
+  :doc:`HPC cluster Irene <installation/examples/hpc-tgcc>`
 
 * **pam script:**
   :doc:`Setting the scratch directory <pam/scratch>` |
@@ -44,11 +49,11 @@ Setting up DIRAC
   :doc:`String replacement <pam/replace>`
 
 
-Updates and patches
-===================
+Updates
+=======
 
- :doc:`ChangeLog <patches/CHANGELOG>` |
- :doc:`Known problems <patches/KNOWN-PROBLEMS>`
+ :doc:`ChangeLog <patches/CHANGELOG>`
+
 
 .. _FirstSteps:
 
@@ -99,8 +104,15 @@ Tutorials and walkthrus
   :doc:`SCF <tutorials/restart/scf>` |
   :doc:`X2C <tutorials/restart/x2c>` |
   :doc:`Coupled Cluster restart <tutorials/restart/coupled_cluster>` |
-  :doc:`DFCOEF and DFPCMO <tutorials/restart/dfcoef_and_dfpcmo>` |
+  :doc:`CHECKPOINT.h5 and DFPCMO <tutorials/restart/dfcoef_and_dfpcmo>` |
   :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
+
+* **Natural Orbitals:**
+  :doc:`MP2NO <tutorials/natural-orbital/mp2no>` |
+  :doc:`FNO++ <tutorials/natural-orbital/fno++>`
+
+* **Python interface with ASE:**
+  :doc:`ASE-DIRAC <tutorials/ase/ase>`
 
 * **2-component Hamiltonians:**
   :doc:`xamfX2C: 2e picture change corrections for the X2C Hamiltonian <tutorials/two_component_hamiltonians/xamfX2C>` |
@@ -120,21 +132,23 @@ Tutorials and walkthrus
   :doc:`BSSE <tutorials/dft/bsse>` |
   :doc:`CAM functional <tutorials/dft/cam>` |
   :doc:`Troubleshooting <tutorials/dft/troubleshooting>`
-
-* **Frozen orbitals:**
-  :doc:`Frozen orbitals <tutorials/frozen_orbitals/tutorial>`
+  
+* **Orbital manipulations:**
+  :doc:`Frozen orbitals <tutorials/frozen_orbitals/tutorial>` |
+  :doc:`Atomic shift operator <tutorials/atomic_shift/tutorial>`   
 
 * **Long-range WFT/short-range DFT:**
   :doc:`General <tutorials/srDFT/general>`
 
 * **Property calculations:**
-  :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>` |
+  :doc:`NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>` |
   :doc:`An introduction to complex reponse <tutorials/properties/complex_response>` |
   :doc:`Magnetizabilities with London Atomic Orbitals <tutorials/lao_magnetizabilities/lao-magnetizabilities>` |
   :doc:`Dipole moment and polarizability of open-shell molecule <tutorials/properties/dipmom-polariz>` |
-  :doc:`Calculation of nuclear spin-rotation constants <tutorials/spinrot/tutorial>` |
-  :doc:`Calculation of molecular rotational g-tensors <tutorials/rotg/tutorial>` |
-  :doc:`Calculation of parity-violation contribution to nuclear spin-rotation constants <tutorials/pvcsr/tutorial>`
+  :doc:`Nuclear spin-rotation constants <tutorials/spinrot/tutorial>` |
+  :doc:`Molecular rotational g-tensors <tutorials/rotg/tutorial>` |
+  :doc:`Parity-violation contribution to nuclear spin-rotation constants <tutorials/pvcsr/tutorial>` |
+  :doc:`Parity-violation contribution to electric field gradient <tutorials/pvcefg/tutorial>`
 
 * **X-ray spectroscopy:**
   :doc:`Core ionization in the CO and N2 molecules <tutorials/x_ray/CO_N2_IP1s/tutorial>` |
@@ -147,7 +161,8 @@ Tutorials and walkthrus
   :doc:`Full scope application: Excitation spectrum of an osmium complex <tutorials/polprp/osmium>`
 
 * **Analysis:**
-  :doc:`Projection analysis <tutorials/analysis/projection_analysis>`
+  :doc:`Projection analysis <tutorials/analysis/projection_analysis>` |
+  :doc:`Localization of orbitals <tutorials/localization/tutorial>`     
 
 * **Visualization:**
   :doc:`General overview <tutorials/visual/general/tutorial>` |
@@ -166,7 +181,7 @@ Tutorials and walkthrus
   :doc:`Hybrid-parallel run <tutorials/hybrid_parallel_cc_run/hybrid_parallel_cc_run>`
 
 * **Case studies:**
-  :doc:`Ir(16+) cation <tutorials/case_studies/Ir_16plus>` |
+  :doc:`Ir(16+) cation <tutorials/case_studies/Ir/Ir_16plus>` |
   :doc:`CmF molecule <tutorials/case_studies/CmF/CmF>` |
   :doc:`MnO6 system <tutorials/case_studies/MnO6>` |
   :doc:`UF6 molecule <tutorials/case_studies/UF6_molecule/UF6>` |
@@ -194,8 +209,11 @@ Tutorials and walkthrus
 * **Frozen density embedding (FDE):**
   :doc:`NMR shieldings in Frozen Density Embedding (FDE) scheme with London atomic orbitals (LAOs) <tutorials/fde_nmr/tutorial>`
 
-* **Davidson corrections for relCI (LUCITA and KRCI):**
+* **Davidson corrections for relCI (LUCITA and KRCI with LUCIAREL):**
   :doc:`+Q corrections <tutorials/relci_q_corrections/q_corrections>`
+
+* **Quantum electrodynamics (QED):**
+  :doc:`effective QED potentials <tutorials/qed/effqed>`
 
 * **Utility programs:**
   :doc:`TWOFIT <tutorials/utils/twofit>` |
@@ -267,7 +285,6 @@ Development
   :doc:`Transfering uncommitted code <development/transfering_uncommitted_code>`
 
 * **Notes:**
-  :doc:`DFCOEF <development/dfcoef>` |
   :doc:`Screening <development/screening>` |
   :doc:`64bit integers <development/int8>` |
   :doc:`Numerical constants <development/num_constants>` |

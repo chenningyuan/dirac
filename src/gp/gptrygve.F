@@ -30,10 +30,15 @@ C
 #endif
 #endif
 !
+      integer function lnblnk(string)
+         character string*(*)
+         lnblnk = len_trim(string)
+      end
+
 C  /* Deck header */
       SUBROUTINE HEADER(HEAD,IN)
       CHARACTER HEAD*(*)
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       integer, intent(in) :: in
 C
       LHEAD = LNBLNK(HEAD)
@@ -73,7 +78,7 @@ C  /* Deck timer */
       !   ... more work ...
       !   CALL TIMER('more work',TIMSTR,TIMEND)
       implicit none
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       CHARACTER TEXT*(*)
       REAL*8    TIMSTR, TIMEND
       ! local variables:
@@ -108,7 +113,7 @@ C        Jun 06 hjaaj: do not print times less than 0.1 seconds
       !   ... more work ...
       !   CALL TIMER('more work',TIMSTR,TIMEND)
       implicit none
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       CHARACTER TEXT*(*)
       REAL*8    TIMSTR(2), TIMEND(2)
       ! local variables:
@@ -141,7 +146,7 @@ C        Jun 06 hjaaj: do not print times less than 0.1 seconds
 C  /* Deck timdat */
       SUBROUTINE TIMDAT
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #if defined (SYS_LINUX)
       CHARACTER*(24) FDATE
       WRITE (LUPRI,100) FDATE()
@@ -162,7 +167,7 @@ C  /* Deck timdat */
 C  /* Deck timpri */
       SUBROUTINE TIMPRI(TEXT,TIME,TIMALL)
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       CHARACTER TEXT*6
       PARAMETER (HUN = 100.0D00)
       SAVE TREST
@@ -188,7 +193,7 @@ C 980826-hjaaj: initialize TREST for next abacus call
       END
 C  /* Deck titler */
       SUBROUTINE TITLER(HEAD,A,IN)
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       CHARACTER HEAD*(*), A*(*)
 C
       LHEAD  = LNBLNK(HEAD)
@@ -233,7 +238,7 @@ C
 C  /* Deck around */
       SUBROUTINE AROUND(HEAD)
       CHARACTER HEAD*(*)
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       LHEAD  = LNBLNK(HEAD)
       LNG    = LHEAD + 2
       IND = MAX(1,(80 - LNG)/2 + 1)
@@ -249,7 +254,7 @@ Cx    WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '`', ('-',I=1,LNG), ''''
 C  /* Deck stopit */
       SUBROUTINE STOPIT(SUB,PLACE,INT1,INT2)
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       CHARACTER*(*) SUB, PLACE
       WRITE (LUPRI,'(//3A)') ' Work space exceeded in subroutine ',
      *                         SUB,'.'
@@ -272,8 +277,7 @@ C  /* Deck quit */
       SUBROUTINE QUIT(TEXT)
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #endif
@@ -316,21 +320,8 @@ C 3 = pretty print traceback to stdout...
       CALL interface_MPI_ABORT(global_communicator,IERR)
 #   endif
 #endif
-
-CMI ... .*F -> *.p dependency brings -DNO_SF_QUIT
-#if defined (NO_SF_QUIT)
       CALL FLSHFO(LUPRI)
       STOP 1000
-#else
-CMI ... might be input defined restriction for some reasons
-      IF (.NOT.NOSFCRASH) THEN
-        CALL FLSHFO(LUPRI)
-        CALL CRASH()
-      ELSE
-        CALL FLSHFO(LUPRI)
-        STOP 1001
-      ENDIF
-#endif
       END
 
 C  /* Deck opendx */
@@ -358,7 +349,7 @@ C
 C
       CHARACTER*(*) NAME, STATUS
       LOGICAL OLDDX, FEXIST
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       LRECL  = 4*NELEM
 C
       IF (STATUS .EQ. 'NEW') THEN
@@ -439,14 +430,9 @@ C
 C For direct access read
 C
 #include "implicit.h"
-#include "priunit.h"
-#include "2gbdef.h"
-#include "dummy.h"
       LOGICAL OLDDX
       CHARACTER*80 FNNAME, FNNM2
       INTEGER IVEC(LEN)
-#include "inftap.h"
-#include "chrnos.h"
 C
       IF (LEN .EQ. 0) RETURN
       IRECT = I
@@ -459,14 +445,9 @@ C
 C 30-Apr-1985 Hans Jorgen Aa. Jensen
 C
 #include "implicit.h"
-#include "dummy.h"
-#include "2gbdef.h"
-#include "priunit.h"
       LOGICAL OLDDX
       CHARACTER*80 FNNAME, FNNM2
       INTEGER IVEC(LEN)
-#include "inftap.h"
-#include "chrnos.h"
 C
       IRECT = I
       WRITE (LU, REC = IRECT) IVEC
@@ -568,7 +549,6 @@ C  OLDDX    logical, true if old LUDX file was opened
 C
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "chrnos.h"
       CHARACTER*80  FILENM, STATUF, ACCESF, FORMF
       CHARACTER*(*) FILEIN, STATIN, ACCEIN, FORMIN
@@ -804,13 +784,12 @@ C           ('KEEP' or 'DELETE'). Note that the default is that the file
 C           is to be deleted
 C
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       CHARACTER*(*) DISP
       CHARACTER*16 FNNAME, FNNM2
       CHARACTER*3 IODIR
       LOGICAL FEXIST, OPND, OLDDX
       COMMON /UNITAR/ IUNTAB(1:99)
-#include "chrnos.h"
 C
 C     We first deal with the unit number
 C
@@ -889,7 +868,7 @@ C  /* Deck gpioin */
 C
 C 1-Mar-2000 K.Ruud
 C
-#include "priunit.h"
+#include "priunit.h" ! LUPRI, LUCMD
 #include "inftap.h"
 C
       LUCMD  = 0
@@ -923,7 +902,6 @@ C
       LUNR1  = 0
       LUNR3  = 0
       LUNR5  = 0
-      LUCMD  = 0
       LUINTR = 0
       LUAORC = 0
       LUMOLDEN=0

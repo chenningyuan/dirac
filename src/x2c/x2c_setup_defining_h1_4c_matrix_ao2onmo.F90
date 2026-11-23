@@ -29,7 +29,7 @@
 module x2c_def_h1_4c
 
   use x2c_import_exportC1
-  use x2c_fio
+ !use x2c_fio
   use x2c_cb_interface, only:         &
       reset_x2c_cb_onefck
   use x2c_utils,        only:         &

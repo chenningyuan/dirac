@@ -1066,7 +1066,7 @@ C?    WRITE(6,*) ' Memory Check at end of STRINF_GAS  '
 *                    Orbital group are mapped
 *                    mapped
 *. Input
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -2103,7 +2103,7 @@ C       WRITE(6,*) ISMSPGP , NST
 *              and complete one-electron part
 * IHTYPE = 3 : Include all terms for general relativistic Hamiltonian
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 *
 #include "mxpdim.inc"
@@ -2121,10 +2121,11 @@ C
 *. Number of spin-orbital exctation operators in H
       CALL MEMGET('INTE',KLSOBEX_TEMP,4*NGAS,WORK,KFREE,LFREE)
       IFLAG = 1
+
       CALL GET_HX_RELA_KRCC(IFLAG,IHTYPE,NOBPT,NHX,
      &                 IFTONE,IFTTWO,ILTTWO,WORK(KLSOBEX_TEMP),
-     &                 DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
-     &                 JCMBSPC,IPRNT)
+     &                 IDUMMY,IDUMMY,DUMMY,IDUMMY,IDUMMY,DUMMY,
+     &                 IDUMMY,JCMBSPC,IPRNT)
       NSPOBEX_TP = NHX
 *
 *. and the actual spin-orbital excitations
@@ -2147,7 +2148,7 @@ C All arrays will be keept since they will be needed
      &                 IFTONE,IFTTWO,ILTTWO,WORK(KLSOBEX_TEMP),
      &                 WORK(KLSOBEX),WORK(KLIHIND),WORK(KSIGNNHX),
      &                 WORK(KLABEXTP),WORK(KLOP_REO),
-     &                 WORK(KSIOPREO),JCMBSPC,IPRNT)
+     &                 WORK(KSIOPREO),IDUMMY,JCMBSPC,IPRNT)
 C     CALL STUPID_ROUTINE(WORK(KLSOBEX),NSPOBEX_TP,NGAS)
 *
 *. Space for info in the different parts of Hamiltonian
@@ -2180,7 +2181,7 @@ C     CALL STUPID_ROUTINE(WORK(KLSOBEX),NSPOBEX_TP,NGAS)
 *              and complete one-electron part
 * IHTYPE = 3 : Include all terms for general relativistic Hamiltonian
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 *
 #include "mxpdim.inc"
@@ -2304,7 +2305,7 @@ C#include "memint.h"
 *          0.0         : Redundant density type
 *
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 *. input
@@ -3182,7 +3183,7 @@ C     print*,'NHX at the end',NHX
 *          0.0         : Redundant density type
 *
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 *. input
@@ -4172,7 +4173,7 @@ C     CALL MEMCHK_KRCC(WORK)
       SUBROUTINE SOME_DUMB_PRINT_FOR_WORK(AARRAY,NDIM)
 * Dumb routine to print work
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       DIMENSION AARRAY(*)
 *
@@ -4259,7 +4260,7 @@ C     CALL MEMCHK_KRCC(WORK)
 *
 * Jeppe Olsen, July 11, 2001
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input
       INTEGER ICAAB_IN(NGAS,4)
 *. Output
@@ -4293,7 +4294,7 @@ C     CALL MEMCHK_KRCC(WORK)
 *
 * Jeppe Olsen, March 2000
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -4588,7 +4589,7 @@ C     CALL MEMCHK_KRCC(WORK)
 * Is excitation operator CAAB included in the
 * list of excitations
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 *
@@ -4628,7 +4629,7 @@ C     CALL MEMCHK_KRCC(WORK)
 *
 * Jeppe and Timo, Oct 2001
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. General input
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -4661,7 +4662,7 @@ C     CALL MEMCHK_KRCC(WORK)
 *
 * Routine for sorting all operators according to N,Mk,Mub
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "crun.inc"
@@ -4860,7 +4861,7 @@ C     CALL MEMCHK_KRCC(WORK)
 * Master routine to find the number of holes and particles for given
 * HTYPE
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
@@ -4922,7 +4923,7 @@ C     CALL MEMCHK_KRCC(WORK)
      &                                 INH22,INH21,INH12,INH20,
      &                                 INH11,INH02,INH10,INH01,INH00)
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
 * Find the number of holes and particles a given HTYPE has.
 * Extended to also include an active space
@@ -5096,7 +5097,7 @@ C     CALL MEMCHK_KRCC(WORK)
 *
 * Extended to include NHOLE and NPART and Valence space 2010 Lasse
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. General input
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -5152,7 +5153,7 @@ C     CALL MEMCHK_KRCC(WORK)
      &                           NOBEX_TP,IOBEX_TP_KRCC,NOBEX_TP_KRCC)
 *
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
 *. Input
       INTEGER IOBEX_TP(2*NGAS,NOBEX_TP)
@@ -5220,7 +5221,7 @@ C           WRITE(6,*) (IOBEX_TP_KRCC(K+NGAS,ICOUNT),K=1,NGAS)
 * Finds the number of unique types of creators and annihilators from the
 * ABOBEX types
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
 *. Input
       INTEGER IABOBEX(2*NGAS,NABOBEX)
@@ -5353,7 +5354,7 @@ C           WRITE(6,*) (IOBEX_TP_KRCC(K+NGAS,ICOUNT),K=1,NGAS)
 *
 * Jeppe Olsen, May 2000
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 *. Input

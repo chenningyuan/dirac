@@ -25,7 +25,6 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4)
@@ -50,15 +49,14 @@
 !
 !
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
-#include "dcbbas.h"
 !
       PARAMETER (HALF=0.5D0)
 !
@@ -73,8 +71,6 @@
 !
       DIMENSION IRECC(2),IBOFF(2),NBFSZ(2),NBUF(2),NIJBUF(2)
       DIMENSION JBOFF(2,0:*),RBUF(*),LBUF1(*)
-!
-#include "ibtfun.h"
 !
 !     Find out the component type of the functions
 !
@@ -228,7 +224,6 @@
 !     - Q4T          Coefficients for index 4 but for transposed AO ints
 !
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 !
       INTEGER   NSTR3(2),NSTR4(2)
@@ -239,12 +234,8 @@
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "symmet.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
-#include "dcbtr3.h"
-#include "dcbibt.h"
 !
       CALL QENTER('MS4IN2D')
 !
@@ -319,7 +310,6 @@
 !     Output is written directly in the MOLFDIR-type file MDCINT
 !
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
 !
       INTEGER   NSTR3(2),NSTR4(2)
@@ -332,7 +322,6 @@
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "symmet.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
@@ -588,7 +577,6 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbtra.h"
 #include "dgroup.h"
       DIMENSION NBFSZ(2),NBUF(2),JBOFF(2,0:*),IRECC(2)
@@ -627,7 +615,6 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbtra.h"
 #include "dgroup.h"
 !
@@ -648,7 +635,6 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbtra.h"
 #include "dgroup.h"
       DIMENSION IRECC(2),NBFSZ(2),NBUF(2),JBOFF(2,0:*),IBOFF(2)
@@ -688,9 +674,7 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbtra.h"
-#include "dgroup.h"
       DIMENSION RBUF(NBFSZ),LBUF1(NBFSZ),HMAT(*)
 !
       DO IREC = IBUF, IRECC-1, NBUF
@@ -759,7 +743,6 @@
 !     -              Updated values of buffer blocks
 !
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 !
       LOGICAL   TRIAN
@@ -782,8 +765,8 @@
 !
 #include "dgroup.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
-#include "dcbibt.h"
 !
       CALL QENTER('MS4IN1D')
       KFRSAV = KFREE
@@ -896,7 +879,6 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION LGREC(NPASS),LGBUF(NPASS)
       DIMENSION RGBUF(NGBFSZ,NPASS),IGBUF(NGBFSZ,NPASS)
 !
@@ -959,7 +941,6 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
 !
       CLOSE (UNIT=LGFIL,STATUS='DELETE')
 !

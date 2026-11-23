@@ -33,11 +33,6 @@ module xamfi_utils
                                        ioff_tmot, ioff_tmt, nzt_aoo, amfh5Data
   use amfH5Interface
   
-#ifdef DEBUG_SOC
-  use x2c_utils, only: print_x2cmat
-#endif
-
-
   implicit none
 
   public get_normalized_2e_soc
@@ -49,6 +44,7 @@ module xamfi_utils
   public xamfi_get_energy_correction
   public hello_xamfi
   public goodbye_xamfi
+  public print_x2cmat_xamfi
 
   private
 
@@ -87,12 +83,12 @@ contains
 !----------------------------------------------------------------------
 !----------------------------------------------------------------------
 
-!     normalize (picture-change transform) 2e-SO-fock matrix
+!     normalize (picture-change transform) 4c 2e-SO-fock matrix
 #ifdef DEBUG_SOC
       open(99,file='soc-contributions',status='replace',form='formatted',  &
       access='sequential',action="readwrite",position='rewind')
 
-      call print_x2cmat(fmat,                   &
+      call print_x2cmat_xamfi(fmat,             &
                         nr_ao_total_aoo,        &
                         nr_ao_total_aoo,        &
                         nr_quat,                &
@@ -116,12 +112,12 @@ contains
                                 ioff_aomat_x,                 &
                                 0,                            &
                                 aoo_bs_to_fs,                 &
-                                .true.,                       &
+                                .true.,                       & ! return only {++}-block; other parts are zeroed out
                                 print_lvl)
 #ifdef DEBUG_SOC
 !     debug print
       if(print_lvl > 2)then
-        call print_x2cmat(fmat,                   &
+        call print_x2cmat_xamfi(fmat,             &
                           nr_ao_large_aoo,        &
                           nr_ao_large_aoo,        &
                           nr_quat,                &
@@ -133,7 +129,7 @@ contains
 #endif
 
 #ifdef DEBUG_SOC
-      call print_x2cmat(fmat,                   &
+      call print_x2cmat_xamfi(fmat,             &
                         nr_ao_large_aoo,        &
                         nr_ao_large_aoo,        &
                         nr_quat,                &
@@ -167,9 +163,7 @@ contains
      use xamfi_internal_parameters, only: aoo_cb_pq_to_uq,  aoo_bs_to_fs,&
                                           aoo_bs_irrep_mat, aoo_pointer_quat,&
                                           aoo_iqmult_trip_q, aoo_cb_uq_to_pq
-#ifdef DEBUG_SOC
-     use x2c_utils, only: print_x2cmat
-#endif
+
      real(8), intent(inout)        :: Gmat(nrow,ncol,nz)
      integer, intent(in)           :: nrow
      integer, intent(in)           :: ncol
@@ -187,7 +181,7 @@ contains
     if(final_dump)then
         allocate(Gmat_c1(nrow,ncol,nzc1)); Gmat_c1 = 0
 #ifdef DEBUG_SOC
-        call print_x2cmat(Gmat, &
+        call print_x2cmat_xamfi(Gmat, &
         nrow,                   &
         ncol,                   &
         nz,                     &
@@ -205,7 +199,7 @@ contains
             END DO
         END IF
 #ifdef DEBUG_SOC
-       call print_x2cmat(Gmat,                  &
+       call print_x2cmat_xamfi(Gmat,                  &
                         nrow,                   &
                         ncol,                   &
                         nz,                     &
@@ -219,7 +213,7 @@ contains
         call bstobu_no_work(Gmat,nz)
 
 #ifdef DEBUG_SOC
-        call print_x2cmat(Gmat, &
+        call print_x2cmat_xamfi(Gmat, &
         nrow,                   &
         ncol,                   &
         nz,                     &
@@ -250,7 +244,7 @@ contains
         end do
 
 #ifdef DEBUG_SOC
-        call print_x2cmat(Gmat_c1, &
+        call print_x2cmat_xamfi(Gmat_c1, &
         nrow,                      &
         ncol,                      &
         nzc1,                      &
@@ -294,9 +288,6 @@ end if
 use xamfi_internal_parameters, only: aoo_cb_pq_to_uq,  aoo_bs_to_fs,&
           aoo_bs_irrep_mat, aoo_pointer_quat,&
           aoo_iqmult_trip_q, aoo_cb_uq_to_pq
-#ifdef DEBUG_SOC
-use x2c_utils, only: print_x2cmat
-#endif
 real*8 , intent(inout)        :: Dmat(nrow,ncol,nz,nr_2e_fock_matrices)
 integer, intent(in)           :: nrow
 integer, intent(in)           :: ncol
@@ -321,76 +312,76 @@ integer, PARAMETER            :: nzc1 = 4
 !> that is, add active density matrices to closed-shell density matrix
 
 if(nr_2e_fock_matrices > 1)then
-do i = 1,x_nopen
-  call daxpy(nrow*ncol*nz,x_dfopen(i),Dmat(1,1,1,i+1),1,Dmat(1,1,1,1),1)
-end do
+  do i = 1,x_nopen
+    call daxpy(nrow*ncol*nz,x_dfopen(i),Dmat(1,1,1,i+1),1,Dmat(1,1,1,1),1)
+  end do
 endif
 
 if(final_dump)then
-allocate(Dmat_c1(nrow,ncol,nzc1)); Dmat_c1 = 0
+  allocate(Dmat_c1(nrow,ncol,nzc1)); Dmat_c1 = 0
 #ifdef DEBUG_SOC
-call print_x2cmat(Dmat, &
-nrow,                   &
-ncol,                   &
-nz,                     &
-aoo_cb_pq_to_uq(1,0),   &
-'aoosoc - DMAT 0',      &
-6                       &
-)
+  call print_x2cmat(Dmat,                   &
+                    nrow,                   &
+                    ncol,                   &
+                    nz,                     &
+                    aoo_cb_pq_to_uq(1,0),   &
+                    'aoosoc - DMAT 0',      &
+                    6                       &
+                   )
 #endif
 
-! a. insert phases
-IREP=0
-IF (NZ < 4) THEN
-DO  IZ = 1, NZ
-IQ = aoo_cb_pq_to_uq(IZ,IREP)
-CALL Q2BPHASE('D',IQ,1,Dmat(1,1,iz,1))
-END DO
-END IF
+  ! a. insert phases
+  IREP=0
+  IF (NZ < 4) THEN
+    DO  IZ = 1, NZ
+      IQ = aoo_cb_pq_to_uq(IZ,IREP)
+      CALL Q2BPHASE('D',IQ,1,Dmat(1,1,iz,1))
+    END DO
+  END IF
 #ifdef DEBUG_SOC
-call print_x2cmat(Dmat,                  &
-nrow,                   &
-ncol,                   &
-nz,                     &
-aoo_cb_pq_to_uq(1,0),   &
-'aoosoc - DMAT a',      &
-6                       &
-)
+  call print_x2cmat(Dmat,                   &
+                    nrow,                   &
+                    ncol,                   &
+                    nz,                     &
+                    aoo_cb_pq_to_uq(1,0),   &
+                    'aoosoc - DMAT a',      &
+                    6                       &
+                   )
 #endif
 
-! b. transform to unsorted SO-AO basis
-call bstobu_no_work(Dmat,nz)
+   ! b. transform to unsorted SO-AO basis
+   call bstobu_no_work(Dmat,nz)
 
 #ifdef DEBUG_SOC
-call print_x2cmat(Dmat, &
-nrow,                   &
-ncol,                   &
-nz,                     &
-aoo_cb_pq_to_uq(1,0),   &
-'aoosoc - DMAT b',      &
-6                       &
-)
+   call print_x2cmat(Dmat,                   &
+                     nrow,                   &
+                     ncol,                   &
+                     nz,                     &
+                     aoo_cb_pq_to_uq(1,0),   &
+                     'aoosoc - DMAT b',      &
+                     6                       &
+                    )
 #endif
 
-! c. transform from unsorted SO-AO basis to AO (C1* symmetry) basis
-IPAR = aoo_bs_to_fs(IREP,1)
-DO IZ = 1, nzc1
-IREPD = aoo_bs_irrep_mat(IZ,IREP)
-IQ    = aoo_iqmult_trip_q(1,aoo_pointer_quat(IREPD,IPAR),IZ)
-IPQ   = aoo_cb_uq_to_pq(IQ,IREP)
-CALL DTSOAO(Dmat(1,1,IPQ,1),     &
-Dmat_c1(1,1,IZ),   &
-nrow,IREPD,0)
-END DO
+  ! c. transform from unsorted SO-AO basis to AO (C1* symmetry) basis
+  IPAR = aoo_bs_to_fs(IREP,1)
+  DO IZ = 1, nzc1
+    IREPD = aoo_bs_irrep_mat(IZ,IREP)
+    IQ    = aoo_iqmult_trip_q(1,aoo_pointer_quat(IREPD,IPAR),IZ)
+    IPQ   = aoo_cb_uq_to_pq(IQ,IREP)
+    CALL DTSOAO(Dmat(1,1,IPQ,1),     &
+                Dmat_c1(1,1,IZ),     &
+                nrow,IREPD,0)
+  END DO
 
 #ifdef DEBUG_SOC
-call print_x2cmat(Dmat_c1, &
-nrow,                      &
-ncol,                      &
-nzc1,                      &
-aoo_cb_pq_to_uq(1,0),      &
-'aoosoc - DMAT c',         &
-6                          &
+  call print_x2cmat(Dmat_c1,                   &
+                    nrow,                      &
+                    ncol,                      &
+                    nzc1,                      &
+                    aoo_cb_pq_to_uq(1,0),      &
+                    'aoosoc - DMAT c',         &
+                    6                          &
 )
 #undef DEBUG_SOC
 #endif
@@ -399,10 +390,10 @@ end if
 
 !> HDF5 data dump
 if(final_dump)then
-call amf_write_hdf5(amfh5Data(1),Dmat_c1,nrow,ncol,nzc1,file_base)
-DEALLOCATE(Dmat_c1)
+  call amf_write_hdf5(amfh5Data(1),Dmat_c1,nrow,ncol,nzc1,file_base)
+  DEALLOCATE(Dmat_c1)
 else
-call amf_write_hdf5(amfh5Data(1),Dmat(1,1,1,1),nrow,ncol,nz,file_base)
+  call amf_write_hdf5(amfh5Data(1),Dmat(1,1,1,1),nrow,ncol,nz,file_base)
 end if
 
 
@@ -584,5 +575,37 @@ end subroutine dump_Xc_c1_dens
   end subroutine quit
 #endif
 !**********************************************************************
+
+  subroutine print_x2cmat_xamfi(xmat, ndim_x, ndim_y, nz,          &
+                          ipq_off, title, prntunit, lrlc_equal)
+!**********************************************************************
+!
+!    purpose: print a matrix
+!    hjaaj Jan 2024: copy of print_x2cmat from x2c/x2c_utility_routines.F90
+!      because using a Fortran module from x2c gave circular dependency in cmake
+!      (x2c also needs x-amfi Fortran modules)
+!
+!**********************************************************************
+     real(8), intent(in)           :: xmat(*)
+     integer, intent(in)           :: ndim_x
+     integer, intent(in)           :: ndim_y
+     integer, intent(in)           :: nz
+     integer, intent(in)           :: ipq_off(1:4, 0:7)
+     character(*), intent(in)      :: title
+     integer, intent(in)           :: prntunit
+     logical, optional, intent(in) :: lrlc_equal
+!**********************************************************************
+!
+         call header2(title,-1,prntunit)
+         if(.not.present(lrlc_equal))then
+           call prqmat(xmat,ndim_x,ndim_y,ndim_x,ndim_y,nz,  &
+                       ipq_off(1,0),prntunit)
+         else
+           call prqmat(xmat,ndim_x,ndim_x,ndim_y,ndim_y,nz,  &
+                       ipq_off(1,0),prntunit)
+         end if
+
+  end subroutine print_x2cmat_xamfi
+
 
  end module

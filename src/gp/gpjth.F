@@ -74,13 +74,12 @@ C***********************************************************************
 C
       DIMENSION IBTAB(0:255)
 C
-#include "ibtfun.h"
 C
       DO I = 0, 255
          ID = I
          NB = 0
          DO J = 1, 8
-            NB = NB + IBTAND(1,ID)
+            NB = NB + IAND(1,ID)
             ID = ID / 2
          END DO
          IBTAB(I) = NB
@@ -88,3 +87,50 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck ini_bit_tab */
+      SUBROUTINE ini_cb_bittab()
+C***********************************************************************
+C
+C     Initialize table with bit_tab(I) = nbits(I)
+C                           bit_dif(I,J)
+C     (I and J integer*1)
+C
+C     Input : none
+C
+C     Output: IBTAB and IBTDIF in cb_bittab.h
+C
+C     Written by H. J. Aa. Jensen - July 2016
+C     Partly based on IBTABINI by J. Thyssen 2001
+C     Last revision :
+C
+C***********************************************************************
+C
+#include "cb_bitdef.h"
+! from cb_bitdef.h:
+!     integer bit_cnt(0:255), bit_dif(0:255,0:255)
+!
+
+!T    print '(/A)', 'i, bits(i), bit_cnt(i) :'
+      DO I = 0, 255
+         nbits = 0
+         DO J = 0, 7
+            IF (BTEST(I,J)) nbits = nbits + 1
+         END DO
+         bit_cnt(I) = nbits
+!T       print '(i8, 5x, B8.8, I8)', i,i,bit_cnt(i)
+      END DO
+
+!T    print '(/A)', 'i,j, bits(i),bits(j),diff(i,j), bit_dif(i,j) :'
+      DO J = 0, 255
+         DO I = 0, 255
+            ID = IEOR(I, J)
+            bit_dif(I,J) = bit_cnt(ID)
+!T          print '(2i8, 2x, B8.8,2x,B8.8,2x,B8.8,I8)',
+!T   &      i,j,i,j,id,bit_dif(i,j)
+         END DO
+      END DO
+C
+      RETURN
+      END
+C -- end of gpjth.F ---

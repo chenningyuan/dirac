@@ -35,7 +35,6 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "infpar.h"
 #include "molinp.h"
 C
       PARAMETER (DSM=1.0D-30)
@@ -391,7 +390,6 @@ C             0 - if not specified same as 3 (both down and up)
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "ccom.h"
 C
@@ -530,9 +528,7 @@ C      Written by Trond Saue May 2 2012
 C
 C*******************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "ccom.h"
 C
       LOGICAL SEG,INPTST,CNTBAS
       DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),
@@ -753,10 +749,7 @@ C******************************************************************************
 #include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
-#include "maxaqn.h"
-#include "nuclei.h"
 #include "shells.h"
-#include "dcbbas.h"
 #include "aovec.h"
       PARAMETER (SML = 1.0D-6)
 #include "primit.h"

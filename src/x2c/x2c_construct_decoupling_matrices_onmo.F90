@@ -23,7 +23,7 @@
 !
 module x2c_decoupling_mat
 
-  use x2c_fio
+ !use x2c_fio
   use x2c_utils
 
   implicit none

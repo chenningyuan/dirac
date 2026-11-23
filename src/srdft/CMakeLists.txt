@@ -28,7 +28,7 @@ endif()
 
 add_library(
     srdft
-    OBJECT
+    STATIC
     ${FIXED_SRDFT_FORTRAN_SOURCES}
     ${FREE_SRDFT_FORTRAN_SOURCES}
 )

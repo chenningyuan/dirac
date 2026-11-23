@@ -23,7 +23,7 @@
 !
 module x2c_2e_soc_interface
 
-  use x2c_fio
+  !use x2c_fio
   use x2c_utils, only:                 &
       print_x2cmat
   use picture_change_operations
@@ -547,7 +547,11 @@ contains
 !    purpose: interface to the (extended) atomic-mean-field picture-change error-correction (PCE)
 !             module. The PCE corrections comprise two-electron scalar- as well as spin-orbit  
 !             contributions.
-!             This work is published in XXX (2022).
+!             This work is published in
+!                Stefan Knecht, Michal Repisky, H. J. Aa. Jensen, and Trond Saue:
+!                  Exact two-component Hamiltonians for relativistic quantum chemistry:
+!                  Two-electron picture-change corrections made simple.
+!                  J. Chem. Phys., 157:114106, 2022. doi:10.1063/5.0095112.
 !
 !              amf: atomic mean-field (Algorithm 1 in XXX)
 !             eamf: extended atomic mean-field (Algorithm 2 in XXX)

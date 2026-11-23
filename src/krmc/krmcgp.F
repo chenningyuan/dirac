@@ -32,7 +32,6 @@ C        VNZ3  : elements in (*,NZ,3) format
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcbham.h"
@@ -137,7 +136,7 @@ C
                   END DO
                END DO
             END IF
-         END DO
+         END DO ! IREPAB
 !        ---------------------------------------------------------
 !        zero out integrals that should be zero in linear symmetry
 !        but aren't due to numerical noise
@@ -150,7 +149,7 @@ C
 !          call linzero_nz3(iclass,irepijb,irepklb(1,1),nelem,vnz3)
          end if
 
-      END DO
+      END DO ! ICLASS = 1, 3
 
       IF (NZ .EQ. 4) THEN
          DO ICLASS = 1, 3
@@ -298,7 +297,6 @@ C
 #include "dgroup.h"
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "pgroup.h"
 #include "maxorb.h"
 #include "dcbidx.h"
 C
@@ -351,7 +349,6 @@ C
 #include "dgroup.h"
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "pgroup.h"
 #include "maxorb.h"
 #include "dcbidx.h"
 C
@@ -501,12 +498,10 @@ C        UGINT: (ug) integrals.
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "consts.h"
 C
 #include "dgroup.h"
-#include "pgroup.h"
 C
       DIMENSION GUINT(NORBI,NASHI,NZ,NZ,*)
       DIMENSION UGTINT(NORBI,NASHI,NZ,NZ,*)
@@ -560,21 +555,32 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION IFACNZ3(I3,IZ,IQ1,IQ2)
 C***********************************************************************
 C
-C     Factors for integrals.
+C     IFAC(NZ,3, q1, q1):
+C     Factors for generating integrals in (NZ,3) format from double
+C     quaternion format (q1, q1).
+C     See Eqs. (B.19), (B.22), and (B.25) in Joern Thyssen PhD thesis.
+C     Notation below: P = \bar{p} etc.
+C
+C     Relations for distributions from complex conjugation (ab)* = (ba)
+C     and time reversal (ab) = (BA), (aB) = -(bA):
+C       Re(pq) =  Re(qp) =  Re(QP) =  Re(PQ)
+C       Im(pq) = -Im(qp) =  Im(QP) = -Im(PQ)
+C       Re(pQ) =  Re(Qp) = -Re(Pq) = -Re(qP)
+C       Im(pQ) = -Im(Qp) = -Im(qP) =  Im(Pq)
+C
+C     Double quaternion contains (pq) and (pQ) distributions,
+C     thus all (PQ) and (pQ) must be rewritten in terms of (pq) and (pQ)
 C
 C     Written by Joern Thyssen - Nov 15 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 C
-      COMMON /SMOELF/ IFAC(4,3,4,4)
+      INTEGER, SAVE :: IFAC(4,3,4,4)
 C
-      LOGICAL FIRST
-      DATA FIRST / .TRUE. /
-      SAVE FIRST
+      LOGICAL, SAVE :: FIRST = .TRUE.
 C
       IF (FIRST) THEN
 C        Initialize IFAC array
@@ -583,7 +589,7 @@ C        Initialize IFAC array
 C
 C        IZ = 1
 C
-C        Re(pq|rs) = Re(rs|pq) = (Re(rs)|Re(pq)) - (Im(pq)|Im(pq))
+C        Re(pq|rs) = Re(rs|pq) = (Re(rs)|Re(pq)) - (Im(rs)|Im(pq))
 C                                    +(1,1)            -(2,2)
 C
          IFAC(1,1,1,1) = +1
@@ -603,7 +609,7 @@ C
 C
          IF (NZ .GE. 2) THEN
 C
-C           Im(pq|rs) = Im(rs|pq) = (Re(rs)|Im(pq)) + (Im(rs)|Re(pq)) +
+C           Im(pq|rs) = Im(rs|pq) = (Re(rs)|Im(pq)) + (Im(rs)|Re(pq))
 C                                       +(1,2)            +(2,1)
 C
             IFAC(2,1,1,2) = +1
@@ -615,8 +621,9 @@ C
             IFAC(2,2,3,4) = +1
             IFAC(2,2,4,3) = +1
 C
-C           Im(Pq|rS) = Im(rS|Pq) = - (Re(rS)|Im(pQ)) + (Im(rS)|Im(pQ))
-C                                         +(3,4)            +(1,2)
+C           Im(Pq|rS) = Im(rS|Pq) =   (Re(rS)|Im(Pq)) + (Im(rS)|Re(Pq))
+C                                 = + (Re(rS)|Im(pQ)) - (Im(rS)|Re(pQ))
+C                                         +(3,4)            -(4,3)
 C
             IFAC(2,3,3,4) = +1
             IFAC(2,3,4,3) = -1
@@ -676,11 +683,9 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "maxorb.h"
-#include "dcbidx.h"
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -733,7 +738,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "maxorb.h"
@@ -890,12 +894,9 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "maxorb.h"
-#include "dcbidx.h"
-#include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -954,11 +955,9 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "maxorb.h"
-#include "dcbidx.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dgroup.h"
@@ -1015,13 +1014,10 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "maxorb.h"
-#include "dcbidx.h"
 #include "dcborb.h"
-#include "dcbopt.h"
 #include "dgroup.h"
 C
       DIMENSION HT(NKL,NZ,NZ,*)
@@ -1186,7 +1182,6 @@ C
 #include "consts.h"
 C
 #include "dcbbas.h"
-#include "dcbham.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcborb.h"
@@ -1254,11 +1249,18 @@ C
      &        WORK(KCMO+I2ORBT(I)),WORK(KRDUM))
       END DO
 C
-c     IF (IPRINT .GE. 3) THEN
-         WRITE(LUPRI,'(/A)')
-     &        ' (RAPPBOS) Approximate boson symmetries: '
+      IF (NZ .LT. 4 .OR. NFSYM .EQ. 2) THEN ! irrelevant output if only one symmetry
+      IF (IPRINT .GE. 3) THEN
+         WRITE(LUPRI,'(/A)') ' (RAPPBOS) Approximate boson symmetries:'
          WRITE(LUPRI,9000) (REP(IBOSYM(I)),I=1,NORBT)
-c     END IF
+      ELSE
+         WRITE(LUPRI,'(/A)')
+     &   ' (RAPPBOS) Approximate boson symmetries of occupied orbitals:'
+         DO J = 1, NFSYM
+            WRITE(LUPRI,9000) (REP(IBOSYM(IORB(J)+I)),I=1,NOCC(J))
+         END DO
+      END IF
+      END IF
 
 #if defined MCSCF_DEBUG_SPINFREE
 !     additional check: ibosym <--> ibeig
@@ -1284,7 +1286,7 @@ c     END IF
       end if
 #endif
 
- 9000 FORMAT(10X,15(A4))
+ 9000 FORMAT(5X,10A4,4X,10A4)
 C
       CALL MEMREL('RAPPBOS',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
@@ -1532,7 +1534,6 @@ C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "consts.h"
 C
@@ -1628,13 +1629,11 @@ C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "consts.h"
 C
 #include "maxorb.h"
-#include "dcbidx.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -1677,7 +1676,6 @@ C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcborb.h"
@@ -1818,11 +1816,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dcbbas.h"
-#include "maxorb.h"
 #include "dgroup.h"
-#include "dcborb.h"
-#include "dcbopt.h"
 C
       CHARACTER C*1
       DIMENSION EIG(*), EIGVEC(NDIM,NDIM,NZ), AM(NDIM,NDIM,NZ)
@@ -1877,8 +1871,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dcbbas.h"
-#include "maxorb.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -2090,7 +2082,7 @@ C
       immax = 0
       inmax = 0
 
-#ifdef MCSCF_DEBUG	
+#ifdef MCSCF_DEBUG
       print *, ' block_one_dens: input matrix'
       call prqmat(amat,nasht,nasht,
      &            nasht,nasht,nz,ipqtoq(1,0),lupri)
@@ -2143,7 +2135,7 @@ C
                 dmj_offmax = 1.0D-15
                 if( call_quit )then
                   write(lupri,'(/A)') ' *** full mj-vector *** '
-		      call iwrtmamn(mjvector,1,norbt,1,norbt,lupri)
+                  call iwrtmamn(mjvector,1,norbt,1,norbt,lupri)
                    do ix = 1, nfsym
                      write(lupri,'(/1X,A,I3)')
      &               '*** full density matrix for fermion irrep ***',ix
@@ -2175,7 +2167,7 @@ C
      &          dmj_offmax,
      &        ' with indices: (',immax,',',inmax,')'
       end if
-#ifdef MCSCF_DEBUG	
+#ifdef MCSCF_DEBUG
       print *, ' block_one_dens: output matrix'
       call prqmat(amat,nasht,nasht,
      &            nasht,nasht,nz,ipqtoq(1,0),lupri)
@@ -2204,7 +2196,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #if defined (VAR_MPI)
-#include "infpar.h"
       INTEGER ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
@@ -2224,7 +2215,6 @@ C***********************************************************************
 #include "../luciarel/oper.inc"
 #include "../luciarel/cands.inc"
 #include "../luciarel/noccn_inf.inc"
-#include "krmc_shmem.h"
 #include "krmcluci_inf.h"
 #include "krciprop.h"
 C
@@ -2456,8 +2446,6 @@ C     max reference symmetry
 #endif
       NMAX_SYM_CI = NMAX_SYM
 C
-C     KRCI_CVECS.x vector file extensions
-      CALL DETXFLAB(XSYMFLAB,NMAX_SYM_CI)
 C     Roots to be obtained
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 ) 
@@ -2677,15 +2665,8 @@ C        with MAXCIT iterations
       END IF
 C     Always two-particle (full) Hamiltonian 
       IHAM12 = 2
-C     calculate property operator symmetry in double group subgroup
-C     notation
 #if defined (VAR_MPI)
-      IF( ISYNC_NODES .eq. 1 )
-     &  call interface_mpi_BCAST_L0(DOSYMOPPRP,1,MASTER,
-     &                 global_communicator)
-#endif
 C     reorder property operator matrix (already done by the MASTER...)
-#if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
      &  call interface_mpi_BCAST_L0(DOPROPREOD,1,MASTER,
      &                 global_communicator)
@@ -2921,27 +2902,14 @@ C     DIAPAR.1
       use symmetry_setup_krci
 #include "implicit.h"
 #include "priunit.h"
-#include "parluci.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "maxorb.h"
-#include "dcbopt.h"
-#include "dcborb.h"
-#include "dcbham.h"
-#include "dcbbos.h"
 #include "../luciarel/mxpdim.inc"
 #include "../luciarel/cstate.inc"
 #include "../luciarel/crun.inc"
-#include "../luciarel/cprnt.inc"
 #include "../luciarel/cgas.inc"
 #include "../luciarel/oper.inc"
-#include "../luciarel/cands.inc"
-#include "../luciarel/noccn_inf.inc"
-#ifdef VAR_MPI
-#include "krmc_shmem.h"
-#endif
-#include "krmcluci_inf.h"
-#include "krciprop.h"
 !**********************************************************************
 *
 *. Type of calculation
@@ -3453,7 +3421,6 @@ C     Written by S. Knecht - Dec 2008
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION AVEC(NX)
 C
       IFIND_NELM = 0
@@ -3475,12 +3442,8 @@ C     Written by S. Knecht - Jan 2010
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-#include "dcbopt.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbgen.h"
       DIMENSION XKAPPA(NORBT,NORBT,NZ), IMJ2(NORBT)
 C
       DO IFRP = 1,NFSYM

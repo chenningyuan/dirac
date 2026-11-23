@@ -24,7 +24,7 @@
 !
 module x2c_pct_ao
 
-  use x2c_fio
+ !use x2c_fio
   use x2cmod_cfg, only: x2c_1e_system
   use x2c_cb_interface, only:            &
       init_x2c_cb,                       &

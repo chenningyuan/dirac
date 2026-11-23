@@ -1,0 +1,31 @@
+207Pb isotope
+1 15 1
+1S                                                                      
+2S                                                                      
+2P                                                                      
+3S                                                                      
+3P                                                                      
+4S                                                                      
+3D                                                                      
+4P                                                                      
+5S                                                                      
+4D                                                                      
+5P                                                                      
+4F                                                                      
+5D                                                                      
+6S 
+6P 2
+ANG
+-1
+MCP 61 63                                                               
+MCDF 11                                                                 
+63 0 14                                                                 
+82 206.975872 
+NUCLEUS 2                                                               
+GRID 1.0E-8 0.008                                                       
+SCF NITIT=20 ACCY=1.0E-9 NSOLV=50                                       
+AL                                                                      
+MCBP 65                                                                 
+BENA 1 15 29                                                            
+65 14                                                                   
+END                                                                     

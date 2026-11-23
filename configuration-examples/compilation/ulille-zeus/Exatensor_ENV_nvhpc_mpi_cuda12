@@ -1,0 +1,2 @@
+WRAP=NOWRAP BUILD_TYPE=OPT CMAKE_Fortran_COMPILER=/share/compilers/nvidia/nvhpc/24.1/Linux_x86_64/24.1/comm_libs/mpi/bin/mpifort CMAKE_C_COMPILER=/share/compilers/nvidia/nvhpc/24.1/Linux_x86_64/24.1/comm_libs/mpi/bin/mpicc CMAKE_CXX_COMPILER=/share/compilers/nvidia/nvhpc/24.1/Linux_x86_64/24.1/comm_libs/mpi/bin/mpic++ TOOLKIT=NVHPC EXA_OS=LINUX GPU_CUDA=CUDA MPILIB=MPICH PATH_MPICH=/share/compilers/nvidia/nvhpc/24.1/Linux_x86_64/24.1/comm_libs/mpi BLASLIB=OPENBLAS PATH_BLAS_OPENBLAS=/lib64   
+PATH_CUDA=/share/compilers/nvidia/cuda/12.0

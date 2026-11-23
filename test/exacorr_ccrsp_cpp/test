@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f1 = Filter()
+
+f1.add(from_string = '*************CC-CC(LR-CC) linear response*************',
+      num_lines   = 8,
+      rel_tolerance   = 1.0e-5)
+
+f2 = Filter()
+
+f2.add(from_string = '*************CC-CC(LR-CC) linear response*************',
+      num_lines   = 8,
+      rel_tolerance   = 1.0e-5)
+
+
+test.run(['cc-cc_ccpvDz_cpp_nr_0.12-0.126_0.01_xx.inp'], ['bh.xyz'], f1)
+test.run(['cc-cc_ccpvDz_cpp_x2c_0.08-0.1_0.001_zz.inp'], ['bh.xyz'], f2)
+sys.exit(test.return_code)

@@ -22,7 +22,7 @@ module xc_blas3
 !fixme dft_cfg should not be used here, move xc derv business to separate module
    use dft_cfg
    use xc_ac
-   use extra
+   use xcint_extra
 
    implicit none
 

@@ -80,16 +80,13 @@ C***********************************************************************
       use dirac_cfg, only: dirac_cfg_scf_calculation
 
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0)
 
 ! we use nopen
 #include "dcbdhf.h"
-
-#include "dcbgen.h"
-#include "dcborb.h"
 #include "dcbxlr.h"
-#include "dgroup.h"
+#include "dcbgen.h"
+#include "infpar.h"
       DIMENSION WORK(*)
 C
       CALL QENTER('PRPXLR')
@@ -118,7 +115,16 @@ C
       CALL DZERO(WORK(KLRF),N2LRF)
       CALL MEMGET2('REAL','RCNV',KCNV,NRSPF,WORK,KFREE,LFREE)
 C
+C     Most of PRPXL1 (property gradients, reduced equations, response
+C     functions) runs on the master alone while the other MPI processes
+C     sleep. dirac_threads_push(n) lets the master process use n times
+C     its own number of BLAS/OpenMP threads (at most the CPUs of the
+C     job), i.e. the cores of the sleeping processes. When the master
+C     wakes the other processes (Fock, XC; DIRAC_PARCTL) it goes back
+C     to its own threads until they sleep again. pop restores them.
+      if (parcal) call dirac_threads_push(numnod+1)
       CALL PRPXL1(WORK(KLRF),WORK(KCNV),WORK,KFREE,LFREE)
+      if (parcal) call dirac_threads_pop()
 C
  10   CONTINUE
       IF (XLRANA) CALL ANAXRS(WORK,KFREE,LFREE,IPRXLR)
@@ -235,7 +241,7 @@ c.........reorthonormalization contribution
 !         Instead, there is a contribution from magnetic derivatives 
 !         of overlap matrix (modifications in london_reorth.F90)
           if (.not. noonei) then
-            call london_reort_hb(cmo, ibeig, work(kfree), lfree)
+            call london_reort_hb(cmo, ibeig, work(kfree), lfree, IPRXLR)
           end if
          
           call dealloc(cmo)
@@ -374,11 +380,16 @@ C
  20     CONTINUE
  10   CONTINUE
       CALL MEMREL('PRPXL1',WORK,1,KXLR,KFREE,LFREE)
+!
 C
 C     Final print section
 C
       CALL XLROUT(ABLRF,RCNV,WORK,KFREE,LFREE)
       CLOSE(LUXVC,STATUS = 'KEEP')
+!     if requested, additionally export response information to file:
+      if (XLR_RSPEXP) then
+        call export_rsp_info_to_helper(iprxlr)
+      end if
       CALL MEMREL('PRPXL1',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('PRPXL1')
       RETURN
@@ -400,7 +411,7 @@ C***********************************************************************
       use london_helper
 #endif
 #ifdef HAS_PELIB
-      use pe_variables, only: peqm
+      use pelib_dirac_interface, only: use_pelib ! EDL:: NOT USED???
 #endif
       use dirac_cfg
 #include "implicit.h"
@@ -410,7 +421,7 @@ C***********************************************************************
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 44,DRESFAC = 1.0D2)
+      PARAMETER (NTABLE = 45,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -437,10 +448,10 @@ C
      &            '.MXLOAD','.A_NOSP','.B_NOSP','.UNCOUP',
      &            '.IMAGIN','.GAUSS-','.E2CHEK','.STERNC',
      &            '.DAMPIN','.FREQ I','.LAOMOD','.EPOLE ',
-     &            '.MPOLE ','.NMFREQ','.ANATHR','.XXXXXX'/
+     &            '.MPOLE ','.NMFREQ','.ANATHR','.RSPEXP',
+     &            '.RSPIMP'/
       DATA SET/.FALSE./
 C
-#include "ibtfun.h"
 #include "gauss_legendre.h"
 C
       IF (SET) THEN
@@ -457,10 +468,10 @@ C
 C
 C     Local initialization
 C
-      ILLINT = IBTAND(INTGEN,1)
-      ISLINT = IBTAND(INTGEN/2,1)
-      ISSINT = IBTAND(INTGEN/4,1)
-      IGTINT = IBTAND(INTGEN/8,1)
+      ILLINT = IAND(INTGEN,1)
+      ISLINT = IAND(INTGEN/2,1)
+      ISSINT = IAND(INTGEN/4,1)
+      IGTINT = IAND(INTGEN/8,1)
       INTFLG_CHANGE = .FALSE.
 C
 C
@@ -532,6 +543,8 @@ C     Calculation of C6 dispersion coefficient
       NOSPIA     = .FALSE.
       NOSPIB     = .FALSE.
       XLR_E2CHEK = .FALSE.
+      XLR_RSPEXP = .FALSE.
+      XLR_RSPIMP = .FALSE.
       DO I = 1,NFSYM
          XLR_INDSTR(2,I) = ' '
          XLR_INDSTR(1,I) = ' '
@@ -565,7 +578,7 @@ C
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
      &                     31,32,33,34,35,36,37,38,39,40,
-     &                     41,42,43,44), I
+     &                     41,42,43,44,45), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -906,6 +919,12 @@ C&&&& ANATHR: Threshold for analysis of linear response function
                READ(LUCMD,*) XLR_ANATHR
                GO TO 100
  44            CONTINUE
+C&&&& RSPEXP: export response data to hdf5
+               XLR_RSPEXP = .true.
+               GO TO 100
+ 45            CONTINUE
+C&&&& RSPIMP: import response data from hdf5
+               XLR_RSPIMP = .true.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1159,6 +1178,8 @@ C
        DO I = 1,NLRAPT
         INDXPR = LLRAPU(I)
         CALL WRIXPR(I,INDXPR)
+        IF (IPRPTIM(INDXPR)==-1 .AND. GAUNT)
+     &  CALL QUIT('Mag. Prop. for Gaunt not implemented yet')
        ENDDO
       ENDIF
 C
@@ -1172,6 +1193,8 @@ C
        DO I = 1,NLRBPT
         INDXPR = LLRBPU(I)
         CALL WRIXPR(I,INDXPR)
+        IF (IPRPTIM(INDXPR)==-1 .AND. GAUNT)
+     &  CALL QUIT('Mag. Prop. for Gaunt not implemented yet')
        ENDDO
       ENDIF
 C
@@ -1238,8 +1261,6 @@ C
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbxlr.h"
-#include "dcbgen.h"
-#include "dcborb.h"
 #include "dcbxrs.h"
 #include "dcbxpr.h"
 C
@@ -1420,8 +1441,6 @@ C***********************************************************************
       use orbital_rotation_indices
 
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
       PARAMETER(D1 = 1.0D0,D0=0.0D0)
 C
 #include "dcbxrs.h"
@@ -2059,7 +2078,6 @@ C
 #include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 C
       LOGICAL   TOBE,GASWF
       DIMENSION WORK(*)
@@ -2226,10 +2244,7 @@ C/* Deck anaxr1 */
 C***********************************************************************
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-C
 #include "dgroup.h"
-#include "dcbxlr.h"
       INTEGER   NCLS(2,3,2)
       DIMENSION JXOP(*),IORBCL(4,*),WORK(*)
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
@@ -2522,3 +2537,70 @@ C***********************************************************************
       ENDDO
       RETURN
       END
+!     ------------------------------------------------------------------
+!
+!     The following subroutines enable additional export/import of 
+!     response data to/from hdf5 format.
+!     All data stored in PAMXVC is transfered to RESPONSE.h5, so,
+!     in principle, RESPONSE.h5 could replace PAMXVC.
+!
+!     This is now used only in VISUAL and FDE
+!     Gosia Olejniczak, 16/01/2024
+!
+!     ------------------------------------------------------------------
+      subroutine export_rsp_info_to_helper(print_level)
+        use dirac_rsp_utils
+#if defined (VAR_MPI)
+        use interface_to_mpi
+#endif
+        implicit none
+        integer, intent(in) :: print_level
+        type(response_info_t) :: rsp_info
+        character(len=:),allocatable :: f_name
+        integer:: mytid
+
+#if defined (VAR_MPI)
+        call interface_mpi_comm_rank (global_communicator,mytid)
+        if (mytid == 0) then
+#endif
+
+          f_name = 'PAMXVC'
+          call rsp_info%read_from_DIRAC(trim(f_name), print_level)
+
+          f_name = 'RESPONSE.h5'
+          call rsp_info%write_to_labeled_storage(trim(f_name))
+
+#if defined (VAR_MPI)
+        end if
+#endif
+
+      end subroutine
+
+      subroutine import_rsp_info_from_helper(rspvec,ndim,id)
+        use dirac_rsp_utils
+#if defined (VAR_MPI)
+        use interface_to_mpi
+#endif
+        implicit none
+        integer, intent(in)  :: id
+        integer, intent(in)  :: ndim
+        real(8), intent(out) :: rspvec(ndim)
+        type(response_info_t) :: rsp_info
+        character(len=:),allocatable :: f_name
+        real(8) :: n
+        integer:: mytid
+
+#if defined (VAR_MPI)
+        call interface_mpi_comm_rank (global_communicator,mytid)
+        if (mytid == 0) then
+#endif
+          f_name = 'RESPONSE.h5'
+          call rsp_info%read_from_labeled_storage(trim(f_name))
+          call rsp_info%vectors(id)%get_copy_of_values(rspvec,ndim)
+
+#if defined (VAR_MPI)
+        end if
+#endif
+
+      end subroutine
+

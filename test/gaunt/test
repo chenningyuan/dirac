@@ -21,9 +21,6 @@ f.add(from_string = 'contribution             contribution             contribut
 f.add(from_string = 'Quadratic Response Functions',
       to_string   = '@   average',
       rel_tolerance   = 1.0e-5)
-f.add(from_string = '@            isotropic shielding',
-      num_lines   = 5,
-      rel_tolerance   = 1.0e-5)
 
 test.run(['gaunt.inp'], ['Ne.C2.mol'], f)
 

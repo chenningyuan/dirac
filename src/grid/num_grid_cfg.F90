@@ -31,6 +31,15 @@ module num_grid_cfg
    logical,       public :: num_grid_cfg_no_pruning              = .false.
    logical,       public :: num_grid_cfg_zipgrid                 = .true.
    real(8),       public :: num_grid_cfg_radint                  = 1.0d-13
+!*effQED
+   logical,       public :: num_grid_cfg_numint_print            = .true.   
+   logical,       public :: num_grid_cfg_grasp                   = .false.   
+   logical,       public :: num_grid_cfg_uehcut                  = .false.   
+   logical,       public :: num_grid_cfg_allatom                 = .false.   
+   logical,       public :: num_grid_cfg_printpot                = .false.   
+   integer,       public :: num_grid_cfg_angqed                  = 15
+   integer,       public :: num_grid_cfg_minz                    = 19
+   real(8),       public :: num_grid_cfg_screen                  = 1.0D-10
 
    private
 

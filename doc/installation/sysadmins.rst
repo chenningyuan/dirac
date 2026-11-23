@@ -1,13 +1,16 @@
 :orphan:
  
+.. _system_admins:
 
 Installation instructions for system administrators
 ===================================================
 
+We recommend using EasyBuild to compile DIRAC in HCP systems. However, if you still want to compile it by yourself, you can follow the following instructions.
+
 Please read the other installation sections for details
 but the installation procedure is typically this::
 
-  $ ./setup --mpi --mkl=parallel --prefix=/full/install/path/
+  $ ./setup --mpi --qmkl=parallel --prefix=/full/install/path/
   $ cd build
   $ make [-j]
   $ export DIRAC_TMPDIR=/full/path/scratch

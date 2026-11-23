@@ -300,7 +300,7 @@ contains
       real(8), intent(in)    :: gauge_origin(3)
       integer, intent(in)    :: irep
       integer, intent(in)    :: mat_dim
-      real(8), intent(inout) :: dmat(mat_dim, mat_dim, *)
+      real(8), intent(in) :: dmat(mat_dim, mat_dim, *)
       real(8), intent(in)    :: ao(mat_dim)
       real(8), intent(in)    :: r(3)
 !     --------------------------------------------------------------------------

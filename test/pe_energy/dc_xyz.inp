@@ -4,8 +4,8 @@ Polarizable embedding with Dirac-Coulomb Hamiltonian
 .WAVE FUNCTION
 **HAMILTONIAN
 .DOSSSS
-.PEQM
-*PEQM
+.PELIB
+*PELIB
 .POTENT
 peqm.pot
 **WAVE FUNCTION

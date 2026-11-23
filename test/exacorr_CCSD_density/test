@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = '  Energy by CCSD Density Matrix',
+      num_lines   = 2,
+      rel_tolerance   = 1.0e-9)
+
+f.add(from_string = ' Final ov symm :  ',
+      to_string   = ' Final oooo symm :  ',
+      rel_tolerance   = 1.0e-6)
+
+test.run(['ccsd_energy_large_cvalue.inp'], ['LiH.xyz'], f)
+
+sys.exit(test.return_code)

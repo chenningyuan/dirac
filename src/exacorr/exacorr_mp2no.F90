@@ -13,8 +13,8 @@ module exacorr_mp2no
         use exacorr_global
         use exacorr_ao_to_mo
         use exacorr_tensor_methods
-        use talsh_common_routines, only: write_talsh_matrix
-        use talsh_mp2no, only: get_new_orbital, get_transform_Fock
+        use eti_common_routines, only: write_2dtensor_as_matrix
+        use eti_mp2no, only: get_new_orbital, get_transform_Fock
         use mp2no_matrixtransforms
         use mp2no_fileinterfaces
         use interface_to_mpi
@@ -78,7 +78,7 @@ module exacorr_mp2no
             else
                 call exacorr_generate_MP2_VNO_MObasis(exa_input)   
                 if (my_MPI_rank == 0) &
-                call get_transform_Fock(exa_input,'DM_complex')
+                call get_transform_Fock(exa_input)
             end if
 
             if (my_MPI_rank == 0) then
@@ -101,6 +101,7 @@ module exacorr_mp2no
         subroutine exacorr_generate_MP2_VNO_MObasis (exa_input)
 
          use talsh
+         use exacorr_tensor_interface, only: tensor_t, talsh_to_tensor_t
          use checkpoint
 
 !        This subroutine drives the mp2no DM calculation ans MP2 energy as well
@@ -119,14 +120,14 @@ module exacorr_mp2no
          integer(INTD)         :: ierr
          complex(8)            :: result_val
 !        Common tensors
-         type(exatns_comm_tens):: comm_t
+         type(exatns_comm_tens_t):: comm_t
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(exatns_intg_tens):: int_t
+         type(exatns_intg_tens_t):: int_t
 !        Lambda tensors
          type(tens_rcrsv_t)    :: l1_tensor, l2_tensor
 !        scalars (need to be defined as tensor types)
          type(tens_rcrsv_t)    :: result_tensor
-         type(exatns_dm_tens)  :: MP2_density_tensor
+         type(exatns_dm_tens_t):: MP2_density_tensor
 !        space ids and roots
          type(space_dims)      :: dims
 !        CCSD control and result variables
@@ -160,7 +161,8 @@ module exacorr_mp2no
          integer(C_SIZE_T)               :: buf_size=1024_8*1024_8*1024_8 
          integer(C_INT)                  :: host_arg_max
          ! talsh tensor to get local copy
-         type(talsh_tens_t)           :: tensor_slice
+         type(tensor_t)           :: tensor_slice
+         type(talsh_tens_t)           :: talsh_tensor ! we need a talsh tensor because direct conversion from exatns to eti is not implemented
          integer(INTD), dimension(2)  :: h_dims
 
 !        Make some noise so that we know we are here
@@ -280,10 +282,11 @@ module exacorr_mp2no
             call print_date('Initialized talsh library')
             write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
             h_dims=nvir
-            ierr=talsh_tensor_construct(tensor_slice,EXA_DATA_KIND_C8,h_dims,init_val=ZERO)
-            ierr=exatns_tensor_get_slice(MP2_density_tensor%prime_vv,tensor_slice)
+            ierr=talsh_tensor_construct(talsh_tensor,EXA_DATA_KIND_C8,h_dims,init_val=ZERO)
+            ierr=exatns_tensor_get_slice(MP2_density_tensor%prime_vv,talsh_tensor)
+            ierr=talsh_to_tensor_t(talsh_tensor, tensor_slice, out_executor=1)
 
-            call write_talsh_matrix(nvir,tensor_slice,'DM_complex')
+            call  write_2dtensor_as_matrix(nvir,tensor_slice,'DM_complex')
             call print_date('Save DM in MO (spinor) basis to file : DM_complex')
 
             ierr=exatns_tensor_destroy(int_t%oooo)
@@ -627,7 +630,7 @@ module exacorr_mp2no
          integer(INTD),intent(in)              :: ao_space_id
          class(h_space_t), pointer, intent(in) :: ao_space
 !        target integral tensors to be filled and given back to the caller
-         type(exatns_intg_tens), intent(inout) :: int_t
+         type(exatns_intg_tens_t), intent(inout):: int_t
          integer, intent(in)                   :: print_level 
 
          integer(INTL)              :: ao_space_root,subspace_id(4),num_subspaces
@@ -858,7 +861,7 @@ module exacorr_mp2no
        contains
 
         subroutine exacorr_mp2no_driver (exa_input,N_cano)
-         use exacorr_datatypes
+         use exacorr_cfg,only: exacc_input
          implicit none
          type(exacc_input), intent(in) :: exa_input
          integer, intent(inout)        :: N_cano                  ! number of new canonical orbital

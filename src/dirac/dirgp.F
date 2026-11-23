@@ -38,7 +38,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
-#include "dcbpsi.h"      
+#include "dcbpsi.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -102,15 +102,15 @@ C         Check dimensions
              ENDDO   
              CALL QUIT('PCMOIN: Error in dimension')             
           ENDIF
-          READ(LUCOEF,'(E24.16)',iostat=ierr) TOTERG
+          READ(LUCOEF,*,iostat=ierr) TOTERG
           IF (IERR /= 0) CALL QUIT('error reading DFPCMO: energy')
           GOTO 10
         CASE('COEFS   ')
-          READ(LUCOEF,'(6F22.16)',iostat=ierr) CMO
+          READ(LUCOEF,*,iostat=ierr) CMO
           IF (IERR /= 0) CALL QUIT('error reading DFPCMO: coefficients')
           GOTO 10
         CASE('EVALS   ')
-          READ(LUCOEF,'(6E22.12)',iostat=ierr) EIG
+          READ(LUCOEF,*,iostat=ierr) EIG
           IF (IERR /= 0) CALL QUIT('error reading DFPCMO: eigenvalues')
           GOTO 10
         CASE('SUPERSYM')
@@ -175,9 +175,8 @@ C*****************************************************************************
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbpsi.h"
-#include "dcbbas.h"
-#include "dcborb.h"`
-#include "dgroup.h"`      
+#include "dcborb.h"
+#include "dgroup.h"
 C
       real(8), allocatable :: CMO(:),EIG(:)
       integer, allocatable :: IBEIG(:,:)
@@ -267,12 +266,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       ! Pack dimension info needed in wricmo with information taken from
       ! common blocks (LV, 2021)
 #include "implicit.h"
-#include "priunit.h"
-#include "dcbgen.h"
-#include "dcbpsi.h"
 #include "dcbbas.h"
-#include "dcborb.h"`
-#include "dgroup.h"`      
+#include "dcborb.h"
+#include "dgroup.h"
       integer, intent(out) :: idims(*)
       IDIMS(1) = NZ
       IDIMS(2) = NFSYM
@@ -346,7 +342,6 @@ C     Written by BHP (adapted from TS WRICMO)
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -370,11 +365,11 @@ C
       WRITE(IUNIT,'(A74)') TEXT
       WRITE(IUNIT,'(8(X,I0))')
      &      NFSYM,NZ,((IDIM(I,J),I = 1,3),J=1,NFSYM)
-      WRITE(IUNIT,'(E24.16)') TOTERG
+      WRITE(IUNIT,'(G25.17)') TOTERG
       WRITE(IUNIT,'(A8)') 'COEFS   '      
-      WRITE(IUNIT,'(6F22.16)') CMO
+      WRITE(IUNIT,'(6G25.17)') CMO
       WRITE(IUNIT,'(A8)') 'EVALS   '            
-      WRITE(IUNIT,'(6E22.12)') EIG
+      WRITE(IUNIT,'(6G25.17)') EIG
       WRITE(IUNIT,'(A8)') 'SUPERSYM'
       WRITE(IUNIT,'(66(X,I0))') (IBEIG(I,1),I=1,NORBT)
       IF(SSYM) THEN
@@ -517,7 +512,7 @@ C
                ne2 = idims_dfcoef(5+3*ifrp)
                no2 = np2 + ne2
                call adaeig(eig(id),norb(ifrp),npsh(ifrp),nesh(ifrp),
-     &              buf_special,no2,np2,ne2)
+     &              buf_special(jd),no2,np2,ne2)
                 id = id + norb(ifrp)
                 jd = jd + no2
             end do
@@ -534,7 +529,7 @@ C
                ne2 = idims_dfcoef(5+3*ifrp)
                no2 = np2 + ne2
                call adaibo(ibeig(id),norb(ifrp),npsh(ifrp),nesh(ifrp),
-     &              ibuf_special,no2,np2,ne2)
+     &              ibuf_special(jd),no2,np2,ne2)
                 id = id + norb(ifrp)
                 jd = jd + no2
             end do
@@ -557,14 +552,8 @@ C     extended for KRMC modules - S. Knecht Nov 2008
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
-#include "dcbgen.h"
-#include "dcbpsi.h"
-#include "dcbdhf.h"
 #include "dcborb.h"
-#include "dcbbas.h"
-#include "dgroup.h"
       LOGICAL TOBE, TOBEK
       CHARACTER TEXT*74
       DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT)
@@ -582,10 +571,8 @@ C     Written by T.Saue Sept 1 1995
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
-#include "dgroup.h"
 #include "dcbgen.h"
 #include "dcbdhf.h"
       CHARACTER TEXT*74
@@ -663,7 +650,6 @@ C     Written by T.Saue Oct 12 1995
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dcbgen.h"
@@ -688,7 +674,6 @@ C     Read SO density matrix from unformatted file
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dcbdhf.h"
@@ -752,13 +737,11 @@ C*****************************************************************************
       use checkpoint
 
 #include "implicit.h"
-#include "priunit.h"
 #include "dcborb.h"
-#include "dcbgen.h"
 C
       CHARACTER A*(*)
-      DIMENSION ILIST(NLIST)
-      LOGICAL TOBE
+      INTEGER   NLIST, ILIST(NLIST), IRNGE1, IRNGE2, IFRP, IP
+      LOGICAL   TOBE
   
       real(8), allocatable :: eig(:)
       integer, allocatable :: ibg(:)
@@ -1119,22 +1102,16 @@ C
 C
 C     Set start and end of search region
 C
-      IF (IRNGE1.LT.0) THEN
+      IF (IRNGE1.LE.0) THEN
          ISTART = IRNGE1 + 1
       ELSEIF (IRNGE1.GT.0) THEN
          ISTART = IRNGE1
-      ELSE
-         WRITE(LUPRI,*) ' IRNGE1:',IRNGE1
-         CALL QUIT ("Error in energy-based vector selection (NUMLST)")
       ENDIF
 C
-      IF (IRNGE2.LT.0) THEN
+      IF (IRNGE2.LE.0) THEN
          IEND = IRNGE2 + 1
       ELSEIF (IRNGE2.GT.0) THEN
          IEND = IRNGE2
-      ELSE
-         WRITE(LUPRI,*) 'IRNGE2:',IRNGE2
-         CALL QUIT ("Error in energy-based vector selection (NUMLST)")
       ENDIF
 C
       DO I = ISTART, IEND
@@ -1322,7 +1299,6 @@ C  /* Deck NOSELPRI */
 #include "priunit.h"
 C
 #include "dgroup.h"
-#include "dcborb.h"
 C
       INTEGER NINDEX(*)
 C
@@ -1362,7 +1338,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck EIGEXT */
       SUBROUTINE EIGEXT(EIG,IORBCL,ITYP,WORK,KFREE,LFREE)
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcborb.h"
 C
@@ -1394,7 +1369,6 @@ C     Written by T.Saue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION CF1(NB,NO1,NZ),CF2(NB,NO2,NZ)
 C     Positronic part
       IV1 = 1
@@ -1443,7 +1417,6 @@ C     Written by T.Saue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION EIG1(NO1),EIG2(NO2)
 C     Positronic part
       IV1 = 1
@@ -1484,7 +1457,6 @@ C     Written by T.Saue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION IBO1(NO1),IBO2(NO2)
 C     Positronic part
       IV1 = 1
@@ -1649,19 +1621,14 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
 C
-#include "dcbpsi.h"
 #include "dcbgen.h"
-#include "dcbdhf.h"
 #include "dcborb.h"
 #include "dcbbas.h"
-#include "dcblab.h"
 #include "dgroup.h"
-#include "nuclei.h"
-      LOGICAL TOBE, TOBEK, FNDLAB, MCORB, MJAVA
+      LOGICAL TOBE, TOBEK, FNDLAB, MCORB, MJAVA, X2CMOB
       CHARACTER TEXT*74
+      character*(:), allocatable :: mobasis
       DIMENSION IDIM(3),IDIMS(12)
       real(8), allocatable :: CSO(:)
       real(8), allocatable :: EIG(:)
@@ -1743,11 +1710,18 @@ C.......if more than one fermion ircop merge orbital classes
 C
 C     Write coefficients and reordered other data to checkpoint
 C
+      mobasis = '/result/wavefunctions/scf/mobasis'
+      call checkpoint_query
+     & ('/result/wavefunctions/scf/x2c_mobasis/mobasis/nz',
+     &  exist=X2CMOB)
+      if (X2CMOB) then
+         mobasis = '/result/wavefunctions/scf/x2c_mobasis/mobasis'
+      endif
       call checkpoint_write 
-     & ('/result/wavefunctions/scf/mobasis/eigenvalues_C1',
+     & (mobasis//'/eigenvalues_C1',
      &  rdata=eig(1:norbt))
       call checkpoint_write 
-     & ('/result/wavefunctions/scf/mobasis/orbitals_C1',
+     & (mobasis//'/orbitals_C1',
      &  rdata=cao(1:ndim))
       call write_basis_fromcommon(.true.) ! write also the C1 format of the ao_basis
 C
@@ -1776,7 +1750,6 @@ C***********************************************************************
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION CMO1(NBAS,NMO1,NZ),CMO2(NBAS,NMO2,NZ),IBUF(*)
 C
       DO IZ = 1,NZ
@@ -1796,9 +1769,7 @@ C***********************************************************************
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 #include "dgroup.h"
@@ -1904,7 +1875,6 @@ C     Written by T. Saue, Oct 21 2003
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbprj.h"
 #include "dcbbas.h"
@@ -2145,11 +2115,9 @@ C     Written by T. Saue March 1 2005
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D180=180.0D0)
 #include "pi.h"
 C
-#include "dcbgen.h"
 #include "dcbrot.h"
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -2193,7 +2161,6 @@ C     Written by T. Saue March 1 2005
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
       DIMENSION CMO(NBAS,NORB,NZ),BUF(NBAS),JVEC(NORB)
@@ -2225,7 +2192,6 @@ C
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbreo.h"
-#include "dgroup.h"
 #include "dcbrot.h"
       LOGICAL TOBE
       real(8), allocatable :: cmo(:)
@@ -2320,13 +2286,9 @@ C     Written by T. Saue Jan 27 2006
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
-#include "dcbgen.h"
 #include "dcbpsi.h"
-#include "dcborb.h"
 #include "dcbbas.h"
-#include "dgroup.h"
 #include "dcbreo.h"
       real(8)             :: CMO(:),EIG(:)
       integer             :: IBEIG(:)
@@ -2476,7 +2438,6 @@ C
 C     Written by T. Saue Sep 1 2006
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcborb.h"
       CHARACTER VECREF*(*)
@@ -2498,7 +2459,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck SelFrag */
       SUBROUTINE SELFRAG(CSEL,NVECS,ESEL,IBSEL,NFRAG,NSTR,FRAGFIL,
      &                   OWNBAS,NUCFRAG,IOPT,KVEC,CMO,EIG,IBEIG,
-     &                   IOFF,KRMC_FLG,WORK,KFREE,LFREE)
+     &                   IOFF,KRMC_FLG,C1READ,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Routine for extracting coefficients, eigenvalues and boson irrep
@@ -2545,8 +2506,7 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbham.h"
-      LOGICAL TOBE,OWNBAS,LBIT
+      LOGICAL TOBE,OWNBAS,LBIT,C1READ
       CHARACTER*(*) FRAGFIL(NFRAG)
       DIMENSION CSEL(*),ESEL(*),IBSEL(*),NVECS(*),CMO(*),KVEC(2,NFRAG),
      &          EIG(*),IBEIG(*),NSTR(2,0:2,NFRAG),NUCFRAG(NFRAG),WORK(*)
@@ -2588,63 +2548,10 @@ C
           WRITE(LUPRI,'(A,A)') 
      &       '* SELFRAG: Coefficients from file: ',fragfile%name
         ENDIF
-C.......Fragment orbitals in own basis
-        IF(OWNBAS) THEN
-          CALL SELOWN(IOPT,CMO,EIG,IBEIG,
-     &                INUC,NUCFRAG(IFRAG),LUCOEF,fragfile,
-     &                CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC(1,IFRAG),
-     &                NSTR(1,0,IFRAG),WORK)
-C.......Fragment orbitals in molecular basis
-        ELSE
-!
-!         LV: have not tried to port the following weird construction
-!         MCSCF has still its own vector format that somebody should port to hdf5
-!         check for MCSCF coefficients on fragment/molecule file
-!         CALL REACMO(LUCOEF,FRAGFIL(IFRAG),CMO,EIG,IBEIG,
-!    &                TOTERG,-1)
-!
-!         found MCSCF coefficients on file CMOFIL?
-!         IF( TOTERG .eq. CMCSCF_MAGIC ) KRMC_FLG = 1
-!         CALL REACMO(LUCOEF,FRAGFIL(IFRAG),CMO,EIG,IBEIG,
-!    &                TOTERG,IOPT)
-!
-          IF(LBIT(IOPT,2)) call lab_read (fragfile,
-     &     '/result/wavefunctions/scf/mobasis/orbitals',cmo(1:ncmotq))
-          IF(LBIT(IOPT,3)) call lab_read (fragfile,
-     &     '/result/wavefunctions/scf/mobasis/eigenvalues',eig(1:norbt))
-          IF(LBIT(IOPT,4)) call lab_read (fragfile,
-     &     '/result/wavefunctions/scf/mobasis/symmetry',
-     &     idata=ibeig(1:norbt))
-          ICOFF = 1
-          IEOFF = 1
-          DO IFRP = 1, NFSYM
-            IF(NSTR(IFRP,0,IFRAG).GT.0) THEN
-C             Select coefficients
-              IF(LBIT(IOPT,2)) THEN
-                ICSEL = ICOFF + NFBAS(IFRP,0)*IOFF(IFRP)
-                CALL SELCFS (CMO(1+ICMOQ(IFRP)),IFRP,CSEL(ICSEL),
-     &                       NVECS(IFRP),WORK(KVEC(IFRP,IFRAG)),
-     &                       NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG),
-     &                       NFBAS(IFRP,0),NORB(IFRP))
-              ENDIF
-              IESEL = IEOFF + IOFF(IFRP)
-C             Select eigenvalues
-              IF(LBIT(IOPT,3)) THEN
-                CALL SELEIG(EIG(1+IORB(IFRP)),IFRP,ESEL(IESEL),
-     &               WORK(KVEC(IFRP,IFRAG)),
-     &               NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG))
-              ENDIF
-C       Select boson irrep information
-              IF(LBIT(IOPT,4)) THEN
-                CALL SELIBEIG(IBEIG,IORB(IFRP),IFRP,
-     &                 IBSEL(IESEL),WORK(KVEC(IFRP,IFRAG)),
-     &                 NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG))
-              ENDIF
-              ICOFF = ICOFF + NFBAS(IFRP,0)*NVECS(IFRP)*NZ
-              IEOFF = IEOFF + NVECS(IFRP)
-            ENDIF
-          ENDDO
-        ENDIF
+        CALL REAFRAG(IOPT,CMO,EIG,IBEIG,
+     &              INUC,NUCFRAG(IFRAG),LUCOEF,fragfile,
+     &              CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC(1,IFRAG),
+     &              NSTR(1,0,IFRAG),C1READ,OWNBAS,WORK)
         DO IFRP = 1,NFSYM
           IOFF(IFRP) = IOFF(IFRP) + NSTR(IFRP,0,IFRAG)
         ENDDO
@@ -2672,7 +2579,6 @@ C
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 C
 #include "ccom.h"
@@ -2717,12 +2623,9 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 C
-#include "ccom.h"
-#include "sphtrm.h"
 #include "symmet.h"
 #include "pgroup.h"
 #include "shells.h"
-#include "nuclei.h"
 #include "dgroup.h"
       LOGICAL DONRM
       CHARACTER COMP(2)*1
@@ -2938,7 +2841,6 @@ C       SPHM - transformation matrix
 C       
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 C
 #include "ccom.h"
@@ -3002,7 +2904,6 @@ C
 #include "symmet.h"
 #include "pgroup.h"
 #include "shells.h"
-#include "nuclei.h"
 #include "dgroup.h"
       LOGICAL DONRM,LRKB
       CHARACTER COMP(2)*1
@@ -3288,14 +3189,9 @@ C***********************************************************************
 #include "maxorb.h"
 C
 #include "dcbgen.h"
-#include "dcbham.h"
-#include "dcbdhf.h"
 #include "dcborb.h"
 #include "dcbbas.h"
-#include "dcblab.h"
 #include "dgroup.h"
-#include "nuclei.h"
-      LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
       DIMENSION IDIM(3),NBF(2)
       real(8), allocatable :: CMO1(:)
@@ -3307,6 +3203,7 @@ C
       integer, allocatable :: IBUF(:)
       type(file_info_t)    :: dfacmo
 C
+      CALL QENTER('ACMOIN')
       IPRINT = IPRGEN
 C
 C     Allocate arrays
@@ -3329,7 +3226,7 @@ C
       CALL IZERO(IBEIG2,NORBT)
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A)') 
-     &    '* ACMOIN : Coefficients read from DFACMO'
+     &    '* ACMOIN : Coefficients read from '//dfacmo%name
           CALL PRQMAT(CMO2,NTBAS(0),NORBT,
      &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
       ENDIF
@@ -3418,6 +3315,7 @@ C     De-allocate arrays
       deallocate(EIG2)
       deallocate(IBEIG2)
 C
+      CALL QEXIT('ACMOIN')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3615,16 +3513,12 @@ C     Written by T.Saue Mar 4 2008
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 C
-#include "dcblab.h"
-#include "dcbham.h"
 #include "dgroup.h"
-#include "symmet.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 C
@@ -3855,10 +3749,8 @@ C     Written by T. Saue Feb 23 2010
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
-#include "dcbham.h"
 #include "dgroup.h"
       DIMENSION CMO(NBAS,NORB,NZ),TINV(NBAS,NORB,NZ),CBUF(NORB,NORB,NZ),
      &          WORK(*)
@@ -3928,7 +3820,6 @@ C     Written by J. Thyssen - Feb 11 1999
 C     
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcbdhf.h"
@@ -3947,7 +3838,7 @@ C
       ILOW = NISH(IFRP)+1
       DO IOPEN = 1,NOPEN
       IF(NACSH(IFRP,IOPEN).GT.0) THEN
-         IHIGH = ILOW + NACSH(IFRP,IOPEN)
+         IHIGH = ILOW + NACSH(IFRP,IOPEN)-1
          IF ( (IORBITAL .GE. ILOW) .AND. (IORBITAL .LE. IHIGH) ) THEN
             GETIOPEN = IOPEN
             RETURN
@@ -3994,7 +3885,6 @@ C*****************************************************************************
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "pgroup.h"
       PARAMETER (D0 = 0.0D0 , DP5 = 0.5D0 , D2 = 2.0D0)
       DIMENSION COORA(3,*)
       CALL QENTER('GETACORD')
@@ -4041,7 +3931,6 @@ C
 C     Written by T. Saue May 30 2012
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -4079,7 +3968,6 @@ C
 C     Written by T. Saue May 30 2012
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
       DIMENSION CMO(NBAS1,NORB1,NZ),CSEL(LRSEL,LCSEL,4),
@@ -4134,7 +4022,6 @@ C
 C     Written by T. Saue May 30 2012
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
       DIMENSION CMO(NBAS,NORB,NZ),CSEL(LRSEL,LCSEL,4),IVEC(NVEC),WORK(*)
@@ -4208,7 +4095,6 @@ C
 C     
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbdhf.h"
 #include "dcborb.h"
@@ -4251,10 +4137,8 @@ C     NOTE:
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
-#include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
       DIMENSION CAO(*),CSO(*),NVEC(2)
@@ -4374,7 +4258,6 @@ C     Written by T. Saue Oct 5 2016
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"      
       DIMENSION INFOSEL(2,NVECT),KVEC(2,NFRAG),NSTR(2,0:2,NFRAG),
@@ -4498,27 +4381,41 @@ C***********************************************************************
       RETURN
       END
 
-      subroutine write_occupations_fromcommon(group)
+      subroutine write_occupations_fromcommon(group,write_psh)
+
+!     write orbital occupations and shell information stored in the common block dcborb to checkpoint
+!     shell information codes: -2 (neg. energy), -1 (closed shell), 0 (virtual), >0 (open shell)
+!     - group: indicates the section to which this information is to be written
+!     - write_psh == true: write occupations also for negative energy orbitals (4C runs)
+!                 == false: write occupations only for the positive energy orbitals (2C runs)
+
       use checkpoint
 #include "implicit.h"
-#include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dgroup.h"
       character(len=*),intent(in) :: group
+      logical,intent(in) :: write_psh
       real(8), allocatable :: occupations(:)
       integer, allocatable :: shell_id(:)
 
-      allocate(occupations(norbt))
-      allocate(shell_id(norbt))
+      if (write_psh) then
+         allocate(occupations(norbt))
+         allocate(shell_id(norbt))
+      else
+         allocate(occupations(nesht))
+         allocate(shell_id(nesht))
+      endif
       ish = 0
       do ifsym = 1, nfsym
           ! positronic (negative energy) shells
-          do i = 1, npsh(ifsym)
-             ish = ish + 1
-             shell_id(ish) = -2
-             occupations(ish) = 0.D0
-          enddo
+          if (write_psh) then
+             do i = 1, npsh(ifsym)
+                ish = ish + 1
+                shell_id(ish) = -2
+                occupations(ish) = 0.D0
+             enddo
+          endif
           ! inactive (closed) shells
           do i = 1, nish(ifsym)
              ish = ish + 1
@@ -4800,4 +4697,3 @@ C***********************************************************************
                 nfunctions_in_shell = 2 * (l_value - 1) + 1
              end if
         end function nfunctions_in_shell
-

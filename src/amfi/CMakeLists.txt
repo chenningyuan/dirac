@@ -32,7 +32,7 @@ endif()
 
 add_library(
     amfi
-    OBJECT
+    STATIC
     ${FIXED_AMFI_FORTRAN_SOURCES}
     ${FREE_AMFI_FORTRAN_SOURCES}
 )

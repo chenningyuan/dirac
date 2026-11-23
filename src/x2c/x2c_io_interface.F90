@@ -18,23 +18,25 @@
 ! file-I/O routines used in the X2C routines.
 !
 ! written by sknecht april 2010
+! Januar 2024 hjaaj: made it not a module, becuase it gave circular dependency with x-amfi directory
+!   where x2c_read is called
 !
-module x2c_fio
+!hj module x2c_fio
 
-  implicit none
+!hj   public x2c_write
+!hj   public x2c_read
 
-  public x2c_write
-  public x2c_read
+!hj   private
 
-  private
-
-contains
+!hj   contains
 
 !**********************************************************************
   subroutine x2c_write(flabel,fmat,nlen,funit)
 !**********************************************************************
      use checkpoint
      use labeled_storage
+
+  implicit none
      real(8),            intent(in)     :: fmat(*)
      integer,            intent(in)     :: nlen
      integer,            intent(in)     :: funit
@@ -86,6 +88,8 @@ contains
 !**********************************************************************
      use checkpoint
      use labeled_storage
+
+  implicit none
      real(8),            intent(inout)  :: fmat(*)
      integer,            intent(in)     :: nlen
      integer,            intent(in)     :: funit
@@ -136,4 +140,4 @@ contains
   end subroutine x2c_read
 !**********************************************************************
 
-end module x2c_fio
+!hj end module x2c_fio

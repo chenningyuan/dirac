@@ -104,8 +104,6 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
 #include "priunit.h"
-#include "cbisol.h"
-#include "cbihr1.h"
 #include "molinp.h"
 #include "numder.h"
 ! infpar.h: MPARID, MYTID
@@ -500,7 +498,6 @@ C ::       Add Vec to array       ::
 C ::                              ::
 C ::::::::::::::::::::::::::::::::::
 #include "implicit.h"
-#include "priunit.h"
 #include "mxsymm.h"
       DIMENSION ARR(6,0:MXM), VEC(3)
       IF (ABS(VEC(1)) .LT. TOLLRN) VEC(1) = 0.0D0
@@ -566,7 +563,6 @@ C ::       Deletes all duplicate axes (parallel) in array        ::
 C ::                                                             ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include "implicit.h"
-#include "priunit.h"
 #include "mxsymm.h"
       DIMENSION AXARR(6,0:MXM), V1(3), V2(3)
 
@@ -822,7 +818,7 @@ C
 #endif
 
       IF (MYTID .EQ. MPARID .and. IPRSYM > 0) WRITE(LUPRI,'(/A)')
-     &   '    The molecule has been centered at center of mass'
+     &   '    The molecule has been centered at center of mass.'
 #if HERSYM_DEBUG > 0
       CALL PRNARR('CENTER_MOLECULE: coord.s now', N_ATOMS, ATMARR)
 #endif
@@ -998,10 +994,19 @@ C
 
       IF (ITURN .LE. 1) GO TO 10
 
- 100  IF (MYTID .EQ. MPARID) WRITE(LUPRI,'(/A/A)')
+ 100  IF (MYTID .EQ. MPARID) THEN
+         IF (IPRSYM > 0) THEN
+            WRITE(LUPRI,'(/A/A)')
+     &   '    The molecule has been rotated so principal'//
+     &      ' axes of inertia',
+     &   '    are along the coordinate axes.'
+         ELSE
+            WRITE(LUPRI,'(/A/A)')
      &   '    The molecule has been centered at center of mass and',
      &   '    rotated so principal axes of inertia are along'//
      &      ' the coordinate axes.'
+         END IF
+      END IF
 #if HERSYM_DEBUG > 0
       CALL PRNARR('PRINCIPLE_AXIS_MOLECULE: coord.s now',
      &   N_ATOMS, ATMARR)
@@ -1647,7 +1652,6 @@ C ::       proper or improper rotations.                   ::
 C ::                                                       ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include "implicit.h"
-#include "priunit.h"
 #include "mxsymm.h"
 #include "mxcent.h"
       DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
@@ -2388,7 +2392,6 @@ C ::       Removes symmetry-dependent atoms      ::
 C ::                                             ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "mxsymm.h"
 #include "molinp.h"
@@ -2560,7 +2563,6 @@ C       *** degenerate with respect to others.                      ***
 C       ***************************************************************
 C
 #include "implicit.h"
-#include "priunit.h"
 C
         PARAMETER (THRS = 1.0D-10)
         LOGICAL   ONAXS, HAVAXS

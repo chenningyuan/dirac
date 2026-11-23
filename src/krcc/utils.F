@@ -18,7 +18,7 @@ C
 *
 * Jeppe Olsen, March 2000
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input
       DIMENSION VEC(LENGTH)
 *
@@ -40,7 +40,7 @@ C
 *
 * Jeppe Olsen, March 2000
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input
       DIMENSION VEC(LENGTH)
 *
@@ -68,7 +68,7 @@ C     CALL FRMDSC(VEC,LENGTH,LBLK,LU,IAMZERO,IAMPACKED)
 *
 * Lasse 2012
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input
       DIMENSION VEC(LENGTH)
 * Scratch
@@ -203,7 +203,7 @@ C         print*,'VEC(I),SCR(I),I after',VEC(I),SCR(I),I
 * possibilities for reading in files.
 *
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input
       DIMENSION VEC(LENGTH)
 *
@@ -273,7 +273,7 @@ C       print*,'ISTART,IEND',ISTART,IEND
 *
 * Jeppe Olsen, March 2000
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input
       DIMENSION VEC(LENGTH)
 *
@@ -292,7 +292,7 @@ C       print*,'ISTART,IEND',ISTART,IEND
 *
 * Print types of spin-orbital excitations
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 *
@@ -330,7 +330,7 @@ C       print*,'ISTART,IEND',ISTART,IEND
 *
 * Jeppe Olsen, Oct 2000
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Output
       INTEGER IVEC(*)
       DO IELMNT = IOFF, IOFF-1+NDIM
@@ -346,7 +346,7 @@ C       print*,'ISTART,IEND',ISTART,IEND
 *
 * Jeppe Olsen, Summer of 99
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input
       DIMENSION FDIA(*)
       INTEGER IOCC(NEL,NSTR)
@@ -388,7 +388,7 @@ C       print*,'ISTART,IEND',ISTART,IEND
 *
 * Jeppe Olsen, March 4 2000
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input
       DIMENSION AIN(*)
 *. Output
@@ -418,7 +418,7 @@ C       print*,'ISTART,IEND',ISTART,IEND
 *
 * VECOUT = FACTOR*VECIN
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       DIMENSION VECOUT(NDIM),VECIN(NDIM)
 *

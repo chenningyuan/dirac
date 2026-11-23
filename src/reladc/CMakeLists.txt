@@ -89,7 +89,7 @@ endif()
 # Create the module library
 add_library(
     reladc
-    OBJECT
+    STATIC
     ${FREE_RELADC_FORTRAN_SOURCES}
     ${FREE_RELADC_FORTRAN_SOURCES_noruntimecheck}
     ${FIXED_RELADC_FORTRAN_SOURCES}

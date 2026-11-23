@@ -49,6 +49,7 @@
 void get_traceback_info_(enum allowedActions*, char *fstring, int *fsize);
 
 // auxiliary functions 
+char *cached_symbol(void *addr);
 void retrieve_symbol(enum retrieveSymbolKinds, char *result, char *backtrace_string);
 void print_trace_to_stdout(enum allowedActions, size_t size, char **strings);
 void print_trace_to_string(char *symbol_in, char *symbol_out, int length);
@@ -79,6 +80,26 @@ void get_traceback_info_(enum allowedActions *action, char *fstring, int *fsize)
    mac osx 10.5 should have the same interface */
 #if defined (__GLIBC__) || (__APPLE__ & __MACH__) || defined (__BSD_EXECINFO__)
    size    = backtrace (array, MAXDEPTH_TRACE);
+
+// Resolve each return address only once (trough backtrace_symbols, which searches the symbol table)
+   if ( *action == printAllocCaller )
+   {
+      if ( size > i )
+      {
+         j = 1;
+         for (i = 1; i < size; i++)
+            if ( strncmp("alloc",cached_symbol(array[i]),5) == 0 || strncmp("dealloc",cached_symbol(array[i]),7) == 0 )
+               j = i+1;
+         if ( j < size )
+            print_trace_to_string(cached_symbol(array[j]),fstring,*fsize);
+         else
+            print_trace_to_string(safe,fstring,*fsize);
+      }
+      else
+         print_trace_to_string(safe,fstring,*fsize);
+      return;
+   }
+
    strings = backtrace_symbols (array, size);
 #endif 
 
@@ -135,9 +156,56 @@ void get_traceback_info_(enum allowedActions *action, char *fstring, int *fsize)
 // auxiliary routines
 //
 
+//
+// cached_symbol: cleaned-up symbol name of a return address, kept in a small open-addressing table.
+//                When the table is full, the symbol is resolved again each time.
+//
+#define NR_CACHED_SYMBOLS 4096
+static void *cached_addr[NR_CACHED_SYMBOLS];
+static char  cached_name[NR_CACHED_SYMBOLS][MAXSIZE_SYMBOL];
+static char  uncached_name[MAXSIZE_SYMBOL];
+
+char *cached_symbol(void *addr)
+{
+   size_t h = ((size_t) addr >> 4) % NR_CACHED_SYMBOLS, n;
+   char **s, *name = NULL;
+
+#pragma omp critical (dirac_trace_symbols)
+   {
+      for (n = 0; n < NR_CACHED_SYMBOLS; n++, h = (h + 1) % NR_CACHED_SYMBOLS)
+      {
+         if ( cached_addr[h] == addr )
+         {
+            name = cached_name[h];
+            break;
+         }
+         if ( cached_addr[h] == NULL )
+            break;
+      }
+      if ( name == NULL )
+      {
+         name = (n < NR_CACHED_SYMBOLS) ? cached_name[h] : uncached_name;
+         s = backtrace_symbols (&addr, 1);
+         if ( s == NULL )
+            strcpy(name,"unknown");
+         else
+         {
+#if (__APPLE__ & __MACH__)
+            parse_trace(1,s);
+#endif
+            retrieve_symbol(symbolName,name,s[0]);
+            free (s);
+         }
+         if ( n < NR_CACHED_SYMBOLS )
+            cached_addr[h] = addr;
+      }
+   }
+   return name;
+}
+
 size_t findnext_internal_symbols(size_t size, char **strings)
 {
-   size_t i, j, next = 1;
+   size_t j, next = 1;
    char symbol_name[MAXSIZE_SYMBOL];
 
 //

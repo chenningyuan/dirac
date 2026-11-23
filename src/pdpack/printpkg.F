@@ -625,6 +625,7 @@ C.......................................................................
 C
 #include "implicit.h"
       INTEGER   ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,BEGIN,KCOL
+      INTEGER   IMAX, JMAX
       DIMENSION AMATRX(ROWDIM,COLDIM)
       CHARACTER*1 ASA(3), BLANK, CTL
       CHARACTER   PFMT*20, COLUMN*8
@@ -637,9 +638,27 @@ C
       IF (ROWHI.LT.ROWLOW) GO TO 3
       IF (COLHI.LT.COLLOW) GO TO 3
 C
+C     When COLHI or ROWHI exceeds COLDIM or ROWDIM, the column range
+C     is truncated  to prevent invalid memory access.
+      JMAX = COLHI
+      IMAX = ROWHI
+      IF (COLHI .GT. COLDIM) THEN
+         JMAX = COLDIM
+         WRITE(LUPRI,'(A,2I6)')
+     &    'OUTPUT: global COLHI exceeds local COLDIM, truncating:',
+     &    COLHI, COLDIM
+      END IF
+
+      IF (ROWHI .GT. ROWDIM) THEN
+         IMAX = ROWDIM
+         WRITE(LUPRI,'(A,2I6)')
+     &    'OUTPUT: global ROWHI exceeds local ROWDIM, truncating:',
+     &    ROWHI, ROWDIM
+      END IF
+C
       AMAX = ZERO
-      DO 10 J = COLLOW,COLHI
-         DO 10 I = ROWLOW,ROWHI
+      DO 10 J = COLLOW,JMAX
+         DO 10 I = ROWLOW,IMAX
             IF ( IS_NAN(AMATRX(I,J),AMATRX(I,J)) ) THEN
                N_NAN = N_NAN + 1
             ELSE
@@ -674,10 +693,10 @@ C
          CTL = BLANK
       END IF
 C
-      LAST = MIN(COLHI,COLLOW+KCOL-1)
-      DO 2 BEGIN = COLLOW,COLHI,KCOL
+      DO 2 BEGIN = COLLOW,JMAX,KCOL
+         LAST = MIN(BEGIN + KCOL - 1, JMAX)
          WRITE (LUPRI,1000) (COLUMN,I,I = BEGIN,LAST)
-         DO 1 K = ROWLOW,ROWHI
+         DO 1 K = ROWLOW,IMAX
             IF (MCTL .GE. 10) GO TO 5 ! also print zero rows
             DO 4 I = BEGIN,LAST
                IF (abs(AMATRX(K,I)).gt.thrpri) GO TO 5

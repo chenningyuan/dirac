@@ -18,7 +18,7 @@ module exacorr_respect
 !     Routine to read coefficients and ao_basis data from ReSpect
 
       use exacorr_mo
-      use exacorr_datatypes, only : basis_set_info_t
+      use exacorr_ao
 
 !     input variables
       type(basis_set_info_t), intent(inout) :: ao_basis

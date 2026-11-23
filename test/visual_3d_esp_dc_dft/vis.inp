@@ -1,0 +1,32 @@
+**DIRAC
+.TITLE
+ calculate selected grid function on a 3D regular grid and export it to an external h5 file
+**HAMILTONIAN
+.DFT
+ B3LYP
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**WAVE FUNCTION
+.SCF
+*SCF
+.CLOSED_SHELL
+10
+.EVCCNV
+1.0D-8
+**VISUAL
+.GRIDS 
+1
+id=1 input=import file_inp=grid.h5
+.GRIDFUNCTIONS
+2
+name=espn id_grid=1 purpose=visualization outpri=yes export=hdf5 file_out=espn.h5
+name=espnrho id_grid=1 purpose=visualization outpri=yes export=hdf5 file_out=espnrho.h5
+#6
+#name=espe id_grid=1 purpose=visualization outpri=yes export=hdf5 file_out=espe.h5
+#name=espn id_grid=1 purpose=visualization outpri=yes export=hdf5 file_out=espn.h5
+#name=esp id_grid=1 purpose=visualization outpri=yes export=hdf5 file_out=esp.h5
+#name=esperho id_grid=1 purpose=visualization outpri=yes export=hdf5 file_out=esperho.h5
+#name=espnrho id_grid=1 purpose=visualization outpri=yes export=hdf5 file_out=espnrho.h5
+#name=esprho id_grid=1 purpose=visualization outpri=yes export=hdf5 file_out=esprho.h5
+*END OF

@@ -1,5 +1,5 @@
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
-    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS")
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -g -fcray-pointer -fbacktrace -fno-range-check -ffree-line-length-none -DVAR_GFORTRAN -DVAR_MFDS")
 
     if(${CMAKE_Fortran_COMPILER_VERSION} VERSION_GREATER "9.9.9")
         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fallow-argument-mismatch")

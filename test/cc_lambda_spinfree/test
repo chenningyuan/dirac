@@ -1,0 +1,72 @@
+#!/usr/bin/env python
+# Test: CC lambda density with spinfree/Levy-Leblond Hamiltonians in all groups
+# GitLab issue: https://gitlab.com/dirac/dirac/-/work_items/22
+# GitLab MR:    https://gitlab.com/dirac/dirac/-/merge_requests/406
+#
+# Coverage: spinfree X2C in real (D2h), complex (C2) and quaternion (Ci)
+# groups, Levy-Leblond in C2, and spin-orbit X2C in D2h for reference.
+# (Selected from a full scan over 6 groups x 3 Hamiltonians made for issue #22.)
+#
+# Key correctness check: for a fixed Hamiltonian all symmetry cases must give
+# the same CCSD energy AND the same CCSD electric field gradient at F (the
+# EFG probes the full relaxed density: OO, VV, VO and OV blocks). The EFG
+# printed is summed over the two symmetry-equivalent F centers.
+# Reference values of CCSD EFG ZZ011 (both F atoms):
+#   X2C spinfree 10.834026, Levy-Leblond 10.812489, X2C 10.833662
+#
+# NZ/NFSYM mapping (double-group algebra):
+#
+#   Mol file     Generators    Group    NZ  NFSYM  Algebra
+#   ----------   ----------    ------   --  -----  ----------
+#   F2_d2h.mol   Z Y X         D2h      1   2      real
+#   F2_c2.mol    XZ            C2(y)    2   1      complex
+#   F2_ci.mol    XYZ           Ci       4   2      quaternion
+#
+# Generators in DIRAC INTGRL notation:
+#   X=sigma(yz), Y=sigma(xz), Z=sigma(xy)
+#   XY=C2(z), XZ=C2(y), YZ=C2(x), XYZ=inversion
+#
+# Bugs covered (all in the conversion of the RELCCSD density to DIRAC format):
+# - RELTODIR set the global NZ=1 for spinfree runs, corrupting all later code.
+# - With spinfree (IRCW=1) and NZ=4, the quaternion branches read XMOM(:,2)
+#   out of bounds (Ci, C1 crashed or gave garbage densities).
+# - The OO/VV/OV converters were inconsistent with the VO one for spinfree
+#   (wrong densities in C2 and C1).
+# - Super_Symmetry never mapped ungerade orbitals for spinfree with inversion
+#   (wrong densities in D2h, C2h, Ci).
+# The four converters are now unified in RCCTODIR (src/moltra/traone.F).
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+# Filter on quantities that are stable across platforms and symmetries.
+# (Off-diagonal EFG/dipole components are numerical noise ~1e-13 whose
+# printing depends on thresholds, so they are not compared.)
+f = Filter()
+f.add(string='@ Total CCSD energy', rel_tolerance=1.0e-9)
+f.add(string='EFG: XX011', rel_tolerance=1.0e-6)
+f.add(string='EFG: YY011', rel_tolerance=1.0e-6)
+f.add(string='EFG: ZZ011', rel_tolerance=1.0e-6)
+
+# --- SpinFree X2C (SPINFR=TRUE) ---
+# NZ=1, NFSYM=2 (real, inversion)
+test.run(['cc_lambda_x2c_spinfree.inp'], ['F2_d2h.mol'], f, args='--mw=100')
+# NZ=2, NFSYM=1 (complex, no inversion)
+test.run(['cc_lambda_x2c_spinfree.inp'], ['F2_c2.mol'],  f, args='--mw=100')
+# NZ=4, NFSYM=2 (quaternion, inversion)
+test.run(['cc_lambda_x2c_spinfree.inp'], ['F2_ci.mol'],  f, args='--mw=100')
+
+# --- Levy-Leblond (also SPINFR=TRUE) ---
+# NZ=2, NFSYM=1 (complex, no inversion)
+test.run(['cc_lambda_levy_leblond.inp'], ['F2_c2.mol'],  f, args='--mw=100')
+
+# --- Spin-orbit X2C (SPINFR=FALSE), reference ---
+# NZ=1, NFSYM=2
+test.run(['cc_lambda_x2c.inp'], ['F2_d2h.mol'], f, args='--mw=100')
+
+sys.exit(test.return_code)

@@ -1,0 +1,17 @@
+**DIRAC                                                            
+.WAVE FUNCTION                                                     
+**HAMILTONIAN                                                      
+**WAVE FUNCTION                                                    
+.SCF                                                               
+**SCF
+.CLOSED SHELL
+ 10
+**MOLECULE
+*SYMMETRY
+.LINEAR
+*BASIS                                                             
+.DEFAULT                                                           
+ dyall.2zp
+.SPECIAL
+ foo NOBASIS
+**END OF                                                           

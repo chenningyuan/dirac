@@ -55,7 +55,7 @@ endif()
 
 add_library(
     krcc
-    OBJECT
+    STATIC
     ${FREE_KRCC_FORTRAN_SOURCES}
     ${FIXED_KRCC_FORTRAN_SOURCES}
 )

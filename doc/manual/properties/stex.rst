@@ -29,7 +29,7 @@ account.
 A STEX calculation typically proceeds in the following way:
 
 #. The Hartree-Fock groundstate is calculated with Dirac, and the
-   wavefunction saved in the ``DFCOEF`` file.
+   wavefunction saved as ``CHECKPOINT.h5`` (using ``pam --outcmo``).
 
 #. The groundstate output is examined and the indices of the core
    orbital of interest are noted.
@@ -41,12 +41,12 @@ A STEX calculation typically proceeds in the following way:
 #. An average-of-configuration open shell Hartree-Fock calculation is
    performed to get an approximate wavefunction of the core
    ionized molecule. This wavefunction should then be saved to a file
-   ``DFCOEF.ION``.
+   ``ION.h5``.
    In order for the core ionized state to converge it is necessary to
    use overlap selection and possibly orbital freezing.
 
 #. The STEX calculation is run with the specified hole orbitals,
-   starting from the previously calculated ``DFCOEF`` and ``DFCOEF.ION``
+   starting from the previously calculated ``CHECKPOINT.h5`` and ``ION.h5``
    files.\
 
 please provide an

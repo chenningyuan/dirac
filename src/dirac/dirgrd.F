@@ -39,16 +39,10 @@ C*****************************************************************************
 C
       DIMENSION WORK(LWORK)
       LOGICAL   LSAVE(3)
-#include "ccom.h"
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
-#include "dgroup.h"
-#include "dcbbas.h"
 #include "dcborb.h"
-#include "blocks.h"
 #include "dcbgrd.h"
-#include "dcbpsi.h"
 #include "symmet.h"
 C
       CALL QENTER('RMOLGRD')
@@ -80,36 +74,30 @@ C        NOPEN = 1 and DF(1) = 0.5 if NASHT .gt. 0 !!!!
 C
          IF (NOPEN .EQ. 1) THEN
             IF (NASHT .GT. 1 .OR. ABS(DF(1)-0.5D0) .GT. 1.0D-14) THEN
-              WRITE(LUPRI,'(/A/A/A)')
-     &        '*** ERROR in RMOLGRD ***',
-     &        'Molecular gradient not implemented for open-shell DHF',
+              WRITE(LUPRI,'(/A/A/A/A)')
+     &        '*** ERROR in RMOLGRD *** Analytical ',
+     &        'molecular gradient not implemented for open-shell HF',
      &        'with more than one single occupied open-shell orbital.'
+              WRITE(LUPRI,'(/A)') 'You may try ".NUMGRAD"'
               CALL QUIT('*** ERROR in RMOLGRD: Molecular gradient' // 
      &        ' not implemented for this open-shell DHF')
             END IF
          ELSE IF (NOPEN .GT. 1) THEN
             WRITE(LUPRI,'(/A/A/A)')
-     &        '*** ERROR in RMOLGRD ***',
-     &        'Molecular gradient not implemented for open-shell DHF',
+     &        '*** ERROR in RMOLGRD *** Analytical ',
+     &        'molecular gradient not implemented for open-shell HF',
      &        'with more than one open shell.'
+            WRITE(LUPRI,'(/A)') 'You may try ".NUMGRAD"'
             CALL QUIT('*** ERROR in RMOLGRD: Molecular gradient' // 
      &        ' not implemented for this open-shell DHF')
          END IF
 
-         if (dirac_cfg_dft_calculation) then
-            if (nopen > 0) then
-               call quit('error in molecular gradient:' // 
-     &        ' not implemented for open-shell DFT')
-            end if
-            if (maxrep > 0) then
-               call quit('error in molecular gradient:' // 
-     &        ' not implemented for DFT with symmetry')
-            end if
-         end if
-
          if (bss .or. x2c) then
-            call quit('error in molecular gradient:' // 
-     &      ' not implemented for X2C')
+            WRITE(LUPRI,'(/A)') 'Error in molecular gradient:' // 
+     &      ' not implemented for X2C and BSS'
+            WRITE(LUPRI,'(/A)') 'You may try ".NUMGRAD"'
+            call quit('Error in molecular gradient:' // 
+     &      ' not implemented for X2C and BSS')
          end if
 
          CALL SETDHF(IPRGRD)
@@ -120,13 +108,27 @@ C
 C
       ELSE
 C
-         WRITE(LUPRI,'(/A/A)')
-     &        '*** ERROR in RMOLGRD ***',
-     &        'Molecular gradient only implemented for DHF'
-         CALL QUIT('*** ERROR in RMOLGRD: ' // 
-     &             'Molecular gradient only implemented for DHF')
+         WRITE(LUPRI,'(/A/A)') '*** ERROR in RMOLGRD ***',
+     &      'Analytical Molecular gradient only implemented for '//
+     &      ' HF and DFT. You may try ".NUMGRAD".'
+         CALL QUIT('*** ERROR in RMOLGRD: Analytical ' // 
+     &      'molecular gradient only implemented for HF and DFT')
 C
       END IF
+C
+C for dft it is even more restriced, analytical molecular gradient is
+C only implemented for closed-shell DFT without symmetry.
+C
+      if (dirac_cfg_dft_calculation) then
+         if (nopen > 0) then
+            call quit('Error for analytical molecular gradient:' //
+     &      ' not implemented for open-shell DFT. You may use .NUMGRAD')
+         end if
+         if (maxrep > 0) then
+            call quit('Error for analytical molecular gradient: not' //
+     &      ' implemented for DFT with symmetry. You may use .NUMGRAD')
+         end if
+      end if
 C
 C
       CALL TITLER('Analytical calculation of molecular gradient',
@@ -843,18 +845,12 @@ C     Timing variables
 C
 #include "dcbbas.h"
 #include "nuclei.h"
-#include "cbiher.h"
-#include "cbihr1.h"
-#include "cbisol.h"
 #include "dcbgen.h"
-#include "dcbpsi.h"
 #include "dcbdhf.h"
 #include "dgroup.h"
-#include "dcborb.h"
 #include "dcbham.h"
 #include "dorps.h"
 C two el. part
-#include "ccom.h"
 #include "cbihr2.h"
 #include "blocks.h"
 #include "dcbgrd.h"
@@ -1361,10 +1357,9 @@ C
 #if defined (VAR_MPI)
       IF (PARCAL) THEN
          CALL DIRAC_PARCTL( HERFCK_PAR )
-         CALL MEMGET('INTE',KNPOS,MTOTTK,WORK,KFREE,LFREE)
          CALL HER_PARDRV(WORK(KFREE),LFREE,DUMMY,WORK(KDAO),NDMAT,
      &        IDUMMY,IFCTYP,ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
-     &        RTNTWO,FIRST,WORK(KNPOS),MTOTTK,I2TYP,ICEDIF,
+     &        RTNTWO,FIRST,MTOTTK,I2TYP,ICEDIF,
      &        SCRGRD,WORK(KGABRAO),WORK(KDMRAO),DUMMY,DNTSKP)
       ELSE
 #endif
@@ -1456,7 +1451,6 @@ C     INDXAB = IDUMMY
       NOPV   = .TRUE.
       NOCONT = .FALSE.
       FIRST  = .TRUE.
-C     NPOS   = IDUMMY
       MTOTTK = NLRGBL*(NLRGBL+1)/2
       I2TYP  = 2
       INTCLASS  = 1
@@ -1470,10 +1464,9 @@ C
 #if defined (VAR_MPI)
       IF (PARCAL) THEN
          CALL DIRAC_PARCTL( HERFCK_PAR )
-         CALL MEMGET('INTE',KNPOS,MTOTTK,WORK,KFREE,LFREE)
          CALL HER_PARDRV(WORK(KFREE),LFREE,DUMMY,WORK(KDAO),NDMAT,
      &        IDUMMY,IFCTYP,ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
-     &        RTNTWO,FIRST,WORK(KNPOS),MTOTTK,I2TYP,ICEDIF,
+     &        RTNTWO,FIRST,MTOTTK,I2TYP,ICEDIF,
      &        SCRGRD,WORK(KGABRAO),WORK(KDMRAO),DUMMY,DNTSKP)
       ELSE
 #endif
@@ -1574,7 +1567,6 @@ C     INDXAB = IDUMMY
       NOPV   = .TRUE.
       NOCONT = .FALSE.
       FIRST  = .TRUE.
-C     NPOS   = IDUMMY
       MTOTTK = NSMLBL*(NSMLBL+1)/2
       I2TYP  = 3
       INTCLASS  = 2
@@ -1588,10 +1580,9 @@ C
 #if defined (VAR_MPI)
       IF (PARCAL) THEN
          CALL DIRAC_PARCTL( HERFCK_PAR )
-         CALL MEMGET('INTE',KNPOS,MTOTTK,WORK,KFREE,LFREE)
          CALL HER_PARDRV(WORK(KFREE),LFREE,DUMMY,WORK(KDAO),NDMAT,
      &        IDUMMY,IFCTYP,ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
-     &        RTNTWO,FIRST,WORK(KNPOS),MTOTTK,I2TYP,ICEDIF,
+     &        RTNTWO,FIRST,MTOTTK,I2TYP,ICEDIF,
      &        SCRGRD,WORK(KGABRAO),WORK(KDMRAO),DUMMY,DNTSKP)
       ELSE
 #endif
@@ -1727,8 +1718,6 @@ C     jth, 1997/24/04; revised 010626-hjaaj: also set MOLGRD,MOLHES,DIPDER
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
 #include "abainf.h"
       LOGICAL ALLSYM,RELGRD,RELHES,RELDIPD
       DOSYM(1) = .TRUE.
@@ -1857,9 +1846,7 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
 #include "taymol.h"
-#include "dummy.h"
 C
-#include "dcbpsi.h"
 #include "dcbgen.h"
 #include "dcbgrd.h"
 #include "dcbham.h"
@@ -1999,18 +1986,15 @@ C*****************************************************************************
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "aovec.h"
 #include "consts.h"
 C
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOLS
       CHARACTER*3 STR
 #include "nuclei.h"
-#include "symmet.h"
 #include "dcbgen.h"
 #include "dcbgrd.h"
 C
@@ -2076,13 +2060,10 @@ C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "codata.h"
 #include "priunit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "aovec.h"
 #include "consts.h"
 C
       PARAMETER(DP1 = 0.1D00)
@@ -2090,8 +2071,6 @@ C
       LOGICAL DOSS
       CHARACTER*3 STR
 #include "nuclei.h"
-#include "symmet.h"
-#include "dcbgen.h"
 #include "dcbgrd.h"
 #include "optinf.h"
 C
@@ -2222,7 +2201,6 @@ C     Last revision: 1997/09/23 jth
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -2230,7 +2208,6 @@ C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0,
      *           THREE = 3.0D0)
 #include "nuclei.h"
-#include "frame.h"
 #include "dorps.h"
 #include "symmet.h"
 C
@@ -2546,7 +2523,6 @@ C     Copied from abacus/abatro.F (TROINI)
 C     and modified for use in Dirac./jth 1998-02-04
 C
 #include "implicit.h"
-#include "mxcent.h"
 #include "cbitro.h"
 #include "abainf.h"
 #include "dcbgen.h"
@@ -2583,7 +2559,6 @@ C
 #include "implicit.h"
       DIMENSION DSO(*), WORK(LWORK)
 C
-#include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
@@ -2629,7 +2604,6 @@ C*****************************************************************************
 #include "mxcent.h"
 #include "maxorb.h"
 C
-#include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
       DIMENSION GRAD(MXCOOR),CGRAD(MXCOOR),CSTRA(*),SCTRA(*)

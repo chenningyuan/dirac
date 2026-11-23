@@ -75,7 +75,7 @@ module dirac_ao_eval
 
    use interface_ao
    use xc_max_block_length
-   use extra
+   use xcint_extra
    use dirac_ao_eval_sub
 
    implicit none

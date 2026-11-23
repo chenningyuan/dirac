@@ -15,6 +15,7 @@ Projection analysis for CH4
 .PROJEC
 *PROJEC
 .OWNBAS
+.C1READ
 .VECREF
 5
 C.h5

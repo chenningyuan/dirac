@@ -24,7 +24,7 @@ set(FIXED_KRMC_FORTRAN_SOURCES
 
 set(FIXED_KRMC_FORTRAN_SOURCES_noruntimecheck
     krmcluci.F
-    krci_ctl.F # Miro: DKRCI_THRGCI not defined
+    krci_ctl.F
 )
 
 set(FREE_KRMC_FORTRAN_SOURCES
@@ -51,7 +51,7 @@ endif()
 
 add_library(
     krmc
-    OBJECT
+    STATIC
     ${FIXED_KRMC_FORTRAN_SOURCES}
     ${FIXED_KRMC_FORTRAN_SOURCES_noruntimecheck}
     ${FREE_KRMC_FORTRAN_SOURCES}
@@ -63,7 +63,7 @@ add_library(
 #
 add_dependencies(krmc gp)
 add_dependencies(krmc dirac)
-add_dependencies(krmc main)
+add_dependencies(krmc dirac_main)
 add_dependencies(krmc interface_mpi)
 
 target_link_libraries(krmc

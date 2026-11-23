@@ -21,12 +21,8 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "param.inc"
 #include "symm.inc"
-#include "eqns.inc"
-#include "inpt.inc"
 #include "results.inc"
-#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C

@@ -13,7 +13,9 @@ f.add(string = 'Final KR-MCSCF energy',
       rel_tolerance = 1.0e-5)
 
 test.run(['Be.gascip.bss+mfsso.krmc.inp'], ['Be.gascip.mol'], f)
-test.run(['Be.inp'], ['Be.mol'], f)
-test.run(['Be.linear.inp'], ['Be.linear.mol'], f)
+
+if os.environ.get("ONLY_GASCIP") is None:
+  test.run(['Be.inp'], ['Be.mol'], f)
+  test.run(['Be.linear.inp'], ['Be.linear.mol'], f)
 
 sys.exit(test.return_code)

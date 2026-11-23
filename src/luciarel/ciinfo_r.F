@@ -50,8 +50,7 @@
 * revised for DIRAC environment
 *     Timo Fleig, December 2000
 *
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
+#include "implicit.h"
 *.output
       INTEGER IUB1(2,10),IUB2(4,10),ISM2(3,10)
 *
@@ -203,7 +202,7 @@ CTEMP     ISM2(3,5) = 1
 * Jeppe Olsen, July 97
 * Timo Fleig, August '97
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 *. Input
 #include "mxpdim.inc"
 #include "crun.inc"
@@ -250,7 +249,7 @@ CTEMP     ISM2(3,5) = 1
                MK2MIN  =  0
                MK2MINP = -2
             else
-              write(6,*) 'Problem in evenodd'
+              write(6,*) 'Problem in evenodd: ',IEVOD
               call quit(
      &       '*** error in dettyp (ipair==1): evenodd problem.***')
             end if
@@ -264,7 +263,7 @@ CTEMP     ISM2(3,5) = 1
              MK2MINP = -2
              MK2MAXP =  0
           else
-             write(6,*) 'Problem in evenodd'
+             write(6,*) 'Problem in evenodd: ',IEVOD
              call quit(
      &       '*** error in dettyp (ipair==0): evenodd problem.***')
           end if
@@ -311,7 +310,7 @@ CTEMP     ISM2(3,5) = 1
       use memory_allocator
       use symmetry_setup_krci
       use mospinor_info
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 * =====
 *.Input
@@ -319,7 +318,6 @@ CTEMP     ISM2(3,5) = 1
 *
 #include "mxpdim.inc"
 #include "strbas.inc"
-#include "cicisp.inc"
 #include "cstate.inc"
 #include "strinp.inc"
 #include "stinf.inc"
@@ -558,8 +556,7 @@ CTEMP     ISM2(3,5) = 1
 *
       use mospinor_info
 *  Orbitals
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
+#include "implicit.h"
       DIMENSION C(*)
 *. General input
       DIMENSION NSSOA(NSMST,*), NSSOB(NSMST,*)
@@ -1095,7 +1092,7 @@ C**********************************************************************
 C
       use symmetry_setup_krci
       use mospinor_info
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 C
       character*6 CIRUN
 C
@@ -1109,15 +1106,12 @@ C
 *
 #include "mxpdim.inc"
 #include "cicisp.inc"
-#include "clunit.inc"
 #include "cstate.inc"
 #include "crun.inc"
 #include "strinp.inc"
 #include "stinf.inc"
 #include "strbas.inc"
-#include "glbbas.inc"
 #include "cprnt.inc"
-#include "oper.inc"
 #include "gasstr.inc"
 C
 #include "cgas.inc"
@@ -1232,13 +1226,12 @@ C
       IDUM = 0
       call memmar(KDUM,IDUM,'FLUSM ',KDUM,'GET_3B')
 C
-      IF(CIRUN /= 'REFVEC')THEN
+      IF(CIRUN /= 'REFVEC' .AND. NTEST > 0)THEN
       WRITE(LUWRT,'(/3X,A)') 
      & '=============================================================='
       WRITE(LUWRT,'(3X,A)') 
      & '==> allocation of two CI vectors and one resolution vector <=='
-      write(LUWRT,*) ' '
-      WRITE(LUWRT,'(3X,A,1X,I15)')
+      WRITE(LUWRT,'(/3X,A,1X,I15)')
      & 'current available free memory in double words:',LMEMFREE_PTR
       WRITE(LUWRT,'(3X,A,1X,I15)')
      & 'allocate two CI vectors each of length:       ',LBLOCK
@@ -1267,8 +1260,7 @@ C
 *  Corrected for rel. GASCI
 *       Timo Fleig, 1999
 *
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -1309,8 +1301,7 @@ C?    WRITE(6,*) (ICMBSPC(II,ICISPC),II=1, LCMBSPC(ICISPC))
 *
       use symmetry_setup_krci
       use mospinor_info
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
+#include "implicit.h"
 *
 * =====
 *.Input
@@ -1318,8 +1309,6 @@ C?    WRITE(6,*) (ICMBSPC(II,ICISPC),II=1, LCMBSPC(ICISPC))
 *
 #include "mxpdim.inc"
 #include "crun.inc"
-#include "cgas.inc"
-#include "parluci.h"
 *.CSMPRD
 *. Local arrays
       integer, allocatable   :: nnorb(:,:)
@@ -1518,7 +1507,7 @@ C?              WRITE(6,*)   I1SM,I2SM,I3SM,I4SM,MDX
 * GAS VERSION
 *
       use symmetry_setup_krci
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 *
 * ===================
@@ -1527,7 +1516,6 @@ C?              WRITE(6,*)   I1SM,I2SM,I3SM,I4SM,MDX
 *
 #include "mxpdim.inc"
 #include "cstate.inc"
-#include "strinp.inc"
 #include "strbas.inc"
 *./CSM/ : NSMST is used
 #include "stinf.inc"
@@ -1640,12 +1628,11 @@ C     WRITE(6,*) ' MXNOCAB = ',MXNOCAB
       end if
 !
       if(cirun.eq.'NDET  ')then
-        write(luwrt,'(/a)')
-     &'  Number of determinants per double group irrep '
-        write(luwrt,'(a)')
+        write(luwrt,'(/a/a)')
+     &'  Number of determinants per double group irrep ',
      &'  ============================================= '
         do ici = 1, ncmbspc
-          write(luwrt,'(1p,5i20)') (nint(xispsm(ii,ici)),ii=1,nsmci)
+          write(luwrt,'(5i20)') (nint(xispsm(ii,ici)),ii=1,nsmci)
         end do
       end if
 
@@ -1692,7 +1679,7 @@ C     WRITE(6,*) ' MXNOCAB = ',MXNOCAB
 * Winter 94/95
 *
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 *. Allowed combinations of alpha and beta types
       INTEGER IOCOC(NOCTPA,NOCTPB)
 *. Occupation constraints
@@ -1814,8 +1801,7 @@ C     WRITE(6,*) ' MXNOCAB = ',MXNOCAB
 *
 * Jeppe Olsen, August 1995
 *
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
+#include "implicit.h"
 *. Input
       DIMENSION IGSMIN(NGAS),IGSMAX(NGAS)
 *. Output
@@ -1917,7 +1903,7 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
 *
 * Jeppe and Timo, Oct 2001 
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. General input
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -1925,7 +1911,6 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
 *. Local scratch
 *. Specific input
       INTEGER IOCC(NGAS)
-#include "ipoist8.inc"
 *
       NTEST = 000
 *
@@ -1965,12 +1950,9 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
       use memory_allocator
       use mospinor_info
       use symmetry_setup_krci
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
-*
-#include "parluci.h"
 *
       integer, allocatable :: imosp_dirac_counterx(:)
 
@@ -2116,7 +2098,7 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
 *
 * Jeppe Olsen, Winter 1994
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 *. Input
       DIMENSION NGSOB(mxnirrep,MXPNGAS)
       DIMENSION ITOOBS(*), imosp_dirac_counter(*)
@@ -2297,8 +2279,7 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
 *     reference to offset for given type
 * 2 : Blocks filled from a given offset
 *
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
+#include "implicit.h"
 *.Input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
       INTEGER IOCOC(NOCTPA,NOCTPB)
@@ -2475,8 +2456,7 @@ C?    write(6,*) ' IA IB IASM LBLOCK ', IA,IB,IASM,LBLOCK
 * 
 * S. Knecht - July 02 2007
 *
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
+#include "implicit.h"
 #include "parluci.h"
 *.Input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
@@ -2692,8 +2672,7 @@ C?    write(6,*) ' PART_CIV3 IDC IBLTP ', IDC,IBLTP(ISM)
 *
 * 2 : to be continued ...
 *
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
+#include "implicit.h"
 #include "parluci.h"
 *.Input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
@@ -2797,7 +2776,7 @@ C*causes error?!?        IF( IBLOCKD(IBLOCK) .ne. MYPROC ) IBATCH(1,IBLOCK) = 0
         WRITE(LUWRT,*) '  LENGTH,LBLOCK ',LENGTH, LBLOCK
         WRITE(LUWRT,*) ' Alter GAS space of raise Buffer from ', MXLNG
         CALL RMEMCHK
-        CALL QUIT( ' In PART_CIV3_PAR. ')
+        CALL QUIT( ' Not enough scratch memory in PART_CIV3_PAR. ')
       ELSE
 *. This batch is finished, goto next batch
         GOTO 2000
@@ -2877,8 +2856,7 @@ C*causes error?!?        IF( IBLOCKD(IBLOCK) .ne. MYPROC ) IBATCH(1,IBLOCK) = 0
 *
 * 2 : to be continued ...
 *
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
+#include "implicit.h"
 #include "parluci.h"
 *.Input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
@@ -3122,7 +3100,6 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
 * Construct accumulated MAX and MIN arrays for a RAS set of strings
 *
       IMPLICIT REAL*8 (A-H,O-Z)
-#include "ipoist8.inc"
       DIMENSION MINEL(*),MAXEL(*)
 *
       NORB = NORB1 + NORB2 + NORB3
@@ -3176,7 +3153,7 @@ COLD  MIN1A = MIN1_T
 *
 * Jeppe Olsen , Spring of 1991
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       DIMENSION ISMOST(MXNDGIRR,MXNDGIRR)
 *
       DO 1000 ITOTSM = 1, NSMCI
@@ -3212,7 +3189,6 @@ COLD  MIN1A = MIN1_T
 * Jeppe Olsen , Spring of 1991
 *
       use symmetry_setup_krci
-#include "implicit.inc"
 *
 *
 #if defined LUCI_DEBUG
@@ -3283,7 +3259,7 @@ COLD  MIN1A = MIN1_T
 * For relativistic program
       use symmetry_setup_krci
       use krci_cfg
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cicisp.inc"
@@ -3291,10 +3267,8 @@ COLD  MIN1A = MIN1_T
 #include "strbas.inc"
 #include "crun.inc"
 #include "gasstr.inc"
-#include "strinp.inc"
 * new
 #include "parluci.h"
-#include "krciprop.h"
 *
       LOGICAL CALC_MS2_C
 *.output
@@ -3628,7 +3602,7 @@ C
 * For relativistic program
       use symmetry_setup_krci
       use krci_cfg
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cicisp.inc"
@@ -3636,7 +3610,6 @@ C
 #include "strbas.inc"
 #include "crun.inc"
 #include "gasstr.inc"
-#include "strinp.inc"
 * new
 #include "parluci.h"
 #if defined (VAR_MPI2)
@@ -3897,7 +3870,7 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
 * For relativistic program
       use symmetry_setup_krci
       use krci_cfg
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cicisp.inc"
@@ -4150,7 +4123,7 @@ C
 C***********************************************************************
 C
       use symmetry_setup_krci
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cicisp.inc"
@@ -4158,9 +4131,7 @@ C
 #include "strbas.inc"
 #include "crun.inc"
 #include "gasstr.inc"
-#include "strinp.inc"
 #include "parluci.h"
-#include "infpar.h"
 #include "krciprop.h"
 #if defined (VAR_MPI2)
 #include "mpif.h"
@@ -4415,13 +4386,11 @@ C
 C***********************************************************************
 C
       use symmetry_setup_krci
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "krciprop.h"
 #include "mpif.h"
 #include "parluci.h"
-#include "infpar.h"
 #include "cands.inc"
-#include "mxpdim.inc"
       INTEGER   ISTAT(MPI_STATUS_SIZE), ISYM_DISTR(IXSYMACT)
       INTEGER   NPARBLOCK_X(NUM_BLOCKS,*),IBLOCKL_X(NUM_BLOCKS,*)
       INTEGER   IXSYMPAIRS(MXPROPKRCI_SYM,*)
@@ -4491,9 +4460,7 @@ C     Last revision :
 C
 C***********************************************************************      
       use symmetry_setup_krci
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "parluci.h"
-#include "mxpdim.inc"
+#include "implicit.h"
 #include "krciprop.h"
       DIMENSION IXSYMPAIRS(IXSYM,IXSYM), ISYMOPX(*),IXROOTSYM(*)
 C
@@ -4551,11 +4518,10 @@ C
 *
 * Jeppe Olsen, July 1995
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 *. input
 #include "mxpdim.inc"
-#include "strbas.inc"
 #include "cgas.inc"
 *. Input and Output ( NELFSPGP(MXPNGAS,MXPSTT) )
 #include "gasstr.inc"

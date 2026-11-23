@@ -13,8 +13,6 @@
 !                    electronic ground and excited states.
 !     DOJZEXP:     calculate <j_z> expectation value 
 !                  (omega quantum number) for electronic states
-!     DOSYMOPPRP:  call LUCIAREL to calculate property operator 
-!                  symmetry
 !     NPROP_KRCI:  total number of one-electron operators
 !     LPROP_KRCI:  pointer list to general common block list 
 !                  of one-electron operators
@@ -50,28 +48,28 @@
       PARAMETER(IPROPPRINT=30)
 !     max symmetry irreps - this value has to be equal to 
 !     PARAMETER (MAX_NKRCI_MAX_SYM = 128) in dcbkrci.h - SK Oct 2008
-	PARAMETER(MXPROPKRCI_SYM = 128)
+      PARAMETER(MXPROPKRCI_SYM = 128)
 !
-	INTEGER NPROP_KRCI, LPROP_KRCI, NPROP_ROOTS_KRCI, ISYMOPPRP_KRCI,
+      INTEGER NPROP_KRCI, LPROP_KRCI, NPROP_ROOTS_KRCI, ISYMOPPRP_KRCI,
      &        LXPRPKRCI, IN1ELPRP_KRCI, ISYMEIG_KRCI, IXSYMLIST, 
      &        IXSYMACT, NXSYMPAIRS, IHTYPE_X
-	COMMON/LUCIIPRP/ NPROP_KRCI, LPROP_KRCI(MXPROP_KRCI),
+      COMMON/LUCIIPRP/ NPROP_KRCI, LPROP_KRCI(MXPROP_KRCI),
      &                 NPROP_ROOTS_KRCI,ISYMOPPRP_KRCI(MXPROP_KRCI),
      &                 LXPRPKRCI,IN1ELPRP_KRCI(MXPROP_KRCI),
      &                 ISYMEIG_KRCI(MXPRPE_KRCI), 
      &                 IXSYMLIST(MXPROPKRCI_SYM),IXSYMACT,NXSYMPAIRS,
      &                 IHTYPE_X
-!	
-	LOGICAL DOPROP_KRCI, TWOEPROP, DOOSCILLST, DOSYMOPPRP, DOJZEXP,
+!
+      LOGICAL DOPROP_KRCI, TWOEPROP, DOOSCILLST, DOJZEXP,
      &        DOPROPREOD, DOSIGPROP, RUNXPROP, dodipmom_krci, 
      &        doeedm_krci, domhyp_krci, dogenp_krci, doensps_krci,
      &        donmqm_krci                                             !MKN
-	COMMON/LUCILPRP/ DOPROP_KRCI, TWOEPROP, DOOSCILLST, DOSYMOPPRP,
+      COMMON/LUCILPRP/ DOPROP_KRCI, TWOEPROP, DOOSCILLST,
      &                 DOJZEXP, DOPROPREOD, DOSIGPROP, RUNXPROP,
      &                 dodipmom_krci, doeedm_krci, domhyp_krci, 
      &                 dogenp_krci, doensps_krci, donmqm_krci         !MKN
-      CHARACTER XSYMFLAB*3, XREPEIG*4
-	COMMON/LUCICPRP/XSYMFLAB(MXPROPKRCI_SYM),XREPEIG(MXPROPKRCI_SYM)
+      CHARACTER XREPEIG*4
+      COMMON/LUCICPRP/XREPEIG(MXPROPKRCI_SYM)
 !
       COMMON/LUCIPROPNUC/VKRCI_NUCSPIN(MAXNUCLEI),
      &                   VKRCI_NUCMAGMOM(MAXNUCLEI)

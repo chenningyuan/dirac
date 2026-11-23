@@ -42,7 +42,7 @@ to investigate the quality of the grid.  You can either select a finer (and
 more expensive) grid (see :ref:`**GRID`), and/or tighten the screening
 threshold (:ref:`DFT_.SCREENING` under :ref:`*DFT`).
 
-When restarting from a ``DFCOEF`` file from a different geometry, the warning
+When restarting from a ``CHECKPOINT.h5`` file from a different geometry, the warning
 can appear during the first few iterations and then this warning disappears
 (because the density of the old geometry is then displaced with respect to the
 grid at new geometry).

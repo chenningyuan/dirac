@@ -18,11 +18,7 @@
 
       implicit none
 
-#ifdef INT_STAR8
-      integer(8) :: slength
-#else
-      integer    :: slength
-#endif /* ifdef INT_STAR8 */
+      integer(4) :: slength ! called from .c routines in cfun/ with type int (i.e. integer(4))
       character  :: str(slength)
 
 #if defined SYS_WINDOWS && defined INT_STAR8

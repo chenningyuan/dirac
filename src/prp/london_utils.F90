@@ -22,23 +22,10 @@ module london_utils
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
-#include "symmet.h"
 #include "priunit.h"
-#include "dcbgen.h"
-#include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbnmr.h"
-#include "dcbxpr.h"
 #include "dgroup.h"
-#include "dcbprp.h"
 #include "aovec.h"
-#include "blocks.h"
-#include "dcbfir.h"
-#include "dcbham.h"
-#include "iratdef.h"
-#include "cbihr2.h"
-#include "dcbdhf.h"
-#include "shells.h"
 #include "dcbxlr.h"
 
 #include "infpar.h"
@@ -318,7 +305,7 @@ contains
 
      call get_m_ai(T, ee, ep)
 
-     debug_me = .true.
+     debug_me = .false.
      if (debug_me) then
         write(*, *) 'combine_kappa_t: T_ai,ee, ep = ', ee, ep
         call prqmat(T, norbt, norbt, norbt, norbt, nz,  &
@@ -455,7 +442,7 @@ contains
         call dealloc(temp_virt)
      end do
 
-     debug_me = .true.
+     debug_me = .false.
      if (debug_me) then
         do i = 1, length
            write(*, *) 'i, orbital_rotation_indices(1, i), orbital_rotation_indices(2, i) = ', &
@@ -532,6 +519,7 @@ contains
 
         nvirt = norb(isym) - nocc(isym)
 
+        nvec = 1
         call numlst(indices_string, indices_vect,     &
                     nvirt, -npsh(isym), nesh(isym), isym, nvec)
 

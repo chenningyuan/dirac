@@ -10,7 +10,7 @@ to which the reader is referred for further technical details.
 The current implementation makes use of an external module for the PCM-related
 tasks. The module needs some input information to run properly.
 
-As explained in the `*PCMSOL` section of the reference manual, a PCM calculation can be set up in two ways:
+As explained in the :ref:`*PCMSOL` section of the reference manual, a PCM calculation can be set up in two ways:
 
 * using **three** input files. The additional input file contains directives for the PCMSolver module;
 * using **two** input files. The additional directives in the inp file are forwarded to the PCMSolver module.
@@ -70,7 +70,7 @@ The .inp file will feature some additional keywords::
    *END OF
 
 The `.PCM` keyword enables the addition of solvent terms to the Fock matrix. Details can be
-controlled through directives under the `*PCM` section (to which the reader is referred for 
+controlled through directives under the :ref:`*PCM` section (to which the reader is referred for 
 further details)
 Using this input file a calculation using the Levy-Leblond Hamiltonian with PCM will be performed.
 Notice that the nuclear and electronic molecular electrostatic potential (MEP) and apparent surface
@@ -344,7 +344,7 @@ As explained in :cite:`DiRemigio2015`, the calculation of the molecular electros
 
 needed for the PCM can be sped up by neglecting the Small-Small block and replacing the SS block of the potential by a simple Coulombic
 correction :cite:`Visscher1997a`. This approximation is named PCM-SCC and the user can exploit it by specifying the `.SKIPSS` keyword in the 
-`*PCM` section of the input::
+:ref:`*PCM` section of the input::
 
    **DIRAC
    .WAVE FUNCTION

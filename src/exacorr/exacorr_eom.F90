@@ -4,7 +4,7 @@ module exacorr_eom
 
         use exatensor
         use exacorr_datatypes
-        use intermediates
+        use intermediates_lambda
         use, intrinsic:: ISO_C_BINDING
 
         implicit none

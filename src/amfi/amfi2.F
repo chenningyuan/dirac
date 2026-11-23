@@ -16,7 +16,7 @@ c   3. assign the right IRs to L_X, L_Y and L_Z
 c
 c   that is  all. Good luck!!!
 c
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "para.h"
 #include "ired.h"
       character*3 symmetry 
@@ -431,7 +431,7 @@ cbs   cheater included for a correcting signs, as there were some
 cbs   signs (only signs!!!!) missing when compared to HERMIT  
 cbs                                        B.S.  08.10.96 
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "pi.h"
       LMdepang=0d0
 cbs   some quick checks
