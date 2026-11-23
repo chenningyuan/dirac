@@ -14,18 +14,48 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
-!-----------------------------------------
-! Module with variables previously defined
-! at cosbit.h include file (COMMON /DCIBIT0/)
-!-----------------------------------------
-! AUTHOR  : sya
-! PURPOSE : a table of 1-byte integer to speed counting bits in a
-!           4-byte integer
-!*** COSCI calculations ***
+!------------------------------------------------
+!     Module with variables previously defined
+!     at cosbit.h include file (COMMON /DCIBIT0/)
+!------------------------------------------------
+!     AUTHOR  : sya
+!     PURPOSE : a table of 1-byte integer to speed counting bits in a
+!               4-byte integer
+! *** COSCI calculations ***
       module cosbit_mod
       implicit none
       integer :: IBTAB1(0:255)
       end module cosbit_mod
+
+!-----------------------------------------
+! Module with variables previously defined
+! at src/dirrci/goscom.h include file
+!-----------------------------------------
+!     DEFINITION PARAMETERS GOSCIP
+!     N1:  MAXIMUM NUMBER OF BASISFUNCTIONS (NOT LARGER THAN 32 !)
+!     N2:  MAXIMUM NUMBER OF DETERMINANTS
+!     N5:  MAXIMUM NUMBER OF (ABELIAN) REPRESENTATIONS
+      module goscom_mod
+      implicit none
+      integer, parameter :: N1 = 32
+      integer, parameter :: N2 = 4000
+      integer, parameter :: N3 = N1*N1
+      integer, parameter :: N4 = N3*N3
+      integer, parameter :: N4A = 10000
+      integer, parameter :: N5 = 32
+      integer, parameter :: N5A = N5*2
+      integer, parameter :: N5B = 2*N5*(2*N5+1)
+!     initial values set in BLOCK DATA INIT before
+      real*8 :: ONER(N1,N1) = 0.0D0, ONEI(N1,N1) = 0.0D0
+      integer :: MULTB(2*N5,0:2*N5) = 0, IDET(N2) = 0
+      character(len=4) :: REPNA(2*N5) = '    '
+!
+      real*8 :: EPS(N1), ECORE, D(N2,N5), THRESH, DEGEN, SELPOP
+      integer :: IMINH1, IMAXH1, IMAXE3, IRAS1, IRAS3, IEL3, NSPACT,
+     &    NELACT, IREF, IREFE, NREP, IPRNT, IN_FCIDUMP, IRPAMO(N1),
+     &    NDET, NDETMX, NDETI(N5), MAXPOP
+      logical :: BREIT, REALAR
+      end module goscom_mod
 
 C
       SUBROUTINE PAMGOS(CI,MAXCORE,NELECT,NGAS,IGAS,
@@ -38,10 +68,10 @@ C     THEORETICAL CHEMISTRY DEPARTMENT,
 C     UNIVERSITY OF GRONINGEN (RUG), GRONINGEN,THE NETHERLANDS
 C     Adaption for GAS by Tommi Matila, Apr 27 2000
 C     ==========================================================
-!      use goscom_mod, only: BREIT, IPRNT, NDET, NDETMX, NELACT, NREP, NSPACT, REPNA
+      use goscom_mod, only: BREIT, IPRNT, NDET, NDETMX, NELACT, NREP,
+     &  NSPACT, REPNA
 #include "implicit.h"
 C
-#include "goscom.h"
 C
       DIMENSION CI(MAXCORE)
       DIMENSION MINE (NGAS),MAXE (NGAS),IGAS(NGAS)
@@ -49,7 +79,6 @@ C
 C
       CHARACTER*8 DATEX*10,TIMEX
 C
-      EXTERNAL INIT
       CALL DAYTIME(DATEX,TIMEX)
       WRITE(6,1000) DATEX,TIMEX
       CALL CPUUSED(SEC)
@@ -207,11 +236,11 @@ C     ==========================================================
 !                  Copied and modified from PAMGOS.
 !     Called by :  SY_GOSRES
 !----------------------------------------------------------------------
-!      use goscom_mod, only: BREIT, IPRNT, NDET, NDETMX, NELACT, NREP, NSPACT, REPNA
+      use goscom_mod, only: BREIT, IPRNT, NDET, NDETMX, NELACT, NREP,
+     &  NSPACT, REPNA
       use cossya_mod, only: KCOSINP, SYA_KTRDMAT, SYA_PRINT
 #include "implicit.h"
 C
-#include "goscom.h"
 C
       DIMENSION CI(MAXCORE)
       DIMENSION MINE (NGAS),MAXE (NGAS),IGAS(NGAS)
@@ -222,7 +251,6 @@ C
 !.s/sya,2007.01.30
 !.q
 !
-      EXTERNAL INIT
 !
 !.s/sya,2007.01.30
 !.q
@@ -400,11 +428,10 @@ C
 C     ===========================
       SUBROUTINE DIAGH(IRP,HR,HI)
 C     ===========================
-!      use goscom_mod, only: D, N2, NDET
+      use goscom_mod, only: D, N2, NDET
       use memory_allocator
 #include "implicit.h"
 C
-#include "goscom.h"
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
       real*8, allocatable :: ee(:,:),e1(:),e2(:)
       real*8, allocatable :: e(:)
@@ -429,13 +456,12 @@ C     ====================================================
 !     Last-update: S. Yamamoto - 2007.09.27
 !----------------------------------------------------------------------
 
-!      use goscom_mod, only: IDET, IPRNT, N2, NDET, NELACT, NSPACT, REPNA
+      use goscom_mod, only: IDET, IPRNT, N2, NDET, NELACT, NSPACT, REPNA
 #include "implicit.h"
       INTEGER :: I
 C
 CTROND: IRP is not used !!!
 CTROND: Convert ibtfun etc....
-#include "goscom.h"
 C
       DIMENSION IGAS (NGAS),MINE (NGAS),MAXE (NGAS)
       INTEGER N(N2)
@@ -502,7 +528,7 @@ CMiro Sept2016: consider c1,c2,c3 scaling parameters according  for DFT-COSCI
 C  according to Roemelt et al, The Journal of Chemical Physics 138, 204101 (2013)
 C
 C     ===========================================================
-!      use goscom_mod, only: BREIT, NSPACT, ONEI, ONER
+      use goscom_mod, only: BREIT, NSPACT, ONEI, ONER
 #include "implicit.h"
       INTEGER :: I, J, K
 C
@@ -511,7 +537,6 @@ C
       DIMENSION INDTWI(NSPACT,NSPACT,NSPACT,NSPACT)
       DIMENSION INDGAR(NSPACT,NSPACT,NSPACT,NSPACT)
       DIMENSION INDGAI(NSPACT,NSPACT,NSPACT,NSPACT)
-#include "goscom.h"
 !
 !.s/sya,2007.01.30
 !.q
@@ -745,27 +770,13 @@ C
       RETURN
       END
 C
-C     ===============
-      BLOCK DATA INIT
-C     ===============
-      IMPLICIT REAL*8 (A-H, O-Z)
-C
-#include "goscom.h"
-C
-      DATA REPNA / N5A * '    ' /
-      DATA MULTB / N5B * 0 /
-      DATA ONER, ONEI / N3 * 0.0D0, N3 * 0.0D0 /
-      DATA IDET / N2 * 0 /
-      END
-C
 C     =====================
       FUNCTION IRPDET(JDET)
 C     =====================
-!      use goscom_mod, only: IRPAMO, MULTB, NSPACT
+      use goscom_mod, only: IRPAMO, MULTB, NSPACT
 #include "implicit.h"
       INTEGER :: I
 C
-#include "goscom.h"
 C
       JRRP = 0
       ID=JDET
@@ -783,7 +794,7 @@ C     ================
       SUBROUTINE MAKEH(HR,HI,INDTWR,INDTWI,INDGAR,INDGAI,TWOINR,
      &                 TWOINI,MAXINT)
 C     ================
-!      use goscom_mod, only: IDET, NDET, NSPACT
+      use goscom_mod, only: IDET, NDET, NSPACT
 #include "implicit.h"
       INTEGER :: I, J
 C
@@ -793,7 +804,6 @@ C
       DIMENSION INDTWI(NSPACT,NSPACT,NSPACT,NSPACT)
       DIMENSION INDGAR(NSPACT,NSPACT,NSPACT,NSPACT)
       DIMENSION INDGAI(NSPACT,NSPACT,NSPACT,NSPACT)
-#include "goscom.h"
 C
       DO I = 1, NDET
         DO J = 1, I
@@ -811,11 +821,10 @@ C
 C     =============================
       INTEGER FUNCTION NBITS (JDET)
 C     =============================
-!      use goscom_mod, only: NSPACT
+      use goscom_mod, only: NSPACT
 #include "implicit.h"
       INTEGER :: I
 C
-#include "goscom.h"
 C
       ID = JDET
       NB = 0
@@ -829,11 +838,10 @@ C
 C     =====================
       FUNCTION PHASE(I, ID)
 C     =====================
-!      use goscom_mod, only: NSPACT
+      use goscom_mod, only: NSPACT
 #include "implicit.h"
       INTEGER :: I, K
 C
-#include "goscom.h"
 C
 C
       P = 1.0D0
@@ -847,7 +855,7 @@ C
 C     =================================
       SUBROUTINE PRTOUT(IRP,IRRP,HR,HI)
 C     =================================
-!      use goscom_mod, only: D, ECORE, EPS, IDET, MAXPOP, N1, N2, N5, NDET, NDETI, NREP, NSPACT, REPNA, SELPOP, THRESH
+      use goscom_mod
       use memory_allocator
 #include "implicit.h"
       INTEGER :: I, J, JJ
@@ -857,7 +865,6 @@ C
       integer, allocatable :: IRPS(:),INDX(:),IND(:)
       real(8), allocatable :: DS(:)
 C
-#include "goscom.h"
 C
       CHARACTER*1 N(N1)
 C
@@ -957,12 +964,12 @@ C     ===========================================================
       SUBROUTINE RDTWO(INDTWR,INDTWI,INDGAR,INDGAI,TWOINR,TWOINI,
      &                 MAXINT)
 C     ==========================================================
-!      use goscom_mod, only: BREIT, ECORE, EPS, IN_FCIDUMP, IPRNT, IRPAMO, N1, N3, N4A, NSPACT, ONEI, ONER, REALAR
+      use goscom_mod, only: BREIT, ECORE, EPS, IN_FCIDUMP, IPRNT,
+     &  IRPAMO, N1, N3, N4A, NSPACT, ONEI, ONER, REALAR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, II, J, K
 C
-#include "goscom.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D0
       CHARACTER*10 DATEX,TIMEX*8
@@ -1185,12 +1192,11 @@ C     ==========================
 !     Last-update: S. Yamamoto - 2007/06/11 chukyo-u
 !     Last-update: S. Yamamoto - 2007.09.14 chukyo-u
 !----------------------------------------------------------------------
-!      use goscom_mod, only: BREIT, D, DEGEN, ECORE, EPS, IN_FCIDUMP, IPRNT, IREF, IREFE, IRPAMO, MAXPOP, MULTB, N1, NELACT, NREP, NSPACT, ONEI, ONER, REALAR, REPNA, SELPOP, THRESH
+      use goscom_mod
       use cossya_mod, only: SYA_ACTIV, SYA_IELC, SYA_MAXE, SYA_NOPEN
 #include "implicit.h"
       INTEGER :: I, J
 C
-#include "goscom.h"
 !
 !.s/sya,2007.01.30
 !.q
@@ -1202,7 +1208,6 @@ C
 C
       LOGICAL SPINFR
       INTEGER REFDET,IRPMO(N1),FCI
-      REAL*8 SELPOP
       DIMENSION MINE(16),MAXE(16),IGAS(16)
       DIMENSION NGASO(256)
 !.s/sya,2007.09.14
@@ -1370,10 +1375,9 @@ C
 C     ==============================================
       SUBROUTINE SORTEW (DS,NDETT,IRPS)
 C     ==============================================
-!      use goscom_mod, only: D, N2, N5, NDETI, NREP
+      use goscom_mod, only: D, N2, N5, NDETI, NREP
 #include "implicit.h"
 C
-#include "goscom.h"
 C
       REAL*8 DS(N2*N5)
       INTEGER NDETT,IND(N5),IRPS(N2*N5)
@@ -1423,7 +1427,8 @@ C     =================================
 !                 SY_PAMGOS
 !----------------------------------------------------------------------
 !
-!      use goscom_mod, only: D, DEGEN, ECORE, IDET, IPRNT, N2, NDET, NDETMX, REPNA
+      use goscom_mod, only: D, DEGEN, ECORE, IDET, IPRNT, N2, NDET,
+     &  NDETMX, REPNA
 #include "implicit.h"
       INTEGER :: I, J
 C
@@ -1433,7 +1438,6 @@ C     RECORD 2 : BIT REPRESENTATION DETERMINANTS
 C     RECORD 3 : FIRST VECTOR
 C     RECORD 4 : SECOND VECTOR, ETC.
 C
-#include "goscom.h"
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
 C
       CHARACTER*11 VECFIL
@@ -1541,11 +1545,10 @@ C
 C     Written by Tommi Matila, Apr 27 2000
 C     Polish Trond Saue
 C
-!      use goscom_mod, only: IRPAMO, N1, NREP, NSPACT
+      use goscom_mod, only: IRPAMO, N1, NREP, NSPACT
 #include "implicit.h"
       INTEGER :: I, II
 C
-#include "goscom.h"
 C
       DIMENSION IGAS(NGAS),NGASO(NREP,NGAS)
       DIMENSION INDX(N1)
@@ -1591,10 +1594,9 @@ C    Print a determinant on bitstring form
 C    A cut and paste job by Trond Saue
 C
 C***********************************************************************
-!      use goscom_mod, only: N2, NSPACT
+      use goscom_mod, only: N2, NSPACT
 #include "implicit.h"
       INTEGER :: I
-#include "goscom.h"
       INTEGER N(N2)
       DO I=1,NSPACT
         N(I)=0
@@ -1689,13 +1691,12 @@ C
 !     Called by:  SY_PAMGOS
 !
 !***********************************************************************
-!      use goscom_mod, only: NREP
+      use goscom_mod, only: NREP
       use cossya_mod, only: SYA_GASO, SYA_MAXE, SYA_NOPEN, SYA_NREP
 #include "implicit.h"
       INTEGER :: I, J
 !
 !     ...for NREP
-#include "goscom.h"
 !
       INTEGER NGAS
       INTEGER NGASO(NREP,NGAS)
@@ -1771,12 +1772,11 @@ C
 !     Last-update: S. Yamamoto - June 4, 2007, chukyo-u
 !     Called by:   SY_PAMGOS
 !***********************************************************************
-!      use goscom_mod, only: NDETMX, NREP, NSPACT
+      use goscom_mod, only: NDETMX, NREP, NSPACT
       use cossya_mod, only: MSTATE, SYA_NTRDM
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
-#include "goscom.h"
 !
 !     ...for NZ
 !
@@ -1856,12 +1856,11 @@ C
 !     write it on a file.  Then we advance to another combination of
 !     irreps.
 !***********************************************************************
-!      use goscom_mod, only: NDETMX, NELACT, NREP, NSPACT
+      use goscom_mod, only: NDETMX, NELACT, NREP, NSPACT, REPNA
       use cossya_mod, only: MSTATE, SYA_NTRDM
       use dgroup_mod, only: NZ
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "goscom.h"
 !
 !     ...for MSTATE
       DIMENSION CL(NDETMX,NRIVEC,MSTATE)
@@ -1979,10 +1978,9 @@ C
 !----------------------------------------------------------------------
 !     NRIVEC is 2.
 !**********************************************************************
-!      use goscom_mod, only: NDETMX, REPNA
+      use goscom_mod, only: NDETMX, REPNA
 #include "implicit.h"
       INTEGER :: I, J
-#include "goscom.h"
 !
 !     ...for NZ
       DIMENSION C(NDETMX,NRIVEC,MSTATE)
@@ -2072,10 +2070,9 @@ C
 !---------------------------------------------------------------------- 
 !     Determinant !DET_I> is now an integer variable named "ID".
 !***********************************************************************
-!      use goscom_mod, only: NDETMX, NSPACT
+      use goscom_mod, only: NDETMX, NSPACT
       use cossya_mod, only: MSTATE
 #include "implicit.h"
-#include "goscom.h"
 !
 !     ...for NZ
       DIMENSION CL(NDETMX,NRIVEC,MSTATE),CR(NDETMX,NRIVEC,MSTATE)
@@ -2137,11 +2134,10 @@ C
 !     Last-update: S. Yamamoto - 2007.03.03, chukyo-u
 !     Called by:   COSCI_GENTRDM
 !***********************************************************************
-!      use goscom_mod, only: D, NDETMX, NSPACT
+      use goscom_mod, only: NDETMX, NSPACT
       use thrzer_mod, only: THRZER
 #include "implicit.h"
       INTEGER :: I
-#include "goscom.h"
 !
 !     ...for NZ
       DIMENSION CL(NDETMX,NRIVEC,MSTATE),CR(NDETMX,NRIVEC,MSTATE)
@@ -2199,11 +2195,10 @@ C
 !     Last-update: S. Yamamoto - 2007.06.10, chukyo-u
 !     Called by:   COSCI_GENTRDM
 !***********************************************************************
-!      use goscom_mod, only: D, NDETMX, NSPACT
+      use goscom_mod, only: NDETMX, NSPACT
       use thrzer_mod, only: THRZER
 #include "implicit.h"
       INTEGER :: I, K
-#include "goscom.h"
 !
 !     ...for NZ
       DIMENSION CL(NDETMX,NRIVEC,MSTATE),CR(NDETMX,NRIVEC,MSTATE)
@@ -2262,12 +2257,11 @@ C
 !     Called by:  CALTRDM
 !***********************************************************************
       use priunit_mod, only: LUPRI
-!      use goscom_mod, only: NSPACT, REPNA
+      use goscom_mod, only: NSPACT, REPNA
       use cossya_mod, only: MSTATE
       use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: K
-#include "goscom.h"
 !
 !     ...for MSTATE
 !.s/sya,2007.0911
@@ -2328,11 +2322,10 @@ C
 !     Written by: S. Yamamoto - Thu Mar  1 13:05:09 CST 2007, ulp
 !     Called by:  CALTRDM
 !***********************************************************************
-!      use goscom_mod, only: NSPACT
+      use goscom_mod, only: NSPACT
       use cossya_mod, only: MSTATE
 #include "implicit.h"
       INTEGER :: I, J
-#include "goscom.h"
 !
 !.s/sya,2007.0911
 !#    DIMENSION TRDM(NSPACT,NSPACT,NZ,MSTATE,MSTATE)
@@ -2682,13 +2675,12 @@ C
 !                   irrep firstr.
 !
 !***********************************************************************
-!      use goscom_mod, only: NREP, NSPACT
+      use goscom_mod, only: NREP, NSPACT
       use cossya_mod, only: SYA_ACTIV, SYA_INACT
       use dgroup_mod, only: NFSYM
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
-#include "goscom.h"
 !
 !     ...for NORB
 c#include "dcborb.h" 
@@ -2856,14 +2848,13 @@ c#include "dcborb.h"
 !  N.B.  LUMLF1 (sya, 2007.09.13)
 !     LUMLF1 = 75  (defined in dcbtra.h in moltra)
 !----------------------------------------------------------------------
-!      use goscom_mod, only: D, NSPACT
+      use goscom_mod, only: NSPACT
       use dgroup_mod, only: NFSYM
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I, J, K
 !
 !     ...for NSPACT
-#include "goscom.h"
 !
 !     ...for NFSYM
 !
@@ -3206,7 +3197,7 @@ c#include "dcborb.h"
 !      1 2            3 4             5            6          (C)
 !                                                             IC2CA
 !----------------------------------------------------------------------
-!      use goscom_mod, only: NSPACT
+      use goscom_mod, only: NSPACT
       use cossya_mod, only: SYA_ACTIV, SYA_INACT
       use dgroup_mod, only: NFSYM
 #include "implicit.h"
@@ -3214,7 +3205,6 @@ c#include "dcborb.h"
 !     ...for NFSYM
 !
 !     ...for NSPACT
-#include "goscom.h"
 !
 !     ...for SYA_INACT,SYA_ACTIV
 !
@@ -3265,7 +3255,7 @@ c#include "dcborb.h"
 !     Last-update: S. Yamamoto - 2007.09.13, chukyo-u
 !     Called by :  SY_TMOM
 !----------------------------------------------------------------------
-!      use goscom_mod, only: NREP, NSPACT
+      use goscom_mod, only: NREP, NSPACT
       use dgroup_mod, only: NZ
       use priunit_mod, only: LUPRI
 #include "implicit.h"
@@ -3276,7 +3266,6 @@ c#include "dcborb.h"
 !     ...for MSTATE
 !
 !     ...for NSPACT
-#include "goscom.h"
 !
       DIMENSION TMOM(NRIVEC,N3DIM)
       DIMENSION TDLEN(NRIVEC,N3DIM)
@@ -3448,11 +3437,10 @@ c#include "dcborb.h"
 !              *-----+-------+-----+-------*
 !
 !----------------------------------------------------------------------
-!      use goscom_mod, only: NSPACT
+      use goscom_mod, only: NSPACT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: K
-#include "goscom.h"
       DIMENSION IA2CA(NSPACT)
       DIMENSION IC2CA(NCORSP)
       DIMENSION TODM(NOCCSP,NOCCSP,NRIVEC)
@@ -3691,10 +3679,9 @@ c#include "dcborb.h"
 !     Last-update: S. Yamamoto - 2007.09.15, chukyo-u
 !     Called by:   CLTMOM2
 !----------------------------------------------------------------------
-!      use goscom_mod, only: NELACT, NREP, REPNA
+      use goscom_mod, only: NELACT, NREP, REPNA
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "goscom.h"
       DIMENSION TMOM(NRIVEC,N3DIM)
       DIMENSION TDLEN(NRIVEC,N3DIM)
       DIMENSION TDIPE(NRIVEC,N3DIM)

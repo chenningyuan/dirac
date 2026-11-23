@@ -14,11 +14,11 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
-!-----------------------------------------
+!-----------------------------------------------
 ! Module with variables previously defined
 ! at mempoint.inc include file (COMMON /IPOINT/)
-!-----------------------------------------
-! SOURCE  : $Source$
+!-----------------------------------------------
+!     SOURCE  : $Source$
       module mempoint_mod
       implicit none
       integer :: ITR, ITI, IIK, IIL, ITIR, ITII, M1, M2, IPDG, IPDR,
@@ -27,12 +27,12 @@
      &    IPJR, IPJV
       end module mempoint_mod
 
-!-----------------------------------------
-! Module with variables previously defined
-! at src/dirrci/symm.inc include file (COMMON /RAS/, /ABEL/, /RECIND/, /SPSYMI/,
-! /SPSYMR/, /SPSYMC/, /CHR/)
-!-----------------------------------------
-! SOURCE  : $Source$
+!---------------------------------------------
+!     Module with variables previously defined
+!     at src/dirrci/symm.inc include file (COMMON /RAS/, /ABEL/, /RECIND/, /SPSYMI/,
+!     /SPSYMR/, /SPSYMC/, /CHR/)
+!---------------------------------------------
+!     SOURCE  : $Source$
       module symm_dirrci_mod
       use param_dirrci_mod, only: N3
       implicit none
@@ -47,13 +47,31 @@
       character(len=4) :: REPNA(MXREP*2)
       end module symm_dirrci_mod
 
+!---------------------------------------------
+!     Module with variables previously defined
+!     at src/dirrci/general.inc include file
+!---------------------------------------------
+!     SOURCE  : $Source$
+      module general_mod
+      use param_dirrci_mod, only: N3, N8
+      implicit none
+      real*8 :: CONVERE, CONVERR, CPUMAX, CPUSET, CPITER, EPSSRT(N3),
+     &    COMIN
+      integer :: MDET, NDET, MVEC, NVEC, NROOTS, MAXITER, ITER,
+     &    NSEL(N8), NREFDET, ISTART, INDMIN(N8), INDSRT(N3), INDMO(N3),
+     &    NRAS(2,16)
+      logical :: BREIT, REALAR, SELECT, RESTART, GETDET, MAKENAT,
+     &    SPINFR, PROPER
+      character(len=8) :: NAMEE(15), NAMEA
+      end module general_mod
+
 C
       SUBROUTINE PAMCIM ()
 C
 
-!      use general_mod, only: MAXITER, NAMEA, NAMEE, PROPER, RESTART
+      use general_mod, only: MAXITER, NAMEA, NAMEE, PROPER, RESTART
       use files_dirrci_mod, only: MRCEXCS, MRCTWOE, MRCVECS
-      use param_dirrci_mod, only: MAXCORE, N3, N8
+      use param_dirrci_mod, only: MAXCORE
       use memory_allocator
 
 #include "implicit.h"
@@ -140,7 +158,6 @@ C     =======================================================================
 C
       INTEGER :: I
 CMKN
-#include "general.inc"
 CMKN
       LOGICAL DONE
       NAMELIST /CIFOPR/ PROPER,NEOPER,NAMEE
@@ -193,7 +210,7 @@ C
 C
       SUBROUTINE SETUP (CI,DONE)
 C
-!      use general_mod, only: COMIN, CONVERE, CONVERR, CPUMAX, CPUSET, GETDET, ISTART, MAKENAT, MAXITER, NDET, NREFDET, NROOTS, NSEL, RESTART, SELECT
+      use general_mod
       use symm_dirrci_mod, only: IGENEX, IREP, MAXE3, MAXH1, NELEC,
      &  NORB, NORBR, REPNA
       use param_dirrci_mod, only: MAXCORE, N3, N8
@@ -207,7 +224,6 @@ C     MAKES G-MATRIX, REORDERS 2-ELECTRON INTEGRALS
 C     ============================================================
 C
       INTEGER :: I
-#include "general.inc"
 C
       DIMENSION MINE(16),MAXE(16),IGAS(16),NGASO(256)
       NAMELIST/GOSCIP/NELACT,NGAS,MINE,MAXE,NGASO,REFDET,IREFE,IPRNT,FCI
@@ -363,10 +379,10 @@ C
 C
       SUBROUTINE DRIVER (CI)
 C
-!      use general_mod, only: CPITER, ITER, MAXITER, MVEC, NAMEA, NVEC, PROPER, RESTART
+      use general_mod, only: CPITER, ITER, MAXITER, MVEC, NAMEA, NVEC,
+     &  PROPER, RESTART
       use symm_dirrci_mod, only: NCOREX
       use iterat_mod, only: CMTI, CMTR
-      use param_dirrci_mod, only: N3, N8
       use mempoint_mod
 #include "implicit.h"
 C
@@ -375,7 +391,6 @@ C     DRIVES DAVIDSON DIAGONALISATION PROCES
 C     ======================================
 C
       INTEGER :: I, J
-#include "general.inc"
 CMKN
 CMKN
 C
@@ -826,10 +841,10 @@ C
 C
       SUBROUTINE CIMEM
 C
-!      use general_mod, only: BREIT, MDET, NDET, NROOTS, REALAR
+      use general_mod, only: BREIT, MDET, NDET, NROOTS, REALAR
       use symm_dirrci_mod, only: LNORBC, MXREP, NELEC, NORB, NORBC,
      &  NORBD, NREP
-      use param_dirrci_mod, only: MAXCORE, N3, N8
+      use param_dirrci_mod, only: MAXCORE
       use mempoint_mod
 #include "implicit.h"
 C
@@ -837,7 +852,6 @@ C     ========================
 C     GENERATE MEMORY POINTERS
 C     ========================
 C
-#include "general.inc"
 C
       MAXB = NROOTS + 1
       MAXC = NROOTS
@@ -967,11 +981,12 @@ C
 C
       SUBROUTINE CRITER (ENDRUN)
 C
-!      use general_mod, only: CONVERE, CONVERR, CPUMAX, ITER, MAXITER, MVEC, NROOTS, NSEL, NVEC
+      use general_mod, only: CONVERE, CONVERR, CPUMAX, ITER, MAXITER,
+     &  MVEC, NROOTS, NSEL, NVEC
       use symm_dirrci_mod, only: MAXE3, NELEC
       use iterat_mod, only: CONV, DCORR, ECORE, EIGEN, EIGEN1, EIGEN2,
      &  REFRDU, REFVEC, RESIDU
-      use param_dirrci_mod, only: N2, N3, N8
+      use param_dirrci_mod, only: N2, N8
 #include "implicit.h"
 C
 C     =================================================
@@ -981,7 +996,6 @@ C     2) MAXITER REACHED
 C     3) MAXIMUM CPU TIME USED
 C     =================================================
 C
-#include "general.inc"
 C
       LOGICAL ENDRUN
       DIMENSION MSEL(N8)
@@ -1111,9 +1125,8 @@ C
      &                   JLIND,JRIND,JVECL,IJREC,
      &                   DENSR,DENSI,IVWA,IVEC,DD)
 C
-!      use general_mod, only: MDET, MVEC, NDET, NVEC, REALAR
+      use general_mod, only: MDET, MVEC, NDET, NVEC, REALAR
       use symm_dirrci_mod, only: IGENEX, IREP, IRPAMO, NORB
-      use param_dirrci_mod, only: N3, N8
       use mempoint_mod, only: IVWI
 #include "implicit.h"
 C
@@ -1122,7 +1135,6 @@ C     CALCULATES FIRST ORDER DENSITY MATRIX
 C     =====================================
 C
       INTEGER :: I, J
-#include "general.inc"
 C
       DIMENSION DENSR(NORB,NORB),DENSI(NORB,NORB),DD(NORB)
       DIMENSION ILIND(*),IRIND(*),JLIND(*),JRIND(*),IVWA(*)
@@ -1244,9 +1256,9 @@ C
 C
       SUBROUTINE DIAG
 C
-!      use general_mod, only: NVEC, REALAR
+      use general_mod, only: NVEC, REALAR
       use iterat_mod, only: CMTI, CMTR, EIGEN, EVECI, EVECR
-      use param_dirrci_mod, only: N2, N3, N8
+      use param_dirrci_mod, only: N2
 #include "implicit.h"
 C
 C     ----------------------
@@ -1254,7 +1266,6 @@ C     DIAGONALIZES CI MATRIX
 C     ----------------------
 C
       INTEGER :: I, J
-#include "general.inc"
 C
       DIMENSION WORKR(N2,N2),WORKI(N2,N2),WORK2(N2),WORK3(N2),WORK4(N2)
 C
@@ -1293,10 +1304,10 @@ C
      &                    ILIND,IRIND,JLIND,JRIND,JVECL,IVWA,
      &                    IJREC)
 C
-!      use general_mod, only: INDMIN, MDET, NAMEA, NDET, NROOTS, PROPER, REALAR
+      use general_mod, only: INDMIN, MDET, NAMEA, NDET, NROOTS, PROPER,
+     &  REALAR
       use symm_dirrci_mod, only: IREP, NCOREX, NORB, NTVERT
       use files_dirrci_mod, only: MRCTWOE
-      use param_dirrci_mod, only: N3, N8
       use mempoint_mod, only: IVWI
 #include "implicit.h"
 C
@@ -1305,7 +1316,6 @@ C     CALCULATES DIAGONAL ELEMENTS OF CI MATRIX
 C     =========================================
 C
       INTEGER :: I, J, K
-#include "general.inc"
       DIMENSION DGEL(*),DR(*),TINTR(*),TINTI(*),GMATR(*),GMATI(*)
       DIMENSION IVWA(*),IJREC(NORB,NORB)
       DIMENSION IJEX(*),ILIND(*),IRIND(*),JLIND(*),JRIND(*),JVECL(2,*)
@@ -1501,11 +1511,11 @@ C
      &                  TINTR,TINTI,IJEX,GMATR,GMATI,
      &                  IVWU,IVWA,IJREC)
 C
-!      use general_mod, only: MDET, MVEC, NAMEA, NDET, NVEC, PROPER, REALAR
+      use general_mod, only: MDET, MVEC, NAMEA, NDET, NVEC, PROPER,
+     &  REALAR
       use symm_dirrci_mod, only: IREP, IRPAMO, MAXE3, MULTB, MULTBI,
      &  MXREP, NCOREX, NELEC, NORB, NORBR, NTVERT
       use files_dirrci_mod, only: MRCTWOE
-      use param_dirrci_mod, only: N3, N8
 #include "implicit.h"
 C
 C     =======================
@@ -1513,7 +1523,6 @@ C     CALCULATES SIGMA VECTOR
 C     =======================
 C
       INTEGER :: I, J, K
-#include "general.inc"
 C
       DIMENSION ILIND(*),IRIND(*),JLIND(*),JRIND(*)
       DIMENSION JVECL(2,*),IVWA(*),IJREC(NORB,NORB),IJEX(*)
@@ -1847,13 +1856,11 @@ C     ------------------------------------------
 C
       SUBROUTINE GetVec (ivec,VecR,VecI)
 C
-!      use general_mod, only: NDET, REALAR
+      use general_mod, only: NDET, REALAR
       use files_dirrci_mod, only: MRCVECS
-      use param_dirrci_mod, only: N3, N8
 #include "implicit.h"
 C
       INTEGER :: I
-#include "general.inc"
 C
       Real*8 VecR(*),VecI(*),SigR(*),SigI(*)
 C
@@ -1878,14 +1885,12 @@ C
 C
       SUBROUTINE InitVec
 C
-!      use general_mod, only: NDET, REALAR
+      use general_mod, only: NDET, REALAR
       use files_dirrci_mod, only: FNAM, MRCVECS
-      use param_dirrci_mod, only: N3, N8
 #include "implicit.h"
 C
 C     Initialises temporary file for expansion vectors
 C
-#include "general.inc"
 C
       IF (REALAR) THEN
          IRECL = NDET * 8
@@ -1900,16 +1905,14 @@ C
 C
       SUBROUTINE CINPRD (VECTR,VECTI,SIGMAR,SIGMAI)
 C
-!      use general_mod, only: MVEC, NDET, NROOTS, NVEC, REALAR
+      use general_mod, only: MVEC, NDET, NROOTS, NVEC, REALAR
       use iterat_mod, only: CMTI, CMTR
-      use param_dirrci_mod, only: N3, N8
 #include "implicit.h"
 C
 C     =================================================================
 C     COMPUTES INNER PRODUCT OF NEW SIGMA VECTORS WITH PREVIOUS VECTORS
 C     =================================================================
 C
-#include "general.inc"
 C
       DIMENSION VECTR(NDET,*),VECTI(NDET,*)
       DIMENSION SIGMAR(NDET,*),SIGMAI(NDET,*)
@@ -1946,7 +1949,7 @@ C
 C
       SUBROUTINE LEADING(IVWU)
 C
-!      use general_mod, only: COMIN, NDET, NROOTS, REALAR
+      use general_mod, only: COMIN, NDET, NROOTS, REALAR
       use symm_dirrci_mod, only: IREP, IRPAMO, MULTBI, MXREP, NELEC,
      &  NORB, NORBR, REPNA
       use files_dirrci_mod, only: FNAM, MRCFINV
@@ -1955,7 +1958,6 @@ C
 #include "implicit.h"
 C
       INTEGER :: I
-#include "general.inc"
 C
       PARAMETER (NDREC=1023)
 C
@@ -2059,10 +2061,9 @@ C
 C
       SUBROUTINE MAKEGM(GMATR,GMATI,TINTR,TINTI,IJEX)
 C
-!      use general_mod, only: INDMO, PROPER, REALAR
+      use general_mod, only: INDMO, PROPER, REALAR
       use symm_dirrci_mod, only: NORB
       use files_dirrci_mod, only: FNAM, MRCONEE, MRCTWOE
-      use param_dirrci_mod, only: N3, N8
 #include "implicit.h"
 C
 C     ================================================
@@ -2070,7 +2071,6 @@ C     READS 1- AND 2-ELECTRON INTEGRALS, MAKES GMATRIX
 C     ================================================
 C
       INTEGER :: I, II, J, JJ, K
-#include "general.inc"
 C
       DIMENSION GMATR(*),GMATI(*),TINTR(*),TINTI(*),IJEX(*)
       real(8), allocatable :: PROP(:,:,:)
@@ -2295,19 +2295,17 @@ C
       END
       SUBROUTINE NATORB(IROOT,DENSR,DENSI,WORK1,WORK2,WORK3)
 C
-!      use general_mod, only: REALAR
       use symm_dirrci_mod, only: NORB
 #ifndef PRG_DIRAC
+      use general_mod, only: REALAR
       use symm_dirrci_mod, only: EPS, IRPMO, NORBD, NSYMRP, REPN
 #endif
-      use param_dirrci_mod, only: N3, N8
 #include "implicit.h"
 C
 C     =====================================
 C     CALCULATES NATURAL ORBITALS (SPINORS)
 C     =====================================
 C
-#include "general.inc"
 C
       DIMENSION DENSR(NORB,NORB),DENSI(NORB,NORB)
       DIMENSION WORK1(*),WORK2(*),WORK3(*)
@@ -2470,8 +2468,7 @@ C
       SUBROUTINE NSRepl (Irp,NS,OccNr,VecR,VecI,
      &                   RepName,EigenV,IRecSP,WORK)
 C
-!      use general_mod, only: REALAR
-      use param_dirrci_mod, only: N3, N8
+      use general_mod, only: REALAR
 #include "implicit.h"
 C
 C    ===========================================
@@ -2479,7 +2476,6 @@ C     Replaces Active Spinors by Natural Spinors
 C    ===========================================
 C
       INTEGER :: I
-#include "general.inc"
 C
       Dimension OccNr(NS),VecR(NS,NS),VecI(NS,NS),EigenV(NS)
       Dimension IRecSp(NS),WORK(*)
@@ -2604,16 +2600,15 @@ C
 C
       SUBROUTINE SYMMIN
 C
-!      use general_mod, only: BREIT, REALAR, SPINFR
+      use general_mod, only: BREIT, REALAR, SPINFR
       use symm_dirrci_mod, only: EPS, IRA1, IRPAMO, IRPMO, MULTB,
      &  MULTBI, NORB, NREP, NSYMRP, REPN, REPNA
       use files_dirrci_mod, only: FNAM, MRCONEE
       use iterat_mod, only: ECORE
-      use param_dirrci_mod, only: N3, N8
+      use param_dirrci_mod, only: N3
 #include "implicit.h"
 C
       INTEGER :: I, J
-#include "general.inc"
 C
     1 OPEN (MRCONEE,FILE=FNAM(1),FORM='UNFORMATTED')
       READ (MRCONEE) NORB,BREIT,ECORE,NFSYM,NZ,SPINFR
@@ -2663,13 +2658,11 @@ C
 C
 C     Reorder the orbitals based on the RAS division
 C
-!      use general_mod, only: EPSSRT, INDMO, INDSRT, NRAS
+      use general_mod, only: EPSSRT, INDMO, INDSRT, NRAS
       use symm_dirrci_mod, only: EPS, IRPAMO, IRPMO, NORB, NSYMRP, REPN
-      use param_dirrci_mod, only: N3, N8
 #include "implicit.h"
 C
       INTEGER :: I
-#include "general.inc"
 C
       DO I = 1, NORB
          INDMO(I) = 0
@@ -2734,8 +2727,7 @@ C
 C
       SUBROUTINE ORTHN (VECTR,VECTI)
 C
-!      use general_mod, only: MVEC, NDET, NROOTS, NVEC, REALAR
-      use param_dirrci_mod, only: N3, N8
+      use general_mod, only: MVEC, NDET, NROOTS, NVEC, REALAR
 #include "implicit.h"
 C
 C     =========================================================
@@ -2743,7 +2735,6 @@ C     SCHMIDT ORTHONORMALIZATION OF THE NEW EXPANSION VECTORS
 C     ON THE PREVIOUS ONES (2 TIMES TO AVOID NUMERICAL PROBLEMS)
 C     ==========================================================
 C
-#include "general.inc"
 C
       DIMENSION VECTR(NDET,*),VECTI(NDET,*)
 C
@@ -2798,9 +2789,8 @@ C
 C
       SUBROUTINE PRECOND (DGEL,VECTR,VECTI)
 C
-!      use general_mod, only: MVEC, NDET, NSEL, NVEC, REALAR
+      use general_mod, only: MVEC, NDET, NSEL, NVEC, REALAR
       use iterat_mod, only: EIGEN
-      use param_dirrci_mod, only: N3, N8
 #include "implicit.h"
 C
 C     ==================================
@@ -2808,7 +2798,6 @@ C     PRECONDITIONING OF RESIDUAL VECTOR
 C     ==================================
 C
       INTEGER :: I
-#include "general.inc"
 C
       DIMENSION VECTR(NDET,*),VECTI(NDET,*)
       DIMENSION DGEL(NDET)
@@ -2830,13 +2819,11 @@ C
 C
       SUBROUTINE PutVec (ivec,VecR,VecI)
 C
-!      use general_mod, only: NDET, REALAR
+      use general_mod, only: NDET, REALAR
       use files_dirrci_mod, only: MRCVECS
-      use param_dirrci_mod, only: N3, N8
 #include "implicit.h"
 C
       INTEGER :: I
-#include "general.inc"
 C
       Real*8 VecR(*),VecI(*),SigR(*),SigI(*)
 C
@@ -2861,13 +2848,12 @@ C
 C
       SUBROUTINE REAVEC (VECTR,VECTI,DR,DI,ILIND)
 C
-!      use general_mod, only: NDET, NROOTS, NVEC, PROPER, REALAR
+      use general_mod, only: NDET, NROOTS, NVEC, PROPER, REALAR
       use files_dirrci_mod, only: FNAM, MRCFINV
       use iterat_mod, only: EIGEN1, EIGEN2
-      use param_dirrci_mod, only: N3, N8
+      use param_dirrci_mod, only: N8
 #include "implicit.h"
 C
-#include "general.inc"
 C
       DIMENSION VECTR(NDET,*),VECTI(NDET,*),DR(*),DI(*)
       DIMENSION ILIND(*)
@@ -2926,12 +2912,10 @@ C
 C
       SUBROUTINE RESIDUE (VECTR,VECTI,SIGMAR,SIGMAI)
 C
-!      use general_mod, only: NDET, NREFDET, NROOTS, NSEL, NVEC, REALAR
+      use general_mod, only: NDET, NREFDET, NROOTS, NSEL, NVEC, REALAR
       use iterat_mod, only: EIGEN, EVECI, EVECR, REFRDU, RESIDU
-      use param_dirrci_mod, only: N3, N8
 #include "implicit.h"
 C
-#include "general.inc"
 C
       DIMENSION VECTR(NDET,*),VECTI(NDET,*)
       DIMENSION SIGMAR(NDET,*),SIGMAI(NDET,*)
@@ -3002,9 +2986,8 @@ C
 C
       SUBROUTINE SELECV
 C
-!      use general_mod, only: NROOTS, NSEL, NVEC, REALAR, SELECT
+      use general_mod, only: NROOTS, NSEL, NVEC, REALAR, SELECT
       use iterat_mod, only: EVECI, EVECR
-      use param_dirrci_mod, only: N3, N8
 #include "implicit.h"
 C
 C     ====================
@@ -3012,7 +2995,6 @@ C     SELECTS EIGENVECTORS
 C     ====================
 C
       INTEGER :: I
-#include "general.inc"
 C
       DO 20 IROOT = 1, NROOTS
          IF (SELECT) THEN
@@ -3043,15 +3025,14 @@ C     parts are still processed. This will have to wait until a more
 C     general integral face is developed.
 C     LV : 28-6-2002
 C
-!      use general_mod, only: BREIT, INDMO, REALAR
+      use general_mod, only: BREIT, INDMO, REALAR
       use symm_dirrci_mod, only: NORB
       use files_dirrci_mod, only: FNAM, MDBINT, MDCINT, MRCTWOE
-      use param_dirrci_mod, only: N3, N8
+      use param_dirrci_mod, only: N3
       use mempoint_mod, only: ITR, M1, M2
 #include "implicit.h"
 C
       INTEGER :: I, J, K
-#include "general.inc"
 C
 C     ---------------------------------------------------------
 C     CANONICAL INTEGRALS ARE GENERATED FROM THE ORIGINAL LIST.
@@ -3486,15 +3467,14 @@ C
       SUBROUTINE TRIAL (VECTR,VECTI,IDIND,JDET,JELEC,JSIND,
      &                  IVWU,DGEL)
 C
-!      use general_mod, only: INDMIN, ISTART, NDET, NROOTS, NSEL, NVEC, REALAR
+      use general_mod, only: INDMIN, ISTART, NDET, NROOTS, NSEL, NVEC,
+     &  REALAR
       use symm_dirrci_mod, only: IREP, NELEC, NORBR, REPNA
       use files_dirrci_mod, only: FNAM, MRCFINV, MRCTRIV
       use iterat_mod, only: ECORE, EIGEN1, EIGEN2
-      use param_dirrci_mod, only: N3, N8
 #include "implicit.h"
 C
       INTEGER :: I, J
-#include "general.inc"
 C
       PARAMETER (NDREC=1023)
       PARAMETER (LREC=20*(NDREC+1))
@@ -3621,9 +3601,8 @@ C
 C
       SUBROUTINE TWOLIN (ENDFIL,TINTR,TINTI,IJEX,KL,NKL)
 C
-!      use general_mod, only: PROPER, REALAR
+      use general_mod, only: PROPER, REALAR
       use files_dirrci_mod, only: MRCTWOE
-      use param_dirrci_mod, only: N3, N8
 #include "implicit.h"
 C
 C     ================================
@@ -3631,7 +3610,6 @@ C     READS BLOCK OF INTEGRALS (**|KL)
 C     ** : ALL IJ >= KL
 C     ================================
 C
-#include "general.inc"
 C
       DIMENSION TINTR(*),TINTI(*),IJEX(*)
       LOGICAL ENDFIL
@@ -3660,15 +3638,15 @@ C     ******************************************************
 C
       SUBROUTINE USERIN
 C
-!      use general_mod, only: COMIN, CONVERE, CONVERR, CPUMAX, GETDET, ISTART, MAKENAT, MAXITER, NRAS, NROOTS, NSEL, RESTART, SELECT
+      use general_mod, only: COMIN, CONVERE, CONVERR, CPUMAX, GETDET,
+     &  ISTART, MAKENAT, MAXITER, NRAS, NROOTS, NSEL, RESTART, SELECT
       use symm_dirrci_mod, only: IGENEX, IRA1, IREP, MAXE3, MAXH1,
      &  MINH1, NELEC, NORB, NORBR, NREP, NSYMRP, REPNA
       use files_dirrci_mod, only: FNAM, MRCTRIV
-      use param_dirrci_mod, only: N2, N3, N4, N8
+      use param_dirrci_mod, only: N2, N4, N8
 #include "implicit.h"
 C
       INTEGER :: I
-#include "general.inc"
 C
       LOGICAL TOBE
       CHARACTER*4 IREPNA,VECFIL*11
@@ -3783,15 +3761,14 @@ C     Make natural spinors does not work for DIRAC (only for MOLFDIR)
 C
       SUBROUTINE USEROUT (CI)
 C
-!      use general_mod, only: GETDET, MAKENAT, NROOTS, NSEL, NVEC, REALAR
+      use general_mod, only: GETDET, MAKENAT, NROOTS, NSEL, NVEC, REALAR
       use symm_dirrci_mod, only: IRPAMO, NORB, REPNA
       use iterat_mod, only: EVECI, EVECR
-      use param_dirrci_mod, only: N2, N3, N8
+      use param_dirrci_mod, only: N2
       use mempoint_mod
 #include "implicit.h"
 C
       INTEGER :: I
-#include "general.inc"
 C
       REAL*8 CI(*)
 
@@ -3851,10 +3828,9 @@ C
 C
       SUBROUTINE VERTEX(IVWU)
 C
-!      use general_mod, only: MDET, NDET, NREFDET
+      use general_mod, only: MDET, NDET, NREFDET
       use symm_dirrci_mod, only: IORBR, IRA1, IREP, IRPAMO, MAXE3,
      &  MAXH1, MULTB, MXREP, NELEC, NORB, NORBR, NREP
-      use param_dirrci_mod, only: N3, N8
 #include "implicit.h"
 C
 C     ========================================================
@@ -3863,7 +3839,6 @@ C     CALCULATE VERTEX WEIGHTS
 C     ========================================================
 C
       INTEGER :: I, J
-#include "general.inc"
 C
       DIMENSION IVWU(2*MXREP,0:NORB,0:NELEC)
 C
@@ -3954,14 +3929,14 @@ C
 C
       SUBROUTINE WRIVEC (VECTR,VECTI,DR,DI,ILIND,IRIND)
 C
-!      use general_mod, only: INDMIN, ISTART, NDET, NROOTS, NSEL, NVEC, REALAR
+      use general_mod, only: INDMIN, ISTART, NDET, NROOTS, NSEL, NVEC,
+     &  REALAR
       use files_dirrci_mod, only: FNAM, MRCFINV
       use iterat_mod, only: ECORE, EIGEN, EVECI, EVECR, REFVEC
-      use param_dirrci_mod, only: N3, N8
+      use param_dirrci_mod, only: N8
 #include "implicit.h"
 C
       INTEGER :: J
-#include "general.inc"
 C
       DIMENSION VECTR(NDET,*),VECTI(NDET,*),DR(*),DI(*)
       DIMENSION ILIND(*),IRIND(*)
@@ -4064,14 +4039,12 @@ C     Proposed & Written by (Malaya K. Nayak)
 C     ***************************************************
 C
       SUBROUTINE PROP_INT(PROP,AIJ,MORB,IRW,APHASE)
-!      use general_mod, only: NAMEA, REALAR
+      use general_mod, only: NAMEA, REALAR
       use files_dirrci_mod, only: FNAM, MDPROP
-      use param_dirrci_mod, only: N3, N8
       use kinds_mod, only: dp
 #include "implicit.h"
 
       INTEGER :: I, J, K
-#include "general.inc"
 
       REAL(dp), PARAMETER :: ACCUR=1.D-15
       DIMENSION PROP(2,MORB,MORB),AIJ(2*MORB*MORB)
