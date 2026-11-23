@@ -306,13 +306,14 @@ C
       KCREFI = KCREF + NZCONF
 C     ... pointer to imaginary part of CREF
       DO ICSIM = 1, NTSIM
+C        overlap t = <CREF|SCVEC> = sum_i conjg(c_i) s_i
          TTR = DDOT(NZCONF,WORK(KCREF),1,SCVEC(1,ICSIM),1)
          IF (NZ .GE. 2) THEN
             TTR = TTR
-     &          - DDOT(NZCONF,WORK(KCREFI),1,SCVEC(1+NZCONF,ICSIM),1)
+     &          + DDOT(NZCONF,WORK(KCREFI),1,SCVEC(1+NZCONF,ICSIM),1)
             TTI =
      &           DDOT(NZCONF,WORK(KCREF ),1,SCVEC(1+NZCONF,ICSIM),1)
-     &         + DDOT(NZCONF,WORK(KCREFI),1,SCVEC(1,ICSIM),1)
+     &         - DDOT(NZCONF,WORK(KCREFI),1,SCVEC(1,ICSIM),1)
          ELSE
             TTI = D0
          END IF
@@ -326,9 +327,11 @@ C
             CALL DAXPY(NZCONF,-TTR,WORK(KCREF),1,SCVEC(1,ICSIM),1)
             IF (NZ .GE. 2) THEN
                CALL DAXPY(NZCONF, TTI,WORK(KCREFI),1,SCVEC(1,ICSIM),1)
+C              SCVEC := SCVEC - CREF * t  (complex)
                CALL DAXPY(NZCONF,-TTR,WORK(KCREFI),1,
      &              SCVEC(1+NZCONF,ICSIM),1)
-               CALL DAXPY(NZCONF,-TTI,WORK(KCREF ),1,SCVEC(1,ICSIM),1)
+               CALL DAXPY(NZCONF,-TTI,WORK(KCREF ),1,
+     &              SCVEC(1+NZCONF,ICSIM),1)
             END IF
             IF (IPRXRS .GE. 5) WRITE(LUPRI,9000) ICSIM,TTR,TTI
          END IF
@@ -2343,7 +2346,7 @@ C           Print section
             IF(IPRXRS.GE.5) THEN
               WRITE(LUPRI,'(/I5,A)') MFREQ,
      &          ' configurational X(+) solution vectors'
-              CALL PRBVEC(LUPRI,BCVEC,MFREQ,NZCONF)
+              CALL PRCVEC(LUPRI,BCVEC,MFREQ,NZCONF)
             ENDIF
           ELSE
             CALL DZERO(XNORM(1,IPCP),NCSIM)
@@ -2584,10 +2587,10 @@ C
             IF(IPRXRS.GE.5) THEN
               WRITE(LUPRI,'(/I5,A)') MFREQ,
      &          ' configurational X(+) solution vectors'
-              CALL PRBVEC(LUPRI,BCVEC,MFREQ,NZCONF)
+              CALL PRCVEC(LUPRI,BCVEC,MFREQ,NZCONF)
               WRITE(LUPRI,'(/I5,A)') MFREQ,
      &          ' configurational X(-) solution vectors'
-              CALL PRBVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
+              CALL PRCVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
             ENDIF
           ELSE
             CALL DZERO(XNORM(1,IPCP),MFREQ)
@@ -2715,11 +2718,11 @@ C     Print section
         IF(NZCONF.GT.0) THEN
           WRITE(LUPRI,'(/I5,A)') MFREQ,
      &     ' configurational -WS[2]X(-) residual vectors'
-          CALL PRBVEC(LUPRI,BCVEC,MFREQ,NZCONF)
+          CALL PRCVEC(LUPRI,BCVEC,MFREQ,NZCONF)
           IF(.NOT.STATIC) THEN
             WRITE(LUPRI,'(/I5,A)') MFREQ,
      &       ' configurational -WS[2]X(+) residual vectors'
-            CALL PRBVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
+            CALL PRCVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
           ENDIF
         ENDIF
       ENDIF
@@ -2791,11 +2794,11 @@ C
         IF(NZCONF.GT.0) THEN
           WRITE(LUPRI,'(/I5,A)') MFREQ,
      &     ' configurational (E[2]X(+)-WS[2]X(-)) residual vectors'
-          CALL PRBVEC(LUPRI,BCVEC,MFREQ,NZCONF)
+          CALL PRCVEC(LUPRI,BCVEC,MFREQ,NZCONF)
           IF(.NOT.STATIC) THEN
             WRITE(LUPRI,'(/I5,A)') MFREQ,
      &       'configurational (E[2]X(-)-WS[2]X(+)) residual vectors'
-            CALL PRBVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
+            CALL PRCVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
           ENDIF
         ENDIF
       ENDIF ! from IF(IPRXRS.GE.5) THEN
@@ -2871,11 +2874,11 @@ CPP...need to take care of complex case printing
         IF(NZCONF.GT.0) THEN
           WRITE(LUPRI,'(/I5,A)') MFREQ,
      &     ' configurational (E[2]X(+)-WS[2]X(-)+G) residual vectors'
-          CALL PRBVEC(LUPRI,BCVEC,MFREQ,NZCONF)
+          CALL PRCVEC(LUPRI,BCVEC,MFREQ,NZCONF)
           IF(.NOT.STATIC) THEN
             WRITE(LUPRI,'(/I5,A)') MFREQ,
      &       ' configurational (E[2]X(-)-WS[2]X(+)) residual vectors'
-            CALL PRBVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
+            CALL PRCVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
             ENDIF
           ENDIF
         ENDIF
@@ -4563,10 +4566,13 @@ C
      &           D0,IPQTOQ(1,0),BMAT,NORBT,NORBT,NZ)
             CALL MEMREL('active e-e',WORK,1,KFRSAV,KFREE,LFREE)
 #else
-!ST&hjaaj   Transposed complex representation of matrix will
-!           transform to -j transformed quaterion representation of that matrix
+!ST&hjaaj   DVX = B^T D with B^T the transpose in spinor representation.
+!           NB: XOPSCT stores the trial vector at the transposed position
+!           compared to RUPKWOP (the orbital step), so WORK(KBTMP) already
+!           is (minus) that transpose; the j-transform 'J' used earlier
+!           was wrong for NZ > 1 (verified by finite differences, Nov 2026).
             CALL QGEMM(NORBT,NORBT,NORBT,-D1,
-     &           'N','J',IPQTOQ(1,0),WORK(KBTMP),NORBT,NORBT,NZ,
+     &           'N','N',IPQTOQ(1,0),WORK(KBTMP),NORBT,NORBT,NZ,
      &           'N','N',IPQTOQ(1,0),WORK(KDVF),NORBT,NORBT,NZ,
      &           D0,IPQTOQ(1,0),BMAT,NORBT,NORBT,NZ)
             CALL MEMREL('active e-e',WORK,1,KFRSAV,KFREE,LFREE)
@@ -5361,14 +5367,28 @@ C
 C        Calculate G * b^t
 C        -----------------
 C
+C        UGB = B*G - G*B (plain quaternion matrix products).
+C        With kappa = -B and the packed inner product a.b =
+C        1/2 Re tr(A^+ B), the BCH expansion of exp(-eps*kappa_b)
+C        exp(-kappa_d) gives for the symmetric Hessian
+C           sigma = sigma(one-index transformed gradient)
+C                 + pack( 1/2 (B G - G B) ),
+C        packed like XOPSCT, i.e. element (L,K) for rotation (K,L).
+C        For real matrices this equals the old expression
+C        -1/2 [ (G B^t)(K,L) - (G B^t)(L,K) ]; the old form with
+C        transposes is wrong for NZ = 4 (Nov 2026).
          CALL QGEMM(NORBT,NORBT,NORBT,D1,
+     &        'N','N',IPQTOQ(1,0),UBO,NORBT,NORBT,NZ,
      &        'N','N',IPQTOQ(1,0),UGO,NORBT,NORBT,NZ,
-     &        'T','N',IPQTOQ(1,0),UBO,NORBT,NORBT,NZ,
      &           D0,IPQTOQ(1,0),UGB,NORBT,NORBT,NZ)
+         CALL QGEMM(NORBT,NORBT,NORBT,DM1,
+     &        'N','N',IPQTOQ(1,0),UGO,NORBT,NORBT,NZ,
+     &        'N','N',IPQTOQ(1,0),UBO,NORBT,NORBT,NZ,
+     &           D1,IPQTOQ(1,0),UGB,NORBT,NORBT,NZ)
 C
          IF ( IPRXRS .GE. 30 ) THEN
             WRITE(LUPRI,'(1X,A)')
-     &           '(RSIGOOGB1) G * b^t matrix (e-e trial vector)'
+     &           '(RSIGOOGB1) B*G - G*B matrix (e-e trial vector)'
             CALL PRQMAT(UGO,NORBT,NORBT,NORBT,NORBT,NZ,
      &           IPQTOQ(1,0),LUPRI)
             CALL PRQMAT(UBO,NORBT,NORBT,NORBT,NORBT,NZ,
@@ -5379,21 +5399,21 @@ C
          DO IOP = 1, NZXOPE
             K = JXOPE(1,IOP)
             L = JXOPE(2,IOP)
-            SEVEC(IOP,1,I) = SEVEC(IOP,1,I) -
-     &          DP5 * (UGB(K,L,1) - UGB(L,K,1) )
+            SEVEC(IOP,1,I) = SEVEC(IOP,1,I) +
+     &          DP5 * UGB(L,K,1)
             DO IZ = 2, NZ
-               SEVEC(IOP,IZ,I) = SEVEC(IOP,IZ,I) -
-     &              DP5 * (UGB(K,L,IZ) - UGB(L,K,IZ))
+               SEVEC(IOP,IZ,I) = SEVEC(IOP,IZ,I) +
+     &              DP5 * UGB(L,K,IZ)
             END DO
          END DO
          DO IOP = 1, NZXOPP
             K = JXOPP(1,IOP)
             L = JXOPP(2,IOP)
-            SPVEC(IOP,1,I) = SPVEC(IOP,1,I) -
-     &           DP5*(UGB(K,L,1) - UGB(L,K,1))
+            SPVEC(IOP,1,I) = SPVEC(IOP,1,I) +
+     &           DP5*UGB(L,K,1)
             DO IZ = 2, NZ
-               SPVEC(IOP,IZ,I) = SPVEC(IOP,IZ,I) -
-     &              DP5*(UGB(K,L,IZ) - UGB(L,K,IZ))
+               SPVEC(IOP,IZ,I) = SPVEC(IOP,IZ,I) +
+     &              DP5*UGB(L,K,IZ)
             END DO
          END DO
       END DO
@@ -5422,14 +5442,28 @@ C
 C        Calculate G * b^t
 C        -----------------
 C
+C        UGB = B*G - G*B (plain quaternion matrix products).
+C        With kappa = -B and the packed inner product a.b =
+C        1/2 Re tr(A^+ B), the BCH expansion of exp(-eps*kappa_b)
+C        exp(-kappa_d) gives for the symmetric Hessian
+C           sigma = sigma(one-index transformed gradient)
+C                 + pack( 1/2 (B G - G B) ),
+C        packed like XOPSCT, i.e. element (L,K) for rotation (K,L).
+C        For real matrices this equals the old expression
+C        -1/2 [ (G B^t)(K,L) - (G B^t)(L,K) ]; the old form with
+C        transposes is wrong for NZ = 4 (Nov 2026).
          CALL QGEMM(NORBT,NORBT,NORBT,D1,
+     &        'N','N',IPQTOQ(1,0),UBO,NORBT,NORBT,NZ,
      &        'N','N',IPQTOQ(1,0),UGO,NORBT,NORBT,NZ,
-     &        'T','N',IPQTOQ(1,0),UBO,NORBT,NORBT,NZ,
      &           D0,IPQTOQ(1,0),UGB,NORBT,NORBT,NZ)
+         CALL QGEMM(NORBT,NORBT,NORBT,DM1,
+     &        'N','N',IPQTOQ(1,0),UGO,NORBT,NORBT,NZ,
+     &        'N','N',IPQTOQ(1,0),UBO,NORBT,NORBT,NZ,
+     &           D1,IPQTOQ(1,0),UGB,NORBT,NORBT,NZ)
 C
          IF ( IPRXRS .GE. 30 ) THEN
             WRITE(LUPRI,'(1X,A)')
-     &           '(RSIGOOGB1) G * b^t matrix (e-p trial vector)'
+     &           '(RSIGOOGB1) B*G - G*B matrix (e-p trial vector)'
             CALL PRQMAT(UGO,NORBT,NORBT,NORBT,NORBT,NZ,
      &           IPQTOQ(1,0),LUPRI)
             CALL PRQMAT(UBO,NORBT,NORBT,NORBT,NORBT,NZ,
@@ -5441,21 +5475,21 @@ C
          DO IOP = 1, NZXOPE
             K = JXOPE(1,IOP)
             L = JXOPE(2,IOP)
-            SEVEC(IOP,1,I+NESIM) = SEVEC(IOP,1,I+NESIM) -
-     &           DP5 * (UGB(K,L,1) - UGB(L,K,1))
+            SEVEC(IOP,1,I+NESIM) = SEVEC(IOP,1,I+NESIM) +
+     &           DP5 * UGB(L,K,1)
             DO IZ = 2, NZ
-               SEVEC(IOP,IZ,I+NESIM) = SEVEC(IOP,IZ,I+NESIM) -
-     &              DP5*(UGB(K,L,IZ) - UGB(L,K,IZ))
+               SEVEC(IOP,IZ,I+NESIM) = SEVEC(IOP,IZ,I+NESIM) +
+     &              DP5*UGB(L,K,IZ)
             END DO
          END DO
          DO IOP = 1, NZXOPP
             K = JXOPP(1,IOP)
             L = JXOPP(2,IOP)
-            SPVEC(IOP,1,I+NESIM) = SPVEC(IOP,1,I+NESIM) -
-     &           DP5*(UGB(K,L,1) - UGB(L,K,1))
+            SPVEC(IOP,1,I+NESIM) = SPVEC(IOP,1,I+NESIM) +
+     &           DP5*UGB(L,K,1)
             DO IZ = 2, NZ
-               SPVEC(IOP,IZ,I+NESIM) = SPVEC(IOP,IZ,I+NESIM) -
-     &              DP5*(UGB(K,L,IZ) - UGB(L,K,IZ))
+               SPVEC(IOP,IZ,I+NESIM) = SPVEC(IOP,IZ,I+NESIM) +
+     &              DP5*UGB(L,K,IZ)
             END DO
          END DO
       END DO

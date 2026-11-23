@@ -512,10 +512,9 @@ C         ... EVECR set in subroutine XRSST2 for UNCOUP
         END IF
         IF(IPRXRS.GE.4) THEN
 
-         IF(NCSIM.GT.0) THEN
-c            WRITE(LUPRI,'(/I5,A)')NCSIM,' Config. trial vectors'
-c            CALL PRBVEC(LUPRI,WORK(KBCI),NCSIM,NZCONF)
-            write(lupri,*), 'config trial', work(kbci:nzconf)
+          IF(NCSIM.GT.0) THEN
+            WRITE(LUPRI,'(/I5,A)')NCSIM,' Config. trial vectors'
+            CALL PRCVEC(LUPRI,WORK(KBCI),NCSIM,NZCONF)
           ENDIF
           IF(NESIM.GT.0) THEN
             WRITE(LUPRI,'(/I5,A)')NESIM,
@@ -579,15 +578,8 @@ C
           IF(IPRXRS.GE.4) THEN
             WRITE(LUPRI,'(/A)')' Before XRSSVC'
             IF(NCSIM.GT.0) THEN
-c MvH: a bug occors here for NZ=4. In PRBVEC, the routine 
-c      PRQMAT is used, which prints a quaternion matrix
-c      However, the configurational trial vectors are at most
-c      complex, so it prints parts of the memory that have not yet 
-c      been assigned, resulting in a crash.
               WRITE(LUPRI,'(/I5,A)')NCSIM,' Config. trial vectors'
-c              CALL PRBVEC(LUPRI,WORK(KBCI),NCSIM,NZCONF)
-            call output(WORK(KBCI),1,NZCONF,1,NZ_in_CI,NZCONF,NZ_in_CI,
-     &                  1,LUPRI)             
+              CALL PRCVEC(LUPRI,WORK(KBCI),NCSIM,NZCONF)
             ENDIF
             IF(NESIM.GT.0) THEN
               WRITE(LUPRI,'(/I5,A)')NESIM,
@@ -2967,6 +2959,29 @@ C
         WRITE(LUPRI,'(A,I4)') '* Vector nr. ',I
         CALL PRQMAT(BVEC(1,1,I),NBDIM,1,NBDIM,1,NZ,
      &              IPQTOQ(1,IREP),IUNIT)
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck PRCVEC */
+      SUBROUTINE PRCVEC(IUNIT,BVEC,NBSIM,NBDIM)
+C***********************************************************************
+C     Print configurational (CI) trial vectors.
+C     CI vectors have at most NZ_in_CI = MIN(NZ,2) components
+C     (real or complex), so PRBVEC (which assumes NZ quaternion
+C     components) cannot be used for NZ = 4.
+C***********************************************************************
+#include "implicit.h"
+#include "dgroup.h"
+      DIMENSION BVEC(NBDIM,NZ_in_CI,NBSIM)
+C
+      DO I = 1,NBSIM
+        WRITE(IUNIT,'(A,I4)') '* Vector nr. ',I
+        IF (NZ_in_CI .EQ. 2) WRITE(IUNIT,'(T12,A)')
+     &     '(real and imaginary parts)'
+        CALL OUTPUT(BVEC(1,1,I),1,NBDIM,1,NZ_in_CI,NBDIM,NZ_in_CI,1,
+     &              IUNIT)
       ENDDO
 C
       RETURN

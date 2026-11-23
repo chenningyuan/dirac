@@ -270,6 +270,11 @@ C
       DO I = 1,NFSYM
 C
          IF (NASH(I) .GT. 0) THEN
+C           NB: DV is used as stored ('N','N'). DV is already in the
+C           transposed convention, so no extra (j-)transform is needed;
+C           'N','J' (tried in Nov 2026) gives an orbital gradient that is
+C           inconsistent with the energy for complex/quaternion DV
+C           (verified with finite differences of the energy).
             CALL QGEMM(NORBT,NASH(I),NASH(I),D1,
      &           'N','N',IPQTOQ(1,0),
      &           FC(1,1+IORB(I)+NPSH(I)+NISH(I),1),

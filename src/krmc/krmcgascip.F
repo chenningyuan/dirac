@@ -1845,8 +1845,11 @@ C---------------------
 C        H = H - (K, N, L, M)
 C---------------------
          IF (DOIMAG) THEN
-            PV(K,N,L,M,2) = PV(K,N,L,M,2) + DMIIJ1
-            PV(K,M,L,N,2) = PV(K,M,L,N,2) - DMIIJ1
+C           Same phase pattern as for the real part (the real and
+C           imaginary parts of cl^*_i cr_j go to the same elements);
+C           previously the two signs were interchanged here.
+            PV(K,M,L,N,2) = PV(K,M,L,N,2) + DMIIJ1
+            PV(K,N,L,M,2) = PV(K,N,L,M,2) - DMIIJ1
             PV(M,K,N,L,2) = PV(M,K,N,L,2) + DMIJI1
             PV(M,L,N,K,2) = PV(M,L,N,K,2) - DMIJI1
          END IF

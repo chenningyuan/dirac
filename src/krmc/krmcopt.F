@@ -4510,6 +4510,10 @@ C
 CDEBUG - jth
 CDEBUG DZERO - can safely be removed as XRSXV1 does a DZERO
       CALL DZERO(WORK(KKAPPA),NZXOPTQ)
+C     DELTACI must be zeroed: with frozen CI (.NO CI) the response
+C     solver runs with NZCONF = 0, KRMCVEC then never touches DELTACI,
+C     and uninitialized memory would be added to CREF below.
+      CALL DZERO(WORK(KDELTACI),NZCONFQ)
 C
       CALL KRMCVEC(IBTYP,IBCVC,IBEVC,IBPVC,
      &     EVALR,EVECR,WORK(KKAPPA),WORK(KDELTACI),

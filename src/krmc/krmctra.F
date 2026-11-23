@@ -3697,71 +3697,74 @@ C
       DIMENSION iQVINT(2,4,3,4)
 C
       DATA szPV /
-     &     'PV', 'PV', 'PV', 'PV', ! real FQ
      &     'PV', 'PV', 'PV', 'PV',
-     &     'PV', 'PV', 'VP', 'VP',
-     &     'PV', 'PV', 'PV', 'PV', ! i-imag FQ
      &     'PV', 'PV', 'PV', 'PV',
-     &     'PV', 'PV', 'VP', 'VP',
-     &     'PV', 'PV', 'PV', 'PV', ! j-imag FQ
+     &     'PV', 'PV', 'PV', 'PV',
+     &     'PV', 'PV', 'PV', 'PV',
+     &     'PV', 'PV', 'PV', 'PV',
      &     'PV', 'PV', 'PV', 'PV',
      &     'VP', 'VP', 'PV', 'PV',
-     &     'PV', 'PV', 'PV', 'PV', ! k-imag FQ
      &     'PV', 'PV', 'PV', 'PV',
-     &     'VP', 'VP', 'PV', 'PV' /
+     &     'PV', 'PV', 'PV', 'PV',
+     &     'VP', 'VP', 'PV', 'PV',
+     &     'PV', 'PV', 'PV', 'PV',
+     &     'PV', 'PV', 'PV', 'PV' /
       DATA szQV /
-     &     'QV', 'QV', 'QV', 'QV', ! real FQ
+     &     'QV', 'QV', 'QV', 'QV',
+     &     'QV', 'QV', 'QV', 'QV',
+     &     'QV', 'QV', 'QV', 'QV',
+     &     'QV', 'QV', 'QV', 'QV',
+     &     'QV', 'QV', 'QV', 'QV',
      &     'QV', 'QV', 'QV', 'QV',
      &     'QV', 'QV', 'VQ', 'VQ',
-     &     'QV', 'QV', 'QV', 'QV', ! i-imag FQ
+     &     'QV', 'QV', 'QV', 'QV',
      &     'QV', 'QV', 'QV', 'QV',
      &     'QV', 'QV', 'VQ', 'VQ',
-     &     'QV', 'QV', 'VQ', 'VQ', ! j-imag FQ
-     &     'QV', 'QV', 'VQ', 'VQ',
      &     'QV', 'QV', 'QV', 'QV',
-     &     'QV', 'QV', 'VQ', 'VQ', ! k-imag FQ
-     &     'QV', 'QV', 'VQ', 'VQ',
      &     'QV', 'QV', 'QV', 'QV' /
       DATA dFAC /
-     &     D1  , DM1 , DP5 , DMP5,
-     &     DP5 , DMP5, D1  , DM1,
+     &     D1  , DM1 , D1  , DM1 ,
      &     DP5 , DMP5, DP5 , DMP5,
-     &     D1  , D1  , DP5 , DP5,
-     &     DP5 , DP5 , D1  , D1,
-     &     DMP5, DMP5, DMP5, DMP5,
-     &     D1  , DM1 , D1  , DM1,
-     &     DMP5, DP5 , DP5 , DM1,
-     &     DMP5, DP5 , DP5 , DMP5,
-     &     D1  , D1  , D1  , D1,
-     &     DP5 , DP5 , DP5 , D1,
-     &     DP5 , DP5 , DP5 , DP5 /
+     &     DP5 , DMP5, DP5 , DMP5,
+     &     D1  , D1  , D1  , D1  ,
+     &     DP5 , DP5 , DP5 , DP5 ,
+     &     DP5 , DP5 , DP5 , DP5 ,
+     &     DM1 , D1  , D1  , DM1 ,
+     &     DMP5, DMP5, DP5 , DP5 ,
+     &     DMP5, DMP5, DP5 , DP5 ,
+     &     D1  , D1  , D1  , D1  ,
+     &     DP5 , DMP5, DMP5, DP5 ,
+     &     DP5 , DMP5, DMP5, DP5  /
       DATA iPVINT /
-     &     1,1, 2,1, 3,1, 4,3,
-     &     1,2, 2,2, 3,2, 4,2,
-     &     1,3, 2,3, 3,1, 4,1,
      &     1,1, 2,1, 3,1, 4,1,
      &     1,2, 2,2, 3,2, 4,2,
-     &     1,3, 2,3, 3,1, 4,1,
-     &     1,1, 2,1, 3,2, 4,2,
-     &     1,3, 2,3, 1,2, 2,2,
-     &     3,1, 4,1, 3,1, 4,1,
-     &     1,1, 2,1, 3,2, 4,2,
-     &     1,3, 2,3, 1,2, 2,2,
-     &     3,1, 4,1, 3,1, 4,1/
-      DATA iQVINT /
-     &     1,1, 2,1, 3,1, 4,3,
+     &     1,3, 2,3, 3,3, 4,3,
+     &     1,1, 2,1, 3,1, 4,1,
      &     1,2, 2,2, 3,2, 4,2,
-     &     1,3, 2,3, 3,1, 4,1,
+     &     1,3, 2,3, 3,3, 4,3,
+     &     1,1, 2,1, 3,1, 4,1,
+     &     1,2, 2,2, 3,2, 4,2,
+     &     1,3, 2,3, 3,3, 4,3,
+     &     1,1, 2,1, 3,1, 4,1,
+     &     1,2, 2,2, 3,2, 4,2,
+     &     1,3, 2,3, 3,3, 4,3 /
+      DATA iQVINT /
+     &     1,1, 2,1, 3,1, 4,1,
+     &     1,2, 2,2, 3,2, 4,2,
+     &     1,3, 2,3, 3,3, 4,3,
      &     2,1, 1,1, 4,1, 3,1,
      &     2,2, 1,2, 4,2, 3,2,
-     &     2,3, 1,3, 4,1, 3,1,
-     &     3,3, 4,3, 1,1, 2,1,
-     &     3,1, 4,1, 3,1, 4,1,
-     &     1,2, 2,2, 1,3, 2,3,
-     &     4,3, 3,3, 2,1, 1,1,
-     &     4,1, 3,1, 4,1, 3,1,
-     &     2,2, 1,2, 2,3, 1,3/
-C
+     &     2,3, 1,3, 4,3, 3,3,
+     &     3,1, 4,1, 1,1, 2,1,
+     &     3,3, 4,3, 1,3, 2,3,
+     &     3,2, 4,2, 1,2, 2,2,
+     &     4,1, 3,1, 2,1, 1,1,
+     &     4,3, 3,3, 2,3, 1,3,
+     &     4,2, 3,2, 2,2, 1,2 /
+C     Nov 2026: tables re-derived (verified numerically against the
+C     spinor-basis definition and against RADDFQ90 for random
+C     time-reversal symmetric integrals and densities, NZ=1,2,4).
+C     Eqs. (B.35)-(B.38) of the thesis have several errors for NZ=4.
 C     So out of this we can establish the first term as:
 C
 C     D1 * \Twoint{pv,xy;1,1} P_{qv,xy;1,1}
@@ -3954,7 +3957,10 @@ C     We need (**|qv), so in the second case we need to swap indices, done
 C     in RADDFQX3 :
 C
       szQVXY='XY'
-      IF ( IQU .LT. IVU ) THEN
+C     szQV = 'QV': we need P_{qv,xy}; 'VQ': we need P_{vq,xy}
+C     (szQV was ignored before Nov 2026; only matters for NZ = 4)
+      IF ( (szQV .EQ. 'QV' .AND. IQU .LT. IVU) .OR.
+     &     (szQV .EQ. 'VQ' .AND. IVU .LT. IQU) ) THEN
          CALL RADDFQX3(FAC,IZQV,I3QV,szQVXY)
       END IF
 c     write(6,*) 'after RADDFQX3',szQV,FAC,IZQV,I3QV,szQVXY
