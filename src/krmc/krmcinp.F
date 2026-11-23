@@ -285,7 +285,7 @@ C&&& .NO CI : debug flag: no CI rotations.
                GO TO 100
    17          CONTINUE
 C&&& .THRPCI: threshold for printing CI vector
-                  READ(LUCMD,*) KRMC_THRPCI
+                  READ(LUCMD,*) DKRMC_THRPCI
                GO TO 100
    18          CONTINUE
 C&&& .FROZEN: freeze lowest inactive orbitals
@@ -1039,7 +1039,7 @@ C *** Option 5 >GOOD R<  "Good" trust radius
                GO TO 100
     6          CONTINUE
 C *** Option 6 >MIN RA<  "Bad" trust radius
-                  READ(LUCMD,*) RATBAD
+                  READ(LUCMD,*) RATMIN
                GO TO 100
     7          CONTINUE
 C *** Option 7 >REJ RA<  Ratio predicted/actual step that rejects step
