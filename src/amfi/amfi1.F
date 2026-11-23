@@ -48,7 +48,6 @@ cbs   functions, the exponents and contraction coefficients
       use ired_mod
       use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
       use priunit_mod, only: LUPRI
-!      use param_mod, only: EXPONENTS, ICORE, IKEEPORB, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NPRIMIT
 #include "implicit.h"
       INTEGER :: I
       character*4 WORD                         

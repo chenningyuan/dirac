@@ -352,7 +352,6 @@ cbs
 cbs   subroutine to set up parameters for finite nucleus. The s-functions are replaced 
 cbs   by just one exponent which models the nucleus.
 cbs
-!      use param_mod, only: EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NCONTRAC_KEEP, NOCCORB, NPRIMIT, NPRIMIT_KEEP, OCCUP
       use param_amfi_mod, only: EXPONENTS, NCONTRAC, NCONTRAC_KEEP,
      &  NOCCORB, NPRIMIT, NPRIMIT_KEEP, OCCUP
       use para_mod, only: LMAX_OCC
@@ -390,7 +389,6 @@ cbs   integrals are thrown away after each l,l,l,l-block
       use priunit_mod, only: LUPRI
       use amfi_if_mod, only: IPR_AMFI
       use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
-!      use param_mod, only: CLEBSCH, IPOWXYZ, ISIGNM, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, ONECARTX, ONECARTY, ONECARTZ, PREROOTS, SCRATCH4
 #include "implicit.h"
       INTEGER :: I,J
       logical keep,keepcart,icheck,mcheckxy,mcheckz,makemean,bonn,   
@@ -1389,7 +1387,6 @@ c
 cbs ##################################################################
       use param_amfi_mod, only: COULOVLP
       use pi_mod, only: PI
-!      use param_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
       use dofuc_mod, only: DFFRAC
       use para_mod, only: LMAX, MXPRIML
 #include "implicit.h"
@@ -1981,7 +1978,6 @@ cbs###########################################################################
 cbs   cont prepares all required contraction coefficients for functions 
 cbs   with angular momentum L
 cbs###########################################################################
-!      use param_mod, only: ENERGY, EVAL, EVEC, EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NORMOVLP, NPRIMIT, ROOTOVLPINV, TKIN, TYPE1, TYPE2
       use param_amfi_mod
       use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
 #include "implicit.h"

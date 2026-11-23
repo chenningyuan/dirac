@@ -202,10 +202,9 @@ C     Taking the lowest root....
 C     
 C     Written by T. Saue Dec 9 2004
 C***********************************************************************
+      use iterat_mod, only: EIGEN2
 #include "implicit.h"
 C
-#include "../dirrci/param.inc"  ! For iterat.inc
-#include "../dirrci/iterat.inc" 
       RGETCI = EIGEN2(1)
       RETURN
       END

@@ -17,6 +17,8 @@
 C
       PROGRAM DIRRCI
 C
+      use files_dirrci_mod, only: MRCEXCS, MRCTWOE, MRCVECS
+      use param_dirrci_mod, only: MAXCORE
       IMPLICIT REAL*8 (A-H, O-Z)
 C
 C     ====================================================================
@@ -49,7 +51,6 @@ C     IPOINT  :   POINTERS OF THE MAIN MEMORY BLOCK
 C
 C     BLOCK DATA :
 C
-C     DIRDAT  :   INITIALIZES FILES NAMES AND NUMBERS
 C
 C     SUBROUTINES AND FUNCTIONS :
 C
@@ -100,8 +101,6 @@ C     15 (MRCTWOE)  : SORTED TWO-ELECTRON INTEGRALS (TEMPORARY FILE)
 C
 C     =======================================================================
 C
-#include "files.inc"
-#include "param.inc"
       LOGICAL DONE
       PARAMETER (MCORE = 60 000 000)
       REAL*8, allocatable :: CI(:)

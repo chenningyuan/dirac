@@ -10,7 +10,6 @@
       use ired_mod, only: INCRLM, IREDLM, IREDOFFUNCTNEW, ITOTALPERIR,
      &  LOFFUNCTION, MOFFUNCTION, SHIFTIRED, SHIFTIRIR
 #include "implicit.h"
-!      use param_mod, only: DUMMYONE, EXPONENTS, IPOWXYZ, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
       INTEGER :: I,J
       logical ADDSO1
       logical makemean,AIMP,oneonly  
@@ -346,7 +345,6 @@ cbs   contraction for powers (+2)  with alpha1*alpha3
 cbs   other-orbit term 
 cbs   use averaged integrals by interchanging kinematic factors   
 cbs   this is case a in the documentation 
-!      use param_mod, only: EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
       use param_amfi_mod, only: CONTRARRAY, IADDTYP1, IADDTYP2,
      &  IADDTYP3, IADDTYP4, NCONTRAC, NPRIMIT
 #include "implicit.h"
@@ -444,7 +442,6 @@ cbs   copy primitive integrals to scratch1
 cbs   contraction for powers (+2)  with alpha1*alpha3
 cbs   same orbit term 
 cbs   this is case a in the documentation 
-!      use param_mod, only: EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
       use param_amfi_mod, only: CONTRARRAY, IADDTYP1, IADDTYP4,
      &  NCONTRAC, NPRIMIT
 #include "implicit.h"
@@ -489,7 +486,6 @@ c     write(6,*) 'nstart ',nstart
 cbs   contraction for powers (0)  with alpha1
 cbs   this is one of the cases b in the documentation 
 cbs   use averaged integrals by interchanging kinematic factors 
-!      use param_mod, only: EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
       use param_amfi_mod, only: CONTRARRAY, IADDTYP1, IADDTYP2,
      &  IADDTYP3, IADDTYP4, NCONTRAC, NPRIMIT
 #include "implicit.h"
@@ -588,7 +584,6 @@ cbs   copy primitive integrals to scratch1
      *scratch1,scratch2,cont4SO)
 cbs   contraction for powers (0)  with alpha1
 cbs   this is one of the cases b in the documentation 
-!      use param_mod, only: EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
       use param_amfi_mod, only: CONTRARRAY, IADDTYP1, IADDTYP3,
      &  IADDTYP4, NCONTRAC, NPRIMIT
 #include "implicit.h"
@@ -624,7 +619,6 @@ cbs   copy primitive integrals to scratch1
 cbs   contraction for powers (0)  with alpha3
 cbs   this is one of the cases b in the documentation 
 cbs   use averaged integrals by interchanging kinematic factors 
-!      use param_mod, only: EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
       use param_amfi_mod, only: CONTRARRAY, IADDTYP1, IADDTYP2,
      &  IADDTYP3, IADDTYP4, NCONTRAC, NPRIMIT
 #include "implicit.h"
@@ -723,7 +717,6 @@ cbs   copy primitive integrals to scratch1
      *scratch1,scratch2,cont4SO)
 cbs   contraction for powers (0)  with alpha3
 cbs   this is one of the cases b in the documentation 
-!      use param_mod, only: EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
       use param_amfi_mod, only: CONTRARRAY, IADDTYP1, IADDTYP3,
      &  IADDTYP4, NCONTRAC, NPRIMIT
 #include "implicit.h"
@@ -761,7 +754,6 @@ cbs   copy primitive integrals to scratch1
 cbs   contraction for powers (-2)  with factor 1 
 cbs   this is case c in the documentation 
 cbs   use averaged integrals by interchanging kinematic factors 
-!      use param_mod, only: EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
       use param_amfi_mod, only: CONTRARRAY, IADDTYP1, IADDTYP3,
      &  NCONTRAC, NPRIMIT
 #include "implicit.h"
@@ -858,7 +850,6 @@ cbs   copy primitive integrals to scratch1
      *scratch1,scratch2,cont4SO)
 cbs   contraction for powers (-2)  with factor 1 
 cbs   this is case c in the documentation 
-!      use param_mod, only: EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
       use param_amfi_mod, only: CONTRARRAY, IADDTYP1, IADDTYP3,
      &  NCONTRAC, NPRIMIT
 #include "implicit.h"
@@ -1188,7 +1179,6 @@ cbs   to(i,j,k,l)=to(i,j,k,l)+fact*from(i,k,j,l)
 cbs   generates the radial integrals  for the one electron spin orbit integrals   
 cbs   taken the 1/r**3 formula from the documentation and included additional 
 cbs   factors for normalization   
-!      use param_mod, only: EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
       do L=1,Lhigh    
       icount=0
       do iprim2=1,nprimit(L)
@@ -1217,7 +1207,6 @@ cbs   factors for normalization
 #include "implicit.h"      
 cbs   SUBROUTINE to generate all required radial 
 cbs   integrals for the four angular momenta l1-l4
-!      use param_mod, only: EXPONENTS, LBLOCKS, LFIRST, LLAST, LMAX, LSTARTER, LVALUES, MXCART, MXCONTL, MXPRIML, NBLOCK, NCONTRAC, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
       logical makemean,bonn,breit,sameorb 
       dimension cont4SO(*),cont4OO(*),WRK(LFREE)
 
@@ -1459,7 +1448,6 @@ cbs### check, whether integrals fit on array ################
 cbs   SUBROUTINE to calculate the dimemsion of the radial integral 
 cbs   arrays. BASICALLY GENCOUL WITHOUT EXPLICIT INTEGRAL CALCULATION 
 cbs   integrals for the four angular momenta l1-l4
-!      use param_mod, only: EXPONENTS, LBLOCKS, LFIRST, LLAST, LMAX, LSTARTER, LVALUES, MXCART, MXCONTL, MXPRIML, NBLOCK, NCONTRAC, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
       logical makemean,bonn,breit,sameorb 
       max1=1  !starting values for limits of precalculated 
 c             ! powers of function Cfunct(X)
@@ -1570,7 +1558,6 @@ c
       use para_mod, only: MXPRIML
 #include "implicit.h"
 cbs   generates overlap of normalized  primitives. 
-!      use param_mod, only: EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NORMOVLP, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV, SCRATCHINV
       dimension evecinv(MxprimL,MxprimL)
       do L=0,Lhigh 
       	do Jrun=1,nprimit(L)
@@ -1666,7 +1653,6 @@ cbs   now generate OVLPinv
       use dofuc_mod, only: DF
 #include "implicit.h"
 cbs   set some often used powers of exponents 
-!      use param_mod, only: EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
       do L2=0,Lhigh 
       do L1=0,L2    
       do irun1=1,nprimit(L1)
@@ -1727,7 +1713,6 @@ cbs   with shifted l-values
 #include "implicit.h"
 cbs   purpose: generate start adresses of contraction coeffs on 
 cbs   contrarray for the different L-Blocks 
-!      use param_mod, only: EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
       istart=1
       do L=0,Lhigh
       inc=nprimit(L)*ncontrac(L)
@@ -1801,7 +1786,6 @@ CMI ..................................
 cbs   get expansions of atomic orbitals in contracted functions 
       character*12    occtext,occread
       character*18  textnorbmf,textnorbmf2    
-!      use param_mod, only: AOCOEFFS, EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NOCCORB, NPRIMIT, OCCUP, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
       logical EX
       DIMENSION WORK(LWORK)
 
@@ -1872,7 +1856,6 @@ CMI         if ( amfi3_verbose ) then
       use amfi_if_mod, only: IPR_AMFI, IRELSCF_INFO, MXRELSCF_INFO,
      &  ONRELSCF, RELSCFLABI, RELSCFLABX
 #include "implicit.h"
-!      use param_mod, only: AOCOEFFS, EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NOCCORB, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
       INTEGER :: I,II
 cbs   get expansions of atomic orbitals in contracted functions
       common /nucleus/ charge,Exp_finite
@@ -2741,7 +2724,6 @@ cbs
  
       subroutine inidf
 cbs   initializes the df on common block  with double facultatives
-!      use param_mod, only: EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
       use dofuc_mod, only: DF, DFFRAC
       use para_mod, only: NDFMX
 #include "implicit.h"

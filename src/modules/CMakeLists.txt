@@ -94,6 +94,7 @@ set(MODULE_SOURCES
     infpar.F90
     inftap.F90
     iratdef.F90
+    iterat.F90
     krciprop.F90
     krmcluci_inf.F90
     lapdim.F90
@@ -119,6 +120,7 @@ set(MODULE_SOURCES
     onecom.F90
     optinf.F90
     orgcom.F90
+    param_dirrci.F90
     pgroup.F90
     pi.F90
     pincom.F90
