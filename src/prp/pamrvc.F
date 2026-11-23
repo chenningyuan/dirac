@@ -476,8 +476,12 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
+      LOGICAL NOGBDBG
 C
       CALL QENTER('XRSSEP')
+C     Debug (.FDCHEK): optionally mask the orbital trial vectors
+      IF (XRS_FDCHK .AND. NESIM.GT.0)
+     &   CALL FDMASKB(BEVEC,get_orbital_rotation_indices_pp())
       CALL RTKTIME(.TRUE.,13)
 C
       KFRSAV = KFREE
@@ -602,6 +606,18 @@ C
 C        Dispose PV
 C
          CALL MEMREL('after RGETH2TX',WORK,1,KPV,KFREE,LFREE)
+C
+C        Debug (.FDCHEK): finite-difference check of the one-index
+C        transformed matrices of the first orbital trial vector
+C
+         IF (XRS_FDCHK .AND. NESIM.GT.0) THEN
+            CALL MEMGET('REAL',KCRFD,MAX(1,NZCONFQ),WORK,KFREE,LFREE)
+            IF (NZCONF.GT.0) CALL READ_DX(LUBCI,1,NZCONFQ,WORK(KCRFD))
+            CALL KRMC_FDCHKI(WORK(KCRFD),BEVEC,
+     &           WORK(KF+NCSIM*N2ORBXQ),WORK(KF+(NCSIM+1)*N2ORBXQ),
+     &           WORK(KFQX),WORK(KH2ACX),XRS_FDEPS,WORK,KFREE,LFREE)
+            CALL MEMREL('FDCHKI',WORK,1,KCRFD,KFREE,LFREE)
+         END IF
       ELSE
          KFQT   = KFREE
          KFQX   = KFREE
@@ -633,7 +649,7 @@ C
      &        get_orbital_rotation_indices_pp(),NZXOPE,
      &        get_orbital_rotation_indices_pn(),NZXOPP,
      &        IBEVC,IBPVC,IBTYP,WORK(KFREE),LFREE)
-         IF (FKRMC) THEN
+         IF (FKRMC .AND. .NOT. (XRS_FDCHK .AND. NOGBDBG())) THEN
             CALL RSIGOOGB(SEVEC,SPVEC,
      &           GPOE,GPOP,BEVEC,BPVEC,
      &           get_orbital_rotation_indices_pp(),
@@ -5965,3 +5981,77 @@ C  Take care of Real or Imaginary case
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck fdmaskb */
+      SUBROUTINE FDMASKB(BEVEC,JXOPE)
+C***********************************************************************
+C     Debug helper for .FDCHEK: mask e-e orbital trial vectors according
+C     to the environment variable DIRAC_FDMASK
+C       0 (default): no masking
+C       1: keep only rotations without an active orbital
+C       2: keep only rotations involving an active orbital
+C     Only meaningful for one macro iteration (.MAX MACRO 1).
+C***********************************************************************
+      use os_utils
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbxrs.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      DIMENSION BEVEC(NZXOPE,NZ,*), JXOPE(2,*)
+      LOGICAL ACT
+      ACT(K) = K.GT.IORB(1)+NPSH(1)+NISH(1) .AND.
+     &         K.LE.IORB(1)+NPSH(1)+NISH(1)+NASH(1)
+      IUNIT = get_environment_integer('DIRAC_FDUNIT',0)
+      IF (IUNIT .GT. 0) THEN
+C        replace trial vector(s) by a unit vector (stored scaled by 1/2)
+         IZU = get_environment_integer('DIRAC_FDUNITZ',1)
+         DO I = 1, NESIM
+            DO IZ = 1, NZ
+               DO IOP = 1, NZXOPE
+                  BEVEC(IOP,IZ,I) = 0.0D0
+               END DO
+            END DO
+            BEVEC(IUNIT,IZU,I) = 0.5D0
+         END DO
+         WRITE(LUPRI,'(A,2I4,A,2I4)')
+     &      ' (FDMASKB) unit trial vector: rotation, component',
+     &      IUNIT,IZU,'   orbitals',JXOPE(1,IUNIT),JXOPE(2,IUNIT)
+         RETURN
+      END IF
+      MASK = get_environment_integer('DIRAC_FDMASK',0)
+      IF (MASK .EQ. 0) RETURN
+      IF (NFSYM .NE. 1) CALL QUIT('FDMASKB: only for NFSYM = 1')
+      NKEEP = 0
+      DO IOP = 1, NZXOPE
+         K = JXOPE(1,IOP)
+         L = JXOPE(2,IOP)
+         IF (MASK .EQ. 1) THEN
+            IZAP = 0
+            IF (ACT(K) .OR. ACT(L)) IZAP = 1
+         ELSE
+            IZAP = 1
+            IF (ACT(K) .OR. ACT(L)) IZAP = 0
+         END IF
+         IF (IZAP .EQ. 1) THEN
+            DO I = 1, NESIM
+               DO IZ = 1, NZ
+                  BEVEC(IOP,IZ,I) = 0.0D0
+               END DO
+            END DO
+         ELSE
+            NKEEP = NKEEP + 1
+         END IF
+      END DO
+      WRITE(LUPRI,'(A,I2,A,I4,A,I4)') ' (FDMASKB) DIRAC_FDMASK =',MASK,
+     &   ': kept',NKEEP,' of',NZXOPE
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      LOGICAL FUNCTION NOGBDBG()
+C     Debug (.FDCHEK): environment variable DIRAC_NOGB=1 skips the
+C     G*B term (RSIGOOGB) of the orbital sigma vector.
+      use os_utils
+      NOGBDBG = get_environment_integer('DIRAC_NOGB',0) .EQ. 1
+      END
+

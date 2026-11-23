@@ -1729,12 +1729,15 @@ C
 C
 #include "dcbxrs.h"
 #include "dgroup.h"
+#include "dcborb.h"
       DIMENSION REDGP(NREDM),REDE(NREDM,NREDM),REDS(NREDM,NREDM),
      &          GPCI(*),GPOE(*),GPOP(*),
      &          IBCVC(NREDM),IBEVC(NREDM),IBPVC(NREDM),IBTYP(2,NREDM),
      &          BCVEC(NZCONFQ,*),BEVEC(NZXOPEQ,*),BPVEC(NZXOPPQ,*),
      &          SCVEC(NZCONFQ,*),SEVEC(NZXOPEQ,*),SPVEC(NZXOPPQ,*),
      &          WORK(*)
+      CHARACTER*1 BTPCH(-1:2)
+      DATA BTPCH/'C',' ','E','P'/
       LOGICAL   E2FULL
 C
       CALL QENTER('XRSRED')
@@ -1744,8 +1747,7 @@ C     ====================================
 C
       IF (NTSIM.LT.1) GO TO 9999
 C
-      E2FULL = .FALSE.
-      IF (E2CHEK) E2FULL = .TRUE.
+      E2FULL = E2CHEK .OR. XRS_E2FULL
       IF (IPRXRS .GE. 15) THEN
          CALL HEADER('(XRSRED) Sigma vectors',-1)
          IF (NZCONF .GT. 1) THEN
@@ -1806,6 +1808,72 @@ C     Allocate work space for previous trial vectors
       CALL EXTRDE(REDE,E2FULL,IBTYP,IBCVC,IBEVC,IBPVC,
      &            BCVEC,BEVEC,BPVEC,SCVEC,SEVEC,SPVEC,WORK(KB1))
 C
+C     Debug (.FDCHEK): finite-difference check of the orbital part of
+C     the sigma vector of the first new CI trial vector.
+C
+      IF (XRS_FDCHK .AND. NCSIM.GT.0 .AND. NZXOPE.GT.0) THEN
+         JFD  = IBCVC(1+ICRED)
+         JNFD = JFD - IZRED
+         CALL MEMGET2('REAL','CREFFD',KCRFD,NZCONFQ,WORK,KFREE,LFREE)
+         CALL READ_DX(LUBCI,1,NZCONFQ,WORK(KCRFD))
+C        analytic transition densities for this trial vector
+         LPVT = NASHT*NASHT*NNASHX*NZ*3
+         CALL MEMGET2('REAL','DVTFD',KDVTFD,N2ASHXQ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','PVTFD',KPVTFD,MAX(1,LPVT),
+     &                WORK,KFREE,LFREE)
+         NCSSAV = NCSIM
+         NCSIM  = 1
+         CALL XRSTDM(WORK(KCRFD),BCVEC(1,1),WORK(KDVTFD),WORK(KPVTFD),
+     &               WORK,KFREE,LFREE)
+         NCSIM  = NCSSAV
+         CALL KRMC_FDCHK(WORK(KCRFD),BCVEC(1,1),SEVEC(1,JNFD),
+     &                   NZXOPE,XRS_FDEPS,WORK(KDVTFD),WORK(KPVTFD),
+     &                   WORK,KFREE,LFREE)
+         CALL MEMREL('FDCHK',WORK,1,KCRFD,KFREE,LFREE)
+      END IF
+C
+C     Debug (.FDCHEK + .E2FULL): trace the C/E elements between the
+C     first new CI trial vector and all old orbital trial vectors
+C
+      IF (XRS_FDCHK .AND. XRS_E2FULL .AND. NCSIM.GT.0
+     &    .AND. IERED.GT.0) THEN
+         JFD  = IBCVC(1+ICRED)
+         JNFD = JFD - IZRED
+         CALL MEMGET2('REAL','CREFT',KCRT,NZCONFQ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','BEOLD',KBEO,NZXOPEQ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','SCOLD',KSCO,NZCONFQ,WORK,KFREE,LFREE)
+         CALL READ_DX(LUBCI,1,NZCONFQ,WORK(KCRT))
+         DO INE = 1, IERED
+            IEO = IBEVC(INE)
+            CALL READ_DX(LUBOE,INE,NZXOPEQ,WORK(KBEO))
+            CALL READ_DX(LUSCI,IEO+1,NZCONFQ,WORK(KSCO))
+            CALL KRMC_FDTRACE(WORK(KCRT),BCVEC(1,1),SEVEC(1,JNFD),
+     &           WORK(KBEO),WORK(KSCO),NZXOPE,XRS_FDEPS,IEO,
+     &           WORK,KFREE,LFREE)
+         END DO
+         CALL MEMREL('FDTRACE',WORK,1,KCRT,KFREE,LFREE)
+      END IF
+C
+C     Debug (.FDCHEK): finite-difference check of the sigma vector of
+C     the first new orbital (e-e) trial vector (needs new integrals).
+C
+      IF (XRS_FDCHK .AND. NESIM.GT.0) THEN
+         JFD  = IBEVC(1+IERED)
+         JNFD = JFD - IZRED
+         CALL MEMGET2('REAL','CREFFD',KCRFD,MAX(1,NZCONFQ),
+     &                WORK,KFREE,LFREE)
+         IF (NZCONF.GT.0) CALL READ_DX(LUBCI,1,NZCONFQ,WORK(KCRFD))
+         IF (NZCONF.GT.0) THEN
+            KSCFD = 1 + (JNFD-1)*NZCONFQ
+         ELSE
+            KSCFD = 1
+         END IF
+         CALL KRMC_FDCHKO(WORK(KCRFD),BEVEC(1,1),SEVEC(1,JNFD),
+     &                    SCVEC(KSCFD,1),NZXOPE,XRS_FDEPS,
+     &                    WORK,KFREE,LFREE)
+         CALL MEMREL('FDCHKO',WORK,1,KCRFD,KFREE,LFREE)
+      END IF
+C
 C     Check for anti-Hermicity
 C
       IF (E2FULL) THEN
@@ -1825,10 +1893,11 @@ C
             END DO
          END DO
          IF (DAHS .GT. 1.0D-14 .OR. IPRXRS.GE.4) THEN
-            WRITE(LUPRI,'(/A,1P,D10.2/A,D10.2,5X,A,0P,I3,A,I3,A/)')
+            WRITE(LUPRI,'(/A,1P,D10.2/A,D10.2,5X,A,0P,I3,A,I3,A,4A)')
      &        '(XRSRED)  1-norm of anti-symmetry of REDE = ',DAHS,
      &        '(XRSRED) oo-norm of anti-symmetry of REDE = ',
-     &        DMAH,' (element (',MAHI,',',MAHJ,'))'
+     &        DMAH,' (element (',MAHI,',',MAHJ,')',
+     &        ' types ',BTPCH(IBTYP(1,MAHI)),'/',BTPCH(IBTYP(1,MAHJ))
          END IF
       END IF
 C
@@ -4370,9 +4439,28 @@ C
       UNCOUP = .FALSE.
       IMFREQ = .FALSE.
       E2CHEK = .FALSE.
+      XRS_E2FULL = .FALSE.
+      XRS_FDCHK  = .FALSE.
       STERNC = .FALSE.
       DAMPFREQ = 0.0D0
       NEVEC  = NREDM
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck SET_XRS_E2FULL */
+      SUBROUTINE SET_XRS_E2FULL(E2FULL_IN,FDCHK_IN,FDEPS_IN)
+C***********************************************************************
+C     Debug: compute the reduced Hessian as E2(i,j) = s(i)*b(j) for all
+C     i,j (both triangles) and report its anti-symmetry in XRSRED.
+C     For callers that cannot include dcbxrs.h.
+C***********************************************************************
+      implicit none
+#include "dcbxrs.h"
+      LOGICAL E2FULL_IN, FDCHK_IN
+      REAL*8  FDEPS_IN
+      XRS_E2FULL = E2FULL_IN
+      XRS_FDCHK  = FDCHK_IN
+      XRS_FDEPS  = FDEPS_IN
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
