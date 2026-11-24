@@ -1349,6 +1349,32 @@ C
             JH = IBTYP(2,IBVEC(JB))
             IF(IVECS(JBN).EQ.0.OR.(IH.NE.JH)) GOTO 100
 C
+            IF (IB .EQ. 0 .AND. NBDIM .EQ. 2*NZCONF) THEN
+C
+C              Complex CI vectors: project out CREF with the complex
+C              overlap t = <CREF|b>, b := b - CREF t. Both CREF and
+C              i*CREF (a change of phase of the wave function) are
+C              redundant directions; a real projection only removes
+C              the first, inconsistent with the complex projection of
+C              the CI sigma vectors (XRSPHP). Trial vectors among
+C              themselves are combined with real coefficients and
+C              are orthogonalized with real inner products below.
+C
+               TTR = -D4*( DDOT(NZCONF,BVBUF,1,BVECS(1,JBN),1)
+     &             + DDOT(NZCONF,BVBUF(1+NZCONF),1,
+     &                    BVECS(1+NZCONF,JBN),1) )/BNBN
+               TTI = -D4*( DDOT(NZCONF,BVBUF,1,BVECS(1+NZCONF,JBN),1)
+     &             - DDOT(NZCONF,BVBUF(1+NZCONF),1,BVECS(1,JBN),1) )
+     &             /BNBN
+C              Re b -= Re c Re t - Im c Im t ; Im b -= Im c Re t + Re c Im t
+               CALL DAXPY(NZCONF, TTR,BVBUF,1,BVECS(1,JBN),1)
+               CALL DAXPY(NZCONF,-TTI,BVBUF(1+NZCONF),1,BVECS(1,JBN),1)
+               CALL DAXPY(NZCONF, TTR,BVBUF(1+NZCONF),1,
+     &                    BVECS(1+NZCONF,JBN),1)
+               CALL DAXPY(NZCONF, TTI,BVBUF,1,BVECS(1+NZCONF,JBN),1)
+               GOTO 100
+            END IF
+C
 C           Form -<BVECS|BVBUF>/<BVBUF|BVBUF> :
 C
             BNBP = -D4*DDOT(NBDIM,BVECS(1,JBN),1,BVBUF,1)/BNBN
