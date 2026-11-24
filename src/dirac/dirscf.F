@@ -3405,7 +3405,7 @@ C
 C     Make a weighted average density D = w*Dmvo + (1 - w)D0, where
 C     w = MVOWEIGHT and D0 is the full inactive density matrix.
            CALL GENDEN(FOCK,CMO,1,IPRMVO)
-           CALL DSCAL(N2BBASXQ,DMAT,MVOWEIGHT,1)
+           CALL DSCAL(N2BBASXQ,MVOWEIGHT,DMAT,1)
            CALL DAXPY(N2BBASXQ,1-MVOWEIGHT,FOCK,1,DMAT,1)
         ENDIF
         CALL TWOFCK(ISYMVO,IHRMVO,IFCMVO,FOCK,DMAT,1,
