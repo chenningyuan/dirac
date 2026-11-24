@@ -80,6 +80,7 @@ dirac_test(efg "long;efg" "")
 dirac_test(eomcc_long "long;cc;eomcc" "")
 dirac_test(mp2_properties "long;mp2;property;coverage-mpi" "")
 dirac_test(mcscf_energy "long;mcscf;gascip;coverage-mpi" "") # note set_test_properties below
+dirac_test(mcscf_h2o "short;mcscf;gascip" "")
 dirac_test(dft_overlap_diagnostic "long;dft;coverage-mpi" "")
 dirac_test(dft_response "long;response;dft" "")
 dirac_test(symmetry_scf_energy "long;scf" "")

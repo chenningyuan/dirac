@@ -1,0 +1,14 @@
+KR-MCSCF CAS(6,4) of water (STO-3G, X2C) in real, complex and quaternion
+symmetry (NZ = 1, 2, 4). Regression test for the fixes of the quaternion
+(C1) KR-MCSCF code (Nov 2026); not a test of a well-chosen active space.
+
+Symmetric water: the converged HF coefficients of the C2v run are written
+in C1 format (.ACMOUT) and read (.ACMOIN, no SCF) by the C2 and C1 runs,
+so that all three start from the same orbitals and give the same energy.
+Note: with this (unbalanced) active space the symmetric solution is only
+a saddle point in C1 (a symmetry-broken solution is 7.5 mEh lower); the
+C1 run stays on it because the start orbitals are exactly symmetric.
+
+Asymmetric water (all atoms in the xz plane, unequal OH bonds): same for
+Cs (complex) and C1. The Cs orbitals carry general complex phases, which
+exposed errors invisible with the near-real orbitals of a C1 SCF.
