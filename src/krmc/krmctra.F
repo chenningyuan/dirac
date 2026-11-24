@@ -4023,7 +4023,7 @@ C
          ELSE
             FAC = -FAC
          ENDIF
-      ELSE IF (I3 .EQ. .2) THEN
+      ELSE IF (I3 .EQ. 2) THEN
          IF (IZ .EQ. 1 .OR. IZ .EQ. 2) THEN
             FAC = -FAC
          ELSE IF (IZ .EQ. 3) THEN
