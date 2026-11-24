@@ -3509,6 +3509,8 @@ C
       END IF
 C
       CALL RGMCMO(CMO,WORK(KFREE),LFREE)
+C     Debug: random orbital phases (environment variable DIRAC_RNDPHASE)
+      CALL KRMC_RNDPHASE(CMO,WORK(KFREE),LFREE)
 C
       IF (IPROPT .GE. 10) THEN
          DO I = 1, NFSYM
@@ -7229,6 +7231,16 @@ C
      &              WORK(KFDO+(IZ-1)*NSEO),1)
       END DO
       CALL FDCMPQ('E2oo*b',WORK(KFDO),SEO,NSEO,NZ,LUPRI)
+C     energy-only second derivative (CI fixed) vs. b.E[2](oo).b
+      E0  = EMY + EACTIV
+      D2FD = (EFD(1) + EFD(2) - 2.0D0*E0)/(EPS*EPS)
+      BSB = 0.0D0
+      DO IZ = 1, NZ
+         BSB = BSB + DDOT(NSEO,SEO(1,IZ),1,BE(1+(IZ-1)*NSEO),1)
+      END DO
+      WRITE(LUPRI,'(A,1P,3D16.8)')
+     &   ' (KRMC_FDCHKO) d2E/deps2 (energies), b.E2oo.b, ratio:',
+     &   D2FD,BSB,D2FD/SIGN(MAX(ABS(BSB),1.0D-30),BSB)
 C
       CALL MEMREL('KRMC_FDCHKO',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
@@ -7621,4 +7633,62 @@ C
       CALL MEMREL('KRMC_FDTRACE',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
       END
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck krmc_rndphase */
+      SUBROUTINE KRMC_RNDPHASE(CMO,WORK,LWORK)
+C***********************************************************************
+C
+C     Debug: if the environment variable DIRAC_RNDPHASE = <seed> > 0,
+C     multiply every orbital (Kramers pair) from the right by a random
+C     unit quaternion (complex phase for NZ = 2, sign for NZ = 1):
+C        phi_p -> phi_p q_p,   |q_p| = 1.
+C     The energy is invariant, and so must be gradient and Hessian
+C     (in the rotated basis); this exposes errors that are hidden by
+C     the near-real orbital phases a diagonalization usually produces.
+C
+C***********************************************************************
+      use os_utils
+#include "implicit.h"
+#include "priunit.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+      DIMENSION CMO(*), WORK(LWORK)
+      DIMENSION Q(4)
+      INTEGER*8 ISEED
+C
+      JSEED = get_environment_integer('DIRAC_RNDPHASE',0)
+      IF (JSEED .LE. 0) RETURN
+      WRITE(LUPRI,'(/A,I10)')
+     &   ' *** DEBUG: random orbital phases, DIRAC_RNDPHASE =',JSEED
+      ISEED = JSEED
+      DO I = 1, NFSYM
+         NORBI  = NORB(I)
+         NFBASI = NFBAS(I,0)
+         IF (NORBI .EQ. 0) CYCLE
+         IF (LWORK .LT. NFBASI*NZ) CALL QUIT('KRMC_RNDPHASE: work')
+         DO IP = 1, NORBI
+C           random unit quaternion with NZ components
+            QN = 0.0D0
+            DO IZ = 1, NZ
+               ISEED = MOD(ISEED*1103515245_8 + 12345_8, 2147483648_8)
+               Q(IZ) = 2.0D0*DBLE(ISEED)/2147483648.0D0 - 1.0D0
+               QN = QN + Q(IZ)**2
+            END DO
+            QN = 1.0D0/SQRT(QN)
+            DO IZ = 1, NZ
+               Q(IZ) = Q(IZ)*QN
+            END DO
+            JC = 1 + ICMOQ(I) + (IP-1)*NFBASI
+            CALL DZERO(WORK,NFBASI*NZ)
+            CALL QXAPY(NFBASI,'N','N',Q,IPQTOQ(1,0),NZ,
+     &                 CMO(JC),NFBASI*NORBI,1,IPQTOQ(1,0),NZ,
+     &                 WORK,NFBASI,1,IPQTOQ(1,0),NZ)
+            DO IZ = 1, NZ
+               CALL DCOPY(NFBASI,WORK(1+(IZ-1)*NFBASI),1,
+     &                    CMO(JC+(IZ-1)*NFBASI*NORBI),1)
+            END DO
+         END DO
+      END DO
+      RETURN
+      END
