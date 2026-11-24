@@ -894,7 +894,7 @@ C
       DIMENSION CREF(*), ibeig(*)
       DIMENSION WORK(*)
       DIMENSION FCAC_MOLF(2*nasht,2*nasht,2)
-      DIMENSION PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
+      real*8, allocatable :: PVMOLF(:,:,:,:,:)
       DIMENSION DVMOLF(2*NASHT,2*NASHT,2)
 C
 C     Local variable
@@ -911,6 +911,8 @@ C
 #include "dgroup.h"
 C
       CALL QENTER('RGRAD')
+C     (heap, not stack: (2*NASHT)**4 elements)
+      allocate(PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2))
       CALL RTKTIME(.TRUE.,9)
       KFRSAV = KFREE
 C
@@ -1530,9 +1532,11 @@ C***********************************************************************
 C
       DIMENSION DV(*)
       DIMENSION WORK(*)
-      DIMENSION PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
+      real*8, allocatable :: PVMOLF(:,:,:,:,:)
 C
       CALL QENTER('RMAKDV')
+C     (heap, not stack: (2*NASHT)**4 elements)
+      allocate(PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2))
 C
       CALL RMAKDM(.TRUE.,.FALSE.,DV,KDVMOLF,
      &            DUMMY,pvmolf, CREF,WORK,KFREE,LFREE)

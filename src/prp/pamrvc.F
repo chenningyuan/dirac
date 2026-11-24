@@ -3439,7 +3439,10 @@ C         X(+) - vector
             BNRMP = DNRM2(NVARQ,BVEC(1,1,IP),1)
             IF (JBTYP .EQ. JBCNDX) THEN
               IVAR = IDAMAX(NVARQ,BVEC(1,1,IP),1)
-              THRBVEC = ABS(BVEC(IVAR,1,IP))*1.0D-1
+C             IVAR counts over all MZ components: split into (element, component)
+              IZVAR = (IVAR-1)/NVAR + 1
+              IVAR  = IVAR - (IZVAR-1)*NVAR
+              THRBVEC = ABS(BVEC(IVAR,IZVAR,IP))*1.0D-1
 CHJ           THRBVEC = BNRMP/SQRT(1.0D2*NVAR)
 CHJ           THRBVEC = THCXRS/SQRT(1.0D6*NVAR)
 CHJ 16-jun-2004: try use BNRMP instead of THCXRS to zero BCVEC elements
@@ -3769,9 +3772,12 @@ C
       LOGICAL TSYMM
       DIMENSION WORK(*)
       DIMENSION CLREF(*), CRREF(*)
-      DIMENSION DV(*), PV(*), PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
+      DIMENSION DV(*), PV(*)
+      real*8, allocatable :: PVMOLF(:,:,:,:,:)
 C
       CALL QENTER('XRSDM')
+C     (heap, not stack: (2*NASHT)**4 elements)
+      allocate(PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2))
       KFRSAV = KFREE
 C
 C

@@ -1124,12 +1124,9 @@ C
       real*8    FQ_TEST(2*NASHT,2*NASHT,2)
       real*8    PV(NASHT,NASHT,NNASHX,NZ,3)
       real*8    H2AC(NASHT,NASHT,NNASHX,NZ,3)
-      real*8    H2AC_MLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
+      real*8, allocatable :: H2AC_MLF(:,:,:,:,:)
       real*8    hmat(*),h2xy(*),h2yx(*)
       integer   ibeig(*)
-      real*8    HMAT44(NORBT,NORBT,NZ,NZ)
-      real*8    H2GAC(NORBT,NORBT,NNASHX,NZ,3)
-      real*8    H2FULL(2*NORBT,2*NORBT,2*NASHT,2*NASHT,2)
       integer   idxkr12(2,*),indxb12(2,*),indxb34(2,*)
       real*8    PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
       LOGICAL   DOFQ, DOH2AC, DOC1
@@ -1439,6 +1436,7 @@ C
 
 C     MvH debug: H2AC/FQ cross-check in Molfdir format (print level >= 30)
       if (dofq .and. iprint .ge. 30) then
+      allocate(H2AC_MLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2))
       WRITE(6,*) 'BELOW YOU CAN FIND THE H2AC TRANSFORMATION TEST'
       CALL CHKNZ3R(H2AC)
 
@@ -1517,6 +1515,7 @@ c     &             + PVMOLF(I,K,L,M,1)*H2AC_MLF(J,K,L,M,1)
 
       ETEST = ETEST*0.5D00
       WRITE(6,*) 'MVH ACTIVE ENERGY TEST: ', ETEST
+      deallocate(H2AC_MLF)
       endif
 
       !MvH: remove later
