@@ -85,7 +85,7 @@ C
  9002 FORMAT(' F_{',A,'} factor: ',F4.1)
  9003 FORMAT(' Fock matrix ',A,' not included in grad. calc.: ',L1)
 C
-c      IF ( IPRINT .GE. 20 ) THEN
+      IF ( IPRINT .GE. 20 ) THEN
          CALL HEADER('Output from RORBGRD',-1)
          WRITE(LUPRI,9000) LORBTRI
          WRITE(LUPRI,9003) 'NOFC',NOFC
@@ -117,7 +117,7 @@ C
             CALL PRQMAT(FPV,NORBT,NASHT,NORBT,NASHT,NZ,IPQ,LUPRI)
          END IF
 C
-c      END IF
+      END IF
 C     
 C
 C     ***************************************************
@@ -284,13 +284,13 @@ C           (verified with finite differences of the energy).
      &           FAC,IPQTOQ(1,0),
      &           FGEN(1,1+IASH(I),1),NORBT,NASH(I),NZ)
          END IF
-CTROND         IF (IPRINT .GE. 5) THEN
+         IF (IPRINT .GE. 5) THEN
             WRITE(LUPRI,9000) I
 9000        FORMAT(/'Generalized Fock matrix irrep ',I1,
      &        ' with second index active')
             CALL PRQMAT(FGEN(1,1+IASH(I),1),NORBT,NASH(I),NORBT,NASHT,
      &           NZ,IPQTOQ(1,0),LUPRI)
-CTROND         END IF
+         END IF
       END DO
 C
       CALL QEXIT('FGEN_PV')

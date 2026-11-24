@@ -4074,8 +4074,7 @@ C
 C     Calculate initial micro it. convergence threshold
 C
       RBETA = 0.0D0
-CTROND      THR = RCNVTHR()
-      THR=1.0D-08
+      THR = RCNVTHR()
 C
       WRITE(LUPRI,'(/A,1P,D10.2/)')
      &'(DIRNR) Starting micro iterations. Convergence threshold:',THR

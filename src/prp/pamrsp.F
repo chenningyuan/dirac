@@ -1205,16 +1205,13 @@ C
       KFRSAV = KFREE
 CTROND : Remember LOFFTY !!!!!
       IF    (NBTYP.EQ.JBCNDX) THEN
-        NBDIM  = NZCONF
-        MZ     = MIN(NZ,2) 
+        NBDIM  = NZCONFQ
         LUBVEC = LUBCI
       ELSEIF(NBTYP.EQ.JBENDX) THEN
-        NBDIM  = NZXOPE
-        MZ     = NZ 
+        NBDIM  = NZXOPEQ
         LUBVEC = LUBOE
       ELSEIF(NBTYP.EQ.JBPNDX) THEN
-        NBDIM  = NZXOPP
-        MZ = NZ 
+        NBDIM  = NZXOPPQ
         LUBVEC = LUBOP
       ELSE
         WRITE(LUPRI,'(A,A,I5)') 'XRSORT ERROR: ',
@@ -1254,10 +1251,10 @@ C
 C
 C     Memory allocation
 C
-      CALL MEMGET2('REAL','BVBUF',KBVBUF,NBDIM*MZ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BVBUF',KBVBUF,NBDIM,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','BVNRM',KBVNRM,NBNEW,WORK,KFREE,LFREE)
-      CALL XRSOR1(BVECS,NBDIM,MZ,NBNEW,NBPREV,THRLDV1,THRLDV2,IBVEC,
-     &            IBTYP,WORK(KBVBUF),WORK(KBVNRM),LUBVEC,IVECS,NBTYP)
+      CALL XRSOR1(BVECS,NBDIM,NBNEW,NBPREV,THRLDV1,THRLDV2,IBVEC,IBTYP,
+     &            WORK(KBVBUF),WORK(KBVNRM),LUBVEC,IVECS,NBTYP)
       CALL MEMREL('XRSORT',WORK,1,KFRSAV,KFREE,LFREE)
 C
       CALL QEXIT('XRSORT')
@@ -1266,8 +1263,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck XRSOR1 */
-      SUBROUTINE XRSOR1(BVECS,NBDIM,MZ,NBNEW,NBPREV,THRLDV1,THRLDV2,
-     &                  IBVEC,IBTYP,BVBUF,BVNRM,LUBVEC,IVECS,NBTYP)
+      SUBROUTINE XRSOR1(BVECS,NBDIM,NBNEW,NBPREV,THRLDV1,THRLDV2,IBVEC,
+     &                  IBTYP,BVBUF,BVNRM,LUBVEC,IVECS,NBTYP)
 C***********************************************************************
 C
 C***********************************************************************
@@ -1278,13 +1275,12 @@ C***********************************************************************
 C
 #include "dcbibn.h"
 #include "dcbxrs.h"
-      DIMENSION BVECS(NBDIM*MZ,NBNEW),IBTYP(2,NREDM),IBVEC(NREDM),
-     &     BVBUF(NBDIM*MZ),IVECS(NBNEW),BVNRM(NBNEW),BPBN(4)
+      DIMENSION BVECS(NBDIM,NBNEW),IBTYP(2,NREDM),IBVEC(NREDM),
+     &     BVBUF(NBDIM),IVECS(NBNEW),BVNRM(NBNEW)
       CHARACTER BTYP(-1:2)*1,XTYP(-1:1)*3
       DATA BTYP/'C',' ','E','P'/,XTYP/'(-)','   ','(+)'/
-      INTEGER IP(4)
-      real(8), parameter :: thr_vec = 1.0d-03
-C      real(8), parameter :: thr_vec = 0.0d+00
+!     real(8), parameter :: thr_vec = 1.0d-03
+      real(8), parameter :: thr_vec = 0.0d+00
       integer            :: iround_screening, izero, i_removed
 
       IROUND_screening = 0
@@ -1292,10 +1288,6 @@ C      real(8), parameter :: thr_vec = 0.0d+00
       IROUND_screening = IROUND_screening + 1
       I_ZERO           = 0
       I_REMOVED        = 0
-      NBDIMQ           = MZ*NBDIM
-      DO IZ = 1,MZ
-        IP(IZ) = IZ
-      ENDDO
 C
 C
 C     Take norm of new trial vectors
@@ -1305,7 +1297,7 @@ C
          IF(IVECS(IBN).EQ.0) THEN
             BVNRM(IBN) = D0
          ELSE
-            BVNRM(IBN) = D2*DNRM2(NBDIMQ,BVECS(1,IBN),1)
+            BVNRM(IBN) = D2*DNRM2(NBDIM,BVECS(1,IBN),1)
 C
 C           Check for zero norm
 C
@@ -1340,14 +1332,14 @@ C
 C        Read old vector from LUBVEC
 C
          IREC = IREC + 1
-         CALL READ_DX(LUBVEC,IREC,NBDIMQ,BVBUF)
+         CALL READ_DX(LUBVEC,IREC,NBDIM,BVBUF)
          IF (IB .NE. 0) THEN
             IH   = IBTYP(2,IBVEC(IB))
          ELSE
             IH = 1
          END IF
          IF(.NOT.TKNORM) THEN
-            BNBN = D4*DNRM2(NBDIMQ,BVBUF,1)**2
+            BNBN = D4*DNRM2(NBDIM,BVBUF,1)**2
          ELSE
             BNBN = D1
          ENDIF
@@ -1357,25 +1349,13 @@ C
             JH = IBTYP(2,IBVEC(JB))
             IF(IVECS(JBN).EQ.0.OR.(IH.NE.JH)) GOTO 100
 C
-C           Form -<BVBUF|BVECS>/<BVBUF|BVBUF> :
+C           Form -<BVECS|BVBUF>/<BVBUF|BVBUF> :
 C
-            DO IZ = 1,MZ
-              BPBN(IZ) = D0
-            ENDDO
-            CALL QDOT(BPBN,IP,MZ,NBDIM,
-     &           'H',IP,BVBUF       ,NBDIM,MZ,1,
-     &           'N',IP,BVECS(1,JBN),NBDIM,MZ,1)
-            DO IZ = 1,MZ
-              BPBN(IZ) =-D4*BPBN(IZ)/BNBN
-            ENDDO
-C            BNBP = -D4*DDOT(NBDIM,BVECS(1,JBN),1,BVBUF,1)/BNBN
+            BNBP = -D4*DDOT(NBDIM,BVECS(1,JBN),1,BVBUF,1)/BNBN
 C
-C           Form BVECS = BVECS -BVBUF<BVBUF|BVECS>/<BVBUF|BVBUF>
+C           Form BVECS = BVECS -<BVECS|BVBUF>/<BVBUF|BVBUF>BVBUF
 C
-C     CALL DAXPY(NBDIM,BNBP,BVBUF,1,BVECS(1,JBN),1)
-            CALL QXAPY(NBDIM,'N','N',BPBN,IP,MZ,
-     &                 BVBUF       ,NBDIM,1,IP,MZ,
-     &                 BVECS(1,JBN),NBDIM,1,IP,MZ)
+            CALL DAXPY(NBDIM,BNBP,BVBUF,1,BVECS(1,JBN),1)
  100     CONTINUE
       ENDDO
 C
@@ -1393,38 +1373,29 @@ C
           GOTO 200
         ENDIF
 C
-        BNRM1 = D2*DNRM2(NBDIMQ,BVECS(1,IBN),1)
+        BNRM1 = D2*DNRM2(NBDIM,BVECS(1,IBN),1)
         DO 300 JBN = 1,(IBN-1)
           JB = JBN + NBPREV
           JH = IBTYP(2,IBVEC(JB))
           IF(IVECS(JBN).EQ.0.OR.(IH.NE.JH)) GOTO 300
           IF(.NOT.TKNORM) THEN
-            BNBN = D4*DNRM2(NBDIMQ,BVECS(1,JBN),1)**2
+            BNBN = D4*DNRM2(NBDIM,BVECS(1,JBN),1)**2
           ELSE
             BNBN = D1
           ENDIF
 C
-C         Form -<BVECS2|BVECS1>/<BVECS2|BVECS2> :
+C         Form -<BVECS1|BVECS2>/<BVECS2|BVECS2> :
 C
-C          BNBP = -D4*DDOT(NBDIM,BVECS(1,JBN),1,BVECS(1,IBN),1)/BNBN
-          CALL QDOT(BPBN,IP,MZ,NBDIM,
-     &              'H',IP,BVECS(1,JBN),NBDIM,MZ,1,
-     &              'N',IP,BVECS(1,IBN),NBDIM,MZ,1)
-          DO IZ = 1,MZ
-            BPBN(IZ) =-D4*BPBN(IZ)/BNBN
-         ENDDO
+          BNBP = -D4*DDOT(NBDIM,BVECS(1,JBN),1,BVECS(1,IBN),1)/BNBN
 C
-C         Form BVECS1 = BVECS1 - BVECS2<BVECS2|BVECS1>/<BVECS2|BVECS2>
+C         Form BVECS1 = BVECS1 -<BVECS1|BVECS2>/<BVECS2|BVECS2>BVECS2
 C
-C          CALL DAXPY(NBDIM,BNBP,BVECS(1,JBN),1,BVECS(1,IBN),1)
-            CALL QXAPY(NBDIM,'N','N',BPBN,IP,MZ,
-     &                 BVECS(1,JBN),NBDIM,1,IP,MZ,
-     &                 BVECS(1,IBN),NBDIM,1,IP,MZ)
+          CALL DAXPY(NBDIM,BNBP,BVECS(1,JBN),1,BVECS(1,IBN),1)
  300    CONTINUE
 C
 C       Take norm of vector number IBN;
 C
-        BNRM = D2*DNRM2(NBDIMQ,BVECS(1,IBN),1)
+        BNRM = D2*DNRM2(NBDIM,BVECS(1,IBN),1)
 C
 C       Check size of norm
 C       ==================
@@ -1446,11 +1417,11 @@ C
           IF(TKNORM) THEN
             IF(BNRM.LT.T1MIN) THEN
               BNRM = D1 / BNRM
-              CALL DSCAL(NBDIMQ,BNRM,BVECS(1,IBN),1)
-              BNRM = D2*DNRM2(NBDIMQ,BVECS(1,IBN),1)
+              CALL DSCAL(NBDIM,BNRM,BVECS(1,IBN),1)
+              BNRM = D2*DNRM2(NBDIM,BVECS(1,IBN),1)
             END IF
             BNRM = D1 / BNRM
-            CALL DSCAL(NBDIMQ,BNRM,BVECS(1,IBN),1)
+            CALL DSCAL(NBDIM,BNRM,BVECS(1,IBN),1)
             IF(IPRXRS.GE.2) THEN
               WRITE(LUPRI,'(A1,A3,A,I3,A,1P,D12.5)')
      &          BTYP(NBTYP),XTYP(IH),
@@ -1461,7 +1432,7 @@ C           hj+patrick:
 C           In case of differential screening: keep the original norm
 C           (before Gram-Schmidt)
             BNRM = BVNRM(IBN)/BNRM
-            CALL DSCAL(NBDIMQ,BNRM,BVECS(1,IBN),1)
+            CALL DSCAL(NBDIM,BNRM,BVECS(1,IBN),1)
             IF(IPRXRS.GE.2) THEN
                WRITE(LUPRI,'(A1,A3,A,I3,A,1P,D12.5)')
      &              BTYP(NBTYP),XTYP(IH),
@@ -1470,7 +1441,7 @@ C           (before Gram-Schmidt)
           ENDIF
         ENDIF
         IF (THR_VEC .GT. 0.0D0 .AND. IROUND_screening .EQ. 1)THEN
-          DO I = 1, NBDIMQ
+          DO I = 1, NBDIM
             IF(ABS(BVECS(i,IBN)) .LT. THR_VEC)THEN
               IF(BVECS(i,IBN) .EQ. 0.0d0) THEN
                 I_ZERO = I_ZERO + 1
