@@ -4036,8 +4036,7 @@ C
 #if defined (VAR_MPI)
       use ccpar_mod, only: MYPROC
 #endif
-      use param_relccsd_mod, only: A0
-      use results_mod, only: ETOT, IMSTAT, NSTATS
+      use results_mod, only: IMSTAT, NSTATS, results_energies_set
       IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
@@ -4193,7 +4192,7 @@ C
 C            Read the energies (read the whole common block)
 C
              READ (MCCRES,REC=3) BUFF
-             CALL DCOPY(8,BUFF,1,ETOT,1)
+             CALL RESULTS_ENERGIES_SET(TRANSFER(BUFF,0.0D0,8))
 
          else
 C
@@ -4204,7 +4203,7 @@ C
             write (IW,*)
             OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &            STATUS='REPLACE',RECL=IRECL)
-            CALL DCOPY(8,A0,0,ETOT,1)
+            CALL RESULTS_ENERGIES_SET(SPREAD(0.0D0,1,8))
             DO I = 1, NSTATS
                IMSTAT(I) = 0
             ENDDO
@@ -4218,7 +4217,7 @@ C
          write (IW,*)
          OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &         STATUS='NEW',RECL=IRECL)
-         CALL DCOPY(8,A0,0,ETOT,1)
+         CALL RESULTS_ENERGIES_SET(SPREAD(0.0D0,1,8))
          DO I = 1, NSTATS
             IMSTAT(I) = 0
          ENDDO
@@ -4284,7 +4283,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       use files_relccsd_mod, only: LRSFIL, MCCRES, RSFILN, RSRCLEN
       use inpt_mod, only: NACT, NELEC, NFROZ, NINACT
-      use results_mod, only: ETOT, IMSTAT
+      use results_mod, only: IMSTAT, results_energies_get
       IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
@@ -4307,6 +4306,7 @@ C---------------Local variables--------------------------------------
 C
       INTEGER BUFF,IRECL,IRECLEN
       DIMENSION BUFF(RSRCLEN)
+      REAL*8 E8(8)
 C
 C---------------Executable code--------------------------------------
 C
@@ -4325,7 +4325,8 @@ C
 C
 C     Dump the energies (write the whole common block)
 C
-      CALL DCOPY(8,ETOT,1,BUFF,1)
+      CALL RESULTS_ENERGIES_GET(E8)
+      BUFF(1:SIZE(TRANSFER(E8,BUFF))) = TRANSFER(E8,BUFF)
       WRITE (MCCRES,REC=3) BUFF
 C
       CLOSE (MCCRES,STATUS='KEEP')
@@ -4337,8 +4338,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       use files_relccsd_mod, only: IW, LRSFIL, MCCRES, RSFILN, RSRCLEN
       use inpt_mod, only: DOCCSD, DOCCSDT, DOFSPC, DOMP2
-      use results_mod, only: ECCSD, EMP2, ESCF, ET1, ET2, ET3, ETOT,
-     &  IMSTAT
+      use results_mod, only: ECCSD, EMP2, ESCF, ET1, ET2, ET3, IMSTAT,
+     &  results_energies_set
       IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
@@ -4381,7 +4382,7 @@ C
 C     Read the energies (read the whole common block)
 C
       READ (MCCRES,REC=3) BUFF
-      CALL DCOPY(8,BUFF,1,ETOT,1)
+      CALL RESULTS_ENERGIES_SET(TRANSFER(BUFF,0.0D0,8))
 C
       CLOSE (MCCRES,STATUS='KEEP')
 C

@@ -2037,7 +2037,9 @@ C    ** bcast file name labels **
      &              global_communicator)
       call interface_mpi_bcast(NPMOT, 1, MASTER,
      &              global_communicator)
-      call interface_mpi_bcast(NNBBASX, 2, MASTER,
+      call interface_mpi_bcast(NNBBASX, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(N2BBASX, 1, MASTER,
      &              global_communicator)
       call interface_mpi_bcast(NPRPLBL, 1, MASTER,
      &              global_communicator)

@@ -30,4 +30,26 @@
    integer, parameter :: NSTATS = 30
    real*8 :: ECORE, ETOT, ESCF, EMP2, ECCSD, ECCSDIM, ET1, ET2, ET3, EFS(2)
    integer :: IMSTAT(NSTATS)
+
+   contains
+
+!  ETOT..ET3, in the order of the former COMMON /ENERG/, are record 3 of the
+!  RELCCSD restart file. They used to be copied as one block with DCOPY(8,...,ETOT,1), which
+!  only works with COMMON storage. Now, module variables are not contiguous.
+   subroutine results_energies_get(buff)
+   real*8, intent(out) :: buff(8)
+   buff = (/ ETOT, ESCF, EMP2, ECCSD, ECCSDIM, ET1, ET2, ET3 /)
+   end subroutine results_energies_get
+
+   subroutine results_energies_set(buff)
+   real*8, intent(in) :: buff(8)
+   ETOT    = buff(1)
+   ESCF    = buff(2)
+   EMP2    = buff(3)
+   ECCSD   = buff(4)
+   ECCSDIM = buff(5)
+   ET1     = buff(6)
+   ET2     = buff(7)
+   ET3     = buff(8)
+   end subroutine results_energies_set
    end module results_mod

@@ -244,7 +244,7 @@
 !     We transform all shells in the first halftransformation
 !
       CALL ICOPY ( 32,NSPCK,1,NSPCK12,1)
-      CALL ICOPY (196,ISPCK,1,ISPCK12,1)
+      CALL ICOPY (SIZE(ISPCK),ISPCK,1,ISPCK12,1)
       CALL ICOPY ( 24,NBBAS,1,NBBAS1, 1)
       CALL ICOPY ( 24,NBBAS,1,NBBAS2, 1)
       CALL ICOPY ( 24,IBBAS,1,IBBAS1, 1)
