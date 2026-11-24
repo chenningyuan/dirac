@@ -3459,7 +3459,6 @@ C
 C
 C       Decide parity of MO
 C
-        WRITE(6,*) 'TEST..TMP1/2..',JORB,TMP(1),TMP(2)
         IF(TMP(1).GT.TMP(2)) THEN
           IBUF(JORB,1) = 1
           NBF(1) = NBF(1) + 1
@@ -4178,7 +4177,6 @@ C     NBSYM.EQ.1, implies C1 !!! Check how to handle that...
           IZOFF = ICAO
           ISOFF = 1
           DO IZ = 1,NZC1
-            WRITE(6,*) 'TEST..IZ =',IZ
             CALL WTSOAO_mod(CBUF(ISOFF),CAO(IZOFF),IFRP,
      &                  NFBAS(IFRP,0),NTBAS(0),NVEC(IFRP),IBUF,0)
             IZOFF = IZOFF + NTBAS(0)*NTOT

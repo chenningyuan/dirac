@@ -214,11 +214,11 @@ C
 
 #undef DMRG_DEBUG
 #endif
-c      IF ( IPRINT .GE. 30 ) THEN
+      IF ( IPRINT .GE. 30 ) THEN
          CALL HEADER('QFC2MFC: Output matrix:',-1)
          CALL PRQMAT(DMFC,2*NASHT,2*NASHT,2*NASHT,2*NASHT,MIN(NZ,2),
      $        IPQTOQ(1,0),LUPRI)
-c      END IF
+      END IF
 CSK   IPRINT = 00
 
 C
@@ -257,11 +257,11 @@ C
 C
 C
 csk   IPRINT = 30
-c      IF ( IPRINT .GE. 30 ) THEN
+      IF ( IPRINT .GE. 30 ) THEN
          CALL HEADER('MFC2QFC: Input matrix:',-1)
          CALL PRQMAT(DMFC,2*NASHT,2*NASHT,2*NASHT,2*NASHT,MIN(NZ,2),
      &        IPQTOQ(1,0),LUPRI)
-c      END IF
+      END IF
 C
 C             -----------
 C             | A' | B' |
@@ -281,7 +281,6 @@ C
       DO IFSYM = 1, NFSYM
          IOFF3 = IOFF3 + NASH(IFSYM)
          DO J = 1, NASH(IFSYM)
-            write(6,*) 'IOFF1,IOFF2,IOFF3', IOFF1,IOFF2,IOFF3
             CALL DCOPY(NASH(IFSYM), DMFC(1+IOFF2,J+IOFF2,1), 1,
      &           DQFC (1+IOFF1,J+IOFF1,1),1 )
             IF (KSYMM) CALL DAXPY(NASH(IFSYM),D1,
@@ -349,10 +348,10 @@ C
 !
 !     print section
 !     IPRINT = 30
-c      IF ( IPRINT .GE. 30 ) THEN
+      IF ( IPRINT .GE. 30 ) THEN
          CALL HEADER('MFC2QFC: Output matrix:',-1)
          CALL PRQMAT(DQFC,NASHT,NASHT,NASHT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
-c      END IF
+      END IF
 !     IPRINT = 00
 C
       RETURN
@@ -408,7 +407,7 @@ C
 C
  9001 FORMAT(4I5,5X,4F20.10)
 C
-c mvh      IF (IPRINT .GE. 30) THEN
+      IF (IPRINT .GE. 30) THEN
          THR_PRINT = 1.0D-12
          WRITE(LUPRI,'(/A,3(1X,L1)//A)')
      &        ' (M2DNZ3) TSYMM, KSYMM, PSYMM = ',TSYMM,KSYMM,PSYMM,
@@ -425,7 +424,7 @@ c mvh      IF (IPRINT .GE. 30) THEN
                END DO
             END DO
          END DO
-c      END IF
+      END IF
 C
 C
       IJ = 0
@@ -960,11 +959,11 @@ C
          JJ = JJ + NASH(IFSYM)
       ENDDO
 C
-C      IF (iprint_local .GE. 30) THEN
+      IF (iprint_local .GE. 30) THEN
          WRITE(LUPRI,'(/1X,A)')
      &        '(DNZ32M) Input VUUUU matrix in Dirac (NZ,3) format'
          CALL PRDNZ3(VDUUUU,NASHT,NNASHX,NZ,IPQTOQ(1,0),LUPRI)
-C      END IF
+      END IF
 C
       DO II = 1, NASHT
          DO JJ = 1, II
@@ -1208,8 +1207,7 @@ C
 C
 !9001 FORMAT(1P,1X,4I3,4X,2(D14.7,1X))
  9001 FORMAT(4I5,5X,4F20.10)
-C      IF (iprint_local .GE. 30) THEN
-        WRITE(LUPRI,*) 'SHOULD COPY THIS COLUMNS'
+      IF (iprint_local .GE. 30) THEN
          WRITE(LUPRI,'(A,1P,D10.2)')
      &   ' (DNZ32M) Output VUUUU matrix in Molfdir format,'//
      &   ' print threshold =',THROUT
@@ -1251,7 +1249,7 @@ c                  END DO
 c               END DO
 c            END DO
 c         END DO
-C      END IF
+      END IF
 C
       RETURN
       END

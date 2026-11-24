@@ -492,7 +492,6 @@ C        ***************************************************
 C
 C
          JRDCMO = 0
-         write(6,*) 'mvh: dit is een test'
          CALL RREADMO(CMO,JRDCMO,1,LUKRMC)
 C        read orbital symmetry info
          call izero(ibeig,norbt)
@@ -503,10 +502,11 @@ C        read orbital symmetry info
          end if
 
 c mvh debug
-      write(6,*) 'cmo at end location 1'
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
-          CALL PRQMAT(CMO(1),NORBT,NORBT,
+      IF (IPROPT .GE. 30) THEN
+         write(6,*) 'cmo at end location 1'
+         CALL PRQMAT(CMO(1),NORBT,NORBT,
      &                NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+      END IF
  
 C
 C
@@ -561,10 +561,11 @@ C
 
             END IF
 c mvh debug
-      write(6,*) 'cmo at end location 2'
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
-          CALL PRQMAT(CMO(1),NORBT,NORBT,
+      IF (IPROPT .GE. 30) THEN
+         write(6,*) 'cmo at end location 2'
+         CALL PRQMAT(CMO(1),NORBT,NORBT,
      &                NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+      END IF
 
 C
 C           *** Now do the transformation
@@ -604,10 +605,11 @@ C
          GNRMSV = GNORM(5)
          CALL RGRDINF(GCI,GOEE,GOEP)
 c mvh debug
-      write(6,*) 'cmo at end location 3'
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
-          CALL PRQMAT(CMO(1),NORBT,NORBT,
+      IF (IPROPT .GE. 30) THEN
+         write(6,*) 'cmo at end location 3'
+         CALL PRQMAT(CMO(1),NORBT,NORBT,
      &                NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+      END IF
 
 C
 C
@@ -996,7 +998,7 @@ C        Active energy.
 C
 c        EMCACT = RENRACT(DV,FCAC,FQ,IPROPT)
          EMCACT = RENRACT(WORK(KDVMOLF),FCAC_MOLF,FQ,IPROPT)
-         write(6,*) 'EMCACT = ', EMCACT
+         IF (IPROPT .GE. 5) write(lupri,*) 'EMCACT = ', EMCACT
 C
       ELSE IF (NASHT. EQ. 1) THEN
          CALL DZERO(FQ,NZ*NASHT*NORBT)
@@ -1649,13 +1651,15 @@ C
       END IF
 
 c mvh debug
-      write(6,*) 'this is cmo from rFCKMAT'
+      IF (IPROPT .GE. 30) THEN
+        write(6,*) 'this is cmo from rFCKMAT'
         DO 20 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 20
           WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
           CALL PRQMAT(CMO,NFBAS(I,0),NFBAS(I,0),
      &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
    20   CONTINUE
+      END IF
 
       
 C
@@ -3085,6 +3089,7 @@ C     -------------------------
 C
 C      EACT = DDOT(N2ASHXQ,DV,1,FCAC,1)
 
+      IF (IPRINT .GE. 30) THEN
       WRITE(LUPRI,*) 'MVH: TEST OUTPUT DVMOLF'
       DO IC = 1, NZ_in_CI
             WRITE(LUPRI,*) 'OUTPUT OF MATRIX COMPONENT ', IC
@@ -3098,6 +3103,7 @@ C      EACT = DDOT(N2ASHXQ,DV,1,FCAC,1)
             call OUTPUT (FCACMOLF(1,1,IC),1,2*NASHT,1,2*NASHT,2*NASHT,
      &                  2*NASHT,1,LUPRI)             
       ENDDO 
+      END IF
 
 
 c MVH PUT THIS BACK LATER
@@ -3129,7 +3135,8 @@ C
          IGV = IDXU2G(IV)
          EACTFQ = EACTFQ + FQ(IGV,IV,1)
 c MvH debug
-      write(lupri,*) 'IV, IGV, FQ(IGV,IV,1) ',IGV, IV,  FQ(IGV,IV,1)
+      IF (IPRINT .GE. 30)
+     &   write(lupri,*) 'IV, IGV, FQ(IGV,IV,1) ',IGV, IV,  FQ(IGV,IV,1)
       END DO
       EACTFQ = EACTFQ * DP5
       IF (IPRINT .GE. 4)
@@ -3216,7 +3223,6 @@ C
       IERR = -1
       CALL MOLLAB(LABEL,LUNIT,IERR)
       IF (IERR .GE. 0) THEN
-         write(6,*) 'readingtest LUINT, NCMOTQ:', LUINT, NCMOTQ
          CALL READT(LUNIT,NCMOTQ,CMO)
       ELSE IF (IERR .EQ. -1) THEN
          IF (NOSTOP) THEN
@@ -3457,10 +3463,11 @@ C
      &        ' (ROPTST)  Start orbitals read from' //
      &        ' CHECKPOINT file'
 c mvh debug
-      write(6,*) 'cmo just after read from CHECKPOINT'
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
-          CALL PRQMAT(CMO(1),NORBT,NORBT,
+      IF (IPRINT .GE. 30) THEN
+         write(6,*) 'cmo just after read from CHECKPOINT'
+         CALL PRQMAT(CMO(1),NORBT,NORBT,
      &                NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+      END IF
          GO TO 1000
       END IF
 C
@@ -3492,26 +3499,26 @@ C
 C
 C     Make sure start guess orbitals are orthonormal !!!
 C
-c      IF (IPROPT .GE. 10) THEN
-c         DO I = 1, NFSYM
-c            WRITE(LUPRI,'(A,I2)')
-c     &      ' (ROPTST)  MO coefficients before Gram-Schmidt, irrep ',I
-c            CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
-c     &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-c         END DO
-c      END IF
-cC
-cc MvH might uncomment later      CALL RGMCMO(CMO,WORK(KFREE),LFREE)
-cC
-c      IF (IPROPT .GE. 10) THEN
-c         DO I = 1, NFSYM
-c            WRITE(LUPRI,'(A,I3)')
-c     &         ' MO coefficients (after Gram-Schmidt), irrep',I
-c            CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
-c     &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-c         END DO
-c      END IF
-c
+      IF (IPROPT .GE. 10) THEN
+         DO I = 1, NFSYM
+            WRITE(LUPRI,'(A,I2)')
+     &      ' (ROPTST)  MO coefficients before Gram-Schmidt, irrep ',I
+            CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
+     &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+         END DO
+      END IF
+C
+      CALL RGMCMO(CMO,WORK(KFREE),LFREE)
+C
+      IF (IPROPT .GE. 10) THEN
+         DO I = 1, NFSYM
+            WRITE(LUPRI,'(A,I3)')
+     &         ' MO coefficients (after Gram-Schmidt), irrep',I
+            CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
+     &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+         END DO
+      END IF
+C
 !     intermediate step:
 !     save additional required information (integer arrays) to file KRMCSCF
 

@@ -135,7 +135,7 @@ C
      &           EMCACT,EMCACX,EMCACT-EMCACX
 cmvh
             WRITE(LUPRI,*) 'ratio ', EMCACT/EMCACX
-CTROND            CALL QUIT('*** ERROR in RCIGRAD ***')
+            CALL QUIT('*** ERROR in RCIGRAD ***')
          ELSE
             WRITE(LUPRI,9000)
      &           '*** WARNING in RCIGRAD ***',
@@ -258,10 +258,12 @@ CSK      WRITE(LUPRI,*) 'sigma vector'
 CSK      CALL WRTMATMN(GCI,1,NZCONF,1,NZCONF,LUPRI)
 C
 C MVH
+      IF (IPRINT .GE. 30) THEN
       WRITE(LUPRI,*) 'components of the active energy (CIGRAD)'
       DO I = 1, NZCONF
             WRITE(LUPRI,*) CREF(I,1)*GCI(I,1)
       ENDDO
+      END IF
       EMC(1) = DDOT(NZCONF,CREF(1,1),1,GCI(1,1),1)
 C
       IF (NZ .GE. 2) THEN          
@@ -328,11 +330,13 @@ C
       EMC(1) = DDOT(NZCONF,CREF(1,1),1,GCI(1,1),1)
 C
 C MVH DEBUG
+      IF (IPRINT .GE. 30) THEN
       WRITE(LUPRI,*) 'CREF^{\dagger} GCI'
       DO I = 1, NZCONF
             WRITE(LUPRI,*) 'I, CREF(I)*GCI(I)', I, 
      &                         CREF(I,1)*GCI(I,1)+ CREF(I,2)*GCI(I,2)    
       enddo
+      END IF
       IF (NZ .GE. 2) THEN
          EMC(1) = EMC(1) + DDOT(NZCONF,CREF(1,2),1,GCI(1,2),1)
          EMC(2) =
@@ -362,7 +366,6 @@ C     ----------------------
 C
 C     GCI -= EMCACT * CREF
 C
-      write(lupri,*) 'this is the value of MIN0:', MIN0(NZ,2)
       DO IZ = 1, MIN0(NZ,2)
          DO I = 1, NZCONF
             GCI(I,IZ) = GCI(I,IZ) - EMCACT * CREF(I,IZ)

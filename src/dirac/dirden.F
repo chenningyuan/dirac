@@ -489,14 +489,6 @@ C
       ENDIF
 
 
-c mvh debug
-      write(6,*) 'this is cmo from DENSTY'
-        DO 20 I = 1,NFSYM
-        IF(NORB(I).EQ.0) GOTO 20
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
-          CALL PRQMAT(CMO,NFBAS(I,0),NFBAS(I,0),
-     &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
-   20   CONTINUE
 
 
 

@@ -1275,7 +1275,7 @@ C
 !
 !     offsets required for a spinfree MCSCF
       NIJOFF   = 0
-      write(6,*) 'MvH nfsym ',nfsym
+
       DO 10 IREPIJ = 1, NFSYM
          IREC = 0
          DO 20 IXY = 1, NFPCK12(IREPIJ)
@@ -1283,14 +1283,14 @@ C
             IREC = IREC + 1
             CALL GTXY(NXY,IX,IY,IXU,IYU,idxkr12)
             call dzero(h2xy,nclass*n2orbx)
-c#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
       write(print_unit,'(2x,a,2i8)') ' active : ',ixu,iyu
       write(print_unit,'(2x,a, i8)') ' IXY is     : ',IXY
       write(print_unit,'(2x,a,i4)') ' (RGETH21) idxkr12(1,ixy)',
      &                              idxkr12(1,ixy)
       write(print_unit,'(2x,a,i4)') ' (RGETH21) idxkr12(2,ixy)',
      &                              idxkr12(2,ixy)
-c#endif
+#endif
 C           We only need active-active distributions.
 C
             IF (IXU .LT. 0 .OR. IYU .LT. 0) GOTO 20
@@ -1437,7 +1437,8 @@ C
          NIJOFF  = NIJOFF  + NFPCK12(IREPIJ)
  10   CONTINUE
 
-      if (dofq) then
+C     MvH debug: H2AC/FQ cross-check in Molfdir format (print level >= 30)
+      if (dofq .and. iprint .ge. 30) then
       WRITE(6,*) 'BELOW YOU CAN FIND THE H2AC TRANSFORMATION TEST'
       CALL CHKNZ3R(H2AC)
 
@@ -1538,11 +1539,11 @@ C
          CLOSE (LUINT + IFSYM, STATUS = 'KEEP')
       END DO
 C
-c      IF (IPRINT .GE. 30) THEN
+      IF (IPRINT .GE. 10) THEN
          IF (DOH2AC) THEN
             WRITE(print_unit,'(A)') ' (RGETH21) H2AC matrix'
             CALL PRDNZ3(H2AC,NASHT,NNASHX,NZ,IPQTOQ(1,0),print_unit)
-c         END IF
+         END IF
 C
          IF (DOFQ) THEN
             WRITE(print_unit,'(A)') ' (RGETH21) FQ matrix'
@@ -2964,22 +2965,21 @@ C     -------------------------
 C
 C     Add (u~v~|xy) to (uv|x~y~)
 C
-cmartin      IF (IPRINT .GE. 20) THEN
+      IF (IPRINT .GE. 20) THEN
          DO IOSIM = 1, NOSIM
             WRITE(LUPRI,'(/A,I3)')
      $           ' H2ACX matrix before SYMMH2AC no. ', IOSIM
             CALL PRDNZ3(H2ACX(1,1,1,1,1,IOSIM),NASHT,NNASHX,NZ,
      &           IPQTOQ(1,0),LUPRI)
          END DO
-cmartin      END IF
+      END IF
       CALL SYMMH2AC(H2ACX,NOSIM,WORK(KFREE),LFREE)
 C
 C     Print section
 C     -------------
 C
-cmartin      IF (IPRINT .GE. 20) THEN
+      IF (IPRINT .GE. 20) THEN
          DO IOSIM = 1, NOSIM
-            write(lupri,*) 'dit is een test'
             WRITE(LUPRI,'(/A,I3)') ' (RGETH2TX1) H2ACX matrix no. ',
      &           IOSIM
             CALL PRDNZ3(H2ACX(1,1,1,1,1,IOSIM),NASHT,NNASHX,NZ,
@@ -2999,7 +2999,7 @@ C
             CALL PRQMAT(FQT(1,1,1,ICSIM),NORBT,NASHT,NORBT,NASHT,
      &           NZ,IPQTOQ(1,0),LUPRI)
          END DO
-cmartin      END IF
+      END IF
 C
       CALL QEXIT('RGETH2TX1')
       RETURN
@@ -3775,30 +3775,24 @@ C     DP5 * \Twoint{vq,xy;3,1} P_{vq,xy;3,1}
 C
 C     etc...
 C
-c MvH      IF (IPRINT .GE. 20) THEN
-c         CALL HEADER('Output from RADDFQX',-1)
-c         WRITE(LUPRI,'(A,I3)') 'IV        = ',IV
-c         WRITE(LUPRI,'(A,I3)') 'IP        = ',IP
-c         WRITE(LUPRI,'(A,I3)') 'IREPVP    = ',IREPVP
-c         WRITE(LUPRI,'(/A/)') ' (RADDFQX) FQX on entry'
-c         CALL PRQMAT(FQX,NORBT,NASHT,NORBT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
-c         DO I = 1, 3
-c            WRITE(6,*) '(RADDFQX) integral matrix no. ',I
-c            CALL PRQMAT(H2VPX(1,1,1,I),NASHT,NASHT,NASHT,NASHT,NZ,
-c     &           IPQTOQ(1,0),LUPRI)
-c         END DO
-c         DO I = 1, 3
-c            WRITE(6,*) '(RADDFQX) PV matrix no. ',I
-c            CALL PRQMAT(PV(1,1,1,1,I),N2ASHX,NNASHX,N2ASHX,NNASHX,NZ,
-c     &           IPQTOQ(1,0),LUPRI)
-c         END DO
-c      END IF
+      IF (IPRINT .GE. 20) THEN
+         CALL HEADER('Output from RADDFQX',-1)
+         WRITE(LUPRI,'(A,I3)') 'IV        = ',IV
+         WRITE(LUPRI,'(A,I3)') 'IP        = ',IP
+         WRITE(LUPRI,'(A,I3)') 'IREPVP    = ',IREPVP
+         WRITE(LUPRI,'(/A/)') ' (RADDFQX) FQX on entry'
+         CALL PRQMAT(FQX,NORBT,NASHT,NORBT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
+         DO I = 1, 3
+            WRITE(6,*) '(RADDFQX) integral matrix no. ',I
+            CALL PRQMAT(H2VPX(1,1,1,I),NASHT,NASHT,NASHT,NASHT,NZ,
+     &           IPQTOQ(1,0),LUPRI)
+         END DO
+      END IF
 C
 C     (vp) is active-general
 C
       IVU = IDXG2U(IV)
       IF (IVU .GT. 0) THEN
-        write(6,*) '(vp active general)'
          DO IQU = 1, NASHT
             NVQ = MAX(IVU,IQU) * ( MAX(IVU,IQU) - 1 ) / 2 + MIN(IQU,IVU)
             DO IZFQ = 1, NZ
@@ -3830,7 +3824,7 @@ C
      &                    iQVINT1,iQVINT2,
      &                    H2VPX,PV,NVQ,IQU,IVU,
      &                    FQX(IP,IQU,IZFQ))
-      if (IZFQ.eq.4) then
+      if (IPRINT .GE. 40 .AND. IZFQ.eq.4) then
                     write(lupri,*) 'IZ,I3,IZFQ ',IZ,I3,IZFQ
                      WRITE(LUPRI,*)
      &                    szPV(IZ,I3,IZFQ),szQV(IZ,I3,IZFQ),
@@ -3851,7 +3845,6 @@ C     (pv) is active-general
 C
       IPU = IDXG2U(IP)
       IF (IPU .GT. 0 .AND. IPU .NE. IVU) THEN
-        write(6,*) '(pv active general)'
          DO IQU = 1, NASHT
             NPQ = MAX(IPU,IQU) * ( MAX(IPU,IQU) - 1 ) / 2 + MIN(IPU,IQU)
             DO IZFQ = 1, NZ
@@ -3888,7 +3881,7 @@ C
      &                    iQVINT1,iQVINT2,
      &                    H2VPX,PV,NPQ,IQU,IPU,
      &                    FQX(IV,IQU,IZFQ))
-      if (IZFQ.eq.4) then
+      if (IPRINT .GE. 40 .AND. IZFQ.eq.4) then
                     write(lupri,*) 'IZ,I3,IZFQ ',IZ,I3,IZFQ
                      WRITE(LUPRI,*)
      &                    szPV(IZ,I3,IZFQ),szQV(IZ,I3,IZFQ),
@@ -3907,10 +3900,10 @@ C
 C
 C     Output section
 C
-c Mvh      IF (IPRINT .GE. 20) THEN
+      IF (IPRINT .GE. 20) THEN
          WRITE(LUPRI,'(/A/)') ' (RADDFQX) FQX on exit'
          CALL PRQMAT(FQX,NORBT,NASHT,NORBT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
-c      END IF
+      END IF
       RETURN
       END
 C
@@ -3969,9 +3962,6 @@ C
 C     Do the DDOT:
 C
 c     write(6,*) 'FQX before ',FQX
-c MvH
-
-      write(lupri,*) 'e NVQ,IZQV,I3QV',NVQ,IZQV,I3QV
       CALL RADDFQX4(szPVXY,szQVXY,FAC,
      &     H2VPX(1,1,IZPV,I3PV),PV(1,1,NVQ,IZQV,I3QV),
      &     FQX)
@@ -3989,9 +3979,6 @@ C
       DIMENSION H2VPX(NASHT,NASHT), PV(NASHT,NASHT)
       CHARACTER szPVXY*2, szQVXY*2
 C
-      write(lupri,*)'output of H2VPX and PV (inside RADDFQX4)'
-      call output(H2VPX,1,NASHT,1,NASHT,NASHT,NASHT,1,lupri)
-      call output(PV,1,NASHT,1,NASHT,NASHT,NASHT,1,lupri)
       IF (szPVXY .EQ. szQVXY) THEN
 C
 C        \sum_{xy} H2VPX(x,y) PV(x,y)

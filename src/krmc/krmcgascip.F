@@ -1604,7 +1604,7 @@ C
 C     Print section
 C     -------------
 C
- ! mvh     IF ( IPRINT .GE. 10 ) THEN
+      IF ( IPRINT .GE. 10 ) THEN
 C
 C        Print DV
 C
@@ -1635,10 +1635,10 @@ C
                   DO IV = 1,2*NASHT
                      DO IU = 1,2*NASHT
                         IF ( NZ .EQ. 1 ) THEN
-                    !Mvh       IF(ABS(PV(IU,IV,IX,IY,1)) .GT. THROUT) THEN
+                           IF(ABS(PV(IU,IV,IX,IY,1)) .GT. THROUT) THEN
                               WRITE(LUPRI,'(4I3,F20.10)')
      $                             IU,IV,IX,IY,PV(IU,IV,IX,IY,1)
-                    !       END IF
+                           END IF
                         ELSE
                            IF((ABS(PV(IU,IV,IX,IY,1))
      &                       + ABS(PV(IU,IV,IX,IY,2))) .GT. THROUT) THEN
@@ -1652,7 +1652,7 @@ C
                END DO
             END DO
          END IF
-!      END IF
+      END IF
 C
       CALL QEXIT('GASCIP_RMAKDM')
       RETURN
