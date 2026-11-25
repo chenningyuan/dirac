@@ -1,0 +1,1195 @@
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+
+Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
+
+ *******************************************************************************
+ *                                                                             *
+ *                                O U T P U T                                  *
+ *                                   from                                      *
+ *                                                                             *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                    *
+ *                   @@  @@        @@  @@   @@  @@   @@                        *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                        *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                        *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                    *
+ *                                                                             *
+ *                                                                             *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:%
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::$
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::(
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:$
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.S
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::S
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::?
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.S
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.(
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/$
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:iS
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::c
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::S
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::$
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::$
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::(
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:Z
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|(
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||S
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:$
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::%
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:$
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::$
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/)
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii$
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////$
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/Z
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::$
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::&
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/=
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|$
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>M
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:M
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%M
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;M
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<SM
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$SM
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<M
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></M
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&M
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SFM
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]ZkM
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&M
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&M
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&FM
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&M
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6M
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969kM
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&M
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1M
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&M
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9ZM
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6M
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][FM
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&M
+ *******************************************************************************
+ *                                                                             *
+ *         =========================================================           *
+ *                     Program for Atomic and Molecular                        *
+ *          Direct Iterative Relativistic All-electron Calculations            *
+ *         =========================================================           *
+ *                                                                             *
+ *                                                                             *
+ *    Written by:                                                              *
+ *                                                                             *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *    Trond Saue               Universite Toulouse III           France        *
+ *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *                                                                             *
+ *    with contributions from:                                                 *
+ *                                                                             *
+ *    Minori Abe               Tokyo Uni. of Agriculture & Tech. Japan         *
+ *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
+ *    Juan Jose Aucar          CONICET/Northeastern University   Argentina     *
+ *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Jan Brandejs             Universite Toulouse III           France        *
+ *    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joel Creutzberg          University of Southern Denmark    Denmark       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
+ *    Sebastien Dubillard      University of Strasbourg          France        *
+ *    Ulf Ekstroem             University of Oslo                Norway        *
+ *    Ephraim Eliav            University of Tel Aviv            Israel        *
+ *    Gabriele Fabbro          Universite Toulouse III           France        *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
+ *    Elke Fasshauer           University of Tubingen            Germany       *
+ *    Timo Fleig               Universite Toulouse III           France        *
+ *    Olav Fossgaard           UiT The Arctic University of      Norway        *
+ *    Konstantin J. Gaul       Helmholtz Institute Mainz         Germany       *
+ *    Loic Halbert             Universite de Lille               France        *
+ *    Erik D. Hedegaard        University of Southern Denmark    Denmark       *
+ *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
+ *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Martin van Horn          Universite Toulouse III           France        *
+ *    Miroslav Ilias           Matej Bel University              Slovakia      *
+ *    Sumika Iwamuro           NTT Data Group Corp.              Japan         *
+ *    Christoph R. Jacob       TU Braunschweig                   Germany       *
+ *    Stefan Knecht            Algorithmiq Ltd / ETH Zuerich     Finland/CH    *
+ *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
+ *    Ossama Kullie            University of Kassel              Germany       *
+ *    Jon K. Laerdahl          University of Oslo                Norway        *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
+ *    Ernst D. Larsson         University of Southern Denmark    Denmark       *
+ *    Maxime Le                Universite de Lille               France        *
+ *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Thomas Lejeune           Universite Paris Saclay           France        *
+ *    Nanna Holmgaard List     Stockholm Inst. of Technology     Sweden        *
+ *    Yasuto Masuda            Hiroshima University              Japan         *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
+ *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
+ *    Kohei Noda               Saver Corp.                       Japan         *
+ *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
+ *    Andreas Nyvang           Aarhus University                 Denmark       *
+ *    Malgorzata Olejniczak    University of Warsaw              Poland        *
+ *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Anastasios Papadopoulos  Max Planck Institute f. Coal Res. Germany       *
+ *    Young Choon Park         KAIST, Daejeon                    South Korea   *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
+ *    Markus Pernpointner      University of Heidelberg          Germany       *
+ *    Johann V. Pototschnig    Technical University Graz         Austria       *
+ *    Roberto Di Remigio Eikas Algorithmiq Ltd                   Finland       *
+ *    Michal Repisky           UiT & Comenius University         Norway/SK     *
+ *    Carlos M. R. Rocha       Netherlands eScience Center       Netherlands   *
+ *    Kenneth Ruud             UiT The Arctic University of      Norway        *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
+ *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
+ *    Bruno Senjean            CNRS/Universite de Montpellier    France        *
+ *    Avijit Shee              University of Berkeley            USA           *
+ *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Ayaki Sunaga             Kyoto University                  Japan         *
+ *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
+ *    Joern Thyssen            University of Southern Denmark    Denmark       *
+ *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
+ *    Marta L. Vidal           Cardiff University                UK            *
+ *    Sebastien Villaume       Linkoeping University             Sweden        *
+ *    Olivier Visser           University of Groningen           Netherlands   *
+ *    Lasse K. Sorensen        University of Southern Denmark    Denmark       *
+ *    Toke Winther             University of Southern Denmark    Denmark       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *    Xiang Yuan               Universite de Lille               France        *
+ *                                                                             *
+ *    For more information about the DIRAC code see http://diracprogram.org    *
+ *                                                                             *
+ *    This is an experimental code. The authors accept no responsibility       *
+ *    for the performance of the code or for the correctness of the results.   *
+ *                                                                             *
+ *    This program is free software; you can redistribute it and/or            *
+ *    modify it under the terms of the GNU Lesser General Public               *
+ *    License version 2.1 as published by the Free Software Foundation.        *
+ *                                                                             *
+ *    If results obtained with this code are published, an                     *
+ *    appropriate citation would be:                                           *
+ *                                                                             *
+ *    DIRAC, a relativistic ab initio electronic structure program,            *
+ *    Release DIRAC26.1 (2026), written by                                     *
+ *    A. S. P. Gomes, T. Saue, L. Visscher, H. J. Aa. Jensen, and R. Bast      *
+ *    with contributions from M. Abe, I. A. Aucar, J. J. Aucar, V. Bakken,     *
+ *    J. Brandejs, C. Chibueze, J. Creutzberg, K. G. Dyall, S. Dubillard,      *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, G. Fabbro, E. Fasshauer, T. Fleig, *
+ *    O. Fossgaard, K. J. Gaul, L. Halbert, E. D. Hedegaard, T. Helgaker,      *
+ *    B. Helmich-Paris, J. Henriksson, M. van Horn, M. Ilias, S. Iwamuro,      *
+ *    Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie, J. K. Laerdahl,       *
+ *    C. V. Larsen, E.D Laersson, M. Le, Y. S. Lee, T. Lejeune, N. H. List,    *
+ *    Y. Masuda, H. S. Nataraj, M. K. Nayak, K. Noda, P. Norman, A. Nyvang,    *
+ *    M. Olejniczak, J. Olsen, J. M. H. Olsen, A. Papadopoulos, Y. C. Park,    *
+ *    J. K. Pedersen, M. Pernpointner, J. V. Pototschnig, R. Di Remigio Eikas, *
+ *    M. Repisky, C. M. R. Rocha, K. Ruud, P. Salek, B. Schimmelpfennig,       *
+ *    B. Senjean, A. Shee, J. Sikkema, A. Sunaga, A. J. Thorvaldsen,           *
+ *    J. Thyssen, J. N. P. van Stralen, M. L. Vidal, S. Villaume,              *
+ *    O. Visser, L. K. Sorensen, T. Winther, S. Yamamoto and X. Yuan           *
+ *    (see http://diracprogram.org).                                           *
+ *                                                                             *
+ *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104         *
+ *                                    https://doi.org/10.1063/5.0004844        *
+ *                                                                             *
+ *******************************************************************************
+
+
+Version information
+-------------------
+
+Branch        | master
+Commit hash   | 61d4a7d4b-dirty
+Commit author | Lucas Visscher
+Commit date   | Wed Nov 25 08:32:30 2026 +0100
+
+
+Configuration and build information
+-----------------------------------
+
+Who compiled             | saue
+Compiled on server       | lpqlx134
+Operating system         | Linux-7.0.0-44-generic
+CMake version            | 4.2.3
+CMake generator          | Unix Makefiles
+CMake build type         | release
+Configuration time       | 2026-11-25 13:00:34.400361+00:00
+Fortran compiler         | /usr/bin/gfortran
+Fortran compiler version | 15.2.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -ffree-line-length-none -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto
+C compiler               | /usr/bin/gcc
+C compiler version       | 15.2.0
+C compiler flags         |  -g -fopenmp -fno-lto
+C++ compiler             | /usr/bin/g++
+C++ compiler version     | 15.2.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto
+Static linking           | False
+64-bit integers          | False
+MPI parallelization      | False
+MPI launcher             | unknown
+Math libraries           | /usr/lib/x86_64-linux-gnu/libopenblas.so;/usr/lib/x86_64-linux-gnu/libopenblas.so
+Builtin BLAS library     | OFF
+Builtin LAPACK library   | OFF
+Explicit libraries       | unknown
+Compile definitions      | HAVE_OPENBLAS_BLAS;HAVE_OPENBLAS_LAPACK;HAVE_OPENMP;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT
+
+EXACORR dependencies
+--------------------
+Exatensor source repo    | unknown
+Exatensor git hash       | unknown
+Exatensor configuration  | unknown
+
+
+ LAPACK integer*4/8 selftest passed
+ Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+
+Execution time and host
+-----------------------
+
+ 
+     Date and time (Linux)  : Wed Nov 25 14:28:48 2026
+     Host name              : lpqlx134                                
+
+ * Opening checkpoint file 
+    - New checkpoint file created
+
+
+Contents of the input file
+--------------------------
+
+**DIRAC                                                                                             
+**HAMILTONIAN                                                                                       
+.LEVY-LEBLOND                                                                                       
+**WAVE FUNCTION                                                                                     
+*END OF                                                                                             
+
+
+Contents of the molecule file
+-----------------------------
+
+INTGRL                                                                                              
+Th symmetry: central C, 24 H atoms                                                                  
+H atoms on the orbit of a general point under the T rotations and inversion                         
+C   2                                                                                               
+        6.    1                                                                                     
+C     0.0  0.0  0.0                                                                                 
+LARGE BASIS STO-3G                                                                                  
+        1.  24                                                                                      
+H1         1.000000000000      2.483870967742      6.225806451613                                   
+H2         6.225806451613      1.000000000000      2.483870967742                                   
+H3        -1.000000000000     -2.483870967742      6.225806451613                                   
+H4         2.483870967742      6.225806451613      1.000000000000                                   
+H5         6.225806451613     -1.000000000000     -2.483870967742                                   
+H6        -6.225806451613     -1.000000000000      2.483870967742                                   
+H7        -2.483870967742      6.225806451613     -1.000000000000                                   
+H8         2.483870967742     -6.225806451613     -1.000000000000                                   
+H9        -2.483870967742     -6.225806451613      1.000000000000                                   
+H10       -6.225806451613      1.000000000000     -2.483870967742                                   
+H11       -1.000000000000      2.483870967742     -6.225806451613                                   
+H12        1.000000000000     -2.483870967742     -6.225806451613                                   
+H13       -1.000000000000     -2.483870967742     -6.225806451613                                   
+H14       -6.225806451613     -1.000000000000     -2.483870967742                                   
+H15        1.000000000000      2.483870967742     -6.225806451613                                   
+H16       -2.483870967742     -6.225806451613     -1.000000000000                                   
+H17       -6.225806451613      1.000000000000      2.483870967742                                   
+H18        6.225806451613      1.000000000000     -2.483870967742                                   
+H19        2.483870967742     -6.225806451613      1.000000000000                                   
+H20       -2.483870967742      6.225806451613      1.000000000000                                   
+H21        2.483870967742      6.225806451613     -1.000000000000                                   
+H22        6.225806451613     -1.000000000000      2.483870967742                                   
+H23        1.000000000000     -2.483870967742      6.225806451613                                   
+H24       -1.000000000000      2.483870967742      6.225806451613                                   
+LARGE BASIS STO-3G                                                                                  
+FINISH                                                                                              
+
+
+    *************************************************************************
+    ********************* DIRAC: No title specified !!! *********************
+    *************************************************************************
+
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 2022  
+     Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor    
+         Reviews of Modern Physics, Vol. 97, 025002 (2025)                
+ * The speed of light :        137.035999177
+ * Running in four-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+
+   ***************************************************************************
+   ****************** Output from MOLECULE input processing ******************
+   ***************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  Th symmetry: central C, 24 H atoms                                      
+  H atoms on the orbit of a general point under the T rotations and invers
+  Nuclear Gaussian exponent for atom of charge    6.000 :     6.8077493034D+08   (using mass   12.0)
+  Nuclear Gaussian exponent for atom of charge    1.000 :     2.1248236082D+09   (using mass    1.0)
+
+
+                     SYMADD: Detection of molecular symmetry
+                     ---------------------------------------
+
+ Symmetry test threshold:  5.00E-06
+
+    The molecule has been centered at center of mass.
+
+ Symmetry point group found: T(h)           
+
+ Rotational Axes
+ ---------------
+       3 :      0.57735027    -0.57735027     0.57735027  Isotope  0
+       3 :      0.57735027    -0.57735027    -0.57735027  Isotope  0
+       3 :      0.57735027     0.57735027     0.57735027  Isotope  0
+       3 :      0.57735027     0.57735027    -0.57735027  Isotope  0
+       2 :     -0.00000000     0.00000000     1.00000000  Isotope  0
+       2 :      0.00000000    -1.00000000     0.00000000  Isotope  0
+       2 :      1.00000000     0.00000000     0.00000000  Isotope  0
+
+ Improper Rotational Axes
+ ------------------------
+       6 :      0.57735027    -0.57735027     0.57735027  Isotope  0
+       6 :      0.57735027    -0.57735027    -0.57735027  Isotope  0
+       6 :      0.57735027     0.57735027     0.57735027  Isotope  0
+       6 :      0.57735027     0.57735027    -0.57735027  Isotope  0
+
+ Mirror planes
+ -----------------------------
+ #1 = Type: 2=h, 1=v, 0=other
+ #2 = Number of atoms in plane
+ #3-5 = normal vector of plane
+ -----------------------------
+ 0     0 :      0.00000000    -1.00000000     0.00000000
+ 0     0 :      0.00000000     0.00000000    -1.00000000
+ 0     0 :     -1.00000000     0.00000000    -0.00000000
+
+ The following symmetry elements were found: X  Y  Z  
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 3
+
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Full group is:  T(h)           
+Represented as: D2h
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+      Reflection in the xy-plane
+
+   * Group multiplication table
+
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+     E  |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+    C2z | C2z   E   C2x  C2y  Oxy   i   Oyz  Oxz
+    C2y | C2y  C2x   E   C2z  Oxz  Oyz   i   Oxy
+    C2x | C2x  C2y  C2z   E   Oyz  Oxz  Oxy   i 
+     i  |  i   Oxy  Oxz  Oyz   E   C2z  C2y  C2x
+    Oxy | Oxy   i   Oyz  Oxz  C2z   E   C2x  C2y
+    Oxz | Oxz  Oyz   i   Oxy  C2y  C2x   E   C2z
+    Oyz | Oyz  Oxz  Oxy   i   C2x  C2y  C2z   E 
+
+   * Character table
+
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+    Ag  |   1    1    1    1    1    1    1    1
+    B3u |   1   -1   -1    1   -1    1    1   -1
+    B2u |   1   -1    1   -1   -1    1   -1    1
+    B1g |   1    1   -1   -1    1    1   -1   -1
+    B1u |   1    1   -1   -1   -1   -1    1    1
+    B2g |   1   -1    1   -1    1   -1    1   -1
+    B3g |   1   -1   -1    1    1   -1   -1    1
+    Au  |   1    1    1    1   -1   -1   -1   -1
+
+   * Direct product table
+
+        | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
+   -----+----------------------------------------
+    Ag  | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
+    B3u | B3u  Ag   B1g  B2u  B2g  B1u  Au   B3g
+    B2u | B2u  B1g  Ag   B3u  B3g  Au   B1u  B2g
+    B1g | B1g  B2u  B3u  Ag   Au   B3g  B2g  B1u
+    B1u | B1u  B2g  B3g  Au   Ag   B3u  B2u  B1g
+    B2g | B2g  B1u  Au   B3g  B3u  Ag   B1g  B2u
+    B3g | B3g  Au   B1u  B2g  B2u  B1g  Ag   B3u
+    Au  | Au   B3g  B2g  B1u  B1g  B2u  B3u  Ag 
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * Two fermion irreps:  E1g  E1u
+   * Real group. NZ = 1
+   * Direct product decomposition:
+          E1g x E1g : Ag  + B1g + B2g + B3g
+          E1u x E1g : Au  + B1u + B2u + B3u
+          E1u x E1u : Ag  + B1g + B2g + B3g
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1            * Fermion irrep no.: 2
+
+      La  |  Ag (1)  B1g(2)  |                La  |  Au (1)  B1u(2)  |
+      Sa  |  Au (1)  B1u(2)  |                Sa  |  Ag (1)  B1g(2)  |
+      Lb  |  B2g(3)  B3g(4)  |                Lb  |  B2u(3)  B3u(4)  |
+      Sb  |  B2u(3)  B3u(4)  |                Sb  |  B2g(3)  B3g(4)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    Ag   1
+    B3u  k
+    B2u  j
+    B1g  i
+    B1u  i
+    B2g  j
+    B3g  k
+    Au   1
+
+  Nuclear repulsion energy                       :     56.836584595897 Hartree
+
+  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000    0.000000000000 a.u.;  origin (0,0,0)
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:   25
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  C           1       6      15       5      L  - [6s3p|2s1p]                                                    
+                             39      39      S  - [3s6p3d|3s6p3d]                                                
+  H24        24       1       3       1      L  - [3s|1s]                                                        
+                              9       9      S  - [3p|3p]                                                        
+  ----------------------------------------------------------------------
+                             87      29      L  - large components
+                            255     255      S  - small components
+  ----------------------------------------------------------------------
+  total:     25      30     342     284
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1   2
+   Elements      Contraction                       References                     
+   H - He: (3s)         -> [1s]       W.J. Hehre, R.F. Stewart and J.A. Pople,    
+   Li - Ne: (6s,3p)     -> [2s,1p]    J. Chem. Phys. 2657 (1969).                 
+   Na - Ar: (9s,6p)     -> [3s,2p]    W.J. Hehre, R. Ditchfield, R.F. Stewart,    
+                                      J.A. Pople, J. Chem. Phys.  2769 (1970).    
+   K,Ca - : (12s,9p)    -> [4s,3p]    W.J. Pietro, B.A. Levy, W.J. Hehre and R.F. 
+   Ga - Kr                            Stewart, Inorg. Chem. 19, 2225 (1980).      
+   Sc - Zn: (12s,9p,3d) -> [4s,3p,1d] W.J. Pietro and W.J. Hehre, J. Comp. Chem.  
+   Y - Cd: (15s,12p,6d) -> [5s,4p,2d] 4, 241 (1983).                              
+  ***********************************************************************         
+
+
+  Cartesian Coordinates (bohr)
+  ----------------------------
+
+  Total number of coordinates: 75
+
+
+   C           0.0000000000   0.0000000000   0.0000000000
+   H17 /1      2.4838709677   1.0000000000   6.2258064516
+   H17 /2     -2.4838709677   1.0000000000   6.2258064516
+   H17 /3      2.4838709677  -1.0000000000   6.2258064516
+   H17 /4     -2.4838709677  -1.0000000000   6.2258064516
+   H17 /5      2.4838709677   1.0000000000  -6.2258064516
+   H17 /6     -2.4838709677   1.0000000000  -6.2258064516
+   H17 /7      2.4838709677  -1.0000000000  -6.2258064516
+   H17 /8     -2.4838709677  -1.0000000000  -6.2258064516
+   H20 /1      1.0000000000   6.2258064516   2.4838709677
+   H20 /2     -1.0000000000   6.2258064516   2.4838709677
+   H20 /3      1.0000000000  -6.2258064516   2.4838709677
+   H20 /4     -1.0000000000  -6.2258064516   2.4838709677
+   H20 /5      1.0000000000   6.2258064516  -2.4838709677
+   H20 /6     -1.0000000000   6.2258064516  -2.4838709677
+   H20 /7      1.0000000000  -6.2258064516  -2.4838709677
+   H20 /8     -1.0000000000  -6.2258064516  -2.4838709677
+   H24 /1      6.2258064516   2.4838709677   1.0000000000
+   H24 /2     -6.2258064516   2.4838709677   1.0000000000
+   H24 /3      6.2258064516  -2.4838709677   1.0000000000
+   H24 /4     -6.2258064516  -2.4838709677   1.0000000000
+   H24 /5      6.2258064516   2.4838709677  -1.0000000000
+   H24 /6     -6.2258064516   2.4838709677  -1.0000000000
+   H24 /7      6.2258064516  -2.4838709677  -1.0000000000
+   H24 /8     -6.2258064516  -2.4838709677  -1.0000000000
+
+
+  Cartesian coordinates in XYZ format (Angstrom)
+  ----------------------------------------------
+
+   25
+
+C      0.0000000000   0.0000000000   0.0000000000
+H17    1.3144079101   0.5291772105   3.2945548915
+H17   -1.3144079101   0.5291772105   3.2945548915
+H17    1.3144079101  -0.5291772105   3.2945548915
+H17   -1.3144079101  -0.5291772105   3.2945548915
+H17    1.3144079101   0.5291772105  -3.2945548915
+H17   -1.3144079101   0.5291772105  -3.2945548915
+H17    1.3144079101  -0.5291772105  -3.2945548915
+H17   -1.3144079101  -0.5291772105  -3.2945548915
+H20    0.5291772105   3.2945548915   1.3144079101
+H20   -0.5291772105   3.2945548915   1.3144079101
+H20    0.5291772105  -3.2945548915   1.3144079101
+H20   -0.5291772105  -3.2945548915   1.3144079101
+H20    0.5291772105   3.2945548915  -1.3144079101
+H20   -0.5291772105   3.2945548915  -1.3144079101
+H20    0.5291772105  -3.2945548915  -1.3144079101
+H20   -0.5291772105  -3.2945548915  -1.3144079101
+H24    3.2945548915   1.3144079101   0.5291772105
+H24   -3.2945548915   1.3144079101   0.5291772105
+H24    3.2945548915  -1.3144079101   0.5291772105
+H24   -3.2945548915  -1.3144079101   0.5291772105
+H24    3.2945548915   1.3144079101  -0.5291772105
+H24   -3.2945548915   1.3144079101  -0.5291772105
+H24    3.2945548915  -1.3144079101  -0.5291772105
+H24   -3.2945548915  -1.3144079101  -0.5291772105
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     9   10   10    9   10    9    9    9
+
+
+  Symmetry  Ag ( 1)
+
+    1   H17   x    [  4  -    7  +   10  -   13  +   16  -   19  +   22  -   25 ]/8
+    2   H17   y    [  5  +    8  -   11  -   14  +   17  +   20  -   23  -   26 ]/8
+    3   H17   z    [  6  +    9  +   12  +   15  -   18  -   21  -   24  -   27 ]/8
+    4   H20   x    [ 28  -   31  +   34  -   37  +   40  -   43  +   46  -   49 ]/8
+    5   H20   y    [ 29  +   32  -   35  -   38  +   41  +   44  -   47  -   50 ]/8
+    6   H20   z    [ 30  +   33  +   36  +   39  -   42  -   45  -   48  -   51 ]/8
+    7   H24   x    [ 52  -   55  +   58  -   61  +   64  -   67  +   70  -   73 ]/8
+    8   H24   y    [ 53  +   56  -   59  -   62  +   65  +   68  -   71  -   74 ]/8
+    9   H24   z    [ 54  +   57  +   60  +   63  -   66  -   69  -   72  -   75 ]/8
+
+
+  Symmetry  B3u( 2)
+
+   10   C     x    1
+   11   H17   x    [  4  +    7  +   10  +   13  +   16  +   19  +   22  +   25 ]/8
+   12   H17   y    [  5  -    8  -   11  +   14  +   17  -   20  -   23  +   26 ]/8
+   13   H17   z    [  6  -    9  +   12  -   15  -   18  +   21  -   24  +   27 ]/8
+   14   H20   x    [ 28  +   31  +   34  +   37  +   40  +   43  +   46  +   49 ]/8
+   15   H20   y    [ 29  -   32  -   35  +   38  +   41  -   44  -   47  +   50 ]/8
+   16   H20   z    [ 30  -   33  +   36  -   39  -   42  +   45  -   48  +   51 ]/8
+   17   H24   x    [ 52  +   55  +   58  +   61  +   64  +   67  +   70  +   73 ]/8
+   18   H24   y    [ 53  -   56  -   59  +   62  +   65  -   68  -   71  +   74 ]/8
+   19   H24   z    [ 54  -   57  +   60  -   63  -   66  +   69  -   72  +   75 ]/8
+
+
+  Symmetry  B2u( 3)
+
+   20   C     y    2
+   21   H17   x    [  4  -    7  -   10  +   13  +   16  -   19  -   22  +   25 ]/8
+   22   H17   y    [  5  +    8  +   11  +   14  +   17  +   20  +   23  +   26 ]/8
+   23   H17   z    [  6  +    9  -   12  -   15  -   18  -   21  +   24  +   27 ]/8
+   24   H20   x    [ 28  -   31  -   34  +   37  +   40  -   43  -   46  +   49 ]/8
+   25   H20   y    [ 29  +   32  +   35  +   38  +   41  +   44  +   47  +   50 ]/8
+   26   H20   z    [ 30  +   33  -   36  -   39  -   42  -   45  +   48  +   51 ]/8
+   27   H24   x    [ 52  -   55  -   58  +   61  +   64  -   67  -   70  +   73 ]/8
+   28   H24   y    [ 53  +   56  +   59  +   62  +   65  +   68  +   71  +   74 ]/8
+   29   H24   z    [ 54  +   57  -   60  -   63  -   66  -   69  +   72  +   75 ]/8
+
+
+  Symmetry  B1g( 4)
+
+   30   H17   x    [  4  +    7  -   10  -   13  +   16  +   19  -   22  -   25 ]/8
+   31   H17   y    [  5  -    8  +   11  -   14  +   17  -   20  +   23  -   26 ]/8
+   32   H17   z    [  6  -    9  -   12  +   15  -   18  +   21  +   24  -   27 ]/8
+   33   H20   x    [ 28  +   31  -   34  -   37  +   40  +   43  -   46  -   49 ]/8
+   34   H20   y    [ 29  -   32  +   35  -   38  +   41  -   44  +   47  -   50 ]/8
+   35   H20   z    [ 30  -   33  -   36  +   39  -   42  +   45  +   48  -   51 ]/8
+   36   H24   x    [ 52  +   55  -   58  -   61  +   64  +   67  -   70  -   73 ]/8
+   37   H24   y    [ 53  -   56  +   59  -   62  +   65  -   68  +   71  -   74 ]/8
+   38   H24   z    [ 54  -   57  -   60  +   63  -   66  +   69  +   72  -   75 ]/8
+
+
+  Symmetry  B1u( 5)
+
+   39   C     z    3
+   40   H17   x    [  4  -    7  +   10  -   13  -   16  +   19  -   22  +   25 ]/8
+   41   H17   y    [  5  +    8  -   11  -   14  -   17  -   20  +   23  +   26 ]/8
+   42   H17   z    [  6  +    9  +   12  +   15  +   18  +   21  +   24  +   27 ]/8
+   43   H20   x    [ 28  -   31  +   34  -   37  -   40  +   43  -   46  +   49 ]/8
+   44   H20   y    [ 29  +   32  -   35  -   38  -   41  -   44  +   47  +   50 ]/8
+   45   H20   z    [ 30  +   33  +   36  +   39  +   42  +   45  +   48  +   51 ]/8
+   46   H24   x    [ 52  -   55  +   58  -   61  -   64  +   67  -   70  +   73 ]/8
+   47   H24   y    [ 53  +   56  -   59  -   62  -   65  -   68  +   71  +   74 ]/8
+   48   H24   z    [ 54  +   57  +   60  +   63  +   66  +   69  +   72  +   75 ]/8
+
+
+  Symmetry  B2g( 6)
+
+   49   H17   x    [  4  +    7  +   10  +   13  -   16  -   19  -   22  -   25 ]/8
+   50   H17   y    [  5  -    8  -   11  +   14  -   17  +   20  +   23  -   26 ]/8
+   51   H17   z    [  6  -    9  +   12  -   15  +   18  -   21  +   24  -   27 ]/8
+   52   H20   x    [ 28  +   31  +   34  +   37  -   40  -   43  -   46  -   49 ]/8
+   53   H20   y    [ 29  -   32  -   35  +   38  -   41  +   44  +   47  -   50 ]/8
+   54   H20   z    [ 30  -   33  +   36  -   39  +   42  -   45  +   48  -   51 ]/8
+   55   H24   x    [ 52  +   55  +   58  +   61  -   64  -   67  -   70  -   73 ]/8
+   56   H24   y    [ 53  -   56  -   59  +   62  -   65  +   68  +   71  -   74 ]/8
+   57   H24   z    [ 54  -   57  +   60  -   63  +   66  -   69  +   72  -   75 ]/8
+
+
+  Symmetry  B3g( 7)
+
+   58   H17   x    [  4  -    7  -   10  +   13  -   16  +   19  +   22  -   25 ]/8
+   59   H17   y    [  5  +    8  +   11  +   14  -   17  -   20  -   23  -   26 ]/8
+   60   H17   z    [  6  +    9  -   12  -   15  +   18  +   21  -   24  -   27 ]/8
+   61   H20   x    [ 28  -   31  -   34  +   37  -   40  +   43  +   46  -   49 ]/8
+   62   H20   y    [ 29  +   32  +   35  +   38  -   41  -   44  -   47  -   50 ]/8
+   63   H20   z    [ 30  +   33  -   36  -   39  +   42  +   45  -   48  -   51 ]/8
+   64   H24   x    [ 52  -   55  -   58  +   61  -   64  +   67  +   70  -   73 ]/8
+   65   H24   y    [ 53  +   56  +   59  +   62  -   65  -   68  -   71  -   74 ]/8
+   66   H24   z    [ 54  +   57  -   60  -   63  +   66  +   69  -   72  -   75 ]/8
+
+
+  Symmetry  Au ( 8)
+
+   67   H17   x    [  4  +    7  -   10  -   13  -   16  -   19  +   22  +   25 ]/8
+   68   H17   y    [  5  -    8  +   11  -   14  -   17  +   20  -   23  +   26 ]/8
+   69   H17   z    [  6  -    9  -   12  +   15  +   18  -   21  -   24  +   27 ]/8
+   70   H20   x    [ 28  +   31  -   34  -   37  -   40  -   43  +   46  +   49 ]/8
+   71   H20   y    [ 29  -   32  +   35  -   38  -   41  +   44  -   47  +   50 ]/8
+   72   H20   z    [ 30  -   33  -   36  +   39  +   42  -   45  -   48  +   51 ]/8
+   73   H24   x    [ 52  +   55  -   58  -   61  -   64  -   67  +   70  +   73 ]/8
+   74   H24   y    [ 53  -   56  +   59  -   62  -   65  +   68  -   71  +   74 ]/8
+   75   H24   z    [ 54  -   57  -   60  +   63  +   66  -   69  -   72  +   75 ]/8
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            C           H171        H172        H173        H174        H175
+
+   C       0.000000
+   H171    3.586334    0.000000
+   H172    3.586334    2.628816    0.000000
+   H173    3.586334    1.058354    2.833864    0.000000
+   H174    3.586334    2.833864    1.058354    2.628816    0.000000
+   H175    3.586334    6.589110    7.094155    6.673566    7.172667    0.000000
+   H176    3.586334    7.094155    6.589110    7.172667    6.673566    2.628816
+   H177    3.586334    6.673566    7.172667    6.589110    7.094155    1.058354
+   H178    3.586334    7.172667    6.673566    7.094155    6.589110    2.833864
+   H201    3.586334    3.490685    3.868734    4.377042    4.684092    5.431983
+   H202    3.586334    3.868734    3.490685    4.684092    4.377042    5.682311
+   H203    3.586334    4.377042    4.684092    3.490685    3.868734    6.039872
+   H204    3.586334    4.684092    4.377042    3.868734    3.490685    6.265961
+   H205    3.586334    5.431983    5.682311    6.039872    6.265961    3.490685
+   H206    3.586334    5.682311    5.431983    6.265961    6.039872    3.868734
+   H207    3.586334    6.039872    6.265961    5.431983    5.682311    4.377042
+   H208    3.586334    6.265961    6.039872    5.682311    5.431983    4.684092
+   H241    3.586334    3.490685    5.431983    3.868734    5.682311    4.377042
+   H242    3.586334    5.431983    3.490685    5.682311    3.868734    6.039872
+   H243    3.586334    3.868734    5.682311    3.490685    5.431983    4.684092
+   H244    3.586334    5.682311    3.868734    5.431983    3.490685    6.265961
+   H245    3.586334    4.377042    6.039872    4.684092    6.265961    3.490685
+   H246    3.586334    6.039872    4.377042    6.265961    4.684092    5.431983
+   H247    3.586334    4.684092    6.265961    4.377042    6.039872    3.868734
+   H248    3.586334    6.265961    4.684092    6.039872    4.377042    5.682311
+
+            H176        H177        H178        H201        H202        H203
+
+   H176    0.000000
+   H177    2.833864    0.000000
+   H178    1.058354    2.628816    0.000000
+   H201    5.682311    6.039872    6.265961    0.000000
+   H202    5.431983    6.265961    6.039872    1.058354    0.000000
+   H203    6.265961    5.431983    5.682311    6.589110    6.673566    0.000000
+   H204    6.039872    5.682311    5.431983    6.673566    6.589110    1.058354
+   H205    3.868734    4.377042    4.684092    2.628816    2.833864    7.094155
+   H206    3.490685    4.684092    4.377042    2.833864    2.628816    7.172667
+   H207    4.684092    3.490685    3.868734    7.094155    7.172667    2.628816
+   H208    4.377042    3.868734    3.490685    7.172667    7.094155    2.833864
+   H241    6.039872    4.684092    6.265961    3.490685    4.377042    5.431983
+   H242    4.377042    6.265961    4.684092    4.377042    3.490685    6.039872
+   H243    6.265961    4.377042    6.039872    5.431983    6.039872    3.490685
+   H244    4.684092    6.039872    4.377042    6.039872    5.431983    4.377042
+   H245    5.431983    3.868734    5.682311    3.868734    4.684092    5.682311
+   H246    3.490685    5.682311    3.868734    4.684092    3.868734    6.265961
+   H247    5.682311    3.490685    5.431983    5.682311    6.265961    3.868734
+   H248    3.868734    5.431983    3.490685    6.265961    5.682311    4.684092
+
+            H204        H205        H206        H207        H208        H241
+
+   H204    0.000000
+   H205    7.172667    0.000000
+   H206    7.094155    1.058354    0.000000
+   H207    2.833864    6.589110    6.673566    0.000000
+   H208    2.628816    6.673566    6.589110    1.058354    0.000000
+   H241    6.039872    3.868734    4.684092    5.682311    6.265961    0.000000
+   H242    5.431983    4.684092    3.868734    6.265961    5.682311    6.589110
+   H243    4.377042    5.682311    6.265961    3.868734    4.684092    2.628816
+   H244    3.490685    6.265961    5.682311    4.684092    3.868734    7.094155
+   H245    6.265961    3.490685    4.377042    5.431983    6.039872    1.058354
+   H246    5.682311    4.377042    3.490685    6.039872    5.431983    6.673566
+   H247    4.684092    5.431983    6.039872    3.490685    4.377042    2.833864
+   H248    3.868734    6.039872    5.431983    4.377042    3.490685    7.172667
+
+            H242        H243        H244        H245        H246        H247
+
+   H242    0.000000
+   H243    7.094155    0.000000
+   H244    2.628816    6.589110    0.000000
+   H245    6.673566    2.833864    7.172667    0.000000
+   H246    1.058354    7.172667    2.833864    6.589110    0.000000
+   H247    7.172667    1.058354    6.673566    2.628816    7.094155    0.000000
+   H248    2.833864    6.673566    1.058354    7.094155    2.628816    6.589110
+
+            H248
+
+   H248    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+     No angles found
+
+
+
+
+  WARNING:  No bonds -  no atom pairs are within normal bonding distances
+  WARNING:  maybe coordinates were in Bohr, but DIRAC were told they were in Angstrom ?
+
+
+   Nuclear repulsion energy                          :   56.836584595897 Hartree
+
+                       * Total mass:    36.187800 amu
+                       * Natural abundance:  98.545 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.000000000000000
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.000000000000000
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:   28
+     1  L C   1 s        2  L C   1 px       3  L C   1 py       4  L C   1 pz       5  L H17 1 s        6  L H17 2 s   
+     7  L H17 3 s        8  L H17 4 s        9  L H17 5 s       10  L H17 6 s       11  L H17 7 s       12  L H17 8 s   
+    13  L H20 1 s       14  L H20 2 s       15  L H20 3 s       16  L H20 4 s       17  L H20 5 s       18  L H20 6 s   
+    19  L H20 7 s       20  L H20 8 s       21  L H24 1 s       22  L H24 2 s       23  L H24 3 s       24  L H24 4 s   
+    25  L H24 5 s       26  L H24 6 s       27  L H24 7 s       28  L H24 8 s   
+   * Small components:   82
+    29  S C   1 s       30  S C   1 px      31  S C   1 py      32  S C   1 pz      33  S C   1 dxx     34  S C   1 dxy 
+    35  S C   1 dxz     36  S C   1 dyy     37  S C   1 dyz     38  S C   1 dzz     39  S H17 1 px      40  S H17 1 py  
+    41  S H17 1 pz      42  S H17 2 px      43  S H17 2 py      44  S H17 2 pz      45  S H17 3 px      46  S H17 3 py  
+    47  S H17 3 pz      48  S H17 4 px      49  S H17 4 py      50  S H17 4 pz      51  S H17 5 px      52  S H17 5 py  
+    53  S H17 5 pz      54  S H17 6 px      55  S H17 6 py      56  S H17 6 pz      57  S H17 7 px      58  S H17 7 py  
+    59  S H17 7 pz      60  S H17 8 px      61  S H17 8 py      62  S H17 8 pz      63  S H20 1 px      64  S H20 1 py  
+    65  S H20 1 pz      66  S H20 2 px      67  S H20 2 py      68  S H20 2 pz      69  S H20 3 px      70  S H20 3 py  
+    71  S H20 3 pz      72  S H20 4 px      73  S H20 4 py      74  S H20 4 pz      75  S H20 5 px      76  S H20 5 py  
+    77  S H20 5 pz      78  S H20 6 px      79  S H20 6 py      80  S H20 6 pz      81  S H20 7 px      82  S H20 7 py  
+    83  S H20 7 pz      84  S H20 8 px      85  S H20 8 py      86  S H20 8 pz      87  S H24 1 px      88  S H24 1 py  
+    89  S H24 1 pz      90  S H24 2 px      91  S H24 2 py      92  S H24 2 pz      93  S H24 3 px      94  S H24 3 py  
+    95  S H24 3 pz      96  S H24 4 px      97  S H24 4 py      98  S H24 4 pz      99  S H24 5 px     100  S H24 5 py  
+   101  S H24 5 pz     102  S H24 6 px     103  S H24 6 py     104  S H24 6 pz     105  S H24 7 px     106  S H24 7 py  
+   107  S H24 7 pz     108  S H24 8 px     109  S H24 8 py     110  S H24 8 pz  
+
+
+                                GETLAB: SO-labels
+                                -----------------
+
+   * Large components:   28
+     1  L Ag C  s        2  L Ag H17s        3  L Ag H20s        4  L Ag H24s        5  L B3uC  px       6  L B3uH17s   
+     7  L B3uH20s        8  L B3uH24s        9  L B2uC  py      10  L B2uH17s       11  L B2uH20s       12  L B2uH24s   
+    13  L B1gH17s       14  L B1gH20s       15  L B1gH24s       16  L B1uC  pz      17  L B1uH17s       18  L B1uH20s   
+    19  L B1uH24s       20  L B2gH17s       21  L B2gH20s       22  L B2gH24s       23  L B3gH17s       24  L B3gH20s   
+    25  L B3gH24s       26  L Au H17s       27  L Au H20s       28  L Au H24s   
+   * Small components:   82
+    29  S Ag C  s       30  S Ag C  dxx     31  S Ag C  dyy     32  S Ag C  dzz     33  S Ag H17px      34  S Ag H17py  
+    35  S Ag H17pz      36  S Ag H20px      37  S Ag H20py      38  S Ag H20pz      39  S Ag H24px      40  S Ag H24py  
+    41  S Ag H24pz      42  S B3uC  px      43  S B3uH17px      44  S B3uH17py      45  S B3uH17pz      46  S B3uH20px  
+    47  S B3uH20py      48  S B3uH20pz      49  S B3uH24px      50  S B3uH24py      51  S B3uH24pz      52  S B2uC  py  
+    53  S B2uH17px      54  S B2uH17py      55  S B2uH17pz      56  S B2uH20px      57  S B2uH20py      58  S B2uH20pz  
+    59  S B2uH24px      60  S B2uH24py      61  S B2uH24pz      62  S B1gC  dxy     63  S B1gH17px      64  S B1gH17py  
+    65  S B1gH17pz      66  S B1gH20px      67  S B1gH20py      68  S B1gH20pz      69  S B1gH24px      70  S B1gH24py  
+    71  S B1gH24pz      72  S B1uC  pz      73  S B1uH17px      74  S B1uH17py      75  S B1uH17pz      76  S B1uH20px  
+    77  S B1uH20py      78  S B1uH20pz      79  S B1uH24px      80  S B1uH24py      81  S B1uH24pz      82  S B2gC  dxz 
+    83  S B2gH17px      84  S B2gH17py      85  S B2gH17pz      86  S B2gH20px      87  S B2gH20py      88  S B2gH20pz  
+    89  S B2gH24px      90  S B2gH24py      91  S B2gH24pz      92  S B3gC  dyz     93  S B3gH17px      94  S B3gH17py  
+    95  S B3gH17pz      96  S B3gH20px      97  S B3gH20py      98  S B3gH20pz      99  S B3gH24px     100  S B3gH24py  
+   101  S B3gH24pz     102  S Au H17px     103  S Au H17py     104  S Au H17pz     105  S Au H20px     106  S Au H20py  
+   107  S Au H20pz     108  S Au H24px     109  S Au H24py     110  S Au H24pz  
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:           44    37    37    33    37    33    33    30
+  Number of large orbitals in each symmetry:      5     4     4     3     4     3     3     3
+  Number of small orbitals in each symmetry:     39    33    33    30    33    30    30    27
+
+* Large component functions
+
+  Symmetry  Ag ( 1)
+
+        2 functions:    C  s   
+        1 functions:    H17s   1+2+3+4+5+6+7+8
+        1 functions:    H20s   1+2+3+4+5+6+7+8
+        1 functions:    H24s   1+2+3+4+5+6+7+8
+
+  Symmetry  B3u( 2)
+
+        1 functions:    C  px  
+        1 functions:    H17s   1-2+3-4+5-6+7-8
+        1 functions:    H20s   1-2+3-4+5-6+7-8
+        1 functions:    H24s   1-2+3-4+5-6+7-8
+
+  Symmetry  B2u( 3)
+
+        1 functions:    C  py  
+        1 functions:    H17s   1+2-3-4+5+6-7-8
+        1 functions:    H20s   1+2-3-4+5+6-7-8
+        1 functions:    H24s   1+2-3-4+5+6-7-8
+
+  Symmetry  B1g( 4)
+
+        1 functions:    H17s   1-2-3+4+5-6-7+8
+        1 functions:    H20s   1-2-3+4+5-6-7+8
+        1 functions:    H24s   1-2-3+4+5-6-7+8
+
+  Symmetry  B1u( 5)
+
+        1 functions:    C  pz  
+        1 functions:    H17s   1+2+3+4-5-6-7-8
+        1 functions:    H20s   1+2+3+4-5-6-7-8
+        1 functions:    H24s   1+2+3+4-5-6-7-8
+
+  Symmetry  B2g( 6)
+
+        1 functions:    H17s   1-2+3-4-5+6-7+8
+        1 functions:    H20s   1-2+3-4-5+6-7+8
+        1 functions:    H24s   1-2+3-4-5+6-7+8
+
+  Symmetry  B3g( 7)
+
+        1 functions:    H17s   1+2-3-4-5-6+7+8
+        1 functions:    H20s   1+2-3-4-5-6+7+8
+        1 functions:    H24s   1+2-3-4-5-6+7+8
+
+  Symmetry  Au ( 8)
+
+        1 functions:    H17s   1-2-3+4-5+6+7-8
+        1 functions:    H20s   1-2-3+4-5+6+7-8
+        1 functions:    H24s   1-2-3+4-5+6+7-8
+
+* Small component functions
+
+  Symmetry  Ag ( 1)
+
+        3 functions:    C  s   
+        3 functions:    C  dxx 
+        3 functions:    C  dyy 
+        3 functions:    C  dzz 
+        3 functions:    H17px  1-2+3-4+5-6+7-8
+        3 functions:    H17py  1+2-3-4+5+6-7-8
+        3 functions:    H17pz  1+2+3+4-5-6-7-8
+        3 functions:    H20px  1-2+3-4+5-6+7-8
+        3 functions:    H20py  1+2-3-4+5+6-7-8
+        3 functions:    H20pz  1+2+3+4-5-6-7-8
+        3 functions:    H24px  1-2+3-4+5-6+7-8
+        3 functions:    H24py  1+2-3-4+5+6-7-8
+        3 functions:    H24pz  1+2+3+4-5-6-7-8
+
+  Symmetry  B3u( 2)
+
+        6 functions:    C  px  
+        3 functions:    H17px  1+2+3+4+5+6+7+8
+        3 functions:    H17py  1-2-3+4+5-6-7+8
+        3 functions:    H17pz  1-2+3-4-5+6-7+8
+        3 functions:    H20px  1+2+3+4+5+6+7+8
+        3 functions:    H20py  1-2-3+4+5-6-7+8
+        3 functions:    H20pz  1-2+3-4-5+6-7+8
+        3 functions:    H24px  1+2+3+4+5+6+7+8
+        3 functions:    H24py  1-2-3+4+5-6-7+8
+        3 functions:    H24pz  1-2+3-4-5+6-7+8
+
+  Symmetry  B2u( 3)
+
+        6 functions:    C  py  
+        3 functions:    H17px  1-2-3+4+5-6-7+8
+        3 functions:    H17py  1+2+3+4+5+6+7+8
+        3 functions:    H17pz  1+2-3-4-5-6+7+8
+        3 functions:    H20px  1-2-3+4+5-6-7+8
+        3 functions:    H20py  1+2+3+4+5+6+7+8
+        3 functions:    H20pz  1+2-3-4-5-6+7+8
+        3 functions:    H24px  1-2-3+4+5-6-7+8
+        3 functions:    H24py  1+2+3+4+5+6+7+8
+        3 functions:    H24pz  1+2-3-4-5-6+7+8
+
+  Symmetry  B1g( 4)
+
+        3 functions:    C  dxy 
+        3 functions:    H17px  1+2-3-4+5+6-7-8
+        3 functions:    H17py  1-2+3-4+5-6+7-8
+        3 functions:    H17pz  1-2-3+4-5+6+7-8
+        3 functions:    H20px  1+2-3-4+5+6-7-8
+        3 functions:    H20py  1-2+3-4+5-6+7-8
+        3 functions:    H20pz  1-2-3+4-5+6+7-8
+        3 functions:    H24px  1+2-3-4+5+6-7-8
+        3 functions:    H24py  1-2+3-4+5-6+7-8
+        3 functions:    H24pz  1-2-3+4-5+6+7-8
+
+  Symmetry  B1u( 5)
+
+        6 functions:    C  pz  
+        3 functions:    H17px  1-2+3-4-5+6-7+8
+        3 functions:    H17py  1+2-3-4-5-6+7+8
+        3 functions:    H17pz  1+2+3+4+5+6+7+8
+        3 functions:    H20px  1-2+3-4-5+6-7+8
+        3 functions:    H20py  1+2-3-4-5-6+7+8
+        3 functions:    H20pz  1+2+3+4+5+6+7+8
+        3 functions:    H24px  1-2+3-4-5+6-7+8
+        3 functions:    H24py  1+2-3-4-5-6+7+8
+        3 functions:    H24pz  1+2+3+4+5+6+7+8
+
+  Symmetry  B2g( 6)
+
+        3 functions:    C  dxz 
+        3 functions:    H17px  1+2+3+4-5-6-7-8
+        3 functions:    H17py  1-2-3+4-5+6+7-8
+        3 functions:    H17pz  1-2+3-4+5-6+7-8
+        3 functions:    H20px  1+2+3+4-5-6-7-8
+        3 functions:    H20py  1-2-3+4-5+6+7-8
+        3 functions:    H20pz  1-2+3-4+5-6+7-8
+        3 functions:    H24px  1+2+3+4-5-6-7-8
+        3 functions:    H24py  1-2-3+4-5+6+7-8
+        3 functions:    H24pz  1-2+3-4+5-6+7-8
+
+  Symmetry  B3g( 7)
+
+        3 functions:    C  dyz 
+        3 functions:    H17px  1-2-3+4-5+6+7-8
+        3 functions:    H17py  1+2+3+4-5-6-7-8
+        3 functions:    H17pz  1+2-3-4+5+6-7-8
+        3 functions:    H20px  1-2-3+4-5+6+7-8
+        3 functions:    H20py  1+2+3+4-5-6-7-8
+        3 functions:    H20pz  1+2-3-4+5+6-7-8
+        3 functions:    H24px  1-2-3+4-5+6+7-8
+        3 functions:    H24py  1+2+3+4-5-6-7-8
+        3 functions:    H24pz  1+2-3-4+5+6-7-8
+
+  Symmetry  Au ( 8)
+
+        3 functions:    H17px  1+2-3-4-5-6+7+8
+        3 functions:    H17py  1-2+3-4-5+6-7+8
+        3 functions:    H17pz  1-2-3+4+5-6-7+8
+        3 functions:    H20px  1+2-3-4-5-6+7+8
+        3 functions:    H20py  1-2+3-4-5+6-7+8
+        3 functions:    H20pz  1-2-3+4+5-6-7+8
+        3 functions:    H24px  1+2-3-4-5-6+7+8
+        3 functions:    H24py  1-2+3-4-5+6-7+8
+        3 functions:    H24pz  1-2-3+4+5-6-7+8
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+
+ One-electron operator origins:
+ - General operator origin (a.u.)       :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Magnetic gauge origin (a.u.)         :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Dipole (and multipole) origin (a.u.) :   0.000000000000000   0.000000000000000   0.000000000000000
+ * Print level:    0
+ * Levy-Leblond Hamiltonian
+   - Spin-orbit interactions neglected
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     0
+   - SS-integrals:     0
+   - GT-integrals:     0
+
+
+ Information about the restricted kinetic balance scheme:
+ * Default RKB projection:
+   1: Pre-projection in scalar basis
+   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+
+ * Initial Automatic occupation based on:
+   Total charge of atoms =  30
+   Charge of molecule    =   0
+   i.e. no. of electrons =  30
+===========================================================================
+ *SCF: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 2
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                    All dipole components are zero by symmetry
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   Ag    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.75E+00
+   L   B1g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.42E+01
+   L   B2g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.42E+01
+   L   B3g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.42E+01
+   S   B3u   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.30E-02
+   S   B2u   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.30E-02
+   S   B1u   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.30E-02
+   S   Au    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.48E+00
+   L   B3u   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.10E+01
+   L   B2u   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.10E+01
+   L   B1u   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.10E+01
+   L   Au    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.42E+01
+   S   Ag    * Deleted:          3(Proj:          3, Lindep:          0) Smin: 0.12E+00
+   S   B1g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.29E+00
+   S   B2g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.29E+00
+   S   B3g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.29E+00
+
+
+                                Output from MODHAM
+                                ------------------
+
+ * All positronic solutions deleted !
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+                                   Irrep 1 Irrep 2   Sum
+No. of electronic orbitals (NESH):    14      15      29
+No. of positronic orbitals (NPSH):     0       0       0
+Total no. of orbitals      (NORB):    14      15      29
+
+ * Closing HDF5 checkpoint file 
+    - Required data set /result/wavefunctions/scf/energy is missing
+    - Required data set /result/wavefunctions/scf/mobasis/eigenvalues is missing
+    - Required data set /result/wavefunctions/scf/mobasis/n_basis is missing
+    - Required data set /result/wavefunctions/scf/mobasis/n_fsym is missing
+    - Required data set /result/wavefunctions/scf/mobasis/n_mo is missing
+    - Required data set /result/wavefunctions/scf/mobasis/nz is missing
+    - Required data set /result/wavefunctions/scf/mobasis/orbitals is missing
+    - Checkpoint file does not contains all required data, can not be used for restarts
+    - Checkpoint file closed
+
+*****************************************************
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+
+ 
+     Date and time (Linux)  : Wed Nov 25 14:28:48 2026
+     Host name              : lpqlx134                                
+
+>>>> Node 0, utime: 0, stime: 0, minflt: 4216, majflt: 0, nvcsw: 0, nivcsw: 0, maxrss: 33688
+>>>> Total WALL time used in DIRAC: 0s
+  
+  Dynamical Memory Usage Summary for Master
+  
+  Mean allocation size (Mb) :       130.33
+  
+  Largest          10  allocations
+  
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine __allocator_track_if_MOD_allocator_registe for PAMINP WORK array                         
+        0.62 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
+        0.31 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTREP in XPLDEF                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
+  
+  Peak memory usage:       488.90 MB
+  Peak memory usage:        0.477 GB
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
+              for variable   : buf in butobs                             
+  
+ MEMGET high-water mark:    0.00 MB
+
+*****************************************************
+DIRAC pam run in /tmp/claude-1000/-home-saue-Dirac/f2fd3fc1-f48c-445d-9c2c-7572f2297fb8/scratchpad/ref

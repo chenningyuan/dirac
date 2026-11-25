@@ -34,4 +34,15 @@ test.run(['lda.inp'], ['H2O.mol', 'CH4.mol', 'transCHFCHF.mol'], f)
 #               Mg(2+) and O(2-); wrong energy without any warning)
 test.run(['lda.inp'], ['CO_MgO_bridge.mol'], f)
 
+# Nov 2026: cubic and icosahedral point groups, symmetry detection only
+# (no wave function). Before, T, O, I were reported as T(d), Th as O(h);
+# I(h) molecules were represented in C2h (I in C2) instead of D2h (D2),
+# and for atoms in general positions the C5 axes were not found.
+f_sym = Filter()
+f_sym.add(from_string = 'SYMADD: Detection of molecular symmetry',
+          to_string='References for the basis sets',
+          rel_tolerance   = 1.0e-8,
+          ignore_sign=True)
+test.run(['symdetect.inp'], ['T.mol', 'Th.mol', 'O.mol', 'I.mol', 'B12H12.mol'], f_sym)
+
 sys.exit(test.return_code)

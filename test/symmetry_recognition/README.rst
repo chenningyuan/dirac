@@ -22,6 +22,11 @@ H2O               C(2v) ->  C2v
 SF6               O(h)  ->  D2h
 trans CHF=CHF     C(2h) ->  C2h
 CO_MgO_bridge     C(s)  ->  Cs
+T                 T     ->  D2
+Th                T(h)  ->  D2h
+O                 O     ->  D2
+I                 I     ->  D2
+B12H12            I(h)  ->  D2h
 ==============    =================
 
 ``CO_MgO_bridge`` tests that centres are only symmetry-related if their
@@ -35,5 +40,12 @@ charge. It models CO on an oxide surface with embedding point charges:
   number 0, and earlier versions found C(2v), imposing a mirror plane that
   swaps Mg(2+) and O(2-): the calculation ran without warning, but in the
   wrong field (energy off by 38 mEh).
+
+The cubic and icosahedral cases (``T``, ``Th``, ``O``, ``I``, ``B12H12``) only run
+the symmetry detection (``symdetect.inp``, no wave function).
+``T``, ``Th``, ``O`` and ``I`` are a carbon atom surrounded by hydrogens on the orbit
+of a general point, so no atom lies on a symmetry element. Earlier versions
+reported T, O and I as T(d) and Th as O(h); in ``I`` the C5 axes were not found;
+and icosahedral molecules were represented in C2 / C2h instead of D2 / D2h.
 
 Few more examples can be added here to demonstrate (and to test) the wider variety of symmetry detections.

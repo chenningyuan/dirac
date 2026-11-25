@@ -1193,8 +1193,18 @@ C        ... we count instead
       NTOT  = 0
 C 1) rotational axes
 chj Nov 2007: include both even and odd orders
-      IF (N_ROTAXS .EQ. 7 .AND. NINT(DRTAXS(4,1)) .EQ. 3) THEN
-      ! but for T(d) we do not want the highest rot. axis along z-axis
+C     ... count axes of order > 2: two or more means a cubic or
+C         icosahedral group (T, Td, Th, O, Oh, I, Ih)
+      N_HIGH = 0
+      DO I = 1, N_ROTAXS
+         IF (NINT(DRTAXS(4,I)) .GT. 2) N_HIGH = N_HIGH + 1
+      END DO
+      IF (N_HIGH .GE. 2 .AND. MOD(NINT(DRTAXS(4,1)),2) .EQ. 1) THEN
+      ! but for T, Td, Th (highest order 3) and I, Ih (highest order 5)
+      ! we do not want the highest rot. axis along the z-axis:
+      ! we want two perpendicular C2 axes along z and y (then x is a C2
+      ! axis too), so that the D2 (D2h) subgroup is used.
+      ! (Before Nov 2026 only T(d) was handled, I(h) became C2 (C2h).)
          XXX = 2.0D0 ! select only even-ordered rotations
       ELSE
          XXX = 1.0D0 ! select all rotation
@@ -1739,9 +1749,9 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include "mxcent.h"
       DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
       DIMENSION TMPARR(7,0:MXM)
-      DIMENSION V1(3), V2(3), V3(3), VSTORE(3)
+      DIMENSION V1(3), V2(3), V3(3), V4(3), VSTORE(3)
       DIMENSION ICNT(2), IUSED(MXCENT)
-      LOGICAL   ROTAXS, PROPER
+      LOGICAL   ROTAXS, PROPER, DO_V4, LCUBIC
 
       DRTAXS(1,0) = 0.0D0
       N_ATOMS = NINT(ATMARR(1,0))
@@ -1939,8 +1949,18 @@ C ::: products between themselves.                                      :::
 C ::: To be sure to get all the rotational axes in high order symmetry :::
 C ::: species, all sums and differences of rotational axes are tested  :::
 C ::: as well. Maximum order is the highest order among the axes.      :::
+C ::: Nov 2026: if two or more axes of order > 2 have been found      :::
+C ::: (cubic or icosahedral group), also the cross product of each     :::
+C ::: pair of axes is tested, and orders up to at least 5 are tested.  :::
+C ::: With all atoms in general positions in an icosahedral molecule,  :::
+C ::: the C5 axes were not found (I(h) was then reported as T(h));     :::
+C ::: each C5 axis is perpendicular to five C2 axes and is thus found  :::
+C ::: as a cross product. (Restricted to these groups so that nothing  :::
+C ::: changes for other molecules.)                                   :::
                      NAX = NINT(DRTAXS(1,0))
+                     CALL CUBAXS(DRTAXS, NAX, LCUBIC)
                      MXORDR = NINT(DRTAXS(4,1))
+                     IF (LCUBIC) MXORDR = MAX(5,MXORDR)
                      IF (NAX .GE. 2) THEN
                         K = 1
                         ICHANG = 0
@@ -1962,6 +1982,28 @@ C ::: as well. Maximum order is the highest order among the axes.      :::
      &                                     .LT. ZERTOL) V2(1) = 1.0D0
                              IF (V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3)
      &                                     .LT. ZERTOL) V3(1) = 1.0D0
+                             V4(1) =  V1(2)*DRTAXS(3,L)
+     &                              - DRTAXS(2,L)*V1(3)
+                             V4(2) = -V1(1)*DRTAXS(3,L)
+     &                              + DRTAXS(1,L)*V1(3)
+                             V4(3) =  V1(1)*DRTAXS(2,L)
+     &                              - DRTAXS(1,L)*V1(2)
+                             DO_V4 = LCUBIC .AND.
+     &                         V4(1)*V4(1)+V4(2)*V4(2)+V4(3)*V4(3)
+     &                               .GT. TOLLRN_2
+C                            ... only new directions (not parallel
+C                                to an axis already found)
+                             IF (DO_V4) THEN
+                                V4NRM = SQRT(V4(1)*V4(1)+V4(2)*V4(2)
+     &                                      +V4(3)*V4(3))
+                                DO JAX = 1, NINT(DRTAXS(1,0))
+                                   COSAX = (V4(1)*DRTAXS(1,JAX)
+     &                                    + V4(2)*DRTAXS(2,JAX)
+     &                                    + V4(3)*DRTAXS(3,JAX))/V4NRM
+                                   IF (ABS(ABS(COSAX)-1.0D0) .LT.
+     &                                 TOLLRN) DO_V4 = .FALSE.
+                                END DO
+                             END IF
                              DO M = MXORDR, MINORD, -1
                               IF (ROTAXS(MXM,ATMARR,TMPARR,M,V2,PROPER))
      &                           THEN
@@ -1975,6 +2017,13 @@ C ::: as well. Maximum order is the highest order among the axes.      :::
                                  CALL ADD2AR(MAXAXS, DRTAXS, M, V3)
                                  CALL DLDPAX(MAXAXS, DRTAXS)
                               END IF
+                              IF (DO_V4) THEN
+                              IF (ROTAXS(MXM,ATMARR,TMPARR,M,V4,PROPER))
+     &                           THEN
+                                 CALL ADD2AR(MAXAXS, DRTAXS, M, V4)
+                                 CALL DLDPAX(MAXAXS, DRTAXS)
+                              END IF
+                              END IF
                              END DO
                              IF(NAX .LT. NINT(DRTAXS(1,0))) ICHANG = 1
                              L = L + 1
@@ -1984,7 +2033,9 @@ C ::: as well. Maximum order is the highest order among the axes.      :::
                            IF (ICHANG .NE. 0) THEN
                               K = 1
                               NAX = NINT(DRTAXS(1,0))
+                              CALL CUBAXS(DRTAXS, NAX, LCUBIC)
                               MXORDR = NINT(DRTAXS(4,1))
+                              IF (LCUBIC) MXORDR = MAX(5,MXORDR)
                               ICHANG = 0
                            END IF
                            GOTO 175
@@ -2056,6 +2107,21 @@ CRF   Set I to first atom not in this equivalent set and repeat
       CALL SRTATM(MAXAXS, DRTAXS, .FALSE.) ! sort so highest order first
       RETURN
       END ! subroutine FINDAX
+C  /* Deck cubaxs */
+      SUBROUTINE CUBAXS(DRTAXS, NAX, LCUBIC)
+C ::: LCUBIC true if two or more of the first NAX axes in DRTAXS  :::
+C ::: have order > 2, i.e. possibly a cubic or icosahedral group  :::
+#include "implicit.h"
+#include "mxsymm.h"
+      DIMENSION DRTAXS(6,0:MAXAXS)
+      LOGICAL   LCUBIC
+      NHIGH = 0
+      DO I = 1, NAX
+         IF (NINT(DRTAXS(4,I)) .GT. 2) NHIGH = NHIGH + 1
+      END DO
+      LCUBIC = NHIGH .GE. 2
+      RETURN
+      END
 C  /* Deck fndima */
       SUBROUTINE FNDIMA(MXM, ATMARR, AXIMAR, AXARR, TMPARR)
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -2303,12 +2369,29 @@ C ::: We count rotational axes with order > 2 :::
             IF (NINT(DRTAXS(4,I)) .GT. 2) ITEMP = ITEMP + 1
  100     CONTINUE
          IF (ITEMP .GE. 2) THEN
-            IF (.NOT. INVMOL(MXM, ATMARR)) THEN
-               POINT_GROUP = 'T(d)'
-            ELSE IF (NINT(DRTAXS(4,1)) .EQ. 5) THEN
-               POINT_GROUP = 'I(h)'
+C ::: Cubic and icosahedral groups, classified by highest axis order, :::
+C ::: inversion centre, and (for order 3) mirror planes.              :::
+C ::: (Before Nov 2026 T, O, I were reported as T(d) and Th as O(h).) :::
+            IF (NINT(DRTAXS(4,1)) .EQ. 5) THEN
+               IF (INVMOL(MXM, ATMARR)) THEN
+                  POINT_GROUP = 'I(h)'
+               ELSE
+                  POINT_GROUP = 'I'
+               END IF
+            ELSE IF (NINT(DRTAXS(4,1)) .EQ. 4) THEN
+               IF (INVMOL(MXM, ATMARR)) THEN
+                  POINT_GROUP = 'O(h)'
+               ELSE
+                  POINT_GROUP = 'O'
+               END IF
             ELSE
-               POINT_GROUP = 'O(h)'
+               IF (INVMOL(MXM, ATMARR)) THEN
+                  POINT_GROUP = 'T(h)'
+               ELSE IF (NINT(DMRPLN(1,0)) .GT. 0) THEN
+                  POINT_GROUP = 'T(d)'
+               ELSE
+                  POINT_GROUP = 'T'
+               END IF
             END IF
          ELSE IF (NINT(DRTAXS(1,0)) .EQ. 0) THEN
             ! no rotation axis

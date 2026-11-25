@@ -1,0 +1,1842 @@
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+
+Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
+
+ *******************************************************************************
+ *                                                                             *
+ *                                O U T P U T                                  *
+ *                                   from                                      *
+ *                                                                             *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                    *
+ *                   @@  @@        @@  @@   @@  @@   @@                        *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                        *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                        *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                    *
+ *                                                                             *
+ *                                                                             *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:%
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::$
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::(
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:$
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.S
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::S
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::?
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.S
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.(
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/$
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:iS
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::c
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::S
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::$
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::$
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::(
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:Z
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|(
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||S
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:$
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::%
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:$
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::$
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/)
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii$
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////$
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/Z
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::$
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::&
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/=
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|$
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>M
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:M
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%M
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;M
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<SM
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$SM
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<M
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></M
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&M
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SFM
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]ZkM
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&M
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&M
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&FM
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&M
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6M
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969kM
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&M
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1M
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&M
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9ZM
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6M
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][FM
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&M
+ *******************************************************************************
+ *                                                                             *
+ *         =========================================================           *
+ *                     Program for Atomic and Molecular                        *
+ *          Direct Iterative Relativistic All-electron Calculations            *
+ *         =========================================================           *
+ *                                                                             *
+ *                                                                             *
+ *    Written by:                                                              *
+ *                                                                             *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *    Trond Saue               Universite Toulouse III           France        *
+ *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *                                                                             *
+ *    with contributions from:                                                 *
+ *                                                                             *
+ *    Minori Abe               Tokyo Uni. of Agriculture & Tech. Japan         *
+ *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
+ *    Juan Jose Aucar          CONICET/Northeastern University   Argentina     *
+ *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Jan Brandejs             Universite Toulouse III           France        *
+ *    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joel Creutzberg          University of Southern Denmark    Denmark       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
+ *    Sebastien Dubillard      University of Strasbourg          France        *
+ *    Ulf Ekstroem             University of Oslo                Norway        *
+ *    Ephraim Eliav            University of Tel Aviv            Israel        *
+ *    Gabriele Fabbro          Universite Toulouse III           France        *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
+ *    Elke Fasshauer           University of Tubingen            Germany       *
+ *    Timo Fleig               Universite Toulouse III           France        *
+ *    Olav Fossgaard           UiT The Arctic University of      Norway        *
+ *    Konstantin J. Gaul       Helmholtz Institute Mainz         Germany       *
+ *    Loic Halbert             Universite de Lille               France        *
+ *    Erik D. Hedegaard        University of Southern Denmark    Denmark       *
+ *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
+ *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Martin van Horn          Universite Toulouse III           France        *
+ *    Miroslav Ilias           Matej Bel University              Slovakia      *
+ *    Sumika Iwamuro           NTT Data Group Corp.              Japan         *
+ *    Christoph R. Jacob       TU Braunschweig                   Germany       *
+ *    Stefan Knecht            Algorithmiq Ltd / ETH Zuerich     Finland/CH    *
+ *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
+ *    Ossama Kullie            University of Kassel              Germany       *
+ *    Jon K. Laerdahl          University of Oslo                Norway        *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
+ *    Ernst D. Larsson         University of Southern Denmark    Denmark       *
+ *    Maxime Le                Universite de Lille               France        *
+ *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Thomas Lejeune           Universite Paris Saclay           France        *
+ *    Nanna Holmgaard List     Stockholm Inst. of Technology     Sweden        *
+ *    Yasuto Masuda            Hiroshima University              Japan         *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
+ *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
+ *    Kohei Noda               Saver Corp.                       Japan         *
+ *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
+ *    Andreas Nyvang           Aarhus University                 Denmark       *
+ *    Malgorzata Olejniczak    University of Warsaw              Poland        *
+ *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Anastasios Papadopoulos  Max Planck Institute f. Coal Res. Germany       *
+ *    Young Choon Park         KAIST, Daejeon                    South Korea   *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
+ *    Markus Pernpointner      University of Heidelberg          Germany       *
+ *    Johann V. Pototschnig    Technical University Graz         Austria       *
+ *    Roberto Di Remigio Eikas Algorithmiq Ltd                   Finland       *
+ *    Michal Repisky           UiT & Comenius University         Norway/SK     *
+ *    Carlos M. R. Rocha       Netherlands eScience Center       Netherlands   *
+ *    Kenneth Ruud             UiT The Arctic University of      Norway        *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
+ *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
+ *    Bruno Senjean            CNRS/Universite de Montpellier    France        *
+ *    Avijit Shee              University of Berkeley            USA           *
+ *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Ayaki Sunaga             Kyoto University                  Japan         *
+ *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
+ *    Joern Thyssen            University of Southern Denmark    Denmark       *
+ *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
+ *    Marta L. Vidal           Cardiff University                UK            *
+ *    Sebastien Villaume       Linkoeping University             Sweden        *
+ *    Olivier Visser           University of Groningen           Netherlands   *
+ *    Lasse K. Sorensen        University of Southern Denmark    Denmark       *
+ *    Toke Winther             University of Southern Denmark    Denmark       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *    Xiang Yuan               Universite de Lille               France        *
+ *                                                                             *
+ *    For more information about the DIRAC code see http://diracprogram.org    *
+ *                                                                             *
+ *    This is an experimental code. The authors accept no responsibility       *
+ *    for the performance of the code or for the correctness of the results.   *
+ *                                                                             *
+ *    This program is free software; you can redistribute it and/or            *
+ *    modify it under the terms of the GNU Lesser General Public               *
+ *    License version 2.1 as published by the Free Software Foundation.        *
+ *                                                                             *
+ *    If results obtained with this code are published, an                     *
+ *    appropriate citation would be:                                           *
+ *                                                                             *
+ *    DIRAC, a relativistic ab initio electronic structure program,            *
+ *    Release DIRAC26.1 (2026), written by                                     *
+ *    A. S. P. Gomes, T. Saue, L. Visscher, H. J. Aa. Jensen, and R. Bast      *
+ *    with contributions from M. Abe, I. A. Aucar, J. J. Aucar, V. Bakken,     *
+ *    J. Brandejs, C. Chibueze, J. Creutzberg, K. G. Dyall, S. Dubillard,      *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, G. Fabbro, E. Fasshauer, T. Fleig, *
+ *    O. Fossgaard, K. J. Gaul, L. Halbert, E. D. Hedegaard, T. Helgaker,      *
+ *    B. Helmich-Paris, J. Henriksson, M. van Horn, M. Ilias, S. Iwamuro,      *
+ *    Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie, J. K. Laerdahl,       *
+ *    C. V. Larsen, E.D Laersson, M. Le, Y. S. Lee, T. Lejeune, N. H. List,    *
+ *    Y. Masuda, H. S. Nataraj, M. K. Nayak, K. Noda, P. Norman, A. Nyvang,    *
+ *    M. Olejniczak, J. Olsen, J. M. H. Olsen, A. Papadopoulos, Y. C. Park,    *
+ *    J. K. Pedersen, M. Pernpointner, J. V. Pototschnig, R. Di Remigio Eikas, *
+ *    M. Repisky, C. M. R. Rocha, K. Ruud, P. Salek, B. Schimmelpfennig,       *
+ *    B. Senjean, A. Shee, J. Sikkema, A. Sunaga, A. J. Thorvaldsen,           *
+ *    J. Thyssen, J. N. P. van Stralen, M. L. Vidal, S. Villaume,              *
+ *    O. Visser, L. K. Sorensen, T. Winther, S. Yamamoto and X. Yuan           *
+ *    (see http://diracprogram.org).                                           *
+ *                                                                             *
+ *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104         *
+ *                                    https://doi.org/10.1063/5.0004844        *
+ *                                                                             *
+ *******************************************************************************
+
+
+Version information
+-------------------
+
+Branch        | master
+Commit hash   | 61d4a7d4b-dirty
+Commit author | Lucas Visscher
+Commit date   | Wed Nov 25 08:32:30 2026 +0100
+
+
+Configuration and build information
+-----------------------------------
+
+Who compiled             | saue
+Compiled on server       | lpqlx134
+Operating system         | Linux-7.0.0-44-generic
+CMake version            | 4.2.3
+CMake generator          | Unix Makefiles
+CMake build type         | release
+Configuration time       | 2026-11-25 13:00:34.400361+00:00
+Fortran compiler         | /usr/bin/gfortran
+Fortran compiler version | 15.2.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -ffree-line-length-none -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto
+C compiler               | /usr/bin/gcc
+C compiler version       | 15.2.0
+C compiler flags         |  -g -fopenmp -fno-lto
+C++ compiler             | /usr/bin/g++
+C++ compiler version     | 15.2.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto
+Static linking           | False
+64-bit integers          | False
+MPI parallelization      | False
+MPI launcher             | unknown
+Math libraries           | /usr/lib/x86_64-linux-gnu/libopenblas.so;/usr/lib/x86_64-linux-gnu/libopenblas.so
+Builtin BLAS library     | OFF
+Builtin LAPACK library   | OFF
+Explicit libraries       | unknown
+Compile definitions      | HAVE_OPENBLAS_BLAS;HAVE_OPENBLAS_LAPACK;HAVE_OPENMP;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT
+
+EXACORR dependencies
+--------------------
+Exatensor source repo    | unknown
+Exatensor git hash       | unknown
+Exatensor configuration  | unknown
+
+
+ LAPACK integer*4/8 selftest passed
+ Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+
+Execution time and host
+-----------------------
+
+ 
+     Date and time (Linux)  : Wed Nov 25 14:28:49 2026
+     Host name              : lpqlx134                                
+
+ * Opening checkpoint file 
+    - New checkpoint file created
+
+
+Contents of the input file
+--------------------------
+
+**DIRAC                                                                                             
+**HAMILTONIAN                                                                                       
+.LEVY-LEBLOND                                                                                       
+**WAVE FUNCTION                                                                                     
+*END OF                                                                                             
+
+
+Contents of the molecule file
+-----------------------------
+
+INTGRL                                                                                              
+I symmetry: central C, 60 H atoms                                                                   
+H atoms on the orbit of a general point under the I rotations                                       
+C   2                                                                                               
+        6.    1                                                                                     
+C     0.0  0.0  0.0                                                                                 
+LARGE BASIS STO-3G                                                                                  
+        1.  60                                                                                      
+H1         1.110741047702      2.758937441065      6.915258780852                                   
+H2         1.568839974277      4.415009588257      5.891749906066                                   
+H3         6.915258780852      1.110741047702      2.758937441065                                   
+H4        -0.141144620689      5.297373842354      5.346418806576                                   
+H5         2.617792820376      7.002490953768     -0.882364254097                                   
+H6         5.891749906066      1.568839974277      4.415009588257                                   
+H7         2.758937441065      6.915258780852      1.110741047702                                   
+H8        -1.656072147192      4.186632794653      6.032894526755                                   
+H9        -5.297373842354      5.346418806576      0.141144620689                                   
+H10       -4.186632794653      6.032894526755      1.656072147192                                   
+H11        5.346418806576     -0.141144620689      5.297373842354                                   
+H12       -0.882364254097      2.617792820376      7.002490953768                                   
+H13        4.415009588257      5.891749906066      1.568839974277                                   
+H14       -5.891749906066     -1.568839974277      4.415009588257                                   
+H15       -5.346418806576      0.141144620689      5.297373842354                                   
+H16       -2.617792820376      7.002490953768      0.882364254097                                   
+H17        6.032894526755     -1.656072147192      4.186632794653                                   
+H18        0.141144620689     -5.297373842354      5.346418806576                                   
+H19        1.656072147192     -4.186632794653      6.032894526755                                   
+H20        5.297373842354      5.346418806576     -0.141144620689                                   
+H21        7.002490953768     -0.882364254097      2.617792820376                                   
+H22        0.882364254097     -2.617792820376      7.002490953768                                   
+H23       -6.032894526755      1.656072147192      4.186632794653                                   
+H24       -2.758937441065      6.915258780852     -1.110741047702                                   
+H25        4.186632794653      6.032894526755     -1.656072147192                                   
+H26        4.415009588257     -5.891749906066     -1.568839974277                                   
+H27        5.297373842354     -5.346418806576      0.141144620689                                   
+H28        5.346418806576      0.141144620689     -5.297373842354                                   
+H29        6.032894526755      1.656072147192     -4.186632794653                                   
+H30       -1.110741047702     -2.758937441065      6.915258780852                                   
+H31       -7.002490953768      0.882364254097      2.617792820376                                   
+H32       -4.415009588257      5.891749906066     -1.568839974277                                   
+H33       -1.110741047702      2.758937441065     -6.915258780852                                   
+H34       -1.568839974277      4.415009588257     -5.891749906066                                   
+H35        7.002490953768      0.882364254097     -2.617792820376                                   
+H36        4.186632794653     -6.032894526755      1.656072147192                                   
+H37        0.141144620689      5.297373842354     -5.346418806576                                   
+H38       -1.568839974277     -4.415009588257      5.891749906066                                   
+H39       -6.915258780852     -1.110741047702      2.758937441065                                   
+H40       -6.032894526755     -1.656072147192     -4.186632794653                                   
+H41       -7.002490953768     -0.882364254097     -2.617792820376                                   
+H42       -6.915258780852      1.110741047702     -2.758937441065                                   
+H43        6.915258780852     -1.110741047702     -2.758937441065                                   
+H44        2.617792820376     -7.002490953768      0.882364254097                                   
+H45        1.656072147192      4.186632794653     -6.032894526755                                   
+H46       -2.617792820376     -7.002490953768     -0.882364254097                                   
+H47       -2.758937441065     -6.915258780852      1.110741047702                                   
+H48       -4.415009588257     -5.891749906066      1.568839974277                                   
+H49       -5.891749906066      1.568839974277     -4.415009588257                                   
+H50        5.891749906066     -1.568839974277     -4.415009588257                                   
+H51        2.758937441065     -6.915258780852     -1.110741047702                                   
+H52       -4.186632794653     -6.032894526755     -1.656072147192                                   
+H53        0.882364254097      2.617792820376     -7.002490953768                                   
+H54       -5.297373842354     -5.346418806576     -0.141144620689                                   
+H55       -5.346418806576     -0.141144620689     -5.297373842354                                   
+H56       -0.882364254097     -2.617792820376     -7.002490953768                                   
+H57        1.110741047702     -2.758937441065     -6.915258780852                                   
+H58        1.568839974277     -4.415009588257     -5.891749906066                                   
+H59       -1.656072147192     -4.186632794653     -6.032894526755                                   
+H60       -0.141144620689     -5.297373842354     -5.346418806576                                   
+LARGE BASIS STO-3G                                                                                  
+FINISH                                                                                              
+
+
+    *************************************************************************
+    ********************* DIRAC: No title specified !!! *********************
+    *************************************************************************
+
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 2022  
+     Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor    
+         Reviews of Modern Physics, Vol. 97, 025002 (2025)                
+ * The speed of light :        137.035999177
+ * Running in four-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+
+   ***************************************************************************
+   ****************** Output from MOLECULE input processing ******************
+   ***************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  I symmetry: central C, 60 H atoms                                       
+  H atoms on the orbit of a general point under the I rotations           
+  Nuclear Gaussian exponent for atom of charge    6.000 :     6.8077493034D+08   (using mass   12.0)
+  Nuclear Gaussian exponent for atom of charge    1.000 :     2.1248236082D+09   (using mass    1.0)
+
+
+                     SYMADD: Detection of molecular symmetry
+                     ---------------------------------------
+
+ Symmetry test threshold:  5.00E-06
+
+    The molecule has been centered at center of mass.
+
+ Symmetry point group found: I              
+
+ Rotational Axes
+ ---------------
+       5 :      0.85065081    -0.52573111    -0.00000000  Isotope  0
+       5 :      0.52573111     0.00000000     0.85065081  Isotope  0
+       5 :     -0.00000000     0.85065081    -0.52573111  Isotope  0
+       5 :     -0.00000000    -0.85065081    -0.52573111  Isotope  0
+       5 :     -0.52573111     0.00000000     0.85065081  Isotope  0
+       5 :     -0.85065081    -0.52573111    -0.00000000  Isotope  0
+       3 :      0.93417236    -0.00000000    -0.35682209  Isotope  0
+       3 :      0.57735027    -0.57735027     0.57735027  Isotope  0
+       3 :     -0.57735027    -0.57735027    -0.57735027  Isotope  0
+       3 :     -0.00000000    -0.35682209    -0.93417236  Isotope  0
+       3 :      0.57735027     0.57735027    -0.57735027  Isotope  0
+       3 :      0.35682209    -0.93417236    -0.00000000  Isotope  0
+       3 :      0.35682209     0.93417236    -0.00000000  Isotope  0
+       3 :      0.93417236     0.00000000     0.35682209  Isotope  0
+       3 :     -0.00000000     0.35682209    -0.93417236  Isotope  0
+       3 :      0.57735027    -0.57735027    -0.57735027  Isotope  0
+       2 :     -0.00000000     0.00000000     1.00000000  Isotope  0
+       2 :     -0.50000000     0.80901699    -0.30901699  Isotope  0
+       2 :     -0.50000000     0.80901699     0.30901699  Isotope  0
+       2 :      0.30901699    -0.50000000    -0.80901699  Isotope  0
+       2 :     -0.30901699     0.50000000    -0.80901699  Isotope  0
+       2 :     -0.30901699    -0.50000000     0.80901699  Isotope  0
+       2 :      0.30901699     0.50000000     0.80901699  Isotope  0
+       2 :      0.80901699     0.30901699     0.50000000  Isotope  0
+       2 :     -0.80901699     0.30901699    -0.50000000  Isotope  0
+       2 :     -0.80901699     0.30901699     0.50000000  Isotope  0
+       2 :     -0.00000000     1.00000000    -0.00000000  Isotope  0
+       2 :      0.80901699     0.30901699    -0.50000000  Isotope  0
+       2 :     -1.00000000     0.00000000     0.00000000  Isotope  0
+       2 :      0.50000000     0.80901699     0.30901699  Isotope  0
+       2 :     -0.50000000    -0.80901699     0.30901699  Isotope  0
+
+ Due to number of improper rotational axes, they were not determined.
+
+ No mirror planes were found.
+
+ The following symmetry elements were found: YZ XZ XY 
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 2
+
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Full group is:  I              
+Represented as: D2 
+
+   * The point group was generated by:
+
+      Rotation about the x-axis
+      Rotation about the y-axis
+
+   * Group multiplication table
+
+        |  E   C2z  C2y  C2x
+   -----+--------------------
+     E  |  E   C2z  C2y  C2x
+    C2z | C2z   E   C2x  C2y
+    C2y | C2y  C2x   E   C2z
+    C2x | C2x  C2y  C2z   E 
+
+   * Character table
+
+        |  E   C2z  C2y  C2x
+   -----+--------------------
+    A   |   1    1    1    1
+    B2  |   1   -1    1   -1
+    B3  |   1   -1   -1    1
+    B1  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A    B2   B3   B1 
+   -----+--------------------
+    A   | A    B2   B3   B1 
+    B2  | B2   A    B1   B3 
+    B3  | B3   B1   A    B2 
+    B1  | B1   B3   B2   A  
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * One fermion irrep:   E1 
+   * Real group. NZ = 1
+   * Direct product decomposition:
+          E1  x E1  : A   + B1  + B2  + B3 
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1
+      La  |  A  (1)  B1 (2)  |
+      Sa  |  A  (1)  B1 (2)  |
+      Lb  |  B2 (3)  B3 (4)  |
+      Sb  |  B2 (3)  B3 (4)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    A    1
+    B2   j
+    B3   k
+    B1   i
+
+  Nuclear repulsion energy                       :    263.712879889221 Hartree
+
+  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000    0.000000000000 a.u.;  origin (0,0,0)
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:   61
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  C           1       6      15       5      L  - [6s3p|2s1p]                                                    
+                             39      39      S  - [3s6p3d|3s6p3d]                                                
+  H54        60       1       3       1      L  - [3s|1s]                                                        
+                              9       9      S  - [3p|3p]                                                        
+  ----------------------------------------------------------------------
+                            195      65      L  - large components
+                            579     579      S  - small components
+  ----------------------------------------------------------------------
+  total:     61      66     774     644
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1   2
+   Elements      Contraction                       References                     
+   H - He: (3s)         -> [1s]       W.J. Hehre, R.F. Stewart and J.A. Pople,    
+   Li - Ne: (6s,3p)     -> [2s,1p]    J. Chem. Phys. 2657 (1969).                 
+   Na - Ar: (9s,6p)     -> [3s,2p]    W.J. Hehre, R. Ditchfield, R.F. Stewart,    
+                                      J.A. Pople, J. Chem. Phys.  2769 (1970).    
+   K,Ca - : (12s,9p)    -> [4s,3p]    W.J. Pietro, B.A. Levy, W.J. Hehre and R.F. 
+   Ga - Kr                            Stewart, Inorg. Chem. 19, 2225 (1980).      
+   Sc - Zn: (12s,9p,3d) -> [4s,3p,1d] W.J. Pietro and W.J. Hehre, J. Comp. Chem.  
+   Y - Cd: (15s,12p,6d) -> [5s,4p,2d] 4, 241 (1983).                              
+  ***********************************************************************         
+
+
+  Cartesian Coordinates (bohr)
+  ----------------------------
+
+  Total number of coordinates:183
+
+
+   C           0.0000000000   0.0000000000   0.0000000000
+   H18 /1      6.0328945268   4.1866327947   1.6560721472
+   H18 /2      6.0328945268  -4.1866327947  -1.6560721472
+   H18 /3     -6.0328945268   4.1866327947  -1.6560721472
+   H18 /4     -6.0328945268  -4.1866327947   1.6560721472
+   H19 /1      7.0024909538   2.6177928204   0.8823642541
+   H19 /2      7.0024909538  -2.6177928204  -0.8823642541
+   H19 /3     -7.0024909538   2.6177928204  -0.8823642541
+   H19 /4     -7.0024909538  -2.6177928204   0.8823642541
+   H22 /1      6.9152587809   2.7589374411  -1.1107410477
+   H22 /2      6.9152587809  -2.7589374411   1.1107410477
+   H22 /3     -6.9152587809   2.7589374411   1.1107410477
+   H22 /4     -6.9152587809  -2.7589374411  -1.1107410477
+   H26 /1      2.7589374411  -1.1107410477   6.9152587809
+   H26 /2      2.7589374411   1.1107410477  -6.9152587809
+   H26 /3     -2.7589374411  -1.1107410477  -6.9152587809
+   H26 /4     -2.7589374411   1.1107410477   6.9152587809
+   H27 /1      4.4150095883  -1.5688399743   5.8917499061
+   H27 /2      4.4150095883   1.5688399743  -5.8917499061
+   H27 /3     -4.4150095883  -1.5688399743  -5.8917499061
+   H27 /4     -4.4150095883   1.5688399743   5.8917499061
+   H30 /1      5.8917499061   4.4150095883  -1.5688399743
+   H30 /2      5.8917499061  -4.4150095883   1.5688399743
+   H30 /3     -5.8917499061   4.4150095883   1.5688399743
+   H30 /4     -5.8917499061  -4.4150095883  -1.5688399743
+   H36 /1      5.2973738424   0.1411446207   5.3464188066
+   H36 /2      5.2973738424  -0.1411446207  -5.3464188066
+   H36 /3     -5.2973738424   0.1411446207  -5.3464188066
+   H36 /4     -5.2973738424  -0.1411446207   5.3464188066
+   H38 /1      5.3464188066   5.2973738424   0.1411446207
+   H38 /2      5.3464188066  -5.2973738424  -0.1411446207
+   H38 /3     -5.3464188066   5.2973738424  -0.1411446207
+   H38 /4     -5.3464188066  -5.2973738424   0.1411446207
+   H44 /1      4.1866327947   1.6560721472   6.0328945268
+   H44 /2      4.1866327947  -1.6560721472  -6.0328945268
+   H44 /3     -4.1866327947   1.6560721472  -6.0328945268
+   H44 /4     -4.1866327947  -1.6560721472   6.0328945268
+   H46 /1      0.1411446207   5.3464188066   5.2973738424
+   H46 /2      0.1411446207  -5.3464188066  -5.2973738424
+   H46 /3     -0.1411446207   5.3464188066  -5.2973738424
+   H46 /4     -0.1411446207  -5.3464188066   5.2973738424
+   H47 /1      1.6560721472   6.0328945268   4.1866327947
+   H47 /2      1.6560721472  -6.0328945268  -4.1866327947
+   H47 /3     -1.6560721472   6.0328945268  -4.1866327947
+   H47 /4     -1.6560721472  -6.0328945268   4.1866327947
+   H48 /1      0.8823642541   7.0024909538   2.6177928204
+   H48 /2      0.8823642541  -7.0024909538  -2.6177928204
+   H48 /3     -0.8823642541   7.0024909538  -2.6177928204
+   H48 /4     -0.8823642541  -7.0024909538   2.6177928204
+   H51 /1      2.6177928204   0.8823642541   7.0024909538
+   H51 /2      2.6177928204  -0.8823642541  -7.0024909538
+   H51 /3     -2.6177928204   0.8823642541  -7.0024909538
+   H51 /4     -2.6177928204  -0.8823642541   7.0024909538
+   H52 /1     -1.5688399743   5.8917499061   4.4150095883
+   H52 /2     -1.5688399743  -5.8917499061  -4.4150095883
+   H52 /3      1.5688399743   5.8917499061  -4.4150095883
+   H52 /4      1.5688399743  -5.8917499061   4.4150095883
+   H54 /1     -1.1107410477   6.9152587809   2.7589374411
+   H54 /2     -1.1107410477  -6.9152587809  -2.7589374411
+   H54 /3      1.1107410477   6.9152587809  -2.7589374411
+   H54 /4      1.1107410477  -6.9152587809   2.7589374411
+
+
+  Cartesian coordinates in XYZ format (Angstrom)
+  ----------------------------------------------
+
+   61
+
+C      0.0000000000   0.0000000000   0.0000000000
+H18    3.1924702972   2.2154706638   0.8763556393
+H18    3.1924702972  -2.2154706638  -0.8763556393
+H18   -3.1924702972   2.2154706638  -0.8763556393
+H18   -3.1924702972  -2.2154706638   0.8763556393
+H19    3.7055586298   1.3852763025   0.4669270547
+H19    3.7055586298  -1.3852763025  -0.4669270547
+H19   -3.7055586298   1.3852763025  -0.4669270547
+H19   -3.7055586298  -1.3852763025   0.4669270547
+H22    3.6593973518   1.4599668191  -0.5877788493
+H22    3.6593973518  -1.4599668191   0.5877788493
+H22   -3.6593973518   1.4599668191   0.5877788493
+H22   -3.6593973518  -1.4599668191  -0.5877788493
+H26    1.4599668191  -0.5877788493   3.6593973518
+H26    1.4599668191   0.5877788493  -3.6593973518
+H26   -1.4599668191  -0.5877788493  -3.6593973518
+H26   -1.4599668191   0.5877788493   3.6593973518
+H27    2.3363224584  -0.8301943614   3.1177797805
+H27    2.3363224584   0.8301943614  -3.1177797805
+H27   -2.3363224584  -0.8301943614  -3.1177797805
+H27   -2.3363224584   0.8301943614   3.1177797805
+H30    3.1177797805   2.3363224584  -0.8301943614
+H30    3.1177797805  -2.3363224584   0.8301943614
+H30   -3.1177797805   2.3363224584   0.8301943614
+H30   -3.1177797805  -2.3363224584  -0.8301943614
+H36    2.8032495131   0.0746905167   2.8292029905
+H36    2.8032495131  -0.0746905167  -2.8292029905
+H36   -2.8032495131   0.0746905167  -2.8292029905
+H36   -2.8032495131  -0.0746905167   2.8292029905
+H38    2.8292029905   2.8032495131   0.0746905167
+H38    2.8292029905  -2.8032495131  -0.0746905167
+H38   -2.8292029905   2.8032495131  -0.0746905167
+H38   -2.8292029905  -2.8032495131   0.0746905167
+H44    2.2154706638   0.8763556393   3.1924702972
+H44    2.2154706638  -0.8763556393  -3.1924702972
+H44   -2.2154706638   0.8763556393  -3.1924702972
+H44   -2.2154706638  -0.8763556393   3.1924702972
+H46    0.0746905167   2.8292029905   2.8032495131
+H46    0.0746905167  -2.8292029905  -2.8032495131
+H46   -0.0746905167   2.8292029905  -2.8032495131
+H46   -0.0746905167  -2.8292029905   2.8032495131
+H47    0.8763556393   3.1924702972   2.2154706638
+H47    0.8763556393  -3.1924702972  -2.2154706638
+H47   -0.8763556393   3.1924702972  -2.2154706638
+H47   -0.8763556393  -3.1924702972   2.2154706638
+H48    0.4669270547   3.7055586298   1.3852763025
+H48    0.4669270547  -3.7055586298  -1.3852763025
+H48   -0.4669270547   3.7055586298  -1.3852763025
+H48   -0.4669270547  -3.7055586298   1.3852763025
+H51    1.3852763025   0.4669270547   3.7055586298
+H51    1.3852763025  -0.4669270547  -3.7055586298
+H51   -1.3852763025   0.4669270547  -3.7055586298
+H51   -1.3852763025  -0.4669270547   3.7055586298
+H52   -0.8301943614   3.1177797805   2.3363224584
+H52   -0.8301943614  -3.1177797805  -2.3363224584
+H52    0.8301943614   3.1177797805  -2.3363224584
+H52    0.8301943614  -3.1177797805   2.3363224584
+H54   -0.5877788493   3.6593973518   1.4599668191
+H54   -0.5877788493  -3.6593973518  -1.4599668191
+H54    0.5877788493   3.6593973518  -1.4599668191
+H54    0.5877788493  -3.6593973518   1.4599668191
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:    45   46   46   46
+
+
+  Symmetry  A  ( 1)
+
+    1   H18   x    [  4  +    7  -   10  -   13 ]/4
+    2   H18   y    [  5  -    8  +   11  -   14 ]/4
+    3   H18   z    [  6  -    9  -   12  +   15 ]/4
+    4   H19   x    [ 16  +   19  -   22  -   25 ]/4
+    5   H19   y    [ 17  -   20  +   23  -   26 ]/4
+    6   H19   z    [ 18  -   21  -   24  +   27 ]/4
+    7   H22   x    [ 28  +   31  -   34  -   37 ]/4
+    8   H22   y    [ 29  -   32  +   35  -   38 ]/4
+    9   H22   z    [ 30  -   33  -   36  +   39 ]/4
+   10   H26   x    [ 40  +   43  -   46  -   49 ]/4
+   11   H26   y    [ 41  -   44  +   47  -   50 ]/4
+   12   H26   z    [ 42  -   45  -   48  +   51 ]/4
+   13   H27   x    [ 52  +   55  -   58  -   61 ]/4
+   14   H27   y    [ 53  -   56  +   59  -   62 ]/4
+   15   H27   z    [ 54  -   57  -   60  +   63 ]/4
+   16   H30   x    [ 64  +   67  -   70  -   73 ]/4
+   17   H30   y    [ 65  -   68  +   71  -   74 ]/4
+   18   H30   z    [ 66  -   69  -   72  +   75 ]/4
+   19   H36   x    [ 76  +   79  -   82  -   85 ]/4
+   20   H36   y    [ 77  -   80  +   83  -   86 ]/4
+   21   H36   z    [ 78  -   81  -   84  +   87 ]/4
+   22   H38   x    [ 88  +   91  -   94  -   97 ]/4
+   23   H38   y    [ 89  -   92  +   95  -   98 ]/4
+   24   H38   z    [ 90  -   93  -   96  +   99 ]/4
+   25   H44   x    [100  +  103  -  106  -  109 ]/4
+   26   H44   y    [101  -  104  +  107  -  110 ]/4
+   27   H44   z    [102  -  105  -  108  +  111 ]/4
+   28   H46   x    [112  +  115  -  118  -  121 ]/4
+   29   H46   y    [113  -  116  +  119  -  122 ]/4
+   30   H46   z    [114  -  117  -  120  +  123 ]/4
+   31   H47   x    [124  +  127  -  130  -  133 ]/4
+   32   H47   y    [125  -  128  +  131  -  134 ]/4
+   33   H47   z    [126  -  129  -  132  +  135 ]/4
+   34   H48   x    [136  +  139  -  142  -  145 ]/4
+   35   H48   y    [137  -  140  +  143  -  146 ]/4
+   36   H48   z    [138  -  141  -  144  +  147 ]/4
+   37   H51   x    [148  +  151  -  154  -  157 ]/4
+   38   H51   y    [149  -  152  +  155  -  158 ]/4
+   39   H51   z    [150  -  153  -  156  +  159 ]/4
+   40   H52   x    [160  +  163  -  166  -  169 ]/4
+   41   H52   y    [161  -  164  +  167  -  170 ]/4
+   42   H52   z    [162  -  165  -  168  +  171 ]/4
+   43   H54   x    [172  +  175  -  178  -  181 ]/4
+   44   H54   y    [173  -  176  +  179  -  182 ]/4
+   45   H54   z    [174  -  177  -  180  +  183 ]/4
+
+
+  Symmetry  B2 ( 2)
+
+   46   C     y    2
+   47   H18   x    [  4  -    7  -   10  +   13 ]/4
+   48   H18   y    [  5  +    8  +   11  +   14 ]/4
+   49   H18   z    [  6  +    9  -   12  -   15 ]/4
+   50   H19   x    [ 16  -   19  -   22  +   25 ]/4
+   51   H19   y    [ 17  +   20  +   23  +   26 ]/4
+   52   H19   z    [ 18  +   21  -   24  -   27 ]/4
+   53   H22   x    [ 28  -   31  -   34  +   37 ]/4
+   54   H22   y    [ 29  +   32  +   35  +   38 ]/4
+   55   H22   z    [ 30  +   33  -   36  -   39 ]/4
+   56   H26   x    [ 40  -   43  -   46  +   49 ]/4
+   57   H26   y    [ 41  +   44  +   47  +   50 ]/4
+   58   H26   z    [ 42  +   45  -   48  -   51 ]/4
+   59   H27   x    [ 52  -   55  -   58  +   61 ]/4
+   60   H27   y    [ 53  +   56  +   59  +   62 ]/4
+   61   H27   z    [ 54  +   57  -   60  -   63 ]/4
+   62   H30   x    [ 64  -   67  -   70  +   73 ]/4
+   63   H30   y    [ 65  +   68  +   71  +   74 ]/4
+   64   H30   z    [ 66  +   69  -   72  -   75 ]/4
+   65   H36   x    [ 76  -   79  -   82  +   85 ]/4
+   66   H36   y    [ 77  +   80  +   83  +   86 ]/4
+   67   H36   z    [ 78  +   81  -   84  -   87 ]/4
+   68   H38   x    [ 88  -   91  -   94  +   97 ]/4
+   69   H38   y    [ 89  +   92  +   95  +   98 ]/4
+   70   H38   z    [ 90  +   93  -   96  -   99 ]/4
+   71   H44   x    [100  -  103  -  106  +  109 ]/4
+   72   H44   y    [101  +  104  +  107  +  110 ]/4
+   73   H44   z    [102  +  105  -  108  -  111 ]/4
+   74   H46   x    [112  -  115  -  118  +  121 ]/4
+   75   H46   y    [113  +  116  +  119  +  122 ]/4
+   76   H46   z    [114  +  117  -  120  -  123 ]/4
+   77   H47   x    [124  -  127  -  130  +  133 ]/4
+   78   H47   y    [125  +  128  +  131  +  134 ]/4
+   79   H47   z    [126  +  129  -  132  -  135 ]/4
+   80   H48   x    [136  -  139  -  142  +  145 ]/4
+   81   H48   y    [137  +  140  +  143  +  146 ]/4
+   82   H48   z    [138  +  141  -  144  -  147 ]/4
+   83   H51   x    [148  -  151  -  154  +  157 ]/4
+   84   H51   y    [149  +  152  +  155  +  158 ]/4
+   85   H51   z    [150  +  153  -  156  -  159 ]/4
+   86   H52   x    [160  -  163  -  166  +  169 ]/4
+   87   H52   y    [161  +  164  +  167  +  170 ]/4
+   88   H52   z    [162  +  165  -  168  -  171 ]/4
+   89   H54   x    [172  -  175  -  178  +  181 ]/4
+   90   H54   y    [173  +  176  +  179  +  182 ]/4
+   91   H54   z    [174  +  177  -  180  -  183 ]/4
+
+
+  Symmetry  B3 ( 3)
+
+   92   C     x    1
+   93   H18   x    [  4  +    7  +   10  +   13 ]/4
+   94   H18   y    [  5  -    8  -   11  +   14 ]/4
+   95   H18   z    [  6  -    9  +   12  -   15 ]/4
+   96   H19   x    [ 16  +   19  +   22  +   25 ]/4
+   97   H19   y    [ 17  -   20  -   23  +   26 ]/4
+   98   H19   z    [ 18  -   21  +   24  -   27 ]/4
+   99   H22   x    [ 28  +   31  +   34  +   37 ]/4
+  100   H22   y    [ 29  -   32  -   35  +   38 ]/4
+  101   H22   z    [ 30  -   33  +   36  -   39 ]/4
+  102   H26   x    [ 40  +   43  +   46  +   49 ]/4
+  103   H26   y    [ 41  -   44  -   47  +   50 ]/4
+  104   H26   z    [ 42  -   45  +   48  -   51 ]/4
+  105   H27   x    [ 52  +   55  +   58  +   61 ]/4
+  106   H27   y    [ 53  -   56  -   59  +   62 ]/4
+  107   H27   z    [ 54  -   57  +   60  -   63 ]/4
+  108   H30   x    [ 64  +   67  +   70  +   73 ]/4
+  109   H30   y    [ 65  -   68  -   71  +   74 ]/4
+  110   H30   z    [ 66  -   69  +   72  -   75 ]/4
+  111   H36   x    [ 76  +   79  +   82  +   85 ]/4
+  112   H36   y    [ 77  -   80  -   83  +   86 ]/4
+  113   H36   z    [ 78  -   81  +   84  -   87 ]/4
+  114   H38   x    [ 88  +   91  +   94  +   97 ]/4
+  115   H38   y    [ 89  -   92  -   95  +   98 ]/4
+  116   H38   z    [ 90  -   93  +   96  -   99 ]/4
+  117   H44   x    [100  +  103  +  106  +  109 ]/4
+  118   H44   y    [101  -  104  -  107  +  110 ]/4
+  119   H44   z    [102  -  105  +  108  -  111 ]/4
+  120   H46   x    [112  +  115  +  118  +  121 ]/4
+  121   H46   y    [113  -  116  -  119  +  122 ]/4
+  122   H46   z    [114  -  117  +  120  -  123 ]/4
+  123   H47   x    [124  +  127  +  130  +  133 ]/4
+  124   H47   y    [125  -  128  -  131  +  134 ]/4
+  125   H47   z    [126  -  129  +  132  -  135 ]/4
+  126   H48   x    [136  +  139  +  142  +  145 ]/4
+  127   H48   y    [137  -  140  -  143  +  146 ]/4
+  128   H48   z    [138  -  141  +  144  -  147 ]/4
+  129   H51   x    [148  +  151  +  154  +  157 ]/4
+  130   H51   y    [149  -  152  -  155  +  158 ]/4
+  131   H51   z    [150  -  153  +  156  -  159 ]/4
+  132   H52   x    [160  +  163  +  166  +  169 ]/4
+  133   H52   y    [161  -  164  -  167  +  170 ]/4
+  134   H52   z    [162  -  165  +  168  -  171 ]/4
+  135   H54   x    [172  +  175  +  178  +  181 ]/4
+  136   H54   y    [173  -  176  -  179  +  182 ]/4
+  137   H54   z    [174  -  177  +  180  -  183 ]/4
+
+
+  Symmetry  B1 ( 4)
+
+  138   C     z    3
+  139   H18   x    [  4  -    7  +   10  -   13 ]/4
+  140   H18   y    [  5  +    8  -   11  -   14 ]/4
+  141   H18   z    [  6  +    9  +   12  +   15 ]/4
+  142   H19   x    [ 16  -   19  +   22  -   25 ]/4
+  143   H19   y    [ 17  +   20  -   23  -   26 ]/4
+  144   H19   z    [ 18  +   21  +   24  +   27 ]/4
+  145   H22   x    [ 28  -   31  +   34  -   37 ]/4
+  146   H22   y    [ 29  +   32  -   35  -   38 ]/4
+  147   H22   z    [ 30  +   33  +   36  +   39 ]/4
+  148   H26   x    [ 40  -   43  +   46  -   49 ]/4
+  149   H26   y    [ 41  +   44  -   47  -   50 ]/4
+  150   H26   z    [ 42  +   45  +   48  +   51 ]/4
+  151   H27   x    [ 52  -   55  +   58  -   61 ]/4
+  152   H27   y    [ 53  +   56  -   59  -   62 ]/4
+  153   H27   z    [ 54  +   57  +   60  +   63 ]/4
+  154   H30   x    [ 64  -   67  +   70  -   73 ]/4
+  155   H30   y    [ 65  +   68  -   71  -   74 ]/4
+  156   H30   z    [ 66  +   69  +   72  +   75 ]/4
+  157   H36   x    [ 76  -   79  +   82  -   85 ]/4
+  158   H36   y    [ 77  +   80  -   83  -   86 ]/4
+  159   H36   z    [ 78  +   81  +   84  +   87 ]/4
+  160   H38   x    [ 88  -   91  +   94  -   97 ]/4
+  161   H38   y    [ 89  +   92  -   95  -   98 ]/4
+  162   H38   z    [ 90  +   93  +   96  +   99 ]/4
+  163   H44   x    [100  -  103  +  106  -  109 ]/4
+  164   H44   y    [101  +  104  -  107  -  110 ]/4
+  165   H44   z    [102  +  105  +  108  +  111 ]/4
+  166   H46   x    [112  -  115  +  118  -  121 ]/4
+  167   H46   y    [113  +  116  -  119  -  122 ]/4
+  168   H46   z    [114  +  117  +  120  +  123 ]/4
+  169   H47   x    [124  -  127  +  130  -  133 ]/4
+  170   H47   y    [125  +  128  -  131  -  134 ]/4
+  171   H47   z    [126  +  129  +  132  +  135 ]/4
+  172   H48   x    [136  -  139  +  142  -  145 ]/4
+  173   H48   y    [137  +  140  -  143  -  146 ]/4
+  174   H48   z    [138  +  141  +  144  +  147 ]/4
+  175   H51   x    [148  -  151  +  154  -  157 ]/4
+  176   H51   y    [149  +  152  -  155  -  158 ]/4
+  177   H51   z    [150  +  153  +  156  +  159 ]/4
+  178   H52   x    [160  -  163  +  166  -  169 ]/4
+  179   H52   y    [161  +  164  -  167  -  170 ]/4
+  180   H52   z    [162  +  165  +  168  +  171 ]/4
+  181   H54   x    [172  -  175  +  178  -  181 ]/4
+  182   H54   y    [173  +  176  -  179  -  182 ]/4
+  183   H54   z    [174  +  177  +  180  +  183 ]/4
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            C           H181        H182        H183        H184        H191
+
+   C       0.000000
+   H181    3.983488    0.000000
+   H182    3.983488    4.765001    0.000000
+   H183    3.983488    6.621138    7.771789    0.000000
+   H184    3.983488    7.771789    6.621138    4.765001    0.000000
+   H191    3.983488    1.058354    3.877247    7.076470    7.792035    0.000000
+   H192    3.983488    3.877247    1.058354    7.792035    7.076470    2.923704
+   H193    3.983488    7.076470    7.792035    1.058354    3.877247    7.469722
+   H194    3.983488    7.792035    7.076470    3.877247    1.058354    7.912055
+   H221    3.983488    1.712453    3.716199    6.899431    7.912055    1.058354
+   H222    3.983488    3.716199    1.712453    7.912055    6.899431    2.848183
+   H223    3.983488    6.899431    7.912055    1.712453    3.716199    7.366326
+   H224    3.983488    7.912055    6.899431    3.716199    1.712453    7.965575
+   H261    3.983488    4.313363    5.120938    7.076470    5.660377    4.373499
+   H262    3.983488    5.120938    4.313363    5.660377    7.076470    4.765001
+   H263    3.983488    7.076470    5.660377    4.313363    5.120938    6.899431
+   H264    3.983488    5.660377    7.076470    5.120938    4.313363    6.124583
+   H271    3.983488    3.877247    4.313363    7.469722    6.124583    3.716199
+   H272    3.983488    4.313363    3.877247    6.124583    7.469722    3.877247
+   H273    3.983488    7.469722    6.124583    3.877247    4.313363    7.366326
+   H274    3.983488    6.124583    7.469722    4.313363    3.877247    6.621138
+   H301    3.983488    1.712453    4.552640    6.311576    7.965575    1.712453
+   H302    3.983488    4.552640    1.712453    7.965575    6.311576    3.785201
+   H303    3.983488    6.311576    7.965575    1.712453    4.552640    6.898869
+   H304    3.983488    7.965575    6.311576    4.552640    1.712453    7.879770
+   H361    3.983488    2.923704    4.373499    7.366326    6.708734    2.848183
+   H362    3.983488    4.373499    2.923704    6.708734    7.366326    3.716199
+   H363    3.983488    7.366326    6.708734    2.923704    4.373499    7.412604
+   H364    3.983488    6.708734    7.366326    4.373499    2.923704    7.076470
+   H381    3.983488    1.058354    5.120938    6.124583    7.879770    1.712453
+   H382    3.983488    5.120938    1.058354    7.879770    6.124583    4.313363
+   H383    3.983488    6.124583    7.879770    1.058354    5.120938    6.708734
+   H384    3.983488    7.879770    6.124583    5.120938    1.058354    7.771789
+   H441    3.983488    2.848183    5.202813    6.898869    6.646022    3.147689
+   H442    3.983488    5.202813    2.848183    6.646022    6.898869    4.552640
+   H443    3.983488    6.898869    6.646022    2.848183    5.202813    6.979167
+   H444    3.983488    6.646022    6.898869    5.202813    2.848183    6.899431
+   H461    3.983488    3.716199    6.979167    4.958881    6.311576    4.552640
+   H462    3.983488    6.979167    3.716199    6.311576    4.958881    6.452836
+   H463    3.983488    4.958881    6.311576    3.716199    6.979167    5.202813
+   H464    3.983488    6.311576    4.958881    6.979167    3.716199    6.124583
+   H471    3.983488    2.848183    6.646022    5.202813    6.898869    3.785201
+   H472    3.983488    6.646022    2.848183    6.898869    5.202813    6.012937
+   H473    3.983488    5.202813    6.898869    2.848183    6.646022    5.608489
+   H474    3.983488    6.898869    5.202813    6.646022    2.848183    6.708734
+   H481    3.983488    3.147689    6.899431    4.552640    6.979167    4.088497
+   H482    3.983488    6.899431    3.147689    6.979167    4.552640    6.311576
+   H483    3.983488    4.552640    6.979167    3.147689    6.899431    5.120938
+   H484    3.983488    6.979167    4.552640    6.899431    3.147689    6.646022
+   H511    3.983488    3.785201    5.608489    6.708734    6.012937    4.088497
+   H512    3.983488    5.608489    3.785201    6.012937    6.708734    5.120938
+   H513    3.983488    6.708734    6.012937    3.785201    5.608489    6.646022
+   H514    3.983488    6.012937    6.708734    5.608489    3.785201    6.311576
+   H521    3.983488    4.373499    7.412604    4.088497    6.012937    5.202813
+   H522    3.983488    7.412604    4.373499    6.012937    4.088497    6.979167
+   H523    3.983488    4.088497    6.012937    4.373499    7.412604    4.373499
+   H524    3.983488    6.012937    4.088497    7.412604    4.373499    5.660377
+   H541    3.983488    4.088497    7.366326    3.785201    6.452836    4.958881
+   H542    3.983488    7.366326    4.088497    6.452836    3.785201    6.898869
+   H543    3.983488    3.785201    6.452836    4.088497    7.366326    4.313363
+   H544    3.983488    6.452836    3.785201    7.366326    4.088497    6.012937
+
+            H192        H193        H194        H221        H222        H223
+
+   H192    0.000000
+   H193    7.912055    0.000000
+   H194    7.469722    2.923704    0.000000
+   H221    2.848183    7.366326    7.965575    0.000000
+   H222    1.058354    7.965575    7.366326    3.147689    0.000000
+   H223    7.965575    1.058354    2.848183    7.412604    7.879770    0.000000
+   H224    7.366326    2.848183    1.058354    7.879770    7.412604    3.147689
+   H261    4.765001    6.899431    6.124583    5.202813    3.877247    6.311576
+   H262    4.373499    6.124583    6.899431    3.877247    5.202813    6.708734
+   H263    6.124583    4.373499    4.765001    6.311576    6.708734    5.202813
+   H264    6.899431    4.765001    4.373499    6.708734    6.311576    3.877247
+   H271    3.877247    7.366326    6.621138    4.552640    2.923704    6.898869
+   H272    3.716199    6.621138    7.366326    2.923704    4.552640    7.076470
+   H273    6.621138    3.716199    3.877247    6.898869    7.076470    4.552640
+   H274    7.366326    3.877247    3.716199    7.076470    6.898869    2.923704
+   H301    3.785201    6.898869    7.879770    1.058354    4.088497    6.979167
+   H302    1.712453    7.879770    6.898869    4.088497    1.058354    7.771789
+   H303    7.879770    1.712453    3.785201    6.979167    7.771789    1.058354
+   H304    6.898869    3.785201    1.712453    7.771789    6.979167    4.088497
+   H361    3.716199    7.412604    7.076470    3.785201    2.848183    6.979167
+   H362    2.848183    7.076470    7.412604    2.848183    3.785201    7.469722
+   H363    7.076470    2.848183    3.716199    6.979167    7.469722    3.785201
+   H364    7.412604    3.716199    2.848183    7.469722    6.979167    2.848183
+   H381    4.313363    6.708734    7.771789    1.712453    4.373499    6.646022
+   H382    1.712453    7.771789    6.708734    4.373499    1.712453    7.792035
+   H383    7.771789    1.712453    4.313363    6.646022    7.792035    1.712453
+   H384    6.708734    4.313363    1.712453    7.792035    6.646022    4.373499
+   H441    4.552640    6.979167    6.899431    4.088497    3.785201    6.452836
+   H442    3.147689    6.899431    6.979167    3.785201    4.088497    7.366326
+   H443    6.899431    3.147689    4.552640    6.452836    7.366326    4.088497
+   H444    6.979167    4.552640    3.147689    7.366326    6.452836    3.785201
+   H461    6.452836    5.202813    6.124583    5.120938    6.012937    4.552640
+   H462    4.552640    6.124583    5.202813    6.012937    5.120938    6.621138
+   H463    6.124583    4.552640    6.452836    4.552640    6.621138    5.120938
+   H464    5.202813    6.452836    4.552640    6.621138    4.552640    6.012937
+   H471    6.012937    5.608489    6.708734    4.313363    5.660377    5.120938
+   H472    3.785201    6.708734    5.608489    5.660377    4.313363    7.076470
+   H473    6.708734    3.785201    6.012937    5.120938    7.076470    4.313363
+   H474    5.608489    6.012937    3.785201    7.076470    5.120938    5.660377
+   H481    6.311576    5.120938    6.646022    4.373499    6.124583    4.765001
+   H482    4.088497    6.646022    5.120938    6.124583    4.373499    6.899431
+   H483    6.646022    4.088497    6.311576    4.765001    6.899431    4.373499
+   H484    5.120938    6.311576    4.088497    6.899431    4.765001    6.124583
+   H511    5.120938    6.646022    6.311576    4.958881    4.313363    6.012937
+   H512    4.088497    6.311576    6.646022    4.313363    4.958881    6.898869
+   H513    6.311576    4.088497    5.120938    6.012937    6.898869    4.958881
+   H514    6.646022    5.120938    4.088497    6.898869    6.012937    4.313363
+   H521    6.979167    4.373499    5.660377    5.608489    6.646022    3.716199
+   H522    5.202813    5.660377    4.373499    6.646022    5.608489    6.124583
+   H523    5.660377    5.202813    6.979167    3.716199    6.124583    5.608489
+   H524    4.373499    6.979167    5.202813    6.124583    3.716199    6.646022
+   H541    6.898869    4.313363    6.012937    5.202813    6.708734    3.877247
+   H542    4.958881    6.012937    4.313363    6.708734    5.202813    6.311576
+   H543    6.012937    4.958881    6.898869    3.877247    6.311576    5.202813
+   H544    4.313363    6.898869    4.958881    6.311576    3.877247    6.708734
+
+            H224        H261        H262        H263        H264        H271
+
+   H224    0.000000
+   H261    6.708734    0.000000
+   H262    6.311576    7.412604    0.000000
+   H263    3.877247    7.879770    3.147689    0.000000
+   H264    5.202813    3.147689    7.879770    7.412604    0.000000
+   H271    7.076470    1.058354    6.979167    7.771789    4.088497    0.000000
+   H272    6.898869    6.979167    1.058354    4.088497    7.771789    6.452836
+   H273    2.923704    7.771789    4.088497    1.058354    6.979167    7.792035
+   H274    4.552640    4.088497    7.771789    6.979167    1.058354    4.958881
+   H301    7.771789    5.608489    3.716199    6.124583    6.646022    5.120938
+   H302    6.979167    3.716199    5.608489    6.646022    6.124583    2.848183
+   H303    4.088497    6.124583    6.646022    5.608489    3.716199    6.708734
+   H304    1.058354    6.646022    6.124583    3.716199    5.608489    6.899431
+   H361    7.469722    1.712453    6.646022    7.792035    4.373499    1.058354
+   H362    6.979167    6.646022    1.712453    4.373499    7.792035    6.012937
+   H363    2.848183    7.792035    4.373499    1.712453    6.646022    7.912055
+   H364    3.785201    4.373499    7.792035    6.646022    1.712453    5.202813
+   H381    7.792035    5.120938    4.552640    6.621138    6.012937    4.765001
+   H382    6.646022    4.552640    5.120938    6.012937    6.621138    3.785201
+   H383    4.373499    6.621138    6.012937    5.120938    4.552640    7.076470
+   H384    1.712453    6.012937    6.621138    4.552640    5.120938    6.311576
+   H441    7.366326    1.712453    6.899431    7.912055    3.716199    1.712453
+   H442    6.452836    6.899431    1.712453    3.716199    7.912055    6.311576
+   H443    3.785201    7.912055    3.716199    1.712453    6.899431    7.965575
+   H444    4.088497    3.716199    7.912055    6.899431    1.712453    4.552640
+   H461    6.621138    3.785201    6.979167    7.469722    2.848183    4.313363
+   H462    4.552640    6.979167    3.785201    2.848183    7.469722    6.646022
+   H463    6.012937    7.469722    2.848183    3.785201    6.979167    7.366326
+   H464    5.120938    2.848183    7.469722    6.979167    3.785201    3.147689
+   H471    7.076470    4.088497    6.452836    7.366326    3.785201    4.373499
+   H472    5.120938    6.452836    4.088497    3.785201    7.366326    6.012937
+   H473    5.660377    7.366326    3.785201    4.088497    6.452836    7.412604
+   H474    4.313363    3.785201    7.366326    6.452836    4.088497    4.088497
+   H481    6.899431    4.958881    6.012937    6.898869    4.313363    5.202813
+   H482    4.765001    6.012937    4.958881    4.313363    6.898869    5.660377
+   H483    6.124583    6.898869    4.313363    4.958881    6.012937    6.979167
+   H484    4.373499    4.313363    6.898869    6.012937    4.958881    4.373499
+   H511    6.898869    1.058354    7.366326    7.965575    2.848183    1.712453
+   H512    6.012937    7.366326    1.058354    2.848183    7.965575    6.898869
+   H513    4.313363    7.965575    2.848183    1.058354    7.366326    7.879770
+   H514    4.958881    2.848183    7.965575    7.366326    1.058354    3.785201
+   H521    6.124583    4.552640    6.898869    7.076470    2.923704    5.120938
+   H522    3.716199    6.898869    4.552640    2.923704    7.076470    6.708734
+   H523    6.646022    7.076470    2.923704    4.552640    6.898869    6.899431
+   H524    5.608489    2.923704    7.076470    6.898869    4.552640    2.848183
+   H541    6.311576    5.202813    6.311576    6.708734    3.877247    5.608489
+   H542    3.877247    6.311576    5.202813    3.877247    6.708734    6.124583
+   H543    6.708734    6.708734    3.877247    5.202813    6.311576    6.646022
+   H544    5.202813    3.877247    6.708734    6.311576    5.202813    3.716199
+
+            H272        H273        H274        H301        H302        H303
+
+   H272    0.000000
+   H273    4.958881    0.000000
+   H274    7.792035    6.452836    0.000000
+   H301    2.848183    6.708734    6.899431    0.000000
+   H302    5.120938    6.899431    6.708734    4.958881    0.000000
+   H303    6.899431    5.120938    2.848183    6.452836    7.792035    0.000000
+   H304    6.708734    2.848183    5.120938    7.792035    6.452836    4.958881
+   H361    6.012937    7.912055    5.202813    4.313363    3.147689    6.646022
+   H362    1.058354    5.202813    7.912055    3.147689    4.313363    7.366326
+   H363    5.202813    1.058354    6.012937    6.646022    7.366326    4.313363
+   H364    7.912055    6.012937    1.058354    7.366326    6.646022    3.147689
+   H381    3.785201    7.076470    6.311576    1.058354    5.202813    6.012937
+   H382    4.765001    6.311576    7.076470    5.202813    1.058354    7.912055
+   H383    6.311576    4.765001    3.785201    6.012937    7.912055    1.058354
+   H384    7.076470    3.785201    4.765001    7.912055    6.012937    5.202813
+   H441    6.311576    7.965575    4.552640    4.373499    4.088497    6.012937
+   H442    1.712453    4.552640    7.965575    4.088497    4.373499    7.412604
+   H443    4.552640    1.712453    6.311576    6.012937    7.412604    4.373499
+   H444    7.965575    6.311576    1.712453    7.412604    6.012937    4.088497
+   H461    6.646022    7.366326    3.147689    4.765001    6.311576    3.785201
+   H462    4.313363    3.147689    7.366326    6.311576    4.765001    7.076470
+   H463    3.147689    4.313363    6.646022    3.785201    7.076470    4.765001
+   H464    7.366326    6.646022    4.313363    7.076470    3.785201    6.311576
+   H471    6.012937    7.412604    4.088497    3.877247    6.124583    4.313363
+   H472    4.373499    4.088497    7.412604    6.124583    3.877247    7.469722
+   H473    4.088497    4.373499    6.012937    4.313363    7.469722    3.877247
+   H474    7.412604    6.012937    4.373499    7.469722    4.313363    6.124583
+   H481    5.660377    6.979167    4.373499    3.716199    6.621138    3.877247
+   H482    5.202813    4.373499    6.979167    6.621138    3.716199    7.366326
+   H483    4.373499    5.202813    5.660377    3.877247    7.366326    3.716199
+   H484    6.979167    5.660377    5.202813    7.366326    3.877247    6.621138
+   H511    6.898869    7.879770    3.785201    5.202813    4.373499    5.660377
+   H512    1.712453    3.785201    7.879770    4.373499    5.202813    6.979167
+   H513    3.785201    1.712453    6.898869    5.660377    6.979167    5.202813
+   H514    7.879770    6.898869    1.712453    6.979167    5.660377    4.373499
+   H521    6.708734    6.899431    2.848183    5.120938    6.899431    2.848183
+   H522    5.120938    2.848183    6.899431    6.899431    5.120938    6.708734
+   H523    2.848183    5.120938    6.708734    2.848183    6.708734    5.120938
+   H524    6.899431    6.708734    5.120938    6.708734    2.848183    6.899431
+   H541    6.124583    6.646022    3.716199    4.552640    7.076470    2.923704
+   H542    5.608489    3.716199    6.646022    7.076470    4.552640    6.898869
+   H543    3.716199    5.608489    6.124583    2.923704    6.898869    4.552640
+   H544    6.646022    6.124583    5.608489    6.898869    2.923704    7.076470
+
+            H304        H361        H362        H363        H364        H381
+
+   H304    0.000000
+   H361    7.366326    0.000000
+   H362    6.646022    5.660377    0.000000
+   H363    3.147689    7.965575    5.608489    0.000000
+   H364    4.313363    5.608489    7.965575    5.660377    0.000000
+   H381    7.912055    3.877247    4.088497    6.899431    6.898869    0.000000
+   H382    6.012937    4.088497    3.877247    6.898869    6.899431    5.608489
+   H383    5.202813    6.899431    6.898869    3.877247    4.088497    5.660377
+   H384    1.058354    6.898869    6.899431    4.088497    3.877247    7.965575
+   H441    7.412604    1.058354    6.124583    7.879770    5.120938    3.716199
+   H442    6.012937    6.124583    1.058354    5.120938    7.879770    4.958881
+   H443    4.088497    7.879770    5.120938    1.058354    6.124583    6.311576
+   H444    4.373499    5.120938    7.879770    6.124583    1.058354    6.979167
+   H461    7.076470    3.877247    6.899431    6.898869    4.088497    3.877247
+   H462    3.785201    6.899431    3.877247    4.088497    6.898869    6.898869
+   H463    6.311576    6.898869    4.088497    3.877247    6.899431    4.088497
+   H464    4.765001    4.088497    6.898869    6.899431    3.877247    6.899431
+   H471    7.469722    3.716199    6.311576    6.979167    4.958881    2.923704
+   H472    4.313363    6.311576    3.716199    4.958881    6.979167    6.708734
+   H473    6.124583    6.979167    4.958881    3.716199    6.311576    4.373499
+   H474    3.877247    4.958881    6.979167    6.311576    3.716199    7.366326
+   H481    7.366326    4.552640    6.124583    6.452836    5.202813    2.848183
+   H482    3.877247    6.124583    4.552640    5.202813    6.452836    7.076470
+   H483    6.621138    6.452836    5.202813    4.552640    6.124583    3.716199
+   H484    3.716199    5.202813    6.452836    6.124583    4.552640    7.412604
+   H511    6.979167    1.712453    6.708734    7.771789    4.313363    4.552640
+   H512    5.660377    6.708734    1.712453    4.313363    7.771789    5.202813
+   H513    4.373499    7.771789    4.313363    1.712453    6.708734    6.124583
+   H514    5.202813    4.313363    7.771789    6.708734    1.712453    6.452836
+   H521    6.708734    4.765001    7.076470    6.311576    3.785201    4.313363
+   H522    2.848183    7.076470    4.765001    3.785201    6.311576    7.366326
+   H523    6.899431    6.311576    3.785201    4.765001    7.076470    3.147689
+   H524    5.120938    3.785201    6.311576    7.076470    4.765001    6.646022
+   H541    6.898869    5.120938    6.621138    6.012937    4.552640    3.785201
+   H542    2.923704    6.621138    5.120938    4.552640    6.012937    7.469722
+   H543    7.076470    6.012937    4.552640    5.120938    6.621138    2.848183
+   H544    4.552640    4.552640    6.012937    6.621138    5.120938    6.979167
+
+            H382        H383        H384        H441        H442        H443
+
+   H382    0.000000
+   H383    7.965575    0.000000
+   H384    5.660377    5.608489    0.000000
+   H441    4.958881    6.311576    6.979167    0.000000
+   H442    3.716199    6.979167    6.311576    6.621138    0.000000
+   H443    6.979167    3.716199    4.958881    7.771789    4.765001    0.000000
+   H444    6.311576    4.958881    3.716199    4.765001    7.771789    6.621138
+   H461    6.898869    4.088497    6.899431    2.923704    7.366326    6.708734
+   H462    3.877247    6.899431    4.088497    7.366326    2.923704    4.373499
+   H463    6.899431    3.877247    6.898869    6.708734    4.373499    2.923704
+   H464    4.088497    6.898869    3.877247    4.373499    6.708734    7.366326
+   H471    6.708734    4.373499    7.366326    2.848183    6.898869    6.646022
+   H472    2.923704    7.366326    4.373499    6.898869    2.848183    5.202813
+   H473    7.366326    2.923704    6.708734    6.646022    5.202813    2.848183
+   H474    4.373499    6.708734    2.923704    5.202813    6.646022    6.898869
+   H481    7.076470    3.716199    7.412604    3.785201    6.708734    6.012937
+   H482    2.848183    7.412604    3.716199    6.708734    3.785201    5.608489
+   H483    7.412604    2.848183    7.076470    6.012937    5.608489    3.785201
+   H484    3.716199    7.076470    2.848183    5.608489    6.012937    6.708734
+   H511    5.202813    6.124583    6.452836    1.058354    7.076470    7.792035
+   H512    4.552640    6.452836    6.124583    7.076470    1.058354    3.877247
+   H513    6.452836    4.552640    5.202813    7.792035    3.877247    1.058354
+   H514    6.124583    5.202813    4.552640    3.877247    7.792035    7.076470
+   H521    7.366326    3.147689    6.646022    3.877247    7.469722    6.124583
+   H522    4.313363    6.646022    3.147689    7.469722    3.877247    4.313363
+   H523    6.646022    4.313363    7.366326    6.124583    4.313363    3.877247
+   H524    3.147689    7.366326    4.313363    4.313363    6.124583    7.469722
+   H541    7.469722    2.848183    6.979167    4.313363    7.076470    5.660377
+   H542    3.785201    6.979167    2.848183    7.076470    4.313363    5.120938
+   H543    6.979167    3.785201    7.469722    5.660377    5.120938    4.313363
+   H544    2.848183    7.469722    3.785201    5.120938    5.660377    7.076470
+
+            H444        H461        H462        H463        H464        H471
+
+   H444    0.000000
+   H461    4.373499    0.000000
+   H462    6.708734    7.965575    0.000000
+   H463    7.366326    5.608489    5.660377    0.000000
+   H464    2.923704    5.660377    5.608489    7.965575    0.000000
+   H471    5.202813    1.058354    7.879770    5.120938    6.124583    0.000000
+   H472    6.646022    7.879770    1.058354    6.124583    5.120938    7.771789
+   H473    6.898869    5.120938    6.124583    1.058354    7.879770    4.765001
+   H474    2.848183    6.124583    5.120938    7.879770    1.058354    6.621138
+   H481    5.608489    1.712453    7.771789    4.313363    6.708734    1.058354
+   H482    6.012937    7.771789    1.712453    6.708734    4.313363    7.792035
+   H483    6.708734    4.313363    6.708734    1.712453    7.771789    3.877247
+   H484    3.785201    6.708734    4.313363    7.771789    1.712453    7.076470
+   H511    3.877247    2.848183    7.412604    7.076470    3.716199    3.147689
+   H512    7.792035    7.412604    2.848183    3.716199    7.076470    6.979167
+   H513    7.076470    7.076470    3.716199    2.848183    7.412604    6.899431
+   H514    1.058354    3.716199    7.076470    7.412604    2.848183    4.552640
+   H521    4.313363    1.058354    7.912055    5.202813    6.012937    1.712453
+   H522    6.124583    7.912055    1.058354    6.012937    5.202813    7.965575
+   H523    7.469722    5.202813    6.012937    1.058354    7.912055    4.552640
+   H524    3.877247    6.012937    5.202813    7.912055    1.058354    6.311576
+   H541    5.120938    1.712453    7.792035    4.373499    6.646022    1.712453
+   H542    5.660377    7.792035    1.712453    6.646022    4.373499    7.912055
+   H543    7.076470    4.373499    6.646022    1.712453    7.792035    3.716199
+   H544    4.313363    6.646022    4.373499    7.792035    1.712453    6.899431
+
+            H472        H473        H474        H481        H482        H483
+
+   H472    0.000000
+   H473    6.621138    0.000000
+   H474    4.765001    7.771789    0.000000
+   H481    7.792035    3.877247    7.076470    0.000000
+   H482    1.058354    7.076470    3.877247    7.912055    0.000000
+   H483    7.076470    1.058354    7.792035    2.923704    7.469722    0.000000
+   H484    3.877247    7.792035    1.058354    7.469722    2.923704    7.912055
+   H511    6.979167    6.899431    4.552640    4.088497    6.646022    6.311576
+   H512    3.147689    4.552640    6.899431    6.646022    4.088497    5.120938
+   H513    4.552640    3.147689    6.979167    6.311576    5.120938    4.088497
+   H514    6.899431    6.979167    3.147689    5.120938    6.311576    6.646022
+   H521    7.965575    4.552640    6.311576    1.712453    7.879770    3.785201
+   H522    1.712453    6.311576    4.552640    7.879770    1.712453    6.898869
+   H523    6.311576    1.712453    7.965575    3.785201    6.898869    1.712453
+   H524    4.552640    7.965575    1.712453    6.898869    3.785201    7.879770
+   H541    7.912055    3.716199    6.899431    1.058354    7.965575    2.848183
+   H542    1.712453    6.899431    3.716199    7.965575    1.058354    7.366326
+   H543    6.899431    1.712453    7.912055    2.848183    7.366326    1.058354
+   H544    3.716199    7.912055    1.712453    7.366326    2.848183    7.965575
+
+            H484        H511        H512        H513        H514        H521
+
+   H484    0.000000
+   H511    5.120938    0.000000
+   H512    6.311576    7.469722    0.000000
+   H513    6.646022    7.912055    2.923704    0.000000
+   H514    4.088497    2.923704    7.912055    7.469722    0.000000
+   H521    6.898869    3.716199    7.366326    6.621138    3.877247    0.000000
+   H522    3.785201    7.366326    3.716199    3.877247    6.621138    7.792035
+   H523    7.879770    6.621138    3.877247    3.716199    7.366326    4.958881
+   H524    1.712453    3.877247    6.621138    7.366326    3.716199    6.452836
+   H541    7.366326    4.373499    6.899431    6.124583    4.765001    1.058354
+   H542    2.848183    6.899431    4.373499    4.765001    6.124583    7.771789
+   H543    7.965575    6.124583    4.765001    4.373499    6.899431    4.088497
+   H544    1.058354    4.765001    6.124583    6.899431    4.373499    6.979167
+
+            H522        H523        H524        H541        H542        H543
+
+   H522    0.000000
+   H523    6.452836    0.000000
+   H524    4.958881    7.792035    0.000000
+   H541    7.771789    4.088497    6.979167    0.000000
+   H542    1.058354    6.979167    4.088497    7.879770    0.000000
+   H543    6.979167    1.058354    7.771789    3.147689    7.412604    0.000000
+   H544    4.088497    7.771789    1.058354    7.412604    3.147689    7.879770
+
+            H544
+
+   H544    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+     No angles found
+
+
+
+
+  WARNING:  No bonds -  no atom pairs are within normal bonding distances
+  WARNING:  maybe coordinates were in Bohr, but DIRAC were told they were in Angstrom ?
+
+
+   Nuclear repulsion energy                          :  263.712879889221 Hartree
+
+                       * Total mass:    72.469500 amu
+                       * Natural abundance:  98.014 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.000000000000000
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.000000000000000
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:   64
+     1  L C   1 s        2  L C   1 px       3  L C   1 py       4  L C   1 pz       5  L H18 1 s        6  L H18 2 s   
+     7  L H18 3 s        8  L H18 4 s        9  L H19 1 s       10  L H19 2 s       11  L H19 3 s       12  L H19 4 s   
+    13  L H22 1 s       14  L H22 2 s       15  L H22 3 s       16  L H22 4 s       17  L H26 1 s       18  L H26 2 s   
+    19  L H26 3 s       20  L H26 4 s       21  L H27 1 s       22  L H27 2 s       23  L H27 3 s       24  L H27 4 s   
+    25  L H30 1 s       26  L H30 2 s       27  L H30 3 s       28  L H30 4 s       29  L H36 1 s       30  L H36 2 s   
+    31  L H36 3 s       32  L H36 4 s       33  L H38 1 s       34  L H38 2 s       35  L H38 3 s       36  L H38 4 s   
+    37  L H44 1 s       38  L H44 2 s       39  L H44 3 s       40  L H44 4 s       41  L H46 1 s       42  L H46 2 s   
+    43  L H46 3 s       44  L H46 4 s       45  L H47 1 s       46  L H47 2 s       47  L H47 3 s       48  L H47 4 s   
+    49  L H48 1 s       50  L H48 2 s       51  L H48 3 s       52  L H48 4 s       53  L H51 1 s       54  L H51 2 s   
+    55  L H51 3 s       56  L H51 4 s       57  L H52 1 s       58  L H52 2 s       59  L H52 3 s       60  L H52 4 s   
+    61  L H54 1 s       62  L H54 2 s       63  L H54 3 s       64  L H54 4 s   
+   * Small components:  190
+    65  S C   1 s       66  S C   1 px      67  S C   1 py      68  S C   1 pz      69  S C   1 dxx     70  S C   1 dxy 
+    71  S C   1 dxz     72  S C   1 dyy     73  S C   1 dyz     74  S C   1 dzz     75  S H18 1 px      76  S H18 1 py  
+    77  S H18 1 pz      78  S H18 2 px      79  S H18 2 py      80  S H18 2 pz      81  S H18 3 px      82  S H18 3 py  
+    83  S H18 3 pz      84  S H18 4 px      85  S H18 4 py      86  S H18 4 pz      87  S H19 1 px      88  S H19 1 py  
+    89  S H19 1 pz      90  S H19 2 px      91  S H19 2 py      92  S H19 2 pz      93  S H19 3 px      94  S H19 3 py  
+    95  S H19 3 pz      96  S H19 4 px      97  S H19 4 py      98  S H19 4 pz      99  S H22 1 px     100  S H22 1 py  
+   101  S H22 1 pz     102  S H22 2 px     103  S H22 2 py     104  S H22 2 pz     105  S H22 3 px     106  S H22 3 py  
+   107  S H22 3 pz     108  S H22 4 px     109  S H22 4 py     110  S H22 4 pz     111  S H26 1 px     112  S H26 1 py  
+   113  S H26 1 pz     114  S H26 2 px     115  S H26 2 py     116  S H26 2 pz     117  S H26 3 px     118  S H26 3 py  
+   119  S H26 3 pz     120  S H26 4 px     121  S H26 4 py     122  S H26 4 pz     123  S H27 1 px     124  S H27 1 py  
+   125  S H27 1 pz     126  S H27 2 px     127  S H27 2 py     128  S H27 2 pz     129  S H27 3 px     130  S H27 3 py  
+   131  S H27 3 pz     132  S H27 4 px     133  S H27 4 py     134  S H27 4 pz     135  S H30 1 px     136  S H30 1 py  
+   137  S H30 1 pz     138  S H30 2 px     139  S H30 2 py     140  S H30 2 pz     141  S H30 3 px     142  S H30 3 py  
+   143  S H30 3 pz     144  S H30 4 px     145  S H30 4 py     146  S H30 4 pz     147  S H36 1 px     148  S H36 1 py  
+   149  S H36 1 pz     150  S H36 2 px     151  S H36 2 py     152  S H36 2 pz     153  S H36 3 px     154  S H36 3 py  
+   155  S H36 3 pz     156  S H36 4 px     157  S H36 4 py     158  S H36 4 pz     159  S H38 1 px     160  S H38 1 py  
+   161  S H38 1 pz     162  S H38 2 px     163  S H38 2 py     164  S H38 2 pz     165  S H38 3 px     166  S H38 3 py  
+   167  S H38 3 pz     168  S H38 4 px     169  S H38 4 py     170  S H38 4 pz     171  S H44 1 px     172  S H44 1 py  
+   173  S H44 1 pz     174  S H44 2 px     175  S H44 2 py     176  S H44 2 pz     177  S H44 3 px     178  S H44 3 py  
+   179  S H44 3 pz     180  S H44 4 px     181  S H44 4 py     182  S H44 4 pz     183  S H46 1 px     184  S H46 1 py  
+   185  S H46 1 pz     186  S H46 2 px     187  S H46 2 py     188  S H46 2 pz     189  S H46 3 px     190  S H46 3 py  
+   191  S H46 3 pz     192  S H46 4 px     193  S H46 4 py     194  S H46 4 pz     195  S H47 1 px     196  S H47 1 py  
+   197  S H47 1 pz     198  S H47 2 px     199  S H47 2 py     200  S H47 2 pz     201  S H47 3 px     202  S H47 3 py  
+   203  S H47 3 pz     204  S H47 4 px     205  S H47 4 py     206  S H47 4 pz     207  S H48 1 px     208  S H48 1 py  
+   209  S H48 1 pz     210  S H48 2 px     211  S H48 2 py     212  S H48 2 pz     213  S H48 3 px     214  S H48 3 py  
+   215  S H48 3 pz     216  S H48 4 px     217  S H48 4 py     218  S H48 4 pz     219  S H51 1 px     220  S H51 1 py  
+   221  S H51 1 pz     222  S H51 2 px     223  S H51 2 py     224  S H51 2 pz     225  S H51 3 px     226  S H51 3 py  
+   227  S H51 3 pz     228  S H51 4 px     229  S H51 4 py     230  S H51 4 pz     231  S H52 1 px     232  S H52 1 py  
+   233  S H52 1 pz     234  S H52 2 px     235  S H52 2 py     236  S H52 2 pz     237  S H52 3 px     238  S H52 3 py  
+   239  S H52 3 pz     240  S H52 4 px     241  S H52 4 py     242  S H52 4 pz     243  S H54 1 px     244  S H54 1 py  
+   245  S H54 1 pz     246  S H54 2 px     247  S H54 2 py     248  S H54 2 pz     249  S H54 3 px     250  S H54 3 py  
+   251  S H54 3 pz     252  S H54 4 px     253  S H54 4 py     254  S H54 4 pz  
+
+
+                                GETLAB: SO-labels
+                                -----------------
+
+   * Large components:   64
+     1  L A  C  s        2  L A  H18s        3  L A  H19s        4  L A  H22s        5  L A  H26s        6  L A  H27s   
+     7  L A  H30s        8  L A  H36s        9  L A  H38s       10  L A  H44s       11  L A  H46s       12  L A  H47s   
+    13  L A  H48s       14  L A  H51s       15  L A  H52s       16  L A  H54s       17  L B2 C  py      18  L B2 H18s   
+    19  L B2 H19s       20  L B2 H22s       21  L B2 H26s       22  L B2 H27s       23  L B2 H30s       24  L B2 H36s   
+    25  L B2 H38s       26  L B2 H44s       27  L B2 H46s       28  L B2 H47s       29  L B2 H48s       30  L B2 H51s   
+    31  L B2 H52s       32  L B2 H54s       33  L B3 C  px      34  L B3 H18s       35  L B3 H19s       36  L B3 H22s   
+    37  L B3 H26s       38  L B3 H27s       39  L B3 H30s       40  L B3 H36s       41  L B3 H38s       42  L B3 H44s   
+    43  L B3 H46s       44  L B3 H47s       45  L B3 H48s       46  L B3 H51s       47  L B3 H52s       48  L B3 H54s   
+    49  L B1 C  pz      50  L B1 H18s       51  L B1 H19s       52  L B1 H22s       53  L B1 H26s       54  L B1 H27s   
+    55  L B1 H30s       56  L B1 H36s       57  L B1 H38s       58  L B1 H44s       59  L B1 H46s       60  L B1 H47s   
+    61  L B1 H48s       62  L B1 H51s       63  L B1 H52s       64  L B1 H54s   
+   * Small components:  190
+    65  S A  C  s       66  S A  C  dxx     67  S A  C  dyy     68  S A  C  dzz     69  S A  H18px      70  S A  H18py  
+    71  S A  H18pz      72  S A  H19px      73  S A  H19py      74  S A  H19pz      75  S A  H22px      76  S A  H22py  
+    77  S A  H22pz      78  S A  H26px      79  S A  H26py      80  S A  H26pz      81  S A  H27px      82  S A  H27py  
+    83  S A  H27pz      84  S A  H30px      85  S A  H30py      86  S A  H30pz      87  S A  H36px      88  S A  H36py  
+    89  S A  H36pz      90  S A  H38px      91  S A  H38py      92  S A  H38pz      93  S A  H44px      94  S A  H44py  
+    95  S A  H44pz      96  S A  H46px      97  S A  H46py      98  S A  H46pz      99  S A  H47px     100  S A  H47py  
+   101  S A  H47pz     102  S A  H48px     103  S A  H48py     104  S A  H48pz     105  S A  H51px     106  S A  H51py  
+   107  S A  H51pz     108  S A  H52px     109  S A  H52py     110  S A  H52pz     111  S A  H54px     112  S A  H54py  
+   113  S A  H54pz     114  S B2 C  py     115  S B2 C  dxz    116  S B2 H18px     117  S B2 H18py     118  S B2 H18pz  
+   119  S B2 H19px     120  S B2 H19py     121  S B2 H19pz     122  S B2 H22px     123  S B2 H22py     124  S B2 H22pz  
+   125  S B2 H26px     126  S B2 H26py     127  S B2 H26pz     128  S B2 H27px     129  S B2 H27py     130  S B2 H27pz  
+   131  S B2 H30px     132  S B2 H30py     133  S B2 H30pz     134  S B2 H36px     135  S B2 H36py     136  S B2 H36pz  
+   137  S B2 H38px     138  S B2 H38py     139  S B2 H38pz     140  S B2 H44px     141  S B2 H44py     142  S B2 H44pz  
+   143  S B2 H46px     144  S B2 H46py     145  S B2 H46pz     146  S B2 H47px     147  S B2 H47py     148  S B2 H47pz  
+   149  S B2 H48px     150  S B2 H48py     151  S B2 H48pz     152  S B2 H51px     153  S B2 H51py     154  S B2 H51pz  
+   155  S B2 H52px     156  S B2 H52py     157  S B2 H52pz     158  S B2 H54px     159  S B2 H54py     160  S B2 H54pz  
+   161  S B3 C  px     162  S B3 C  dyz    163  S B3 H18px     164  S B3 H18py     165  S B3 H18pz     166  S B3 H19px  
+   167  S B3 H19py     168  S B3 H19pz     169  S B3 H22px     170  S B3 H22py     171  S B3 H22pz     172  S B3 H26px  
+   173  S B3 H26py     174  S B3 H26pz     175  S B3 H27px     176  S B3 H27py     177  S B3 H27pz     178  S B3 H30px  
+   179  S B3 H30py     180  S B3 H30pz     181  S B3 H36px     182  S B3 H36py     183  S B3 H36pz     184  S B3 H38px  
+   185  S B3 H38py     186  S B3 H38pz     187  S B3 H44px     188  S B3 H44py     189  S B3 H44pz     190  S B3 H46px  
+   191  S B3 H46py     192  S B3 H46pz     193  S B3 H47px     194  S B3 H47py     195  S B3 H47pz     196  S B3 H48px  
+   197  S B3 H48py     198  S B3 H48pz     199  S B3 H51px     200  S B3 H51py     201  S B3 H51pz     202  S B3 H52px  
+   203  S B3 H52py     204  S B3 H52pz     205  S B3 H54px     206  S B3 H54py     207  S B3 H54pz     208  S B1 C  pz  
+   209  S B1 C  dxy    210  S B1 H18px     211  S B1 H18py     212  S B1 H18pz     213  S B1 H19px     214  S B1 H19py  
+   215  S B1 H19pz     216  S B1 H22px     217  S B1 H22py     218  S B1 H22pz     219  S B1 H26px     220  S B1 H26py  
+   221  S B1 H26pz     222  S B1 H27px     223  S B1 H27py     224  S B1 H27pz     225  S B1 H30px     226  S B1 H30py  
+   227  S B1 H30pz     228  S B1 H36px     229  S B1 H36py     230  S B1 H36pz     231  S B1 H38px     232  S B1 H38py  
+   233  S B1 H38pz     234  S B1 H44px     235  S B1 H44py     236  S B1 H44pz     237  S B1 H46px     238  S B1 H46py  
+   239  S B1 H46pz     240  S B1 H47px     241  S B1 H47py     242  S B1 H47pz     243  S B1 H48px     244  S B1 H48py  
+   245  S B1 H48pz     246  S B1 H51px     247  S B1 H51py     248  S B1 H51pz     249  S B1 H52px     250  S B1 H52py  
+   251  S B1 H52pz     252  S B1 H54px     253  S B1 H54py     254  S B1 H54pz  
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          164   160   160   160
+  Number of large orbitals in each symmetry:     17    16    16    16
+  Number of small orbitals in each symmetry:    147   144   144   144
+
+* Large component functions
+
+  Symmetry  A  ( 1)
+
+        2 functions:    C  s   
+        1 functions:    H18s   1+2+3+4
+        1 functions:    H19s   1+2+3+4
+        1 functions:    H22s   1+2+3+4
+        1 functions:    H26s   1+2+3+4
+        1 functions:    H27s   1+2+3+4
+        1 functions:    H30s   1+2+3+4
+        1 functions:    H36s   1+2+3+4
+        1 functions:    H38s   1+2+3+4
+        1 functions:    H44s   1+2+3+4
+        1 functions:    H46s   1+2+3+4
+        1 functions:    H47s   1+2+3+4
+        1 functions:    H48s   1+2+3+4
+        1 functions:    H51s   1+2+3+4
+        1 functions:    H52s   1+2+3+4
+        1 functions:    H54s   1+2+3+4
+
+  Symmetry  B2 ( 2)
+
+        1 functions:    C  py  
+        1 functions:    H18s   1-2+3-4
+        1 functions:    H19s   1-2+3-4
+        1 functions:    H22s   1-2+3-4
+        1 functions:    H26s   1-2+3-4
+        1 functions:    H27s   1-2+3-4
+        1 functions:    H30s   1-2+3-4
+        1 functions:    H36s   1-2+3-4
+        1 functions:    H38s   1-2+3-4
+        1 functions:    H44s   1-2+3-4
+        1 functions:    H46s   1-2+3-4
+        1 functions:    H47s   1-2+3-4
+        1 functions:    H48s   1-2+3-4
+        1 functions:    H51s   1-2+3-4
+        1 functions:    H52s   1-2+3-4
+        1 functions:    H54s   1-2+3-4
+
+  Symmetry  B3 ( 3)
+
+        1 functions:    C  px  
+        1 functions:    H18s   1+2-3-4
+        1 functions:    H19s   1+2-3-4
+        1 functions:    H22s   1+2-3-4
+        1 functions:    H26s   1+2-3-4
+        1 functions:    H27s   1+2-3-4
+        1 functions:    H30s   1+2-3-4
+        1 functions:    H36s   1+2-3-4
+        1 functions:    H38s   1+2-3-4
+        1 functions:    H44s   1+2-3-4
+        1 functions:    H46s   1+2-3-4
+        1 functions:    H47s   1+2-3-4
+        1 functions:    H48s   1+2-3-4
+        1 functions:    H51s   1+2-3-4
+        1 functions:    H52s   1+2-3-4
+        1 functions:    H54s   1+2-3-4
+
+  Symmetry  B1 ( 4)
+
+        1 functions:    C  pz  
+        1 functions:    H18s   1-2-3+4
+        1 functions:    H19s   1-2-3+4
+        1 functions:    H22s   1-2-3+4
+        1 functions:    H26s   1-2-3+4
+        1 functions:    H27s   1-2-3+4
+        1 functions:    H30s   1-2-3+4
+        1 functions:    H36s   1-2-3+4
+        1 functions:    H38s   1-2-3+4
+        1 functions:    H44s   1-2-3+4
+        1 functions:    H46s   1-2-3+4
+        1 functions:    H47s   1-2-3+4
+        1 functions:    H48s   1-2-3+4
+        1 functions:    H51s   1-2-3+4
+        1 functions:    H52s   1-2-3+4
+        1 functions:    H54s   1-2-3+4
+
+* Small component functions
+
+  Symmetry  A  ( 1)
+
+        3 functions:    C  s   
+        3 functions:    C  dxx 
+        3 functions:    C  dyy 
+        3 functions:    C  dzz 
+        3 functions:    H18px  1+2-3-4
+        3 functions:    H18py  1-2+3-4
+        3 functions:    H18pz  1-2-3+4
+        3 functions:    H19px  1+2-3-4
+        3 functions:    H19py  1-2+3-4
+        3 functions:    H19pz  1-2-3+4
+        3 functions:    H22px  1+2-3-4
+        3 functions:    H22py  1-2+3-4
+        3 functions:    H22pz  1-2-3+4
+        3 functions:    H26px  1+2-3-4
+        3 functions:    H26py  1-2+3-4
+        3 functions:    H26pz  1-2-3+4
+        3 functions:    H27px  1+2-3-4
+        3 functions:    H27py  1-2+3-4
+        3 functions:    H27pz  1-2-3+4
+        3 functions:    H30px  1+2-3-4
+        3 functions:    H30py  1-2+3-4
+        3 functions:    H30pz  1-2-3+4
+        3 functions:    H36px  1+2-3-4
+        3 functions:    H36py  1-2+3-4
+        3 functions:    H36pz  1-2-3+4
+        3 functions:    H38px  1+2-3-4
+        3 functions:    H38py  1-2+3-4
+        3 functions:    H38pz  1-2-3+4
+        3 functions:    H44px  1+2-3-4
+        3 functions:    H44py  1-2+3-4
+        3 functions:    H44pz  1-2-3+4
+        3 functions:    H46px  1+2-3-4
+        3 functions:    H46py  1-2+3-4
+        3 functions:    H46pz  1-2-3+4
+        3 functions:    H47px  1+2-3-4
+        3 functions:    H47py  1-2+3-4
+        3 functions:    H47pz  1-2-3+4
+        3 functions:    H48px  1+2-3-4
+        3 functions:    H48py  1-2+3-4
+        3 functions:    H48pz  1-2-3+4
+        3 functions:    H51px  1+2-3-4
+        3 functions:    H51py  1-2+3-4
+        3 functions:    H51pz  1-2-3+4
+        3 functions:    H52px  1+2-3-4
+        3 functions:    H52py  1-2+3-4
+        3 functions:    H52pz  1-2-3+4
+        3 functions:    H54px  1+2-3-4
+        3 functions:    H54py  1-2+3-4
+        3 functions:    H54pz  1-2-3+4
+
+  Symmetry  B2 ( 2)
+
+        6 functions:    C  py  
+        3 functions:    C  dxz 
+        3 functions:    H18px  1-2-3+4
+        3 functions:    H18py  1+2+3+4
+        3 functions:    H18pz  1+2-3-4
+        3 functions:    H19px  1-2-3+4
+        3 functions:    H19py  1+2+3+4
+        3 functions:    H19pz  1+2-3-4
+        3 functions:    H22px  1-2-3+4
+        3 functions:    H22py  1+2+3+4
+        3 functions:    H22pz  1+2-3-4
+        3 functions:    H26px  1-2-3+4
+        3 functions:    H26py  1+2+3+4
+        3 functions:    H26pz  1+2-3-4
+        3 functions:    H27px  1-2-3+4
+        3 functions:    H27py  1+2+3+4
+        3 functions:    H27pz  1+2-3-4
+        3 functions:    H30px  1-2-3+4
+        3 functions:    H30py  1+2+3+4
+        3 functions:    H30pz  1+2-3-4
+        3 functions:    H36px  1-2-3+4
+        3 functions:    H36py  1+2+3+4
+        3 functions:    H36pz  1+2-3-4
+        3 functions:    H38px  1-2-3+4
+        3 functions:    H38py  1+2+3+4
+        3 functions:    H38pz  1+2-3-4
+        3 functions:    H44px  1-2-3+4
+        3 functions:    H44py  1+2+3+4
+        3 functions:    H44pz  1+2-3-4
+        3 functions:    H46px  1-2-3+4
+        3 functions:    H46py  1+2+3+4
+        3 functions:    H46pz  1+2-3-4
+        3 functions:    H47px  1-2-3+4
+        3 functions:    H47py  1+2+3+4
+        3 functions:    H47pz  1+2-3-4
+        3 functions:    H48px  1-2-3+4
+        3 functions:    H48py  1+2+3+4
+        3 functions:    H48pz  1+2-3-4
+        3 functions:    H51px  1-2-3+4
+        3 functions:    H51py  1+2+3+4
+        3 functions:    H51pz  1+2-3-4
+        3 functions:    H52px  1-2-3+4
+        3 functions:    H52py  1+2+3+4
+        3 functions:    H52pz  1+2-3-4
+        3 functions:    H54px  1-2-3+4
+        3 functions:    H54py  1+2+3+4
+        3 functions:    H54pz  1+2-3-4
+
+  Symmetry  B3 ( 3)
+
+        6 functions:    C  px  
+        3 functions:    C  dyz 
+        3 functions:    H18px  1+2+3+4
+        3 functions:    H18py  1-2-3+4
+        3 functions:    H18pz  1-2+3-4
+        3 functions:    H19px  1+2+3+4
+        3 functions:    H19py  1-2-3+4
+        3 functions:    H19pz  1-2+3-4
+        3 functions:    H22px  1+2+3+4
+        3 functions:    H22py  1-2-3+4
+        3 functions:    H22pz  1-2+3-4
+        3 functions:    H26px  1+2+3+4
+        3 functions:    H26py  1-2-3+4
+        3 functions:    H26pz  1-2+3-4
+        3 functions:    H27px  1+2+3+4
+        3 functions:    H27py  1-2-3+4
+        3 functions:    H27pz  1-2+3-4
+        3 functions:    H30px  1+2+3+4
+        3 functions:    H30py  1-2-3+4
+        3 functions:    H30pz  1-2+3-4
+        3 functions:    H36px  1+2+3+4
+        3 functions:    H36py  1-2-3+4
+        3 functions:    H36pz  1-2+3-4
+        3 functions:    H38px  1+2+3+4
+        3 functions:    H38py  1-2-3+4
+        3 functions:    H38pz  1-2+3-4
+        3 functions:    H44px  1+2+3+4
+        3 functions:    H44py  1-2-3+4
+        3 functions:    H44pz  1-2+3-4
+        3 functions:    H46px  1+2+3+4
+        3 functions:    H46py  1-2-3+4
+        3 functions:    H46pz  1-2+3-4
+        3 functions:    H47px  1+2+3+4
+        3 functions:    H47py  1-2-3+4
+        3 functions:    H47pz  1-2+3-4
+        3 functions:    H48px  1+2+3+4
+        3 functions:    H48py  1-2-3+4
+        3 functions:    H48pz  1-2+3-4
+        3 functions:    H51px  1+2+3+4
+        3 functions:    H51py  1-2-3+4
+        3 functions:    H51pz  1-2+3-4
+        3 functions:    H52px  1+2+3+4
+        3 functions:    H52py  1-2-3+4
+        3 functions:    H52pz  1-2+3-4
+        3 functions:    H54px  1+2+3+4
+        3 functions:    H54py  1-2-3+4
+        3 functions:    H54pz  1-2+3-4
+
+  Symmetry  B1 ( 4)
+
+        6 functions:    C  pz  
+        3 functions:    C  dxy 
+        3 functions:    H18px  1-2+3-4
+        3 functions:    H18py  1+2-3-4
+        3 functions:    H18pz  1+2+3+4
+        3 functions:    H19px  1-2+3-4
+        3 functions:    H19py  1+2-3-4
+        3 functions:    H19pz  1+2+3+4
+        3 functions:    H22px  1-2+3-4
+        3 functions:    H22py  1+2-3-4
+        3 functions:    H22pz  1+2+3+4
+        3 functions:    H26px  1-2+3-4
+        3 functions:    H26py  1+2-3-4
+        3 functions:    H26pz  1+2+3+4
+        3 functions:    H27px  1-2+3-4
+        3 functions:    H27py  1+2-3-4
+        3 functions:    H27pz  1+2+3+4
+        3 functions:    H30px  1-2+3-4
+        3 functions:    H30py  1+2-3-4
+        3 functions:    H30pz  1+2+3+4
+        3 functions:    H36px  1-2+3-4
+        3 functions:    H36py  1+2-3-4
+        3 functions:    H36pz  1+2+3+4
+        3 functions:    H38px  1-2+3-4
+        3 functions:    H38py  1+2-3-4
+        3 functions:    H38pz  1+2+3+4
+        3 functions:    H44px  1-2+3-4
+        3 functions:    H44py  1+2-3-4
+        3 functions:    H44pz  1+2+3+4
+        3 functions:    H46px  1-2+3-4
+        3 functions:    H46py  1+2-3-4
+        3 functions:    H46pz  1+2+3+4
+        3 functions:    H47px  1-2+3-4
+        3 functions:    H47py  1+2-3-4
+        3 functions:    H47pz  1+2+3+4
+        3 functions:    H48px  1-2+3-4
+        3 functions:    H48py  1+2-3-4
+        3 functions:    H48pz  1+2+3+4
+        3 functions:    H51px  1-2+3-4
+        3 functions:    H51py  1+2-3-4
+        3 functions:    H51pz  1+2+3+4
+        3 functions:    H52px  1-2+3-4
+        3 functions:    H52py  1+2-3-4
+        3 functions:    H52pz  1+2+3+4
+        3 functions:    H54px  1-2+3-4
+        3 functions:    H54py  1+2-3-4
+        3 functions:    H54pz  1+2+3+4
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+
+ One-electron operator origins:
+ - General operator origin (a.u.)       :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Magnetic gauge origin (a.u.)         :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Dipole (and multipole) origin (a.u.) :   0.000000000000000   0.000000000000000   0.000000000000000
+ * Print level:    0
+ * Levy-Leblond Hamiltonian
+   - Spin-orbit interactions neglected
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     0
+   - SS-integrals:     0
+   - GT-integrals:     0
+
+
+ Information about the restricted kinetic balance scheme:
+ * Default RKB projection:
+   1: Pre-projection in scalar basis
+   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+
+ * Initial Automatic occupation based on:
+   Total charge of atoms =  66
+   Charge of molecule    =   0
+   i.e. no. of electrons =  66
+===========================================================================
+ *SCF: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 1
+ * Closed shell SCF calculation with    66 electrons in   33 orbitals.
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                    All dipole components are zero by symmetry
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   A     * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.75E+00
+   L   B2    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.10E+01
+   L   B3    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.10E+01
+   L   B1    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.10E+01
+   S   A     * Deleted:          3(Proj:          3, Lindep:          0) Smin: 0.34E-02
+   S   B2    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.30E-02
+   S   B3    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.30E-02
+   S   B1    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.30E-02
+
+
+                                Output from MODHAM
+                                ------------------
+
+ * All positronic solutions deleted !
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+No. of positive energy orbitals (NESH):    65
+No. of negative energy orbitals (NPSH):     0
+Total no. of orbitals           (NORB):    65
+ >>> CPU  time used in PAMSET is   0.13 seconds
+ >>> WALL time used in PAMSET is   0.13 seconds
+
+ * Closing HDF5 checkpoint file 
+    - Required data set /result/wavefunctions/scf/energy is missing
+    - Required data set /result/wavefunctions/scf/mobasis/eigenvalues is missing
+    - Required data set /result/wavefunctions/scf/mobasis/n_basis is missing
+    - Required data set /result/wavefunctions/scf/mobasis/n_fsym is missing
+    - Required data set /result/wavefunctions/scf/mobasis/n_mo is missing
+    - Required data set /result/wavefunctions/scf/mobasis/nz is missing
+    - Required data set /result/wavefunctions/scf/mobasis/orbitals is missing
+    - Checkpoint file does not contains all required data, can not be used for restarts
+    - Checkpoint file closed
+
+*****************************************************
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+
+ 
+     Date and time (Linux)  : Wed Nov 25 14:28:49 2026
+     Host name              : lpqlx134                                
+
+>>>> Node 0, utime: 0, stime: 0, minflt: 11898, majflt: 0, nvcsw: 0, nivcsw: 5, maxrss: 59496
+>>>> Total WALL time used in DIRAC: 0s
+  
+  Dynamical Memory Usage Summary for Master
+  
+  Mean allocation size (Mb) :       130.60
+  
+  Largest          10  allocations
+  
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
+        3.16 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
+        1.58 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.76 Mb at subroutine __allocator_track_if_MOD_allocator_registe for PAMINP WORK array                         
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTREP in XPLDEF                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
+  
+  Peak memory usage:       491.45 MB
+  Peak memory usage:        0.480 GB
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
+              for variable   : buf in butobs                             
+  
+ MEMGET high-water mark:    0.00 MB
+
+*****************************************************
+DIRAC pam run in /tmp/claude-1000/-home-saue-Dirac/f2fd3fc1-f48c-445d-9c2c-7572f2297fb8/scratchpad/ref
