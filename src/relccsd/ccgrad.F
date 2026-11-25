@@ -143,6 +143,8 @@ C----------------------------------------------------------------------
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
+C     One-particle CC density matrix, SVS16 Eqs. (A17)-(A20):
+C     A. Shee, L. Visscher, T. Saue, J. Chem. Phys. 145, 184107 (2016)
        subroutine cc_density (l1,l2,t1,t2,doo,dvv,buf1,buf2,dmo)
 
        use contraction

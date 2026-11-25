@@ -23,6 +23,8 @@ C---------------Description--------------------------------------------
 C
 C     Evaluate T*H  terms ("folded diagrams") for FS CC
 C     (0,1) and (1,0) complete, others to be done..
+C     Reference: L. Visscher, E. Eliav, U. Kaldor, J. Chem. Phys. 115,
+C     9720 (2001) [VEK01], Sec. II B item 2 and Eq. (6).
 C
 C     Notation for the folded diagrams :
 C     - All Occupied      : I,J,K,L

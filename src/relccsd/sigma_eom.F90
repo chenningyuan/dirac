@@ -1,4 +1,7 @@
 module sigma_eom
+! Equation numbers in the comments refer to
+! [SSVG18] A. Shee, T. Saue, L. Visscher, A. S. P. Gomes, J. Chem. Phys. 149, 174113 (2018)
+! See also doc/development/relccsd.rst
 
   use contraction
   use interface_to_mpi
@@ -552,6 +555,7 @@ integer :: ierr
    end subroutine
  
  
+   ! Intermediates of SSVG18 Eqs. (B13)-(B25) (= SVS16 Eqs. (A4)-(A14))
    subroutine IM_container(eomtype,A)
 
 #include "symm.inc"
@@ -935,6 +939,7 @@ integer :: ierr
  
  
    
+   ! SSVG18 Eqs. (B9), (B10): right EOM-EE sigma vector
    subroutine sigma_ee_1h1p(r1,r2,B,sigma1,sigma2,state_sym)
    use symmetry_offset
    use modified_sorting
@@ -1339,6 +1344,7 @@ integer :: ierr
 
   end subroutine
 
+   ! SSVG18 Eqs. (B1), (B2): right EOM-IP sigma vector
    subroutine sigma_IP(r1,r2,B,sigma1,sigma2)
    use symmetry_offset
    use modified_sorting
@@ -1608,6 +1614,7 @@ end if
 
 !==============================================================================================================================================================================================================
 
+   ! SSVG18 Eqs. (B5), (B6): right EOM-EA sigma vector (left, Eqs. (B7), (B8), not implemented)
    subroutine sigma_EA(r1,r2,B,sigma1,sigma2)
    use symmetry_offset
    use modified_sorting
@@ -1881,6 +1888,7 @@ end if
 
  end subroutine
 
+   ! SSVG18 Eqs. (B3), (B4): left EOM-IP sigma vector
    subroutine Lambda_IP(l1,l2,B,lambda1,lambda2)
 
   use symmetry_offset
@@ -2021,6 +2029,7 @@ end if
 
  end subroutine
 
+   ! SSVG18 Eqs. (B11), (B12): left EOM-EE sigma vector
    subroutine Lambda_EE(l1,l2,B,lambda1,lambda2,state_sym)
   use intermediates_1b_2b 
   use symmetry_offset

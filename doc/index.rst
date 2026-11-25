@@ -265,6 +265,7 @@ Development
   :doc:`How to add/move/remove sources <development/adding_moving_removing_sources>` |
   `runtest_dirac.py <http://runtest.readthedocs.org/en/latest/doc/adding_tests/dirac.html>`_ |
   :doc:`Input parsing <development/input_reading>` |
+  :doc:`RELCCSD theory and code map <development/relccsd>` |
   :doc:`Git submodules <development/external_projects>` |
   :doc:`Nightly tests <development/cdash>` |
   :doc:`Dirac on Windows <development/windows>` |
