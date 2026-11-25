@@ -147,16 +147,21 @@ C     END IF
          ATMARR(1,I) = CORD(1,I)
          ATMARR(2,I) = CORD(2,I)
          ATMARR(3,I) = CORD(3,I)
-Chjaaj   ATMARR(4,I) = CHARGE(I)
-         ATMARR(4,I) = IZATOM(I)
-C        ... use true nuclear charge, not effective charge in CHARGE(I)
-C            (As different atoms can have same effective charge with
-C             ECP, using CHARGE for sorting is not reliable for ECP)
-C            /hjaaj Mar 2004
+C        ... (4,I): the charge, which may be non-integer (embedding,
+C            fractional nuclear charges); charges are compared with
+C            threshold TOLCHG.
+C            (6,I): key IKEYZ*IZATOM + ISOTOP, so that centres with
+C            different atom number (e.g. point charge, IZATOM=0, vs. a
+C            nucleus, or two elements with the same ECP charge) or
+C            different isotope are never symmetry-related.
+C            See mxsymm.h.  /Nov 2026
+         ATMARR(4,I) = CHARGE(I)
          ATMARR(5,I) = I
-         ATMARR(6,I) = ISOTOP(I)
+         ATMARR(6,I) = IKEYZ*IZATOM(I) + ISOTOP(I)
       END DO
       ATMARR(1,0) = N_ATOMS
+C     Warn about centres with almost equal charges (Nov 2026)
+      IF (MYTID .EQ. MPARID) CALL CHKCHG(N_ATOMS, ATMARR)
       IF ( MYTID .eq. MPARID .and. IPRSYM .gt. IPRTHR) THEN
          TEXT = 'Original Coordinates'
          CALL PRNARR(TEXT, MXCENT, ATMARR)
@@ -164,7 +169,7 @@ C            /hjaaj Mar 2004
          IF (.NOT. NOMOVE) THEN
 C           Place molecular center of mass at the origin and
 C           with principal axes of inertia along coordinate axes
-            CALL CENTER_MOLECULE(ATMARR,IPRSYM)
+            CALL CENTER_MOLECULE(ATMARR)
          END IF
 C     Sort atoms after atom number and distance from origo
 CRF      We have to sort the atoms AFTER we center the molecule
@@ -381,6 +386,67 @@ C     END IF
       NUCIND = NCTOT
       RETURN
       END  ! subroutine FIND_SYMMETRY
+C  /* Deck chkchg */
+      SUBROUTINE CHKCHG(N_ATOMS, ATMARR)
+C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+C ::  Warns about pairs of centres with same atom number and isotope ::
+C ::  whose charges are almost, but not exactly, equal:               ::
+C ::   0 < |dq| < TOLCHG      : treated as equal (may become          ::
+C ::                            symmetry-related; then the dependent  ::
+C ::                            centre gets the charge of the         ::
+C ::                            independent one)                      ::
+C ::   TOLCHG <= |dq| < TOLCHW: treated as different (may lower the   ::
+C ::                            symmetry found)                       ::
+C ::  (Nov 2026)                                                      ::
+C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxsymm.h"
+#include "nuclei.h"
+      DIMENSION ATMARR(6,0:*)
+      PARAMETER (MAXPRT = 10)
+      NWARN = 0
+      NEQUAL = 0
+      DO I = 1, N_ATOMS
+         DO J = I+1, N_ATOMS
+            IF (NINT(ATMARR(6,I)) .NE. NINT(ATMARR(6,J))) CYCLE
+            DQ = ABS(ATMARR(4,I) - ATMARR(4,J))
+            IF (DQ .EQ. 0.0D0 .OR. DQ .GE. TOLCHW) CYCLE
+            NWARN = NWARN + 1
+            IF (DQ .LT. TOLCHG) NEQUAL = NEQUAL + 1
+            IF (NWARN .GT. MAXPRT) CYCLE
+            IF (NWARN .EQ. 1) WRITE(LUPRI,'(/A)')
+     &         ' WARNING: centres with almost equal charges'//
+     &         ' (same atom number and isotope):'
+            IF (DQ .LT. TOLCHG) THEN
+               WRITE(LUPRI,'(3X,A,1X,A,F16.10,A,F16.10,A)')
+     &            NAMN(NINT(ATMARR(5,I))), '(',ATMARR(4,I),' ) and '//
+     &            NAMN(NINT(ATMARR(5,J)))//' (',ATMARR(4,J),
+     &            ' ): treated as EQUAL'
+            ELSE
+               WRITE(LUPRI,'(3X,A,1X,A,F16.10,A,F16.10,A)')
+     &            NAMN(NINT(ATMARR(5,I))), '(',ATMARR(4,I),' ) and '//
+     &            NAMN(NINT(ATMARR(5,J)))//' (',ATMARR(4,J),
+     &            ' ): treated as DIFFERENT'
+            END IF
+         END DO
+      END DO
+      IF (NWARN .GT. MAXPRT) WRITE(LUPRI,'(3X,A,I8,A)')
+     &   '... and', NWARN-MAXPRT, ' more such pairs'
+      IF (NWARN .GT. 0) WRITE(LUPRI,'(3X,A,1P,D8.1,A)')
+     &   'Charges are treated as equal if they differ by less than',
+     &   TOLCHG,'.'
+      IF (NEQUAL .GT. 0) WRITE(LUPRI,'(3X,A/3X,A)')
+     &   'EQUAL: if symmetry-related, the symmetry-dependent centre'//
+     &   ' gets the charge',
+     &   '       of the symmetry-independent one.'
+      IF (NWARN .GT. NEQUAL) WRITE(LUPRI,'(3X,A)')
+     &   'DIFFERENT: this may lower the symmetry found.'
+      IF (NWARN .GT. 0) WRITE(LUPRI,'(3X,A)')
+     &   'Check that the charges in the input have enough digits.'
+      RETURN
+      END
 C  /* Deck prnarr */
       SUBROUTINE PRNARR(TEXT, MXM, ARR)
 C ::::::::::::::::::::::::::::::::::::::::::::::
@@ -390,6 +456,7 @@ C ::(VB, part of hersym.F)                    ::
 C ::::::::::::::::::::::::::::::::::::::::::::::
 #include "implicit.h"
 #include "priunit.h"
+#include "mxsymm.h"
       CHARACTER*(*) TEXT
       DIMENSION ARR(6,0:MXM)
       I = LEN(TEXT)
@@ -400,10 +467,18 @@ C ::::::::::::::::::::::::::::::::::::::::::::::
          END IF
       IF (I .GT. 0) WRITE(LUPRI,'(/1X,A/1X,80A1)') TEXT(1:I),('-',J=1,I)
       DO I=1,NINT(ARR(1,0))
-         WRITE (LUPRI,11) NINT(ARR(4,I)),(ARR(J,I), J=1,3),
-     &                    NINT(ARR(6,I))
+         IF (ARR(6,I) .GT. 0.5D0) THEN
+C           ... atom array: print charge, coordinates, Z and isotope
+            WRITE (LUPRI,11) ARR(4,I),(ARR(J,I), J=1,3),
+     &         NINT(ARR(6,I))/IKEYZ, MOD(NINT(ARR(6,I)),IKEYZ)
+         ELSE
+C           ... axis array: print order and direction (old format)
+            WRITE (LUPRI,12) NINT(ARR(4,I)),(ARR(J,I), J=1,3),
+     &                       NINT(ARR(6,I))
+         END IF
       END DO
-   11 FORMAT (I8, ' : ', 3F15.8,'  Isotope',I3)
+   11 FORMAT (F12.6, ' : ', 3F15.8,'  Z',I4,'  Isotope',I3)
+   12 FORMAT (I8, ' : ', 3F15.8,'  Isotope',I3)
       RETURN
       END
 C  /* Deck prnmir */
@@ -445,6 +520,7 @@ C ::                                          ::
 C ::::::::::::::::::::::::::::::::::::::::::::::
 #include "implicit.h"
 #include "priunit.h"
+#include "mxsymm.h"
       CHARACTER*(*) TEXT
       CHARACTER*40 UNDER
       DIMENSION ARR(6,0:MXM),IARR(MXM)
@@ -457,9 +533,9 @@ C ::::::::::::::::::::::::::::::::::::::::::::::
       IF (I .GT. 0) WRITE(LUPRI,'(/1X,A/1X,80A1)') TEXT(1:I),('-',J=1,I)
       DO 200 I=1,NINT(ARR(1,0))
          II = IARR(I)
-         WRITE (LUPRI,11) NINT(ARR(4,II)),(ARR(J,II), J=1,3),
-     &                    NINT(ARR(6,II))
-  11     FORMAT (I5, T10,3F15.8, T60,I3)
+         WRITE (LUPRI,11) ARR(4,II),(ARR(J,II), J=1,3),
+     &      NINT(ARR(6,II))/IKEYZ, MOD(NINT(ARR(6,II)),IKEYZ)
+  11     FORMAT (F12.6, 3F15.8, '  Z',I4,'  Isotope',I3)
  200  CONTINUE
       RETURN
       END
@@ -622,7 +698,8 @@ C :::::::::::::::::::::::::::::::::::::::::::::
             J = I + 1
  150        CONTINUE
             IF ((J .LE. N_ATOMS) .AND.
-     &        (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J)))) THEN
+     &        (ABS(ATMARR(4,I)-ATMARR(4,J)) .LT. TOLCHG) .AND.
+     &        (NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J)))) THEN
 C ::: Subtracting two position yields a zero vector for duplicate atoms. :::
                V2(1) = ATMARR(1,J) - V1(1)
                V2(2) = ATMARR(2,J) - V1(2)
@@ -653,7 +730,7 @@ C  /* Deck srtatm */
       SUBROUTINE SRTATM(IUPPER, ARR, USENRM)
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 C ::                                                                      ::
-C ::       Sorts atoms after atom number, isotope number,                 ::
+C ::       Sorts atoms after atom number, isotope number, charge,         ::
 C ::       and distance from origo.                                       ::
 C ::       Rotational axes are sorted after order, the norm does not      ::
 C ::       matter for these (USENRM turns on and off the norm criteria).  ::
@@ -661,6 +738,7 @@ C ::       The method used is bubble sorting.                             ::
 C ::                                                                      ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include "implicit.h"
+#include "mxsymm.h"
          DIMENSION ARR(6,0:IUPPER)
          LOGICAL USENRM, SORTED
 C
@@ -673,12 +751,15 @@ C
             DO 200 J = 1, N_ATOMS-I
                IF (USENRM) THEN
 C              ... sort atoms
-C              test 1) higher charge before lower charge
-                  IF ( ARR(4,J+1) .GT. ARR(4,J) )  GOTO 300
-                  IF ( ARR(4,J+1) .LT. ARR(4,J) )  GOTO 310
-C              test 2) for same charge: higher isotope before lower isotope
+C              test 1) higher key IKEYZ*Z+isotope first, i.e. higher
+C                 atom number before lower, then higher isotope first
+C                 (same order as before charges were introduced)
                   IF ( ARR(6,J+1) .GT. ARR(6,J) ) GOTO 300
                   IF ( ARR(6,J+1) .LT. ARR(6,J) ) GOTO 310
+C              test 2) for same key: higher charge before lower charge
+C                 (charges may be non-integer; equal within TOLCHG)
+                  IF ( ARR(4,J+1)-ARR(4,J) .GT. TOLCHG )  GOTO 300
+                  IF ( ARR(4,J)-ARR(4,J+1) .GT. TOLCHG )  GOTO 310
                   RATM1 = ARR(1,J  )**2 + ARR(2,J  )**2 + ARR(3,J  )**2
                   RATM2 = ARR(1,J+1)**2 + ARR(2,J+1)**2 + ARR(3,J+1)**2
 C              test 3) shorter distance to origo before longer distance
@@ -745,7 +826,8 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          RETURN
       END
 C ---
-      SUBROUTINE CENTER_MOLECULE(ATMARR,IPRSYM)
+      SUBROUTINE CENTER_MOLECULE(ATMARR)
+C     ... IPRSYM is taken from mxsymm.h
 C :::::::::::::::::::::::::::::::::::::::::::
 C ::                                       ::
 C ::       Centres molecule in space       ::
@@ -754,6 +836,7 @@ C :::::::::::::::::::::::::::::::::::::::::::
 C
 #include "implicit.h"
 #include "priunit.h"
+#include "mxsymm.h"
       DIMENSION ATMARR(6,0:*), CMXYZ(3)
       DIMENSION CINRTP(6),VPCMOM(3,3), TMP(3), ITMP(3)
 
@@ -783,11 +866,11 @@ C ::: and the molecule is rotated such that the principal moment of inertia axes
 C ::: are along the coordinate axes.
       TOTMAS = 0.0D0
       DO I = 1,N_ATOMS
-         IZ = NINT(ATMARR(4,I))
+         IZ = NINT(ATMARR(6,I))/IKEYZ
       IF (IZ .LE. 0) CYCLE
 C... hjaaj exclude point charges, MM atoms and floating orbitals
 C       in the centering of the molecule.
-         AMASS  = DISOTP(IZ,NINT(ATMARR(6,I)),'MASS')
+         AMASS  = DISOTP(IZ,MOD(NINT(ATMARR(6,I)),IKEYZ),'MASS')
          TOTMAS = TOTMAS + AMASS
          CMXYZ(1) = CMXYZ(1) + ATMARR(1,I)*AMASS
          CMXYZ(2) = CMXYZ(2) + ATMARR(2,I)*AMASS
@@ -873,11 +956,11 @@ C ::: and the molecule is rotated such that the principal moment of inertia axes
 C ::: are along the coordinate axes.
          TOTMAS = 0.0D0
          DO I = 1,N_ATOMS
-            IZ = NINT(ATMARR(4,I))
+            IZ = NINT(ATMARR(6,I))/IKEYZ
          IF (IZ .LE. 0) CYCLE
 C... hjaaj exclude point charges, MM atoms and floating orbitals
 C          in the centering of the molecule.
-            AMASS  = DISOTP(IZ,NINT(ATMARR(6,I)),'MASS')
+            AMASS  = DISOTP(IZ,MOD(NINT(ATMARR(6,I)),IKEYZ),'MASS')
             TOTMAS = TOTMAS + AMASS
             CMXYZ(1) = CMXYZ(1) + ATMARR(1,I)*AMASS
             CMXYZ(2) = CMXYZ(2) + ATMARR(2,I)*AMASS
@@ -895,9 +978,9 @@ C        CMXYZ(1:3) now contains center-of-mass coordinates
 
          CINRTP(1:6) = 0.0D0
          DO I=1,N_ATOMS
-            IZ = NINT(ATMARR(4,I))
+            IZ = NINT(ATMARR(6,I))/IKEYZ
          IF (IZ .LE. 0) CYCLE
-            AMASS  = DISOTP(IZ,NINT(ATMARR(6,I)),'MASS')
+            AMASS  = DISOTP(IZ,MOD(NINT(ATMARR(6,I)),IKEYZ),'MASS')
             XI = ATMARR(1,I) - CMXYZ(1)
             YI = ATMARR(2,I) - CMXYZ(2)
             ZI = ATMARR(3,I) - CMXYZ(3)
@@ -1374,7 +1457,7 @@ C ::: We then proceed with the rest of the atoms, trying to pair them. :::
                J = I + 1
  250           CONTINUE
                   IF ((IUSED(I) .EQ. 0) .AND. (J .LE. N_ATOMS)) THEN
-                     IF (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J)) .AND.
+                     IF (ABS(ATMARR(4,I)-ATMARR(4,J)) .LT. TOLCHG .AND.
      &                   NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J))) THEN
                         V1(1) = ATMARR(1,I) + ATMARR(1,J)
                         V1(2) = ATMARR(2,I) + ATMARR(2,J)
@@ -1465,7 +1548,7 @@ C ::: Then we go through the rest, trying to find each atoms mirror image :::
 !radovan: test dft_dirac_ao_eval goes out of bounds
 !Array reference out of bounds for array 'atmarr', upper bound of dimension 2 exceeded (3 > 2)
                IF ((IUSED(I) .EQ. 0) .AND. (J .LE. N_ATOMS) .AND.
-     &             (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J))) .AND.
+     &             (ABS(ATMARR(4,I)-ATMARR(4,J)) .LT. TOLCHG) .AND.
      &             (NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J)))) THEN
 C ::: The position of the possible mirror atom is investigated.      :::
 C ::: First, we subtract the XY-comp. of the first atom. If the two  :::
@@ -1597,7 +1680,7 @@ C ::: We take the XY-component. :::
             IF (IUSED(J) .EQ. 1) CYCLE
 
 C ::: Check that atoms I and J are equivalent; i.e. same charge and same isotope number :::
-            EQL = (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J)) .AND.
+            EQL = (ABS(ATMARR(4,I)-ATMARR(4,J)) .LT. TOLCHG .AND.
      &             NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J)))
             IF (.NOT. EQL) CYCLE
 
@@ -1701,8 +1784,8 @@ C ::: The number of equivalent atoms is counted in IORD. :::
          V2(2) = ATMARR(2,J)
          V2(3) = ATMARR(3,J)
          V2NRM2 = V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3)
-         IF ((NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J))) .AND. ! same charge
-     &       (NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J))) .AND. ! same isotope
+         IF ((ABS(ATMARR(4,I)-ATMARR(4,J)) .LT. TOLCHG) .AND. ! same charge
+     &       (NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J))) .AND. ! same Z and isotope
      &       (ABS( V1NRM2 - V2NRM2 ) .LT. TOLLDS )) THEN      ! same distance to origo
             IORD = IORD + 1
             J = J + 1
@@ -2058,10 +2141,10 @@ C ::: information to test a mirror plane.                                :::
             V1(2) = ATMARR(2,I)
             V1(3) = ATMARR(3,I)
             J = I + 1
-            IATMNR = NINT(ATMARR(4,I))
+            CHRGI  = ATMARR(4,I)
             IATMMS = NINT(ATMARR(6,I))
  210        CONTINUE
-            IF ( NINT(ATMARR(4,J)).EQ.IATMNR .AND.
+            IF ( ABS(ATMARR(4,J)-CHRGI).LT.TOLCHG .AND.
      &           NINT(ATMARR(6,J)).EQ.IATMMS ) THEN
                V2(1) = ATMARR(1,J)
                V2(2) = ATMARR(2,J)
@@ -2427,7 +2510,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::
                      K = J + 1
  150                 CONTINUE
                      IF ((K .LE. N_ATOMS) .AND.
-     &                (NINT(EXTARR(4,K)) .EQ. NINT(EXTARR(4,J))) .AND.
+     &                (ABS(EXTARR(4,K)-EXTARR(4,J)) .LT. TOLCHG) .AND.
      &                (NINT(EXTARR(6,K)) .EQ. NINT(EXTARR(6,J)))) THEN
                        CALL TSTPAR(MXM,EXTARR,TMPARR,J,K,1,V1,GENELM)
                         K = K + 1
@@ -2463,7 +2546,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::
                      K = J + 1
  260                 CONTINUE
                      IF ((K .LE. N_ATOMS) .AND.
-     &                (NINT(EXTARR(4,K)) .EQ. NINT(EXTARR(4,J))) .AND.
+     &                (ABS(EXTARR(4,K)-EXTARR(4,J)) .LT. TOLCHG) .AND.
      &                (NINT(EXTARR(6,K)) .EQ. NINT(EXTARR(6,J)))) THEN
                         CALL TSTPAR(MXM,EXTARR,TMPARR,J,K,2,V1,GENELM)
                         IF (GENELM) NECESS = .TRUE.
@@ -2512,7 +2595,7 @@ C ::: (another dirty solution!!!)                                     :::
                      K = J + 1
  360                 CONTINUE
                      IF ((K .LE. N_ATOMS) .AND.
-     &                (NINT(EXTARR(4,K)) .EQ. NINT(EXTARR(4,J))) .AND.
+     &                (ABS(EXTARR(4,K)-EXTARR(4,J)) .LT. TOLCHG) .AND.
      &                (NINT(EXTARR(6,K)) .EQ. NINT(EXTARR(6,J)))) THEN
                         CALL TSTPAR(MXM,EXTARR,TMPARR,J,K,3,V1,GENELM)
                         K = K + 1

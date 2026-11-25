@@ -26,4 +26,12 @@ f.add(from_string = '                                   Eigenvalues',
 #test.run(['lda.inp'], ['H2O.mol', 'CH4.mol', 'SF6.mol', 'transCHFCHF.mol'], f)
 test.run(['lda.inp'], ['H2O.mol', 'CH4.mol', 'transCHFCHF.mol'], f)
 
+# Nov 2026: centres are only symmetry-related if they have the same
+# (possibly non-integer) charge, not just the same integer atom number.
+# CO_MgO_bridge: CO at a bridge site of MgO(100), surface modelled by
+#               Mg(2+)/O(2-) point charges, C(s)   (was wrongly C(2v): all
+#               point charges have atom number 0, and the C2v symmetry swaps
+#               Mg(2+) and O(2-); wrong energy without any warning)
+test.run(['lda.inp'], ['CO_MgO_bridge.mol'], f)
+
 sys.exit(test.return_code)

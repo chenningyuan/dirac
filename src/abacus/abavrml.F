@@ -252,8 +252,9 @@ C     Make VRML representation of symmetry elements.
 C
 #include "implicit.h"
 #include "mxcent.h"
-      DIMENSION ATM(5,0:MXCENT)
-      DIMENSION DRTAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
+C     ATM, DRTAXS, DMRPLN have the hersym.F layout (6,0:*), see mxsymm.h
+      DIMENSION ATM(6,0:MXCENT)
+      DIMENSION DRTAXS(6,0:MAXAXS), DMRPLN(6,0:MAXMIR)
       DIMENSION WORK(LWORK)
       KATMAR = 1
       KLAST  = KATMAR + 8*MXCENT
@@ -274,8 +275,10 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "optinf.h"
-      DIMENSION ATM(5,0:MXCENT)
-      DIMENSION DRTAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
+      PARAMETER (IKEYZ = 1000)
+C     ... IKEYZ as in mxsymm.h (not included here: it declares MAXAXS, MAXMIR)
+      DIMENSION ATM(6,0:MXCENT)
+      DIMENSION DRTAXS(6,0:MAXAXS), DMRPLN(6,0:MAXMIR)
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION VEC(3)
       CHARACTER*12 FILENM
@@ -292,7 +295,8 @@ C
          DO 15 J = 1, 3
             ATMARR(I,J+1) = ATM(J,I)*XTANG
  15      CONTINUE
-         ATMARR(I,1) = ATM(4,I)
+C        ... atom number Z from the key in ATM(6,I) (ATM(4,I) is the charge)
+         ATMARR(I,1) = NINT(ATM(6,I))/IKEYZ
          ATMARR(I,5) = RADIUS(NINT(ATMARR(I,1)))
  10   CONTINUE
 C
