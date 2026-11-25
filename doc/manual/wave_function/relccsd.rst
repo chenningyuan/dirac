@@ -11,6 +11,7 @@ See :cite:`Visscher1996` for the initial CCSD(T) implementation. The Fock-space 
 implementation is described in :cite:`Visscher2001`. The ground-state expectation 
 value implementations are described in :cite:`vanStralen2005` for MP2 and :cite:`Shee2016` for CCSD.
 The base EOM CC implementation is described in :cite:`Shee2018`.
+The MPI parallelization of the CCSD code is described in :cite:`Pernpointner2003`.
 For developers, :ref:`relccsd_developer` relates the equations of these papers to the source code.
 
 starstar(RELCC)
