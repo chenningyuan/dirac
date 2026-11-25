@@ -720,6 +720,9 @@ C
       COMPLEX*16 CSUM1,ZSUM,CSUM,ZDOTC,CDOTC,CFAC
       LOGICAL COMPRESS
       integer i,ierr,igs,j,mxdim,n,n1,n1n,n2,sect1,sect2,intowp
+      integer lwrkgg
+      REAL*8 WRKOPT(1),DUMVL(1)
+      REAL*8, ALLOCATABLE :: WRKGG(:)
 C
 C---------------Executable code--------------------------------------
 C
@@ -796,7 +799,8 @@ C
 C
    30 CONTINUE
 C
-C  Call general EISPACK eigensolver
+C  Call general LAPACK eigensolver DGGEV (replaces EISPACK RGG,
+C  same conventions for FREQR/FREQI/FREQD and the eigenvectors in CC)
 C
       IERR = 0
       DO I = 1, 2*IT
@@ -806,7 +810,13 @@ C
 c     print*,i,j,hh(i,j),ss(i,j)
       ENDDO
       ENDDO
-      CALL RGG (MAXDIM,2*IT,HH1,SS1,FREQR,FREQI,FREQD,1,CC,IERR)
+      CALL DGGEV ('N','V',2*IT,HH1,MAXDIM,SS1,MAXDIM,FREQR,FREQI,
+     &            FREQD,DUMVL,1,CC,MAXDIM,WRKOPT,-1,IERR)
+      LWRKGG = MAX(16*IT,NINT(WRKOPT(1)))
+      ALLOCATE (WRKGG(LWRKGG))
+      CALL DGGEV ('N','V',2*IT,HH1,MAXDIM,SS1,MAXDIM,FREQR,FREQI,
+     &            FREQD,DUMVL,1,CC,MAXDIM,WRKGG,LWRKGG,IERR)
+      DEALLOCATE (WRKGG)
       DO I = 1, 2*IT
          FREQR(I) = FREQR(I)/FREQD(I)
 c        print*,'eigenvalue ',i,'  ',FREQR(I)
@@ -819,7 +829,7 @@ c        print*,'eigenvalue ',i,'  ',FREQR(I)
       EFREQ = FREQR(1)
       IF (IERR.NE.0) THEN
          PRINT*,' Failed to solve reduced equations'
-         CALL QUIT('ERROR CONDITION IN RGG')
+         CALL QUIT('ERROR CONDITION IN DGGEV')
       ENDIF
 C
 C  Form the solution vector

@@ -1359,7 +1359,13 @@ Options are also read from ~/.diracrc"""
         self.create_scratch_dir()
 
     # copy dirac.x executable if wanted
-        self.copy_file(self.dirac_exe, os.path.join(self.scratch_dir,self.dirac_exe_file))
+        exe_scr = os.path.join(self.scratch_dir, self.dirac_exe_file)
+        # A reused scratch dir (--keep_scratch) already holds dirac.x. Overwriting a
+        # binary in place makes macOS kill it (SIGKILL, Code Signature Invalid),
+        # so unlink it first and copy to a new inode.
+        if os.path.lexists(exe_scr):
+            os.remove(exe_scr)
+        self.copy_file(self.dirac_exe, exe_scr)
 
     # create textfile contains labels for checkpoint file for the schema
         from process_schema import read_schema, write_schema
@@ -1876,6 +1882,17 @@ Options are also read from ~/.diracrc"""
         self.dirac_stderr = self.dirac_p.communicate()[1]
 
         self.dirac_p.wait()
+
+        # report if dirac.x was killed by a signal (it then writes no output itself)
+        if self.dirac_p.returncode < 0:
+            signum = -self.dirac_p.returncode
+            try:
+                signame = signal.Signals(signum).name
+            except ValueError:
+                signame = 'unknown signal'
+            message = 'pam: %s was killed by signal %d (%s)' % (self.dirac_exe_file, signum, signame)
+            self.f.write('\n ' + message + '\n')
+            print(message, file=sys.stderr)
 
         # deal with the error output only if happens
         if self.dirac_stderr and self.verbose:
