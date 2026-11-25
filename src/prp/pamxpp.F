@@ -1749,6 +1749,7 @@ C
 C     DIMENSION AE(LDA,N),AS(LDA,N),W(N),X(LDA,N),
       DIMENSION AE(*),AS(*),W(N),X(*),
      &          WORK(*),ISNDX(3)
+      DIMENSION WRKOPT(1),DUMVL(1)
 C
 #include "dcbxrs.h"
 C
@@ -1770,19 +1771,31 @@ C
       CALL DCOPY(N2A,AE,1,WORK(KAE),1)
       CALL DCOPY(N2A,AS,1,WORK(KAS),1)
 C
-C     Solve generalized eigenvalue problem
+C     Solve generalized eigenvalue problem with LAPACK DGGEV
+C     (replaces EISPACK RGG, whose QZ iteration could fail to converge
+C      for the exactly degenerate +/- pairs of e.g. atoms; same output
+C      convention: eigenvalues (ALFR + i ALFI)/BETA, right eigenvectors
+C      in Z, complex pairs as consecutive real/imaginary columns)
 C
-      MATZ = 1
-      CALL RGG(LDA,N,WORK(KAE),WORK(KAS),WORK(KALFR),WORK(KALFI),
-     &         WORK(KBETA),MATZ,WORK(KEIGV),IERR)
-C     IERR IS SET TO
+C     workspace query
+      CALL DGGEV('N','V',N,WORK(KAE),LDA,WORK(KAS),LDA,WORK(KALFR),
+     &           WORK(KALFI),WORK(KBETA),DUMVL,1,WORK(KEIGV),LDA,
+     &           WRKOPT,-1,IERR)
+      LWRKGG = MAX(8*N,NINT(WRKOPT(1)))
+      CALL MEMGET2('REAL','WGG' ,KWRKGG,LWRKGG,WORK,KFREE,LFREE)
+      CALL DGGEV('N','V',N,WORK(KAE),LDA,WORK(KAS),LDA,WORK(KALFR),
+     &           WORK(KALFI),WORK(KBETA),DUMVL,1,WORK(KEIGV),LDA,
+     &           WORK(KWRKGG),LWRKGG,IERR)
+C     IERR (INFO) IS SET TO
 C       ZERO       for normal return,
-C       J          if the limit of 30*N iterations is exhausted
-C                     while the J-th eigenvalue is being sought.
+C       J <= N     if the QZ iteration failed; eigenvalues J+1:N are
+C                  correct, no eigenvectors were computed,
+C       N+1        other failure in DHGEQZ,
+C       N+2        error return from DTGEVC.
 C
       IF (IERR.NE.0) THEN
          WRITE(LUPRI,*)
-     &      'FATAL ERROR: EIGRED error after RGG, IERR =',IERR
+     &      'FATAL ERROR: EIGRED error after DGGEV, INFO =',IERR
          IPRINT = 999
       END IF
 C
