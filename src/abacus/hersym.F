@@ -1182,7 +1182,43 @@ C
      &      N_ROTAXS, N_MIRROR, N_ATOMS
       END IF
 
-      IF (N_ROTAXS .LE. 0 . AND. .NOT. LINMOL(MXM, ATMARR)) RETURN ! RETURN, no turning if no rotation axes (C1, Cs, or Ci symmetry)
+      IF (N_ROTAXS .LE. 0 . AND. .NOT. LINMOL(MXM, ATMARR)) THEN
+C        ... no rotation axes: C1, Cs, or Ci symmetry.
+C        Nov 2026: for Cs, rotate the mirror plane into the xy-plane
+C        (normal along z), unless it already is a coordinate plane;
+C        otherwise SYM_REDUCE, which only tests the coordinate planes,
+C        does not find it and the calculation runs in C1.
+         IF (N_MIRROR .GE. 1) THEN
+            V1(1) = DMRPLN(1,1)
+            V1(2) = DMRPLN(2,1)
+            V1(3) = DMRPLN(3,1)
+            VNRM  = SQRT(V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3))
+            V1(1) = V1(1)/VNRM
+            V1(2) = V1(2)/VNRM
+            V1(3) = V1(3)/VNRM
+            IF (MAX(ABS(V1(1)),ABS(V1(2)),ABS(V1(3)))
+     &          .LT. 1.0D0 - TOLLRN) THEN
+C              V2 = target direction (along z-axis)
+               V2(1) = 0.0D0
+               V2(2) = 0.0D0
+               V2(3) = 1.0D0
+C              V3 = axis to rotate around
+               V3(1) =  V1(2)
+               V3(2) = -V1(1)
+               V3(3) = 0.0D0
+               IF ((V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3))
+     &                      .GT. TOLLRN_2) THEN
+                  DEG = VECANG(V1, V2)
+                  CALL ROTMOL(MXM   , ATMARR, V3, DEG)
+                  CALL ROTMOL(MAXMIR, DMRPLN, V3, DEG)
+               END IF
+               IF (IPRSYM .GT. 0) WRITE(LUPRI,'(/A)')
+     &         '    The molecule has been rotated to place the mirror'//
+     &         ' plane in the xy-plane.'
+            END IF
+         END IF
+         RETURN
+      END IF
 C
       CALL DZERO(TMPARR,6*(LENTMP+1))
 C ::: First we make a new array of vectors, consisting of mirror :::

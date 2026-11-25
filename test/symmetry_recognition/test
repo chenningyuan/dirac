@@ -32,7 +32,12 @@ test.run(['lda.inp'], ['H2O.mol', 'CH4.mol', 'transCHFCHF.mol'], f)
 #               Mg(2+)/O(2-) point charges, C(s)   (was wrongly C(2v): all
 #               point charges have atom number 0, and the C2v symmetry swaps
 #               Mg(2+) and O(2-); wrong energy without any warning)
-test.run(['lda.inp'], ['CO_MgO_bridge.mol'], f)
+# CO_MgCaO_hollow: CO at a hollow site of a (Mg,Ca)O(100) surface, partial
+#               (non-integer) charges Mg +1.6, Ca +1.8, O -1.7, C(s); C(2v)
+#               if the charges were rounded to integers. The mirror plane
+#               is diagonal: also tests that a Cs molecule is rotated so
+#               that the plane is used (was C1 before).
+test.run(['lda.inp'], ['CO_MgO_bridge.mol', 'CO_MgCaO_hollow.mol'], f)
 
 # Nov 2026: cubic and icosahedral point groups, symmetry detection only
 # (no wave function). Before, T, O, I were reported as T(d), Th as O(h);

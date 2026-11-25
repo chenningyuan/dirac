@@ -22,6 +22,7 @@ H2O               C(2v) ->  C2v
 SF6               O(h)  ->  D2h
 trans CHF=CHF     C(2h) ->  C2h
 CO_MgO_bridge     C(s)  ->  Cs
+CO_MgCaO_hollow   C(s)  ->  Cs
 T                 T     ->  D2
 Th                T(h)  ->  D2h
 O                 O     ->  D2
@@ -29,10 +30,11 @@ I                 I     ->  D2
 B12H12            I(h)  ->  D2h
 ==============    =================
 
-``CO_MgO_bridge`` tests that centres are only symmetry-related if their
-charges agree (to within a threshold of 1.0D-6), also for non-integer
-charges, and that point charges (atom number 0) are distinguished by their
-charge. It models CO on an oxide surface with embedding point charges:
+``CO_MgO_bridge`` and ``CO_MgCaO_hollow`` test that centres are only
+symmetry-related if their charges agree (to within a threshold of 1.0D-6),
+also for non-integer charges, and that point charges (atom number 0) are
+distinguished by their charge. Both model CO on an oxide surface with
+embedding point charges:
 
 * ``CO_MgO_bridge``: CO adsorbed upright at a bridge site of MgO(100), with the
   surface modelled by Mg(2+) and O(2-) point charges. The true symmetry is C(s)
@@ -40,6 +42,14 @@ charge. It models CO on an oxide surface with embedding point charges:
   number 0, and earlier versions found C(2v), imposing a mirror plane that
   swaps Mg(2+) and O(2-): the calculation ran without warning, but in the
   wrong field (energy off by 38 mEh).
+* ``CO_MgCaO_hollow``: CO above a hollow site of a mixed (Mg,Ca)O(100) surface,
+  modelled by the partial charges Mg +1.6, Ca +1.8 and O -1.7. The hollow site
+  lies between one Mg and one Ca (on one diagonal) and two O (on the other).
+  The true symmetry is C(s), with the mirror plane through the Mg-Ca diagonal.
+  If the charges were rounded to integers, Mg and Ca would become equivalent
+  and the symmetry C(2v). The mirror plane is not a coordinate plane in the
+  input, so this also tests that a C(s) molecule is rotated such that the
+  plane is used (earlier versions found C(s) but ran in C1).
 
 The cubic and icosahedral cases (``T``, ``Th``, ``O``, ``I``, ``B12H12``) only run
 the symmetry detection (``symdetect.inp``, no wave function).
