@@ -11,6 +11,8 @@ See :cite:`Visscher1996` for the initial CCSD(T) implementation. The Fock-space 
 implementation is described in :cite:`Visscher2001`. The ground-state expectation 
 value implementations are described in :cite:`vanStralen2005` for MP2 and :cite:`Shee2016` for CCSD.
 The base EOM CC implementation is described in :cite:`Shee2018`.
+The MPI parallelization of the CCSD code is described in :cite:`Pernpointner2003`.
+For developers, :ref:`relccsd_developer` relates the equations of these papers to the source code.
 
 starstar(RELCC)
 
@@ -128,6 +130,8 @@ CCSD wavefunctions, by solving for the left-hand eigenvectors of the correspondi
 similarity-transformed Hamiltonian. It should be specified along with  :ref:`RELCC_.EOMCC` 
 as it requires the right-hand eigenvectors and, as such, the same type of calculation 
 (EOM-EE/IP/EA) will be performed. See :ref:`*EOMPROP` for further details.
+Only EOM-EE and EOM-IP are supported: left-hand eigenvectors, and hence properties,
+are not implemented for EOM-EA.
 
 *Default:*
 
@@ -786,34 +790,34 @@ Default: IHSCHEME = 2
  
 Next key options are used only in case of XIH (IHSCHEME = 1).
  
-keyword(SHIFTH11)
+keyword(SH_H11)
 
 Energy shift for the one-electronic excitations in (1,0) sector. Arguments: real.
 
-keyword(SHIFTH12)
+keyword(SH_H12)
 
 Energy shift for the two-electronic excitations in (1,0) sector. Arguments: real.
 
-keyword(SHIFTH2)
+keyword(SH_H2)
 
 Energy shift for the two-electronic excitations in (2,0) sector. Arguments: real.
 
-keyword(SHIFTP11)
+keyword(SH_P11)
 
 Energy shift for the one-electronic excitations in (0,1) sector. Arguments: real.
 
-keyword(SHIFTP12)
+keyword(SH_P12)
 
 Energy shift for the two-electronic excitations in (0,1) sector. Arguments: real.
 
-keyword(SHIFTP2)
+keyword(SH_P2)
 
 Energy shift for the two-electronic excitations in (0,2) sector. Arguments: real.
 Usually we choose the approximate difference between the highest orbital energy belonging to Pi and the lowest
 orbital energy belonging to the Pm space. 
 Works only with the old style of RELCC input.
 
-keyword(SHIFTHP)
+keyword(SH_HP)
 
 Energy shift for the two-electronic excitations in (1,1) sector. Arguments: real
 
