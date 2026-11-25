@@ -43,11 +43,23 @@ test.run(['lda.inp'], ['CO_MgO_bridge.mol', 'CO_MgCaO_hollow.mol'], f)
 # (no wave function). Before, T, O, I were reported as T(d), Th as O(h);
 # I(h) molecules were represented in C2h (I in C2) instead of D2h (D2),
 # and for atoms in general positions the C5 axes were not found.
+# The many equivalent axes of these groups may be found (and printed) in a
+# different order with different compilers, so we do not compare the axis
+# vectors, but only what does not depend on that order:
 f_sym = Filter()
-f_sym.add(from_string = 'SYMADD: Detection of molecular symmetry',
-          to_string='References for the basis sets',
-          rel_tolerance   = 1.0e-8,
-          ignore_sign=True)
+# orders of the proper and improper rotation axes (sorted by order)
+f_sym.add(re = r'^ +[0-9]+ : +[-0-9.]+ +[-0-9.]+ +[-0-9.]+ +Isotope',
+          mask = [1])
+# the computational group: number of generators and character table
+f_sym.add(string = 'Symmetry operations:')
+f_sym.add(from_string = '* Character table',
+          to_string = '* Direct product table')
+# the molecule itself (independent of orientation)
+f_sym.add(string = 'Nuclear repulsion energy',
+          rel_tolerance = 1.0e-10)
+f_sym.add(string = 'Total number of atoms:')
+f_sym.add(from_string = 'total:',
+          num_lines = 1)
 test.run(['symdetect.inp'], ['T.mol', 'Th.mol', 'O.mol', 'I.mol', 'B12H12.mol'], f_sym)
 
 sys.exit(test.return_code)
