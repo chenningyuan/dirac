@@ -454,7 +454,7 @@ C
      &                              .or. myproc .eq. master
 
 !         get integrals on work(kinti12)
-          call rgeth2(dummy,work(kinti12),dummy,ibeig,.false.,
+          call rgeth2(dummy,work(kinti12),dummy,dummy,ibeig,.false.,
      &                .true.,int_file_is_master_file,work(khmat),lfree)
 
 !         release scratch space

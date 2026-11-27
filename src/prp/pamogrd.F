@@ -134,6 +134,7 @@ C
          ITYPL = IOBTYP(L)
          ISYMK = IFSMO(K)
          ISYML = IFSMO(L)
+
 C        
 C        First index (K)
 C        ---------------
@@ -200,6 +201,7 @@ C
                   GORB(IG,IZ) = GORB(IG,IZ) - DFAC(2) * FPV(K,LU,IZ)
                END IF
             END DO
+
 C        ELSE
 C
 C           Second index is secondary
@@ -236,6 +238,7 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (D1 = 1.00D00, D0 = 0.00D00 )
 C
@@ -254,7 +257,7 @@ C
 C
       IF (NASHT .LE. 1) THEN
          FAC = D0
-      ELSE
+      ELSE     
          FAC = D1
          CALL DCOPY(NORBT * NASHT * NZ, FQ, 1, FGEN, 1)
       END IF
@@ -267,22 +270,27 @@ C
       DO I = 1,NFSYM
 C
          IF (NASH(I) .GT. 0) THEN
+C           NB: DV is used as stored ('N','N'). DV is already in the
+C           transposed convention, so no extra (j-)transform is needed;
+C           'N','J' (tried in Nov 2026) gives an orbital gradient that is
+C           inconsistent with the energy for complex/quaternion DV
+C           (verified with finite differences of the energy).
             CALL QGEMM(NORBT,NASH(I),NASH(I),D1,
      &           'N','N',IPQTOQ(1,0),
      &           FC(1,1+IORB(I)+NPSH(I)+NISH(I),1),
      &           NORBT,NORBT,NZ,
-     &           'T','N',IPQTOQ(1,0),DV(1+IASH(I),1+IASH(I),1),
+     &           'N','N',IPQTOQ(1,0),DV(1+IASH(I),1+IASH(I),1),
      &           NASHT,NASHT,NZ,
      &           FAC,IPQTOQ(1,0),
      &           FGEN(1,1+IASH(I),1),NORBT,NASH(I),NZ)
          END IF
-c         IF (IPRINT .GE. 5) THEN
-c            WRITE(LUPRI,9000) I
-c9000 FORMAT(/'Generalized Fock matrix irrep ',I1,
-c    &        ' with second index active')
-c            CALL PRQMAT(FGEN(1,1+IASH(I),1),NORBT,NASH(I),NORBT,NASHT,
-c     &           NZ,IPQTOQ(1,0),LUPRI)
-c         END IF
+         IF (IPRINT .GE. 5) THEN
+            WRITE(LUPRI,9000) I
+9000        FORMAT(/'Generalized Fock matrix irrep ',I1,
+     &        ' with second index active')
+            CALL PRQMAT(FGEN(1,1+IASH(I),1),NORBT,NASH(I),NORBT,NASHT,
+     &           NZ,IPQTOQ(1,0),LUPRI)
+         END IF
       END DO
 C
       CALL QEXIT('FGEN_PV')

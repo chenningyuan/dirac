@@ -1384,7 +1384,7 @@ C     ==============================================
         call izero(work(kibeig),norbt)
       end if
 
-      call rgeth2(dummy,work(kh2ac),dummy,work(kibeig),.false.,
+      call rgeth2(dummy,work(kh2ac),dummy,dummy,work(kibeig),.false.,
      &            .true.,.true.,work(kfree),lfree)
 C
 C     Transform integrals to Molfdir format:
@@ -1845,8 +1845,11 @@ C---------------------
 C        H = H - (K, N, L, M)
 C---------------------
          IF (DOIMAG) THEN
-            PV(K,N,L,M,2) = PV(K,N,L,M,2) + DMIIJ1
-            PV(K,M,L,N,2) = PV(K,M,L,N,2) - DMIIJ1
+C           Same phase pattern as for the real part (the real and
+C           imaginary parts of cl^*_i cr_j go to the same elements);
+C           previously the two signs were interchanged here.
+            PV(K,M,L,N,2) = PV(K,M,L,N,2) + DMIIJ1
+            PV(K,N,L,M,2) = PV(K,N,L,M,2) - DMIIJ1
             PV(M,K,N,L,2) = PV(M,K,N,L,2) + DMIJI1
             PV(M,L,N,K,2) = PV(M,L,N,K,2) - DMIJI1
          END IF
@@ -2687,7 +2690,7 @@ C     ==============================================
         call ireakrmc(lukrmc,'MJVEC   ',work(kibeig),norbt)
       end if
 
-      call rgeth2(dummy,work(kh2ac),dummy,work(kibeig),.false.,
+      call rgeth2(dummy,work(kh2ac),dummy,dummy,work(kibeig),.false.,
      &            .true.,.true.,work(kfree),lfree)
 C
 C     Make sure imag(VMUUUU) = 0 for NZ=1

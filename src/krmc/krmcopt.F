@@ -323,6 +323,9 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "frame.h"
+
+c mvh remove later
+#include "dgroup.h"
 C
       LOGICAL   WFCONV, MOISNO
       DIMENSION WORK(*)
@@ -497,6 +500,14 @@ C        read orbital symmetry info
          else if(opt_chckjz)then
            call ireakrmc(lukrmc,'MJVEC   ',ibeig,norbt)
          end if
+
+c mvh debug
+      IF (IPROPT .GE. 30) THEN
+         write(6,*) 'cmo at end location 1'
+         CALL PRQMAT(CMO(1),NORBT,NORBT,
+     &                NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+      END IF
+ 
 C
 C
 C        ***************************************************
@@ -549,6 +560,13 @@ C
                end if
 
             END IF
+c mvh debug
+      IF (IPROPT .GE. 30) THEN
+         write(6,*) 'cmo at end location 2'
+         CALL PRQMAT(CMO(1),NORBT,NORBT,
+     &                NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+      END IF
+
 C
 C           *** Now do the transformation
 C
@@ -586,6 +604,13 @@ C
 C
          GNRMSV = GNORM(5)
          CALL RGRDINF(GCI,GOEE,GOEP)
+c mvh debug
+      IF (IPROPT .GE. 30) THEN
+         write(6,*) 'cmo at end location 3'
+         CALL PRQMAT(CMO(1),NORBT,NORBT,
+     &                NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+      END IF
+
 C
 C
          EMCSCF = POTNUC + EMY + EACTIV + E_LVCORR_MC
@@ -868,6 +893,9 @@ C
       DIMENSION JXOPE(*),JXOPP(*),GOEE(*),GOEP(*)
       DIMENSION CREF(*), ibeig(*)
       DIMENSION WORK(*)
+      DIMENSION FCAC_MOLF(2*nasht,2*nasht,2)
+      real*8, allocatable :: PVMOLF(:,:,:,:,:)
+      DIMENSION DVMOLF(2*NASHT,2*NASHT,2)
 C
 C     Local variable
 C
@@ -883,6 +911,8 @@ C
 #include "dgroup.h"
 C
       CALL QENTER('RGRAD')
+C     (heap, not stack: (2*NASHT)**4 elements)
+      allocate(PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2))
       CALL RTKTIME(.TRUE.,9)
       KFRSAV = KFREE
 C
@@ -890,6 +920,15 @@ C
 C
       DFAC(1) =  1.0D0
       DFAC(2) = -1.0D0
+c mvh debug
+c      write(6,*) 'cmo at begining RGRAD'
+c        DO 20 I = 1,NFSYM
+c        IF(NORB(I).EQ.0) GOTO 20
+c          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
+c          CALL PRQMAT(CMO,NORBT,NORBT,
+c     &                NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+c   20   CONTINUE
+
 C
 C     ***************************************************
 C     *** Clean file KRMC FOCK **************************
@@ -906,15 +945,22 @@ C     *** Calculate active density matrices *************
 C     ***************************************************
 C
       IF (NASHT .NE. 0) THEN
-         CALL RMAKDM(.TRUE.,.TRUE.,DV,PV,CREF,WORK,KFREE,LFREE)
+         CALL RMAKDM(.TRUE.,.TRUE.,DV,KDVMOLF,PV,PVMOLF,CREF,WORK,
+     &       KFREE,LFREE)
+C         WRITE(6,*) 'GETPV FROM RGRAD'
+C         CALL GETPV(PVMOLF)
+C         CALL TRACEPV(PVMOLF)
       END IF
+
 C
 C
 C     ***************************************************
 C     *** Calculate inactive and active Fock matrices ***
 C     ***************************************************
 C
+
       CALL RFCKMAT(DV,CMO,EMCMY,EMCACT,FC,FV,WORK(KFREE),LFREE)
+
 C
 C     ***************************************************
 C     *** Calculate FQ matrix and two-electron inte-  ***
@@ -926,7 +972,12 @@ C
 C        Get Fock matrix with both indices active.
 C        FCAC is written to KRMC FOCK.
 C
+
          CALL RGETAC(FC,FCAC,IPRINT)
+!         call blabla(fcac,N2ASHX,NZ,0)
+         CALL QFC2MFC(FCAC,FCAC_MOLF,1,1,IPROPT)
+c         CALL QFC2MFC(DV,DVMOLF,1,1,IPROPT)
+
 C
       END IF
 C
@@ -938,12 +989,18 @@ C        FQ and H2AC are written to KRMC FOCK.
 C
          dofq   = .true.
          doh2ac = .true.
-         CALL RGETH2(FQ,H2AC,PV,ibeig,dofq,doh2ac,
+c         WRITE(LUPRI,*) 'RELEVANT OUTPUT PVGET'
+         CALL RGETH2(FQ,H2AC,PV,PVMOLF,ibeig,dofq,doh2ac,
      &               .true.,WORK(KFREE),LFREE)
+
+c      WRITE(LUPRI,*) 'VALUE KPVMOLF INSIDE RGRAD ', KPVMOLF
+
 C
 C        Active energy.
 C
-         EMCACT = RENRACT(DV,FCAC,FQ,IPROPT)
+c        EMCACT = RENRACT(DV,FCAC,FQ,IPROPT)
+         EMCACT = RENRACT(WORK(KDVMOLF),FCAC_MOLF,FQ,IPROPT)
+         IF (IPROPT .GE. 5) write(lupri,*) 'EMCACT = ', EMCACT
 C
       ELSE IF (NASHT. EQ. 1) THEN
          CALL DZERO(FQ,NZ*NASHT*NORBT)
@@ -1084,6 +1141,16 @@ C
 C     CMO
 C     ---
 C
+
+c mvh debug
+c      write(6,*) 'cmo at end RGRAD'
+c        DO 30 I = 1,NFSYM
+c        IF(NORB(I).EQ.0) GOTO 30
+c          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
+c          CALL PRQMAT(CMO,NORBT,NORBT,
+c     &                NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+c   30   CONTINUE
+
       IF (COMPROT) THEN ! CMO updated for frozen CI coefficients
          CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
       END IF
@@ -1092,14 +1159,145 @@ C
       CALL MEMREL('RORBGRD',WORK,1,KFRSAV,KFREE,LFREE)
 C
 C
+
       CALL FLSHFO(LUPRI)
       CALL RTKTIME(.FALSE.,9)
       CALL QEXIT('RGRAD')
+c      CALL QUIT('call quit from RGRAD')
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GETPV(PVMOLF)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "dcborb.h"
+      DIMENSION PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
+      real THR_PRINT
+
+      WRITE(6,*) 'THIS IS THE OUTPUT FROM GETPV'
+      THR_PRINT = 1.0D-12
+
+ 9001 FORMAT(4I5,5X,2F20.10)
+
+         DO L = 1,2*NASHT
+            DO K = 1,2*NASHT
+               DO J = 1,2*NASHT
+                  DO I = 1,2*NASHT
+                   !  IF ( (ABS(VMUUUU(I,J,K,L,1)) .GT. THR_PRINT   &
+                    !  .OR. ABS(VMUUUU(I,J,K,L,2)) .GT. THR_PRINT)) &
+      WRITE(6,9001) I,J,K,L,(PVMOLF(I,J,K,L,IZ),IZ=1,2)
+                  END DO
+               END DO
+            END DO
+         END DO
+
+C      DO I = 1, 2*NASHT
+C            DO J = 1, 2*NASHT 
+C                  DO K = 1, 2*NASHT 
+C                        DO L = 1, 2*NASHT 
+C                              WRITE(6,*) 'I,J,K,L, RePV ', I,J,K,L,
+C     &                                        PVMOLF(I,J,K,L,1)
+C                              WRITE(6,*) 'I,J,K,L, ImPV ', I,J,K,L,
+C     &                                        PVMOLF(I,J,K,L,2)
+C                        ENDDO
+C                  ENDDO
+C            ENDDO
+C      ENDDO
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE TRACEPV(PVMOLF)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "dcborb.h"
+#include "priunit.h"
+C
+#include "consts.h"
+C
+#include "dgroup.h"
+      DIMENSION PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
+      DIMENSION DVMOLF(2*NASHT,2*NASHT,2)
+      real THR_PRINT
+
+
+
+ 9001 FORMAT(4I5,5X,2F20.10)
+      CALL DZERO(DVMOLF, 8*NASHT)
+
+
+
+         DO I = 1,2*NASHT
+            DO J = 1,2*NASHT
+               DO K = 1,2*NASHT
+c                  DO ICOMP = 1,2
+            DVMOLF(I,J,1) = DVMOLF(I,J,1)+ PVMOLF(K,K,I,J,1)
+            DVMOLF(I,J,2) = DVMOLF(I,J,2)+ PVMOLF(K,K,I,J,2)
+c                  ENDDO
+               END DO
+            END DO
+         END DO
+      WRITE(6,*) 'THIS IS THE OUTPUT FROM TRACEPV: PVMOLF(KKIJ)'
+         CALL PRQMAT(DVMOLF,2*NASHT,2*NASHT,2*NASHT,2*NASHT,2,
+     &        IPQTOQ(1,0),LUPRI)
+
+      CALL DZERO(DVMOLF, 8*NASHT)
+
+
+         DO I = 1,2*NASHT
+            DO J = 1,2*NASHT
+               DO K = 1,2*NASHT
+c                  DO ICOMP = 1,2
+            DVMOLF(I,J,1) = DVMOLF(I,J,1)+ PVMOLF(I,J,K,K,1)
+            DVMOLF(I,J,2) = DVMOLF(I,J,2)+ PVMOLF(I,J,K,K,2)
+c                  ENDDO
+               END DO
+            END DO
+         END DO
+      WRITE(6,*) 'THIS IS THE OUTPUT FROM TRACEPV: PVMOLF(IJKK)'
+         CALL PRQMAT(DVMOLF,2*NASHT,2*NASHT,2*NASHT,2*NASHT,2,
+     &        IPQTOQ(1,0),LUPRI)
+      CALL DZERO(DVMOLF, 8*NASHT)
+         DO I = 1,2*NASHT
+            DO J = 1,2*NASHT
+               DO K = 1,2*NASHT
+c                  DO ICOMP = 1,2
+            DVMOLF(I,J,1) = DVMOLF(I,J,1)+ PVMOLF(I,K,J,K,1)
+            DVMOLF(I,J,2) = DVMOLF(I,J,2)+ PVMOLF(I,K,J,K,2)
+c                  ENDDO
+               END DO
+            END DO
+         END DO
+      WRITE(6,*) 'THIS IS THE OUTPUT FROM TRACEPV: PVMOLF(IKJK)'
+         CALL PRQMAT(DVMOLF,2*NASHT,2*NASHT,2*NASHT,2*NASHT,2,
+     &        IPQTOQ(1,0),LUPRI)
+      CALL DZERO(DVMOLF, 8*NASHT)
+         DO I = 1,2*NASHT
+            DO J = 1,2*NASHT
+               DO K = 1,2*NASHT
+c                  DO ICOMP = 1,2
+            DVMOLF(I,J,1) = DVMOLF(I,J,1)+ PVMOLF(I,K,K,J,1)
+            DVMOLF(I,J,2) = DVMOLF(I,J,2)+ PVMOLF(I,K,K,J,2)
+c                  ENDDO
+               END DO
+            END DO
+         END DO
+      WRITE(6,*) 'THIS IS THE OUTPUT FROM TRACEPV: PVMOLF(IKKJ)'
+         CALL PRQMAT(DVMOLF,2*NASHT,2*NASHT,2*NASHT,2*NASHT,2,
+     &        IPQTOQ(1,0),LUPRI)
+      RETURN
+      END
+
+
+
+
+
+
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rmakdm */
-      SUBROUTINE RMAKDM(CALCDV,CALCPV,DV,PV,CREF,WORK,KFREE,LFREE)
+      SUBROUTINE RMAKDM(CALCDV,CALCPV,DV,KDVMOLF,
+     &                   PV,PVMOLF,CREF,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Construct one- and two-electron active density matrix
@@ -1117,15 +1315,18 @@ C     Last revision : 24.01.2001, T. Fleig
 C
 C***********************************************************************
       use quaternion_algebra
+      use mcscf_routines
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dgroup.h"
+#include "dcbham.h"
 C
       LOGICAL CALCDV, CALCPV
       DIMENSION DV(*), PV(*), CREF(*), WORK(*)
+      DIMENSION PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
 C
 C
       DIMENSION DTRCE(4)
@@ -1141,7 +1342,8 @@ C
 C        Calculate density matrices in MOLFDIR format
 C
          IF (CALCPV) THEN
-            LPV = (2*NASHT)**4 * MIN(2,NZ)
+            NM5 = MIN(2,NZ)
+            LPV = (2*NASHT)**4 * NM5
          ELSE
             LPV = 0
          END IF
@@ -1166,20 +1368,50 @@ C    &                     CREFL,CREFR,WORK,KFREE,LFREE)
             CALL LUCI_DENS(CALCDV,CALCPV,WORK(KDVMOLF),WORK(KPVMOLF),
      &                     CREF,CREF,WORK,KFREE,LFREE)
          END IF
+C         WRITE(6,*) 'GETPV FROM RGRAD BEFORE M2DNZ390'
+C         CALL GETPV(WORK(KPVMOLF))
+
 C
 C        Transform to X+, x++ format for DV and PV
 C
 !        IPROPT = 40
+c         write(lupri,*) 'relevant output is here'
          IF (CALCDV) CALL MFC2QFC(.TRUE.,WORK(KDVMOLF),DV,IPROPT)
+         !mvh debug
+c         write(6,*) 'ONE BODY DENS DEBUG'
+c         call QFC2MFC(DV,WORK(KDVMOLF),1,1,IPROPT)
+c         CALL MFC2QFC(.FALSE.,WORK(KDVMOLF),DV,IPROPT)
+         !mvh debug
+
 C                    CALL MFC2QFC(KSYMM,DVM,DVD,IPRINT)
 !        IPROPT = 00
          IF (CALCPV) THEN
-            CALL M2DNZ3(.FALSE.,.TRUE.,.TRUE.,
-     &           WORK(KPVMOLF),PV,IPROPT)
-C           CALL M2DNZ3(TSYMM,KSYMM,PSYMM,PVM,PVD,IPRINT)
+            CALL M2DNZ390(.FALSE.,.TRUE.,.TRUE.,
+     &           WORK(KPVMOLF),PV,PVMOLF,IPROPT,
+     &           IPQTOQ,NASH,NASHT,NNASHX,NZ,NZ_in_CI,NM5,
+     &           NBSYM,NFSYM,LUPRI,SPINFR,LEVYLE)
+C         WRITE(6,*) 'GETPV FROM RGRAD AFTER M2DNZ390'
+C         CALL GETPV(PVMOLF)
          END IF
+
+c         WRITE(LUPRI,*) 'MVH TEST OUTPUT PVMOLF'
+c         CALL DZERO(PVMOLF,2*(2*NASHT)**4)  
+c          CALL DNZ32M(PV,PVMOLF,IPRINT)
+c         WRITE(LUPRI,*) 'THIS IS THE TEST YOU HAVE TO LOOK AT'
+c         CALL TRACEPV(PVMOLF)
+c
+c         CALL QUIT('MVH STOP CALCULATION')
+C         !mvh debug
+C         write(lupri,*) 'relevant output part 2'
+C         CALL DNZ32M(PV,WORK(KPVMOLF),IPROPT)
+C         CALL M2DNZ390(.TRUE.,.FALSE.,.FALSE.,
+C     &           WORK(KPVMOLF),PV,PVMOLF,IPROPT,
+C     &           IPQTOQ,NASH,NASHT,NNASHX,NZ,NZ_in_CI,NM5,
+C     &           NBSYM,NFSYM,LUPRI,SPINFR,LEVYLE)
+         !mvh debug
 CSK      IPROPT = 00
-         CALL MEMREL('RMAKDM',WORK,1,KFRSAV,KFREE,LFREE)
+c MvH: still need to release memory elswhere.
+c         CALL MEMREL('RMAKDM',WORK,1,KFRSAV,KFREE,LFREE)
 C
       ELSE IF ( NASHT .EQ. 1 .AND. NAELEC .EQ. 1) THEN
 C
@@ -1296,13 +1528,18 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
+#include "dcborb.h"
 C
       DIMENSION DV(*)
       DIMENSION WORK(*)
+      real*8, allocatable :: PVMOLF(:,:,:,:,:)
 C
       CALL QENTER('RMAKDV')
+C     (heap, not stack: (2*NASHT)**4 elements)
+      allocate(PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2))
 C
-      CALL RMAKDM(.TRUE.,.FALSE.,DV,DUMMY,CREF,WORK,KFREE,LFREE)
+      CALL RMAKDM(.TRUE.,.FALSE.,DV,KDVMOLF,
+     &            DUMMY,pvmolf, CREF,WORK,KFREE,LFREE)
 C
       CALL QEXIT('RMAKDV')
       RETURN
@@ -1410,9 +1647,25 @@ C     ***************************************************
 C
 C     Construct DCAO
 C
+
+
+
       IF (NISHT .GT. 0) THEN
          CALL DENSTY(WORK(KDCAO),CMO,IPROPT)
       END IF
+
+c mvh debug
+      IF (IPROPT .GE. 30) THEN
+        write(6,*) 'this is cmo from rFCKMAT'
+        DO 20 I = 1,NFSYM
+        IF(NORB(I).EQ.0) GOTO 20
+          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
+          CALL PRQMAT(CMO,NFBAS(I,0),NFBAS(I,0),
+     &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+   20   CONTINUE
+      END IF
+
+      
 C
 C     Construct DVAO
 C
@@ -2779,7 +3032,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck renract */
-      FUNCTION RENRACT(DV,FCAC,FQ,IPRINT)
+      FUNCTION RENRACT(DVMOLF,FCACMOLF,FQ,IPRINT)
 C***********************************************************************
 C
 C     Calculate active electronic energy of the KR-MCSCF state
@@ -2807,7 +3060,9 @@ C
 #include "dgroup.h"
 #include "dcbidx.h"
 C
-      DIMENSION DV(*),FCAC(*),FQ(NORBT,NASHT,NZ)
+      DIMENSION DV(NASHT,NASHT,NZ),FCAC(NASHT,NASHT,NZ)
+      DIMENSION FQ(NORBT,NASHT,NZ)
+      DIMENSION DVMOLF(2*NASHT,2*NASHT,2),FCACMOLF(2*NASHT,2*NASHT,2)
 C
       CALL QENTER('RENRACT')
 C
@@ -2836,9 +3091,45 @@ C
 C     \sum_{uv} DV_{uv} FC_{uv}
 C     -------------------------
 C
-      EACT = DDOT(N2ASHXQ,DV,1,FCAC,1)
+C      EACT = DDOT(N2ASHXQ,DV,1,FCAC,1)
+
+      IF (IPRINT .GE. 30) THEN
+      WRITE(LUPRI,*) 'MVH: TEST OUTPUT DVMOLF'
+      DO IC = 1, NZ_in_CI
+            WRITE(LUPRI,*) 'OUTPUT OF MATRIX COMPONENT ', IC
+            call OUTPUT (DVMOLF(1,1,IC),1,2*NASHT,1,2*NASHT,2*NASHT,
+     &                  2*NASHT,1,LUPRI)             
+      ENDDO 
+
+      WRITE(LUPRI,*) 'MVH: TEST OUTPUT FCACMOLF'
+      DO IC = 1, NZ_in_CI
+            WRITE(LUPRI,*) 'OUTPUT OF MATRIX COMPONENT ', IC
+            call OUTPUT (FCACMOLF(1,1,IC),1,2*NASHT,1,2*NASHT,2*NASHT,
+     &                  2*NASHT,1,LUPRI)             
+      ENDDO 
+      END IF
+
+
+c MVH PUT THIS BACK LATER
+      EACT = D0
+      DO IU = 1, 2*NASHT 
+            DO IV = 1, 2*NASHT
+                  EACT = EACT + DVMOLF(IU,IV,1)*FCACMOLF(IU,IV,1)
+                  IF (NZ.GE.2) THEN
+                        EACT = EACT - DVMOLF(IU,IV,2)*FCACMOLF(IU,IV,2)
+                  ENDIF
+            ENDDO
+      ENDDO
+ 
+
       IF (IPRINT .GE. 4)
      &   WRITE(LUPRI,9000) EACT
+c MvH debug
+c      WRITE(LUPRI,*) '\sum_{uv} DV_{uv} FC_{uv}'
+c      DO I = 1, N2ASHXQ
+c            WRITE(LUPRI,*) 'UV, \sum_{uv} DV_{uv} FC_{uv}'
+c     &       , I, DV(I)*F(I)
+c      enddo
 C
 C     1/2 \sum_{u} FQ_{uu}
 C     --------------------
@@ -2847,6 +3138,9 @@ C
       DO IV = 1, NASHT
          IGV = IDXU2G(IV)
          EACTFQ = EACTFQ + FQ(IGV,IV,1)
+c MvH debug
+      IF (IPRINT .GE. 30)
+     &   write(lupri,*) 'IV, IGV, FQ(IGV,IV,1) ',IGV, IV,  FQ(IGV,IV,1)
       END DO
       EACTFQ = EACTFQ * DP5
       IF (IPRINT .GE. 4)
@@ -3172,6 +3466,12 @@ C
          WRITE(LUPRI,'(/A)')
      &        ' (ROPTST)  Start orbitals read from' //
      &        ' CHECKPOINT file'
+c mvh debug
+      IF (IPRINT .GE. 30) THEN
+         write(6,*) 'cmo just after read from CHECKPOINT'
+         CALL PRQMAT(CMO(1),NORBT,NORBT,
+     &                NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+      END IF
          GO TO 1000
       END IF
 C
@@ -3213,6 +3513,8 @@ C
       END IF
 C
       CALL RGMCMO(CMO,WORK(KFREE),LFREE)
+C     Debug: random orbital phases (environment variable DIRAC_RNDPHASE)
+      CALL KRMC_RNDPHASE(CMO,WORK(KFREE),LFREE)
 C
       IF (IPROPT .GE. 10) THEN
          DO I = 1, NFSYM
@@ -3222,7 +3524,7 @@ C
      &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
          END DO
       END IF
-!
+C
 !     intermediate step:
 !     save additional required information (integer arrays) to file KRMCSCF
 
@@ -3981,6 +4283,8 @@ C
      &     NZHOPE,
      &     KZCONF,THR,OPT_CIPROGRAM,EACTIV,IOPTTB,
      &     MCTYPE,OPT_NOPFQ,OPT_NOFQX,JTRLVL)
+C     debug option .E2FULL: check symmetry of reduced Hessian
+      CALL SET_XRS_E2FULL(OPT_E2FULL,OPT_FDCHK,OPT_FDEPS)
 C
 C
 C
@@ -4220,6 +4524,10 @@ C
 CDEBUG - jth
 CDEBUG DZERO - can safely be removed as XRSXV1 does a DZERO
       CALL DZERO(WORK(KKAPPA),NZXOPTQ)
+C     DELTACI must be zeroed: with frozen CI (.NO CI) the response
+C     solver runs with NZCONF = 0, KRMCVEC then never touches DELTACI,
+C     and uninitialized memory would be added to CREF below.
+      CALL DZERO(WORK(KDELTACI),NZCONFQ)
 C
       CALL KRMCVEC(IBTYP,IBCVC,IBEVC,IBPVC,
      &     EVALR,EVECR,WORK(KKAPPA),WORK(KDELTACI),
@@ -4941,8 +5249,6 @@ C
 C
 C           Hessian has incorrect structure, and it's not worth
 C           the effort to converge better than 50% (we think!)
-C
-C           (TODO FIXME: put DP5 = 50% in common block/input)
 C
             THRQN = DP5 * D2 * GNORM(5)
          ELSE
@@ -6543,3 +6849,850 @@ C
       call dealloc(WORK)
       END
 #endif
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck krmc_fdchk */
+      SUBROUTINE KRMC_FDCHK(CREF,BC,SEO,NSEO,EPS,DVT,PVT,
+     &                      WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Debug (.FDCHEK under *OPTIMIZE):
+C     Finite-difference check of the E[2](oc) block of the KR-MCSCF
+C     Hessian. For a CI trial vector BC (orthogonal to CREF) compare
+C        FD  = [ g_o(CREF + EPS*BC) - g_o(CREF - EPS*BC) ] / (2 EPS)
+C     (orbital gradient at fixed orbitals) with the analytic orbital
+C     sigma vector SEO = E[2](oc) BC from the response code.
+C     Since BC is orthogonal to CREF the O(EPS**2) change of the norm
+C     cancels in the central difference.
+C     At the end RGRAD is called with CREF to restore the matrices on
+C     LUKRM3 that are used in the micro iterations.
+C
+C***********************************************************************
+      use orbital_rotation_indices
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+      DIMENSION CREF(*), BC(*), SEO(NSEO,*), WORK(*), DVT(*), PVT(*)
+      DIMENSION EFD(2)
+C
+      KFRSAV = KFREE
+      CALL MEMGET2('REAL','CMO' ,KCMO ,NCMOTQ ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBEIG',KIBEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CPM' ,KCPM ,NZCONFQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DV'  ,KDV  ,N2ASHXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FC'  ,KFC  ,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FV'  ,KFV  ,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FQ'  ,KFQ  ,NZ*NASHT*NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PV'  ,KPV  ,NASHT*NASHT*NNASHX*NZ*3,
+     &             WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FCAC',KFCAC,N2ASHXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','H2AC',KH2AC,NASHT*NASHT*NNASHX*NZ*3,
+     &             WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GCI' ,KGCI ,NZCONFQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GOEE',KGOEE,NZHOPEQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GOEP',KGOEP,MAX(1,NZXOPPQ),WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GPLS',KGPLS,NZHOPEQ,WORK,KFREE,LFREE)
+      LPV = NASHT*NASHT*NNASHX*NZ*3
+      CALL MEMGET2('REAL','DVPL',KDVPL,N2ASHXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PVPL',KPVPL,MAX(1,LPV),WORK,KFREE,LFREE)
+C
+      CALL RREADMO(WORK(KCMO),1,1,LUKRMC)
+      CALL IZERO(WORK(KIBEIG),NORBT)
+C
+C     The response code stores CI vectors scaled by 1/2: normalize CREF
+      CNRM0 = DNRM2(NZCONFQ,CREF,1)
+      CALL DSCAL(NZCONFQ,1.0D0/CNRM0,CREF,1)
+      BNRM = DNRM2(NZCONFQ,BC,1)
+      OVL  = DDOT(NZCONFQ,CREF,1,BC,1)
+C
+      DO ISGN = 1, 2
+         SGN = 3 - 2*ISGN
+         CALL DCOPY(NZCONFQ,CREF,1,WORK(KCPM),1)
+         CALL DAXPY(NZCONFQ,SGN*EPS,BC,1,WORK(KCPM),1)
+C        renormalize (O(eps**2) effect since <c|b> = 0)
+         CNRM = DNRM2(NZCONFQ,WORK(KCPM),1)
+         CALL DSCAL(NZCONFQ,1.0D0/CNRM,WORK(KCPM),1)
+         CALL RGRAD(WORK(KCMO),WORK(KCPM),WORK(KIBEIG),
+     &        get_orbital_rotation_indices_pp(),
+     &        get_orbital_rotation_indices_pn(),
+     &        WORK(KGCI),WORK(KGOEE),WORK(KGOEP),EMYFD,EACTFD,
+     &        WORK(KDV),WORK(KPV),WORK(KFC),WORK(KFV),WORK(KFQ),
+     &        WORK(KFCAC),WORK(KH2AC),0,WORK,KFREE,LFREE)
+         EFD(ISGN) = EMYFD + EACTFD
+         IF (ISGN .EQ. 1) THEN
+            CALL DCOPY(NZHOPEQ,WORK(KGOEE),1,WORK(KGPLS),1)
+            CALL DCOPY(N2ASHXQ,WORK(KDV),1,WORK(KDVPL),1)
+            CALL DCOPY(LPV,WORK(KPV),1,WORK(KPVPL),1)
+         END IF
+      END DO
+C     FD of DV and PV (stored in DVPL, PVPL)
+      CALL DAXPY(N2ASHXQ,-1.0D0,WORK(KDV),1,WORK(KDVPL),1)
+      CALL DSCAL(N2ASHXQ,0.5D0/EPS,WORK(KDVPL),1)
+      CALL DAXPY(LPV,-1.0D0,WORK(KPV),1,WORK(KPVPL),1)
+      CALL DSCAL(LPV,0.5D0/EPS,WORK(KPVPL),1)
+      CALL FDCMPQ('DV',WORK(KDVPL),DVT,N2ASHX,NZ,LUPRI)
+      CALL FDCMPQ('PV',WORK(KPVPL),PVT,NASHT*NASHT*NNASHX,NZ*3,LUPRI)
+C     FD = (g+ - g-)/(2 eps), stored in GPLS
+      CALL DAXPY(NZHOPEQ,-1.0D0,WORK(KGOEE),1,WORK(KGPLS),1)
+      CALL DSCAL(NZHOPEQ,0.5D0/EPS,WORK(KGPLS),1)
+C
+C     Restore all matrices for the reference CI vector
+C
+      CALL RGRAD(WORK(KCMO),CREF,WORK(KIBEIG),
+     &     get_orbital_rotation_indices_pp(),
+     &     get_orbital_rotation_indices_pn(),
+     &     WORK(KGCI),WORK(KGOEE),WORK(KGOEP),EMYFD,EACTFD,
+     &     WORK(KDV),WORK(KPV),WORK(KFC),WORK(KFV),WORK(KFQ),
+     &     WORK(KFCAC),WORK(KH2AC),0,WORK,KFREE,LFREE)
+C
+C     Compare FD(1:NSEO,IZ) with SEO(1:NSEO,IZ)
+C
+      SFF = 0.0D0
+      SSS = 0.0D0
+      SFS = 0.0D0
+      DO IZ = 1, NZ
+         DO I = 1, NSEO
+            F = WORK(KGPLS-1 + I + (IZ-1)*NZHOPE)
+            SFF = SFF + F*F
+            SSS = SSS + SEO(I,IZ)**2
+            SFS = SFS + F*SEO(I,IZ)
+         END DO
+      END DO
+      ALPHA = 0.0D0
+      IF (SSS .GT. 0.0D0) ALPHA = SFS/SSS
+      RES = 0.0D0
+      DO IZ = 1, NZ
+         DO I = 1, NSEO
+            F = WORK(KGPLS-1 + I + (IZ-1)*NZHOPE)
+            RES = RES + (F - ALPHA*SEO(I,IZ))**2
+         END DO
+      END DO
+C     energy along b: dE/deps vs. GCI(ref).b (GCI from the restoring
+C     RGRAD call), split into real and imaginary CI parts
+      DEFD = (EFD(1)-EFD(2))/(2.0D0*EPS)
+      GBR = DDOT(NZCONF,WORK(KGCI),1,BC,1)
+      GBI = 0.0D0
+      IF (NZCONFQ .GT. NZCONF)
+     &   GBI = DDOT(NZCONF,WORK(KGCI+NZCONF),1,BC(1+NZCONF),1)
+      WRITE(LUPRI,'(A,1P,4D15.7)')
+     &   ' (KRMC_FDCHK) dE/deps, gCI.b (re part, im part), ratio:',
+     &   DEFD,GBR,GBI,DEFD/SIGN(MAX(ABS(GBR+GBI),1.0D-30),GBR+GBI)
+      WRITE(LUPRI,'(/A,1P,3(A,D10.3))')
+     &   ' (KRMC_FDCHK) Finite-difference check of E[2](oc)*b:',
+     &   ' eps =',EPS,'  |b| =',BNRM,'  <c|b> =',OVL
+      WRITE(LUPRI,'(A,1P,4(A,D12.5))') ' (KRMC_FDCHK)',
+     &   ' |FD| =',SQRT(SFF),'  |sigma| =',SQRT(SSS),
+     &   '  alpha =',ALPHA,
+     &   '  |FD-alpha*sigma|/|FD| =',SQRT(RES)/MAX(SQRT(SFF),1.0D-30)
+      WRITE(LUPRI,'(A)')
+     &   ' (KRMC_FDCHK)   iz  rot      FD            sigma'//
+     &   '         FD/sigma'
+      DO IZ = 1, NZ
+         DO I = 1, NSEO
+            F = WORK(KGPLS-1 + I + (IZ-1)*NZHOPE)
+            S = SEO(I,IZ)
+            IF (ABS(F).GT.1.0D-10 .OR. ABS(S).GT.1.0D-10) THEN
+               R = 0.0D0
+               IF (ABS(S) .GT. 1.0D-14) R = F/S
+               WRITE(LUPRI,'(A,2I5,1P,3D14.5)')
+     &            ' (KRMC_FDCHK) ',IZ,I,F,S,R
+            END IF
+         END DO
+      END DO
+C
+      CALL MEMREL('KRMC_FDCHK',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE FDCMPQ(NAME,FD,AN,N,NBLK,LUPRI)
+C     Debug helper for KRMC_FDCHK: compare FD and analytic arrays
+C     block by block (blocks = quaternion components); fitted scale
+C     factor over all blocks and max abs deviation per block.
+#include "implicit.h"
+      CHARACTER*(*) NAME
+      DIMENSION FD(N,NBLK), AN(N,NBLK)
+      SFS = 0.0D0
+      SSS = 0.0D0
+      DO IB = 1, NBLK
+         SFS = SFS + DDOT(N,FD(1,IB),1,AN(1,IB),1)
+         SSS = SSS + DDOT(N,AN(1,IB),1,AN(1,IB),1)
+      END DO
+      ALPHA = 0.0D0
+      IF (SSS .GT. 0.0D0) ALPHA = SFS/SSS
+      WRITE(LUPRI,'(A,A,A,1P,D14.6)') ' (FDCMPQ) ',NAME,
+     &   ': fitted FD/analytic scale factor =',ALPHA
+      DO IB = 1, NBLK
+         DMX = 0.0D0
+         FMX = 0.0D0
+         AMX = 0.0D0
+         IMX = 0
+         DO I = 1, N
+            D = ABS(FD(I,IB) - ALPHA*AN(I,IB))
+            IF (D .GT. DMX) THEN
+               DMX = D
+               IMX = I
+            END IF
+            FMX = MAX(FMX,ABS(FD(I,IB)))
+            AMX = MAX(AMX,ABS(AN(I,IB)))
+         END DO
+         WRITE(LUPRI,'(A,A,A,I3,1P,3(A,D11.3),A,I6)') ' (FDCMPQ) ',
+     &      NAME,' block',IB,'  max|FD| =',FMX,'  max|an| =',AMX,
+     &      '  max|FD-alpha*an| =',DMX,'  at',IMX
+      END DO
+      IF (N*NBLK .LE. 200) THEN
+         DO IB = 1, NBLK
+            DO I = 1, N
+               D = FD(I,IB) - ALPHA*AN(I,IB)
+               IF (ABS(D) .GT. 1.0D-7)
+     &            WRITE(LUPRI,'(A,A,2I5,1P,3D14.5)') ' (FDCMPQ) elm ',
+     &            NAME,IB,I,FD(I,IB),ALPHA*AN(I,IB),D
+            END DO
+         END DO
+      END IF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck krmc_fdchko */
+      SUBROUTINE KRMC_FDCHKO(CREF,BE,SEO,SCO,NSEO,EPS,
+     &                       WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Debug (.FDCHEK under *OPTIMIZE):
+C     Finite-difference check of the sigma vector of an orbital (e-e)
+C     trial vector BE.  CMO(+-) = CMO exp(-+ EPS*kappa(BE)), integrals
+C     re-transformed, gradient recomputed:
+C       FD_c = [g_c(+) - g_c(-)]/(2 EPS), projected on (1 - |c><c|),
+C              compared with SCO = E[2](co) BE  (exact comparison)
+C       FD_o = [g_o(+) - g_o(-)]/(2 EPS) compared with SEO = E[2](oo) BE
+C              (differs from the symmetric Hessian by a gradient term).
+C     The integrals and the LUKRM3 matrices are restored at the end.
+C
+C***********************************************************************
+      use orbital_rotation_indices
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "dcbnrt.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+      CHARACTER SZTRA(2,4)*200
+      DIMENSION EFD(3)
+      DIMENSION CREF(*), BE(*), SEO(NSEO,*), SCO(*), WORK(*)
+C
+      KFRSAV = KFREE
+      MZ = NZ_in_CI
+      CALL MEMGET2('REAL','CMO0',KCMO0,NCMOTQ ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CMOP',KCMOP,NCMOTQ ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBEIG',KIBEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','UK0' ,KUK0 ,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','UK'  ,KUK  ,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BP0' ,KBP0 ,MAX(1,NZXOPPQ),WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DV'  ,KDV  ,N2ASHXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FC'  ,KFC  ,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FV'  ,KFV  ,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FQ'  ,KFQ  ,NZ*NASHT*NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PV'  ,KPV  ,NASHT*NASHT*NNASHX*NZ*3,
+     &             WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FCAC',KFCAC,N2ASHXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','H2AC',KH2AC,NASHT*NASHT*NNASHX*NZ*3,
+     &             WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GCI' ,KGCI ,MAX(1,NZCONFQ),WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GCIP',KGCIP,MAX(1,NZCONFQ),WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GOEE',KGOEE,NZHOPEQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GOEP',KGOEP,MAX(1,NZXOPPQ),WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GPLS',KGPLS,NZHOPEQ,WORK,KFREE,LFREE)
+C
+      CALL RREADMO(WORK(KCMO0),1,1,LUKRMC)
+      CALL IZERO(WORK(KIBEIG),NORBT)
+      IF (NZCONF .GT. 0) THEN
+         CNRM0 = DNRM2(NZCONFQ,CREF,1)
+         CALL DSCAL(NZCONFQ,1.0D0/CNRM0,CREF,1)
+      END IF
+C     unpack trial vector into kappa matrix
+      CALL DZERO(WORK(KUK0),N2ORBXQ)
+      CALL DZERO(WORK(KBP0),MAX(1,NZXOPPQ))
+      CALL RUPKWOP(BE,WORK(KBP0),WORK(KUK0),NORBT,
+     &             get_orbital_rotation_indices_pp(),NZXOPE,
+     &             get_orbital_rotation_indices_pn(),NZXOPP,NZ)
+      CALL INISZT(KTRLVL,SZTRA,LNOROT,NOROT)
+C
+      DO ISGN = 1, 3
+C        ISGN = 1: +eps, 2: -eps, 3: restore (no rotation)
+         CALL DCOPY(NCMOTQ,WORK(KCMO0),1,WORK(KCMOP),1)
+         IF (ISGN .LE. 2) THEN
+            SGN = 3 - 2*ISGN
+            IOFF = 0
+            DO I = 1,NFSYM
+               IF (NOCC(I) .GT. 0) THEN
+                  CALL DCOPY(N2ORBXQ,WORK(KUK0),1,WORK(KUK),1)
+                  CALL DSCAL(N2ORBXQ,SGN*EPS,WORK(KUK),1)
+                  CALL ROTCMO(WORK(KCMOP+ICMOQ(I)),NFBAS(I,0),NORB(I),
+     &                 NZ,WORK(KUK+IOFF),NORBT,IPQTOQ(1,0),0,
+     &                 WORK(KFREE),LFREE)
+               END IF
+               IOFF = IOFF + (NORBT+1)*NORB(I)
+            END DO
+         END IF
+         CALL RTRACTL(WORK(KCMOP),WORK(KIBEIG),SZTRA,WORK(KFREE),LFREE)
+         CALL RGRAD(WORK(KCMOP),CREF,WORK(KIBEIG),
+     &        get_orbital_rotation_indices_pp(),
+     &        get_orbital_rotation_indices_pn(),
+     &        WORK(KGCI),WORK(KGOEE),WORK(KGOEP),EMYFD,EACTFD,
+     &        WORK(KDV),WORK(KPV),WORK(KFC),WORK(KFV),WORK(KFQ),
+     &        WORK(KFCAC),WORK(KH2AC),0,WORK,KFREE,LFREE)
+         EFD(ISGN) = EMYFD + EACTFD
+         IF (ISGN .EQ. 1) THEN
+            CALL DCOPY(NZHOPEQ,WORK(KGOEE),1,WORK(KGPLS),1)
+            IF (NZCONF.GT.0)
+     &         CALL DCOPY(NZCONFQ,WORK(KGCI),1,WORK(KGCIP),1)
+         ELSE IF (ISGN .EQ. 2) THEN
+            CALL DAXPY(NZHOPEQ,-1.0D0,WORK(KGOEE),1,WORK(KGPLS),1)
+            CALL DSCAL(NZHOPEQ,0.5D0/EPS,WORK(KGPLS),1)
+            IF (NZCONF.GT.0) THEN
+               CALL DAXPY(NZCONFQ,-1.0D0,WORK(KGCI),1,WORK(KGCIP),1)
+               CALL DSCAL(NZCONFQ,0.5D0/EPS,WORK(KGCIP),1)
+            END IF
+         END IF
+      END DO
+C
+      WRITE(LUPRI,'(/A,1P,D10.3)')
+     &   ' (KRMC_FDCHKO) Finite-difference check for orbital'//
+     &   ' trial vector, eps =',EPS
+C     energy: dE/deps vs. g.b (GOEE now holds the reference gradient)
+      DEFD = (EFD(1)-EFD(2))/(2.0D0*EPS)
+      GB = 0.0D0
+      DO IZ = 1, NZ
+         GB = GB + DDOT(NSEO,WORK(KGOEE+(IZ-1)*NZHOPE),1,
+     &                  BE(1+(IZ-1)*NSEO),1)
+      END DO
+      WRITE(LUPRI,'(A,1P,3D16.8)')
+     &   ' (KRMC_FDCHKO) dE/deps (FD), g.b, ratio:',DEFD,GB,
+     &   DEFD/SIGN(MAX(ABS(GB),1.0D-30),GB)
+      DO IZ = 1, NZ
+         GBZ = DDOT(NSEO,WORK(KGOEE+(IZ-1)*NZHOPE),1,
+     &              BE(1+(IZ-1)*NSEO),1)
+         WRITE(LUPRI,'(A,I2,1P,D16.8)')
+     &   ' (KRMC_FDCHKO)    g.b contribution from quaternion part',
+     &   IZ,GBZ
+      END DO
+C
+C     CI part: project out c (complex projection for MZ = 2)
+C
+      IF (NZCONF .GT. 0) THEN
+         SR = DDOT(NZCONF,CREF,1,WORK(KGCIP),1)
+         SI = 0.0D0
+         IF (MZ .EQ. 2) THEN
+            SR = SR + DDOT(NZCONF,CREF(1+NZCONF),1,
+     &                     WORK(KGCIP+NZCONF),1)
+            SI = DDOT(NZCONF,CREF,1,WORK(KGCIP+NZCONF),1)
+     &         - DDOT(NZCONF,CREF(1+NZCONF),1,WORK(KGCIP),1)
+         END IF
+C        FD := FD - c * (SR + i SI)
+         CALL DAXPY(NZCONF,-SR,CREF,1,WORK(KGCIP),1)
+         IF (MZ .EQ. 2) THEN
+            CALL DAXPY(NZCONF, SI,CREF(1+NZCONF),1,WORK(KGCIP),1)
+            CALL DAXPY(NZCONF,-SR,CREF(1+NZCONF),1,
+     &                 WORK(KGCIP+NZCONF),1)
+            CALL DAXPY(NZCONF,-SI,CREF,1,WORK(KGCIP+NZCONF),1)
+         END IF
+         WRITE(LUPRI,'(A,1P,2D14.5)')
+     &      ' (KRMC_FDCHKO) <c|FD_c> before projection (re,im):',SR,SI
+         CALL FDCMPQ('E2co*b',WORK(KGCIP),SCO,NZCONF,MZ,LUPRI)
+C        same projection for the analytic vector
+         CALL MEMGET2('REAL','SCOP',KSCOP,NZCONFQ,WORK,KFREE,LFREE)
+         CALL DCOPY(NZCONFQ,SCO,1,WORK(KSCOP),1)
+         AR = DDOT(NZCONF,CREF,1,WORK(KSCOP),1)
+         AI = 0.0D0
+         IF (MZ .EQ. 2) THEN
+            AR = AR + DDOT(NZCONF,CREF(1+NZCONF),1,
+     &                     WORK(KSCOP+NZCONF),1)
+            AI = DDOT(NZCONF,CREF,1,WORK(KSCOP+NZCONF),1)
+     &         - DDOT(NZCONF,CREF(1+NZCONF),1,WORK(KSCOP),1)
+         END IF
+         WRITE(LUPRI,'(A,1P,2D14.5)')
+     &      ' (KRMC_FDCHKO) <c|sigma_c> (re,im):',AR,AI
+         CALL DAXPY(NZCONF,-AR,CREF,1,WORK(KSCOP),1)
+         IF (MZ .EQ. 2) THEN
+            CALL DAXPY(NZCONF, AI,CREF(1+NZCONF),1,WORK(KSCOP),1)
+            CALL DAXPY(NZCONF,-AR,CREF(1+NZCONF),1,
+     &                 WORK(KSCOP+NZCONF),1)
+            CALL DAXPY(NZCONF,-AI,CREF,1,WORK(KSCOP+NZCONF),1)
+         END IF
+         CALL FDCMPQ('E2co*b (projected)',WORK(KGCIP),WORK(KSCOP),
+     &               NZCONF,MZ,LUPRI)
+      END IF
+C
+C     Orbital part (first NSEO rotations of each quaternion component)
+C
+      CALL MEMGET2('REAL','FDO',KFDO,NSEO*NZ,WORK,KFREE,LFREE)
+      DO IZ = 1, NZ
+         CALL DCOPY(NSEO,WORK(KGPLS+(IZ-1)*NZHOPE),1,
+     &              WORK(KFDO+(IZ-1)*NSEO),1)
+      END DO
+      CALL FDCMPQ('E2oo*b',WORK(KFDO),SEO,NSEO,NZ,LUPRI)
+C     energy-only second derivative (CI fixed) vs. b.E[2](oo).b
+      E0  = EMY + EACTIV
+      D2FD = (EFD(1) + EFD(2) - 2.0D0*E0)/(EPS*EPS)
+      BSB = 0.0D0
+      DO IZ = 1, NZ
+         BSB = BSB + DDOT(NSEO,SEO(1,IZ),1,BE(1+(IZ-1)*NSEO),1)
+      END DO
+      WRITE(LUPRI,'(A,1P,3D16.8)')
+     &   ' (KRMC_FDCHKO) d2E/deps2 (energies), b.E2oo.b, ratio:',
+     &   D2FD,BSB,D2FD/SIGN(MAX(ABS(BSB),1.0D-30),BSB)
+C
+      CALL MEMREL('KRMC_FDCHKO',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck krmc_fdchki */
+      SUBROUTINE KRMC_FDCHKI(CREF,BE,FCX,FVX,FQX,H2ACX,EPS,
+     &                       WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Debug (.FDCHEK under *OPTIMIZE):
+C     Finite-difference check of the sigma vector of an orbital (e-e)
+C     trial vector BE.  CMO(+-) = CMO exp(-+ EPS*kappa(BE)), integrals
+C     re-transformed, gradient recomputed:
+C       FD_c = [g_c(+) - g_c(-)]/(2 EPS), projected on (1 - |c><c|),
+C              compared with SCO = E[2](co) BE  (exact comparison)
+C       FD_o = [g_o(+) - g_o(-)]/(2 EPS) compared with SEO = E[2](oo) BE
+C              (differs from the symmetric Hessian by a gradient term).
+C     The integrals and the LUKRM3 matrices are restored at the end.
+C
+C***********************************************************************
+      use orbital_rotation_indices
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "dcbnrt.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+      CHARACTER SZTRA(2,4)*200
+      DIMENSION CREF(*), BE(*), FCX(NORBT,NORBT,NZ), FVX(NORBT,NORBT,NZ)
+      DIMENSION FQX(*), H2ACX(*), WORK(*)
+C
+      KFRSAV = KFREE
+      MZ = NZ_in_CI
+      CALL MEMGET2('REAL','CMO0',KCMO0,NCMOTQ ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CMOP',KCMOP,NCMOTQ ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBEIG',KIBEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','UK0' ,KUK0 ,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','UK'  ,KUK  ,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BP0' ,KBP0 ,MAX(1,NZXOPPQ),WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DV'  ,KDV  ,N2ASHXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FC'  ,KFC  ,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FV'  ,KFV  ,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FQ'  ,KFQ  ,NZ*NASHT*NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PV'  ,KPV  ,NASHT*NASHT*NNASHX*NZ*3,
+     &             WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FCAC',KFCAC,N2ASHXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','H2AC',KH2AC,NASHT*NASHT*NNASHX*NZ*3,
+     &             WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GCI' ,KGCI ,MAX(1,NZCONFQ),WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GCIP',KGCIP,MAX(1,NZCONFQ),WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GOEE',KGOEE,NZHOPEQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GOEP',KGOEP,MAX(1,NZXOPPQ),WORK,KFREE,LFREE)
+      LH2 = NASHT*NASHT*NNASHX*NZ*3
+      LFQ = NZ*NASHT*NORBT
+      CALL MEMGET2('REAL','FCPL',KFCPL,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FVPL',KFVPL,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FQPL',KFQPL,MAX(1,LFQ),WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','H2PL',KH2PL,MAX(1,LH2),WORK,KFREE,LFREE)
+C
+      CALL RREADMO(WORK(KCMO0),1,1,LUKRMC)
+      CALL IZERO(WORK(KIBEIG),NORBT)
+      IF (NZCONF .GT. 0) THEN
+         CNRM0 = DNRM2(NZCONFQ,CREF,1)
+         CALL DSCAL(NZCONFQ,1.0D0/CNRM0,CREF,1)
+      END IF
+C     unpack trial vector into kappa matrix
+      CALL DZERO(WORK(KUK0),N2ORBXQ)
+      CALL DZERO(WORK(KBP0),MAX(1,NZXOPPQ))
+      CALL RUPKWOP(BE,WORK(KBP0),WORK(KUK0),NORBT,
+     &             get_orbital_rotation_indices_pp(),NZXOPE,
+     &             get_orbital_rotation_indices_pn(),NZXOPP,NZ)
+      CALL INISZT(KTRLVL,SZTRA,LNOROT,NOROT)
+C
+      DO ISGN = 1, 3
+C        ISGN = 1: +eps, 2: -eps, 3: restore (no rotation)
+         CALL DCOPY(NCMOTQ,WORK(KCMO0),1,WORK(KCMOP),1)
+         IF (ISGN .LE. 2) THEN
+            SGN = 3 - 2*ISGN
+            IOFF = 0
+            DO I = 1,NFSYM
+               IF (NOCC(I) .GT. 0) THEN
+                  CALL DCOPY(N2ORBXQ,WORK(KUK0),1,WORK(KUK),1)
+                  CALL DSCAL(N2ORBXQ,SGN*EPS,WORK(KUK),1)
+                  CALL ROTCMO(WORK(KCMOP+ICMOQ(I)),NFBAS(I,0),NORB(I),
+     &                 NZ,WORK(KUK+IOFF),NORBT,IPQTOQ(1,0),0,
+     &                 WORK(KFREE),LFREE)
+               END IF
+               IOFF = IOFF + (NORBT+1)*NORB(I)
+            END DO
+         END IF
+         CALL RTRACTL(WORK(KCMOP),WORK(KIBEIG),SZTRA,WORK(KFREE),LFREE)
+         CALL RGRAD(WORK(KCMOP),CREF,WORK(KIBEIG),
+     &        get_orbital_rotation_indices_pp(),
+     &        get_orbital_rotation_indices_pn(),
+     &        WORK(KGCI),WORK(KGOEE),WORK(KGOEP),EMYFD,EACTFD,
+     &        WORK(KDV),WORK(KPV),WORK(KFC),WORK(KFV),WORK(KFQ),
+     &        WORK(KFCAC),WORK(KH2AC),0,WORK,KFREE,LFREE)
+         IF (ISGN .EQ. 1) THEN
+            CALL DCOPY(N2ORBXQ,WORK(KFC),1,WORK(KFCPL),1)
+            CALL DCOPY(N2ORBXQ,WORK(KFV),1,WORK(KFVPL),1)
+            CALL DCOPY(LFQ,WORK(KFQ),1,WORK(KFQPL),1)
+            CALL DCOPY(LH2,WORK(KH2AC),1,WORK(KH2PL),1)
+         ELSE IF (ISGN .EQ. 2) THEN
+            CALL DAXPY(N2ORBXQ,-1.0D0,WORK(KFC),1,WORK(KFCPL),1)
+            CALL DAXPY(N2ORBXQ,-1.0D0,WORK(KFV),1,WORK(KFVPL),1)
+            CALL DAXPY(LFQ,-1.0D0,WORK(KFQ),1,WORK(KFQPL),1)
+            CALL DAXPY(LH2,-1.0D0,WORK(KH2AC),1,WORK(KH2PL),1)
+            CALL DSCAL(N2ORBXQ,0.5D0/EPS,WORK(KFCPL),1)
+            CALL DSCAL(N2ORBXQ,0.5D0/EPS,WORK(KFVPL),1)
+            CALL DSCAL(LFQ,0.5D0/EPS,WORK(KFQPL),1)
+            CALL DSCAL(LH2,0.5D0/EPS,WORK(KH2PL),1)
+         END IF
+      END DO
+C
+      WRITE(LUPRI,'(/A,1P,D10.3)')
+     &   ' (KRMC_FDCHKI) FD check of one-index transformed matrices,'//
+     &   ' eps =',EPS
+      IF (NFSYM .NE. 1) WRITE(LUPRI,'(A)')
+     &   ' (KRMC_FDCHKI) WARNING: only implemented for NFSYM = 1'
+C     columns with occupied (inactive+active) second index
+      NOCCT = NISHT + NASHT
+      JOCC  = NPSH(1) + 1
+      CALL MEMGET2('REAL','FDA',KFDA,NORBT*NOCCT*NZ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','ANA',KANA,NORBT*NOCCT*NZ,WORK,KFREE,LFREE)
+      DO IMAT = 1, 2
+         DO IZ = 1, NZ
+            DO J = 1, NOCCT
+               JJ = JOCC + J - 1
+               IOFFF = (JJ-1)*NORBT + (IZ-1)*N2ORBX
+               IOFFA = (J-1)*NORBT + (IZ-1)*NORBT*NOCCT
+               IF (IMAT .EQ. 1) THEN
+                  CALL DCOPY(NORBT,WORK(KFCPL+IOFFF),1,
+     &                       WORK(KFDA+IOFFA),1)
+                  CALL DCOPY(NORBT,FCX(1,JJ,IZ),1,WORK(KANA+IOFFA),1)
+               ELSE
+                  CALL DCOPY(NORBT,WORK(KFVPL+IOFFF),1,
+     &                       WORK(KFDA+IOFFA),1)
+                  CALL DCOPY(NORBT,FVX(1,JJ,IZ),1,WORK(KANA+IOFFA),1)
+               END IF
+            END DO
+         END DO
+         IF (IMAT .EQ. 1) THEN
+            CALL FDCMPQ('FCX(:,occ)',WORK(KFDA),WORK(KANA),
+     &                  NORBT*NOCCT,NZ,LUPRI)
+         ELSE
+            CALL FDCMPQ('FVX(:,occ)',WORK(KFDA),WORK(KANA),
+     &                  NORBT*NOCCT,NZ,LUPRI)
+         END IF
+      END DO
+      IF (NASHT .GT. 1) THEN
+         CALL FDCMPQ('FQX',WORK(KFQPL),FQX,NORBT*NASHT,NZ,LUPRI)
+C        only rows p = inactive or secondary (electronic) are used
+         NRW = NISHT + NSSHT
+         CALL MEMGET2('REAL','FQA',KFQA,NRW*NASHT*NZ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FQB',KFQB,NRW*NASHT*NZ,WORK,KFREE,LFREE)
+         II = 0
+         DO IZ = 1, NZ
+            DO IV = 1, NASHT
+               DO IP = 1, NORBT
+                  IPE = IP - NPSH(1)
+                  IF ((IPE.GE.1 .AND. IPE.LE.NISHT) .OR.
+     &                IPE.GT.NISHT+NASHT) THEN
+                     IJ = IP + (IV-1)*NORBT + (IZ-1)*NORBT*NASHT
+                     WORK(KFQA+II) = WORK(KFQPL-1+IJ)
+                     WORK(KFQB+II) = FQX(IJ)
+                     II = II + 1
+                  END IF
+               END DO
+            END DO
+         END DO
+         CALL FDCMPQ('FQX(i/s rows)',WORK(KFQA),WORK(KFQB),
+     &               NRW*NASHT,NZ,LUPRI)
+         CALL FDCMPQ('H2ACX',WORK(KH2PL),H2ACX,NASHT*NASHT*NNASHX,
+     &               NZ*3,LUPRI)
+      END IF
+C
+      CALL MEMREL('KRMC_FDCHKI',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck krmc_fdtrace */
+      SUBROUTINE KRMC_FDTRACE(CREF,BC,SEC,BE,SCOLD,NSEO,EPS,IOLD,
+     &                        WORK,KFREE,LFREE)
+C***********************************************************************
+C     Debug (.FDCHEK): trace one C/E element of the reduced Hessian.
+C       BC    : new CI trial vector,  SEC  : its orbital sigma (memory)
+C       BE    : old orbital trial vector (from LUBOE)
+C       SCOLD : CI sigma of BE (from LUSCI)
+C     Prints R1 = 4 BE.SEC, F1 = 4 BE.FD_o(BC)
+C            R2 = 4 SCOLD.BC, F2 = 4 FD_c(BE).BC
+C     and |SCOLD - FD_c| (both projected on 1-|c><c|).
+C***********************************************************************
+      use orbital_rotation_indices
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "dcbnrt.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+      CHARACTER SZTRA(2,4)*200
+      DIMENSION CREF(*), BC(*), SEC(NSEO,*), BE(NSEO,*), SCOLD(*)
+      DIMENSION WORK(*)
+C
+      KFRSAV = KFREE
+      MZ = NZ_in_CI
+      CALL MEMGET2('REAL','CMO0',KCMO0,NCMOTQ ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CMOP',KCMOP,NCMOTQ ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBEIG',KIBEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','UK0' ,KUK0 ,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','UK'  ,KUK  ,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BP0' ,KBP0 ,MAX(1,NZXOPPQ),WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CPM' ,KCPM ,NZCONFQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CN'  ,KCN  ,NZCONFQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DV'  ,KDV  ,N2ASHXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FC'  ,KFC  ,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FV'  ,KFV  ,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FQ'  ,KFQ  ,NZ*NASHT*NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PV'  ,KPV  ,NASHT*NASHT*NNASHX*NZ*3,
+     &             WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FCAC',KFCAC,N2ASHXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','H2AC',KH2AC,NASHT*NASHT*NNASHX*NZ*3,
+     &             WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GCI' ,KGCI ,NZCONFQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GCIP',KGCIP,NZCONFQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GOEE',KGOEE,NZHOPEQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GOEP',KGOEP,MAX(1,NZXOPPQ),WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GPLS',KGPLS,NZHOPEQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SCP' ,KSCP ,NZCONFQ,WORK,KFREE,LFREE)
+C
+      CALL RREADMO(WORK(KCMO0),1,1,LUKRMC)
+      CALL IZERO(WORK(KIBEIG),NORBT)
+      CALL DCOPY(NZCONFQ,CREF,1,WORK(KCN),1)
+      CNRM0 = DNRM2(NZCONFQ,WORK(KCN),1)
+      CALL DSCAL(NZCONFQ,1.0D0/CNRM0,WORK(KCN),1)
+      CALL INISZT(KTRLVL,SZTRA,LNOROT,NOROT)
+C
+C     (1) FD_o(BC): orbital gradient at c +- eps BC, reference orbitals
+      DO ISGN = 1, 2
+         SGN = 3 - 2*ISGN
+         CALL DCOPY(NZCONFQ,WORK(KCN),1,WORK(KCPM),1)
+         CALL DAXPY(NZCONFQ,SGN*EPS,BC,1,WORK(KCPM),1)
+         CNRM = DNRM2(NZCONFQ,WORK(KCPM),1)
+         CALL DSCAL(NZCONFQ,1.0D0/CNRM,WORK(KCPM),1)
+         CALL RGRAD(WORK(KCMO0),WORK(KCPM),WORK(KIBEIG),
+     &        get_orbital_rotation_indices_pp(),
+     &        get_orbital_rotation_indices_pn(),
+     &        WORK(KGCI),WORK(KGOEE),WORK(KGOEP),EMYFD,EACTFD,
+     &        WORK(KDV),WORK(KPV),WORK(KFC),WORK(KFV),WORK(KFQ),
+     &        WORK(KFCAC),WORK(KH2AC),0,WORK,KFREE,LFREE)
+         IF (ISGN .EQ. 1) THEN
+            CALL DCOPY(NZHOPEQ,WORK(KGOEE),1,WORK(KGPLS),1)
+         ELSE
+            CALL DAXPY(NZHOPEQ,-1.0D0,WORK(KGOEE),1,WORK(KGPLS),1)
+            CALL DSCAL(NZHOPEQ,0.5D0/EPS,WORK(KGPLS),1)
+         END IF
+      END DO
+      R1 = 0.0D0
+      F1 = 0.0D0
+      DO IZ = 1, NZ
+         R1 = R1 + 4.0D0*DDOT(NSEO,BE(1,IZ),1,SEC(1,IZ),1)
+         F1 = F1 + 4.0D0*DDOT(NSEO,BE(1,IZ),1,
+     &                        WORK(KGPLS+(IZ-1)*NZHOPE),1)
+      END DO
+C
+C     (2) FD_c(BE): CI gradient with orbitals rotated by -+ eps kappa
+      CALL DZERO(WORK(KUK0),N2ORBXQ)
+      CALL DZERO(WORK(KBP0),MAX(1,NZXOPPQ))
+      CALL RUPKWOP(BE,WORK(KBP0),WORK(KUK0),NORBT,
+     &             get_orbital_rotation_indices_pp(),NZXOPE,
+     &             get_orbital_rotation_indices_pn(),NZXOPP,NZ)
+      DO ISGN = 1, 3
+         CALL DCOPY(NCMOTQ,WORK(KCMO0),1,WORK(KCMOP),1)
+         IF (ISGN .LE. 2) THEN
+            SGN = 3 - 2*ISGN
+            IOFF = 0
+            DO I = 1,NFSYM
+               IF (NOCC(I) .GT. 0) THEN
+                  CALL DCOPY(N2ORBXQ,WORK(KUK0),1,WORK(KUK),1)
+                  CALL DSCAL(N2ORBXQ,SGN*EPS,WORK(KUK),1)
+                  CALL ROTCMO(WORK(KCMOP+ICMOQ(I)),NFBAS(I,0),NORB(I),
+     &                 NZ,WORK(KUK+IOFF),NORBT,IPQTOQ(1,0),0,
+     &                 WORK(KFREE),LFREE)
+               END IF
+               IOFF = IOFF + (NORBT+1)*NORB(I)
+            END DO
+         END IF
+         CALL RTRACTL(WORK(KCMOP),WORK(KIBEIG),SZTRA,WORK(KFREE),LFREE)
+         CALL RGRAD(WORK(KCMOP),WORK(KCN),WORK(KIBEIG),
+     &        get_orbital_rotation_indices_pp(),
+     &        get_orbital_rotation_indices_pn(),
+     &        WORK(KGCI),WORK(KGOEE),WORK(KGOEP),EMYFD,EACTFD,
+     &        WORK(KDV),WORK(KPV),WORK(KFC),WORK(KFV),WORK(KFQ),
+     &        WORK(KFCAC),WORK(KH2AC),0,WORK,KFREE,LFREE)
+         IF (ISGN .EQ. 1) THEN
+            CALL DCOPY(NZCONFQ,WORK(KGCI),1,WORK(KGCIP),1)
+         ELSE IF (ISGN .EQ. 2) THEN
+            CALL DAXPY(NZCONFQ,-1.0D0,WORK(KGCI),1,WORK(KGCIP),1)
+            CALL DSCAL(NZCONFQ,0.5D0/EPS,WORK(KGCIP),1)
+         END IF
+      END DO
+C     project c out of FD_c and of SCOLD (complex for MZ = 2)
+      CALL DCOPY(NZCONFQ,SCOLD,1,WORK(KSCP),1)
+      DO IV = 1, 2
+         IF (IV .EQ. 1) KX = KGCIP
+         IF (IV .EQ. 2) KX = KSCP
+         SR = DDOT(NZCONF,WORK(KCN),1,WORK(KX),1)
+         SI = 0.0D0
+         IF (MZ .EQ. 2) THEN
+            SR = SR + DDOT(NZCONF,WORK(KCN+NZCONF),1,WORK(KX+NZCONF),1)
+            SI = DDOT(NZCONF,WORK(KCN),1,WORK(KX+NZCONF),1)
+     &         - DDOT(NZCONF,WORK(KCN+NZCONF),1,WORK(KX),1)
+         END IF
+         CALL DAXPY(NZCONF,-SR,WORK(KCN),1,WORK(KX),1)
+         IF (MZ .EQ. 2) THEN
+            CALL DAXPY(NZCONF, SI,WORK(KCN+NZCONF),1,WORK(KX),1)
+            CALL DAXPY(NZCONF,-SR,WORK(KCN+NZCONF),1,WORK(KX+NZCONF),1)
+            CALL DAXPY(NZCONF,-SI,WORK(KCN),1,WORK(KX+NZCONF),1)
+         END IF
+      END DO
+      R2 = 4.0D0*DDOT(NZCONFQ,SCOLD,1,BC,1)
+      F2 = 4.0D0*DDOT(NZCONFQ,WORK(KGCIP),1,BC,1)
+      DMX = 0.0D0
+      FMX = 0.0D0
+      DO I = 0, NZCONFQ-1
+         DMX = MAX(DMX,ABS(WORK(KSCP+I)-WORK(KGCIP+I)))
+         FMX = MAX(FMX,ABS(WORK(KGCIP+I)))
+      END DO
+C     (3) true mixed derivative from energies, E(c+-e1 BC, -+e2 kappa)
+      EPS2 = 1.0D-3
+      EMIX = 0.0D0
+      DO IKS = 1, 2
+         SGK = 3 - 2*IKS
+         CALL DCOPY(NCMOTQ,WORK(KCMO0),1,WORK(KCMOP),1)
+         IOFF = 0
+         DO I = 1,NFSYM
+            IF (NOCC(I) .GT. 0) THEN
+               CALL DCOPY(N2ORBXQ,WORK(KUK0),1,WORK(KUK),1)
+               CALL DSCAL(N2ORBXQ,SGK*EPS2,WORK(KUK),1)
+               CALL ROTCMO(WORK(KCMOP+ICMOQ(I)),NFBAS(I,0),NORB(I),
+     &              NZ,WORK(KUK+IOFF),NORBT,IPQTOQ(1,0),0,
+     &              WORK(KFREE),LFREE)
+            END IF
+            IOFF = IOFF + (NORBT+1)*NORB(I)
+         END DO
+         CALL RTRACTL(WORK(KCMOP),WORK(KIBEIG),SZTRA,WORK(KFREE),LFREE)
+         DO ICS = 1, 2
+            SGC = 3 - 2*ICS
+            CALL DCOPY(NZCONFQ,WORK(KCN),1,WORK(KCPM),1)
+            CALL DAXPY(NZCONFQ,SGC*EPS2,BC,1,WORK(KCPM),1)
+            CNRM = DNRM2(NZCONFQ,WORK(KCPM),1)
+            CALL DSCAL(NZCONFQ,1.0D0/CNRM,WORK(KCPM),1)
+            CALL RGRAD(WORK(KCMOP),WORK(KCPM),WORK(KIBEIG),
+     &           get_orbital_rotation_indices_pp(),
+     &           get_orbital_rotation_indices_pn(),
+     &           WORK(KGCI),WORK(KGOEE),WORK(KGOEP),EMYFD,EACTFD,
+     &           WORK(KDV),WORK(KPV),WORK(KFC),WORK(KFV),WORK(KFQ),
+     &           WORK(KFCAC),WORK(KH2AC),0,WORK,KFREE,LFREE)
+            EMIX = EMIX + SGK*SGC*(EMYFD+EACTFD)
+         END DO
+      END DO
+C     norm of BC enters quadratically via normalization only (b orthogonal to c)
+      EMIX = EMIX/(4.0D0*EPS2*EPS2)
+C     restore integrals and LUKRM3 matrices
+      CALL RTRACTL(WORK(KCMO0),WORK(KIBEIG),SZTRA,WORK(KFREE),LFREE)
+      CALL RGRAD(WORK(KCMO0),WORK(KCN),WORK(KIBEIG),
+     &     get_orbital_rotation_indices_pp(),
+     &     get_orbital_rotation_indices_pn(),
+     &     WORK(KGCI),WORK(KGOEE),WORK(KGOEP),EMYFD,EACTFD,
+     &     WORK(KDV),WORK(KPV),WORK(KFC),WORK(KFV),WORK(KFQ),
+     &     WORK(KFCAC),WORK(KH2AC),0,WORK,KFREE,LFREE)
+      WRITE(LUPRI,'(A,1P,3(A,D14.6))') ' (KRMC_FDTRACE)    ',
+     &  ' d2E/dc dk (energies) =',EMIX,'   F1/2 =',0.5D0*F1,
+     &  '   F2/2 =',0.5D0*F2
+      WRITE(LUPRI,'(A,I4,1P,4(A,D14.6))')
+     &  ' (KRMC_FDTRACE) old E vec',IOLD,
+     &  '  R1(b_E.s_E(b_C))=',R1,'  F1=',F1,
+     &  '  R2(s_C(b_E).b_C)=',R2,'  F2=',F2
+      WRITE(LUPRI,'(A,1P,2(A,D12.4),A,D12.4)')
+     &  ' (KRMC_FDTRACE)     stored s_C(b_E) vs FD:',
+     &  ' max|diff| =',DMX,'  max|FD| =',FMX,
+     &  '  <b_C|c> =',DDOT(NZCONFQ,WORK(KCN),1,BC,1)
+C
+      CALL MEMREL('KRMC_FDTRACE',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck krmc_rndphase */
+      SUBROUTINE KRMC_RNDPHASE(CMO,WORK,LWORK)
+C***********************************************************************
+C
+C     Debug: if the environment variable DIRAC_RNDPHASE = <seed> > 0,
+C     multiply every orbital (Kramers pair) from the right by a random
+C     unit quaternion (complex phase for NZ = 2, sign for NZ = 1):
+C        phi_p -> phi_p q_p,   |q_p| = 1.
+C     The energy is invariant, and so must be gradient and Hessian
+C     (in the rotated basis); this exposes errors that are hidden by
+C     the near-real orbital phases a diagonalization usually produces.
+C
+C***********************************************************************
+      use os_utils
+#include "implicit.h"
+#include "priunit.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+      DIMENSION CMO(*), WORK(LWORK)
+      DIMENSION Q(4)
+      INTEGER*8 ISEED
+C
+      JSEED = get_environment_integer('DIRAC_RNDPHASE',0)
+      IF (JSEED .LE. 0) RETURN
+      WRITE(LUPRI,'(/A,I10)')
+     &   ' *** DEBUG: random orbital phases, DIRAC_RNDPHASE =',JSEED
+      ISEED = JSEED
+      DO I = 1, NFSYM
+         NORBI  = NORB(I)
+         NFBASI = NFBAS(I,0)
+         IF (NORBI .EQ. 0) CYCLE
+         IF (LWORK .LT. NFBASI*NZ) CALL QUIT('KRMC_RNDPHASE: work')
+         DO IP = 1, NORBI
+C           random unit quaternion with NZ components
+            QN = 0.0D0
+            DO IZ = 1, NZ
+               ISEED = MOD(ISEED*1103515245_8 + 12345_8, 2147483648_8)
+               Q(IZ) = 2.0D0*DBLE(ISEED)/2147483648.0D0 - 1.0D0
+               QN = QN + Q(IZ)**2
+            END DO
+            QN = 1.0D0/SQRT(QN)
+            DO IZ = 1, NZ
+               Q(IZ) = Q(IZ)*QN
+            END DO
+            JC = 1 + ICMOQ(I) + (IP-1)*NFBASI
+            CALL DZERO(WORK,NFBASI*NZ)
+            CALL QXAPY(NFBASI,'N','N',Q,IPQTOQ(1,0),NZ,
+     &                 CMO(JC),NFBASI*NORBI,1,IPQTOQ(1,0),NZ,
+     &                 WORK,NFBASI,1,IPQTOQ(1,0),NZ)
+            DO IZ = 1, NZ
+               CALL DCOPY(NFBASI,WORK(1+(IZ-1)*NFBASI),1,
+     &                    CMO(JC+(IZ-1)*NFBASI*NORBI),1)
+            END DO
+         END DO
+      END DO
+      RETURN
+      END

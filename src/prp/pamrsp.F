@@ -412,6 +412,7 @@ C            /Sep 2005 hjaaj
          MAXSIM = MAX(1,MAXSIM)
 C        ... always attempt at least one vector
       END IF
+
 C
 C     ============================
 C     hjj+panor:
@@ -489,6 +490,7 @@ C
           GOTO 40
         ENDIF
       ENDIF
+
 C
 C     Handle case of zero microiterations
 C     ===================================
@@ -509,9 +511,10 @@ C         ... EVECR set in subroutine XRSST2 for UNCOUP
           ENDDO
         END IF
         IF(IPRXRS.GE.4) THEN
+
           IF(NCSIM.GT.0) THEN
             WRITE(LUPRI,'(/I5,A)')NCSIM,' Config. trial vectors'
-            CALL PRBVEC(LUPRI,WORK(KBCI),NCSIM,NZCONF)
+            CALL PRCVEC(LUPRI,WORK(KBCI),NCSIM,NZCONF)
           ENDIF
           IF(NESIM.GT.0) THEN
             WRITE(LUPRI,'(/I5,A)')NESIM,
@@ -525,6 +528,7 @@ C         ... EVECR set in subroutine XRSST2 for UNCOUP
           ENDIF
          END IF
       ENDIF
+
 C
 C     **********************************************
 C     ***                                        ***
@@ -570,11 +574,12 @@ C         Print section
      &     (BVTYP(I),':',ISIM(I),I=1,NVPAR)
           ENDIF
 C
+
           IF(IPRXRS.GE.4) THEN
             WRITE(LUPRI,'(/A)')' Before XRSSVC'
             IF(NCSIM.GT.0) THEN
               WRITE(LUPRI,'(/I5,A)')NCSIM,' Config. trial vectors'
-              CALL PRBVEC(LUPRI,WORK(KBCI),NCSIM,NZCONF)
+              CALL PRCVEC(LUPRI,WORK(KBCI),NCSIM,NZCONF)
             ENDIF
             IF(NESIM.GT.0) THEN
               WRITE(LUPRI,'(/I5,A)')NESIM,
@@ -605,6 +610,7 @@ C
      &         WORK(KSCI),WORK(KSOE),WORK(KSOP),
      &         IBTYP,IBCVC,IBEVC,IBPVC,
      &         GPCI,GPOE,GPOP, WORK,KFREE,LFREE)
+
 C
 C         On file we save the Hessian PHP = PLP (i.e. beta=0), so
 C         we must project CREF out.
@@ -669,6 +675,7 @@ C       ======================================================
         ENDDO
 C
  30     CONTINUE
+
 C
 C       Info on current trial vectors
 C       -----------------------------
@@ -690,6 +697,7 @@ C
         CALL XRSSOL (REDGP,REDE,REDS,EVALR,EVECR,RCNV,
      &               IBTYP,IBEVC,WORK,KFREE,LFREE)
         CALL FLSHFO(LUPRI)
+
 C
 C        CALCULATE TRANSITION MOMENT
 C
@@ -811,6 +819,7 @@ C
          IINFO(5) = NERED
          IINFO(6) = NPRED
       END IF
+
 C
 C
 C
@@ -1182,6 +1191,7 @@ C
 C Used from common blocks:
 C  WRKXRS: LZCONF,LZXOPT,JSYMOP
 C
+#include "dgroup.h"
 #include "dcbxrs.h"
 C
       CALL QENTER('XRSORT')
@@ -1338,6 +1348,32 @@ C
             JB = JBN + NBPREV
             JH = IBTYP(2,IBVEC(JB))
             IF(IVECS(JBN).EQ.0.OR.(IH.NE.JH)) GOTO 100
+C
+            IF (IB .EQ. 0 .AND. NBDIM .EQ. 2*NZCONF) THEN
+C
+C              Complex CI vectors: project out CREF with the complex
+C              overlap t = <CREF|b>, b := b - CREF t. Both CREF and
+C              i*CREF (a change of phase of the wave function) are
+C              redundant directions; a real projection only removes
+C              the first, inconsistent with the complex projection of
+C              the CI sigma vectors (XRSPHP). Trial vectors among
+C              themselves are combined with real coefficients and
+C              are orthogonalized with real inner products below.
+C
+               TTR = -D4*( DDOT(NZCONF,BVBUF,1,BVECS(1,JBN),1)
+     &             + DDOT(NZCONF,BVBUF(1+NZCONF),1,
+     &                    BVECS(1+NZCONF,JBN),1) )/BNBN
+               TTI = -D4*( DDOT(NZCONF,BVBUF,1,BVECS(1+NZCONF,JBN),1)
+     &             - DDOT(NZCONF,BVBUF(1+NZCONF),1,BVECS(1,JBN),1) )
+     &             /BNBN
+C              Re b -= Re c Re t - Im c Im t ; Im b -= Im c Re t + Re c Im t
+               CALL DAXPY(NZCONF, TTR,BVBUF,1,BVECS(1,JBN),1)
+               CALL DAXPY(NZCONF,-TTI,BVBUF(1+NZCONF),1,BVECS(1,JBN),1)
+               CALL DAXPY(NZCONF, TTR,BVBUF(1+NZCONF),1,
+     &                    BVECS(1+NZCONF,JBN),1)
+               CALL DAXPY(NZCONF, TTI,BVBUF,1,BVECS(1+NZCONF,JBN),1)
+               GOTO 100
+            END IF
 C
 C           Form -<BVECS|BVBUF>/<BVBUF|BVBUF> :
 C
@@ -1690,12 +1726,15 @@ C
 C
 #include "dcbxrs.h"
 #include "dgroup.h"
+#include "dcborb.h"
       DIMENSION REDGP(NREDM),REDE(NREDM,NREDM),REDS(NREDM,NREDM),
      &          GPCI(*),GPOE(*),GPOP(*),
      &          IBCVC(NREDM),IBEVC(NREDM),IBPVC(NREDM),IBTYP(2,NREDM),
      &          BCVEC(NZCONFQ,*),BEVEC(NZXOPEQ,*),BPVEC(NZXOPPQ,*),
      &          SCVEC(NZCONFQ,*),SEVEC(NZXOPEQ,*),SPVEC(NZXOPPQ,*),
      &          WORK(*)
+      CHARACTER*1 BTPCH(-1:2)
+      DATA BTPCH/'C',' ','E','P'/
       LOGICAL   E2FULL
 C
       CALL QENTER('XRSRED')
@@ -1705,8 +1744,7 @@ C     ====================================
 C
       IF (NTSIM.LT.1) GO TO 9999
 C
-      E2FULL = .FALSE.
-      IF (E2CHEK) E2FULL = .TRUE.
+      E2FULL = E2CHEK .OR. XRS_E2FULL
       IF (IPRXRS .GE. 15) THEN
          CALL HEADER('(XRSRED) Sigma vectors',-1)
          IF (NZCONF .GT. 1) THEN
@@ -1767,6 +1805,72 @@ C     Allocate work space for previous trial vectors
       CALL EXTRDE(REDE,E2FULL,IBTYP,IBCVC,IBEVC,IBPVC,
      &            BCVEC,BEVEC,BPVEC,SCVEC,SEVEC,SPVEC,WORK(KB1))
 C
+C     Debug (.FDCHEK): finite-difference check of the orbital part of
+C     the sigma vector of the first new CI trial vector.
+C
+      IF (XRS_FDCHK .AND. NCSIM.GT.0 .AND. NZXOPE.GT.0) THEN
+         JFD  = IBCVC(1+ICRED)
+         JNFD = JFD - IZRED
+         CALL MEMGET2('REAL','CREFFD',KCRFD,NZCONFQ,WORK,KFREE,LFREE)
+         CALL READ_DX(LUBCI,1,NZCONFQ,WORK(KCRFD))
+C        analytic transition densities for this trial vector
+         LPVT = NASHT*NASHT*NNASHX*NZ*3
+         CALL MEMGET2('REAL','DVTFD',KDVTFD,N2ASHXQ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','PVTFD',KPVTFD,MAX(1,LPVT),
+     &                WORK,KFREE,LFREE)
+         NCSSAV = NCSIM
+         NCSIM  = 1
+         CALL XRSTDM(WORK(KCRFD),BCVEC(1,1),WORK(KDVTFD),WORK(KPVTFD),
+     &               WORK,KFREE,LFREE)
+         NCSIM  = NCSSAV
+         CALL KRMC_FDCHK(WORK(KCRFD),BCVEC(1,1),SEVEC(1,JNFD),
+     &                   NZXOPE,XRS_FDEPS,WORK(KDVTFD),WORK(KPVTFD),
+     &                   WORK,KFREE,LFREE)
+         CALL MEMREL('FDCHK',WORK,1,KCRFD,KFREE,LFREE)
+      END IF
+C
+C     Debug (.FDCHEK + .E2FULL): trace the C/E elements between the
+C     first new CI trial vector and all old orbital trial vectors
+C
+      IF (XRS_FDCHK .AND. XRS_E2FULL .AND. NCSIM.GT.0
+     &    .AND. IERED.GT.0) THEN
+         JFD  = IBCVC(1+ICRED)
+         JNFD = JFD - IZRED
+         CALL MEMGET2('REAL','CREFT',KCRT,NZCONFQ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','BEOLD',KBEO,NZXOPEQ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','SCOLD',KSCO,NZCONFQ,WORK,KFREE,LFREE)
+         CALL READ_DX(LUBCI,1,NZCONFQ,WORK(KCRT))
+         DO INE = 1, IERED
+            IEO = IBEVC(INE)
+            CALL READ_DX(LUBOE,INE,NZXOPEQ,WORK(KBEO))
+            CALL READ_DX(LUSCI,IEO+1,NZCONFQ,WORK(KSCO))
+            CALL KRMC_FDTRACE(WORK(KCRT),BCVEC(1,1),SEVEC(1,JNFD),
+     &           WORK(KBEO),WORK(KSCO),NZXOPE,XRS_FDEPS,IEO,
+     &           WORK,KFREE,LFREE)
+         END DO
+         CALL MEMREL('FDTRACE',WORK,1,KCRT,KFREE,LFREE)
+      END IF
+C
+C     Debug (.FDCHEK): finite-difference check of the sigma vector of
+C     the first new orbital (e-e) trial vector (needs new integrals).
+C
+      IF (XRS_FDCHK .AND. NESIM.GT.0) THEN
+         JFD  = IBEVC(1+IERED)
+         JNFD = JFD - IZRED
+         CALL MEMGET2('REAL','CREFFD',KCRFD,MAX(1,NZCONFQ),
+     &                WORK,KFREE,LFREE)
+         IF (NZCONF.GT.0) CALL READ_DX(LUBCI,1,NZCONFQ,WORK(KCRFD))
+         IF (NZCONF.GT.0) THEN
+            KSCFD = 1 + (JNFD-1)*NZCONFQ
+         ELSE
+            KSCFD = 1
+         END IF
+         CALL KRMC_FDCHKO(WORK(KCRFD),BEVEC(1,1),SEVEC(1,JNFD),
+     &                    SCVEC(KSCFD,1),NZXOPE,XRS_FDEPS,
+     &                    WORK,KFREE,LFREE)
+         CALL MEMREL('FDCHKO',WORK,1,KCRFD,KFREE,LFREE)
+      END IF
+C
 C     Check for anti-Hermicity
 C
       IF (E2FULL) THEN
@@ -1786,10 +1890,11 @@ C
             END DO
          END DO
          IF (DAHS .GT. 1.0D-14 .OR. IPRXRS.GE.4) THEN
-            WRITE(LUPRI,'(/A,1P,D10.2/A,D10.2,5X,A,0P,I3,A,I3,A/)')
+            WRITE(LUPRI,'(/A,1P,D10.2/A,D10.2,5X,A,0P,I3,A,I3,A,4A)')
      &        '(XRSRED)  1-norm of anti-symmetry of REDE = ',DAHS,
      &        '(XRSRED) oo-norm of anti-symmetry of REDE = ',
-     &        DMAH,' (element (',MAHI,',',MAHJ,'))'
+     &        DMAH,' (element (',MAHI,',',MAHJ,')',
+     &        ' types ',BTPCH(IBTYP(1,MAHI)),'/',BTPCH(IBTYP(1,MAHJ))
          END IF
       END IF
 C
@@ -2925,6 +3030,29 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck PRCVEC */
+      SUBROUTINE PRCVEC(IUNIT,BVEC,NBSIM,NBDIM)
+C***********************************************************************
+C     Print configurational (CI) trial vectors.
+C     CI vectors have at most NZ_in_CI = MIN(NZ,2) components
+C     (real or complex), so PRBVEC (which assumes NZ quaternion
+C     components) cannot be used for NZ = 4.
+C***********************************************************************
+#include "implicit.h"
+#include "dgroup.h"
+      DIMENSION BVEC(NBDIM,NZ_in_CI,NBSIM)
+C
+      DO I = 1,NBSIM
+        WRITE(IUNIT,'(A,I4)') '* Vector nr. ',I
+        IF (NZ_in_CI .EQ. 2) WRITE(IUNIT,'(T12,A)')
+     &     '(real and imaginary parts)'
+        CALL OUTPUT(BVEC(1,1,I),1,NBDIM,1,NZ_in_CI,NBDIM,NZ_in_CI,1,
+     &              IUNIT)
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PRBVCC */
       SUBROUTINE PRBVCC(IUNIT,BVEC,NBSTA,NBSIM,NBSTP,NBDIM)
 C***********************************************************************
@@ -3713,6 +3841,7 @@ C
      &           '*** WARNING: No restart vectors found !'
           ENDIF
         ENDIF
+
         IF(DIAGHE) THEN
           DO IP = 1,NFREQ*NDAMP,NDAMP
             IM = IP + NFREQ*NDAMP
@@ -3752,10 +3881,10 @@ C
             IF(FREQ.EQ.D0) THEN
               DO IZ = 1,NZL
                 DO IVAR = 1,NDIM
-                  IF(ABS(HDIAG(IVAR)).GT.DLIM ) THEN
-                    BVEC(IVAR,IZ,IP) = -GP(IVAR,IZ)/HDIAG(IVAR)
+                  IF ( ABS(HDIAG(IVAR)) .GT. DLIM ) THEN
+                     BVEC(IVAR,IZ,IP) = -GP(IVAR,IZ)/HDIAG(IVAR)
                   ELSE
-                    BVEC(IVAR,IZ,IP) = -GP(IVAR,IZ)
+                     BVEC(IVAR,IZ,IP) = -GP(IVAR,IZ)
                   END IF
                 ENDDO
               ENDDO
@@ -4307,9 +4436,28 @@ C
       UNCOUP = .FALSE.
       IMFREQ = .FALSE.
       E2CHEK = .FALSE.
+      XRS_E2FULL = .FALSE.
+      XRS_FDCHK  = .FALSE.
       STERNC = .FALSE.
       DAMPFREQ = 0.0D0
       NEVEC  = NREDM
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck SET_XRS_E2FULL */
+      SUBROUTINE SET_XRS_E2FULL(E2FULL_IN,FDCHK_IN,FDEPS_IN)
+C***********************************************************************
+C     Debug: compute the reduced Hessian as E2(i,j) = s(i)*b(j) for all
+C     i,j (both triangles) and report its anti-symmetry in XRSRED.
+C     For callers that cannot include dcbxrs.h.
+C***********************************************************************
+      implicit none
+#include "dcbxrs.h"
+      LOGICAL E2FULL_IN, FDCHK_IN
+      REAL*8  FDEPS_IN
+      XRS_E2FULL = E2FULL_IN
+      XRS_FDCHK  = FDCHK_IN
+      XRS_FDEPS  = FDEPS_IN
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

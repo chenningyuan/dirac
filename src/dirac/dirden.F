@@ -448,6 +448,8 @@ CTROND
 C
 C     Print section
 C
+
+
       IF(IPRINT.GE.10) THEN
         CALL TITLER('Output from DENSTY','*',103)
         DO 20 I = 1,NFSYM
@@ -477,6 +479,7 @@ C
 !     subroutine PRPEX2.
 C*****************************************************************************
 #include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION DMAT(LRD,LCD,NZ),CMO(LRC,LCC,NZ),IQ(4)
       DATA IQ/1,2,3,4/
@@ -484,6 +487,12 @@ C
         WRITE(6,*) 'DENST1: Negative number of vectors: ', NVEC
         CALL QUIT('DENST1: Negative number of vectors !')
       ENDIF
+
+
+
+
+
+
       CALL QGEMM(NBAS,NBAS,NVEC,ALPHA,
      &     'N','N',IQ,CMO(1,JVEC,1),LRC,LCC,NZ,
      &     'H','N',IQ,CMO(1,JVEC,1),LRC,LCC,NZ,

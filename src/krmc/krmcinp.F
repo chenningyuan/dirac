@@ -285,7 +285,7 @@ C&&& .NO CI : debug flag: no CI rotations.
                GO TO 100
    17          CONTINUE
 C&&& .THRPCI: threshold for printing CI vector
-                  READ(LUCMD,*) KRMC_THRPCI
+                  READ(LUCMD,*) DKRMC_THRPCI
                GO TO 100
    18          CONTINUE
 C&&& .FROZEN: freeze lowest inactive orbitals
@@ -1039,7 +1039,7 @@ C *** Option 5 >GOOD R<  "Good" trust radius
                GO TO 100
     6          CONTINUE
 C *** Option 6 >MIN RA<  "Bad" trust radius
-                  READ(LUCMD,*) RATBAD
+                  READ(LUCMD,*) RATMIN
                GO TO 100
     7          CONTINUE
 C *** Option 7 >REJ RA<  Ratio predicted/actual step that rejects step
@@ -1138,8 +1138,8 @@ C
       SAVE SET
       DATA TABLE /'.MAX CI','.IOPTST','.TRACI ','.NO TRA','.NATONL',
      &            '.FOCKON','.NO TRS','.COMPRE','.COMP F','.RSTRCI',
-     &            '.NO PFQ','.NO FQX','.ANALYZ','-------','.MXCIVE',
-     &            '.KTRLVL','.PARINT','-------','.NOOCCN','.RDFOCK',
+     &            '.NO PFQ','.NO FQX','.ANALYZ','.E2FULL','.MXCIVE',
+     &            '.KTRLVL','.PARINT','.FDCHEK','.NOOCCN','.RDFOCK',
      &            '.WRTFCK','-------','-------','-------','-------'/
       DATA SET/.FALSE./
 C
@@ -1167,6 +1167,9 @@ C
       IDOPARIO    = get_environment_integer('GLBSCR',IDOPARIO)
       OPT_NOPFQ   = .FALSE.
       OPT_NOFQX   = .FALSE.
+      OPT_FDCHK   = .FALSE.
+      OPT_FDEPS   = 1.0D-4
+      OPT_E2FULL  = .FALSE.
       NATONLY     = .FALSE.
       FOCKONLY    = .FALSE.
       COMPROT     = .FALSE.
@@ -1270,6 +1273,10 @@ C&&& .ANALYZ: Analyze LUCIAREL CI vector(s)
                   IANACI = 1
                GO TO 100
    14          CONTINUE
+C&&& .E2FULL: debug: in the micro iterations compute both b(i)*s(j)
+C             and b(j)*s(i) for the reduced Hessian and report its
+C             anti-symmetry (consistency check of the sigma vectors)
+                  OPT_E2FULL = .TRUE.
                GO TO 100
    15          CONTINUE
 C&&& .MXCIVE: Number of CI vectors allowed for subspace
@@ -1317,6 +1324,10 @@ C                   necessary! - SK- 20-03-2008
 #endif
                GO TO 100
    18          CONTINUE
+C&&& .FDCHEK: debug: finite-difference check of the orbital sigma
+C             vector of CI trial vectors (E[2]oc block); read step
+                  OPT_FDCHK = .TRUE.
+                  READ(LUCMD,*) OPT_FDEPS
                GO TO 100
    19          CONTINUE
 C&&& .NOOCCN: calculate natural orbitals occupation numbers

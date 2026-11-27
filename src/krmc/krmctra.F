@@ -648,8 +648,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 C
-      PARAMETER ( DM1 = -1.0D00 )
-C
       CHARACTER SZ(2,4)*(*)
       LOGICAL LNOPAIR
 C
@@ -710,7 +708,7 @@ C
 C     /DCBTRR/
 C
       THROUT = 1.0D-16
-      SCRTRA = DM1
+      SCRTRA = -1.0D0
 C
 C
       RETURN
@@ -943,8 +941,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgeth2 */
-      SUBROUTINE RGETH2(FQ,H2AC,PV,ibeig,dofq,doh2ac,read_master_file,
-     &                  WORK,LWORK)
+      SUBROUTINE RGETH2(FQ,H2AC,PV,PVMOLF,ibeig,dofq,doh2ac
+     &   ,read_master_file,WORK,LWORK)
 C***********************************************************************
 C
 C     Calculate FQ and get H2AC (two-electron integrals
@@ -965,12 +963,14 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+#include "dcborb.h"
 #include "dcbopt.h"
 C
       DIMENSION FQ(*)
       DIMENSION H2AC(*)
       DIMENSION PV(*), ibeig(*)
       DIMENSION WORK(*)
+      DIMENSION PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
       logical, intent(in) :: dofq 
       logical, intent(in) :: doh2ac
       logical, intent(in) :: read_master_file
@@ -981,6 +981,10 @@ C
       CALL QENTER('RGETH2')
       CALL RTKTIME(.TRUE.,3)
 C
+
+
+
+
       IF ( OPT_CIPROGRAM .EQ. 'GASCIP' .OR.
      &     OPT_CIPROGRAM .EQ. 'LUCIAREL' .OR.
      &     OPT_CIPROGRAM .EQ. 'KRCC' ) THEN
@@ -1003,7 +1007,7 @@ C        =========================================
          call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
 
 !        b. read integrals and construct fq
-         call rgeth21(dofq,doh2ac,pv,fq,h2ac,
+         call rgeth21(dofq,doh2ac,pv,pvmolf,fq,h2ac,
      &                work(khmat),work(kh2xy),work(kh2yx),
      &                work(kdxkr12),work(kdxb12),work(kdxb34),
      &                ibeig,read_master_file,ipropt,lupri)
@@ -1081,7 +1085,7 @@ C
 !
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RGETH21(DOFQ,DOH2AC,PV,FQ,H2AC,
+      SUBROUTINE RGETH21(DOFQ,DOH2AC,PV,PVMOLF,FQ,H2AC,
      &                   hmat,h2xy,h2yx,idxkr12,indxb12,indxb34,
      &                   ibeig,int_file_is_master_file,
      &                   iprint,print_unit)
@@ -1114,14 +1118,18 @@ C
 #include "dgroup.h"
 #include "maxorb.h"
 #include "dcbham.h"
+#include "dcbopt.h"
 C
       real*8    FQ(NORBT,NASHT,NZ)
+      real*8    FQ_TEST(2*NASHT,2*NASHT,2)
       real*8    PV(NASHT,NASHT,NNASHX,NZ,3)
       real*8    H2AC(NASHT,NASHT,NNASHX,NZ,3)
+      real*8, allocatable :: H2AC_MLF(:,:,:,:,:)
       real*8    hmat(*),h2xy(*),h2yx(*)
       integer   ibeig(*)
       integer   idxkr12(2,*),indxb12(2,*),indxb34(2,*)
-      LOGICAL   DOFQ, DOH2AC
+      real*8    PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
+      LOGICAL   DOFQ, DOH2AC, DOC1
 !     controls whether or not we read only from the integral file
 !     associated with the master process.
       logical, intent(in) :: int_file_is_master_file
@@ -1248,8 +1256,15 @@ C     Read integrals (x.ge.y)
 C     -----------------------
 C
 C     initialize output arrays
+c      DOC1 = .TRUE. !MVH to be changed later
       IF(DOFQ)   CALL DZERO(FQ,NASHT*NORBT*NZ)
       IF(DOH2AC) CALL DZERO(H2AC,NASHT*NASHT*NNASHX*NZ*3)
+c      IF (DOC1) THEN
+c        CALL DZERO(H2FULL,(2*NORBT)**2*(2*NASHT)**2*2)
+c        CALL DZERO(H2GAC,NORBT*NORBT*NNASHX*NZ*3)
+c      ENDIF
+      CALL DZERO(FQ_TEST,8*NASHT*NASHT)
+
 C
 C     Loop over records in integrals files.
 C
@@ -1309,6 +1324,8 @@ C           --------------------------------
 C
             call dzero(h2yx,n2orbx*nclass)
 C
+c mvh
+c            call blabla(h2xy,nclass, nkl,0)
             IREPABR = 0
             DO IREPAB = 0, NBSYM - 1
                IF (IREPIJ .EQ. JBTOF(IREPAB,1)) THEN
@@ -1360,10 +1377,28 @@ C
      &                  indxb34_reod(1,1),
      &                  set_qphaseFAC)
 
+         !   IF (NZ.EQ.4.AND.DOFQ) THEN
+         !       CALL DZERO(H2UG, NORBT*NASHT*NZ*NZ)
+         !       CALL DZERO(H2GU, NORBT*NASHT*NZ*NZ)
+         !       CALL DZERO(HMAT44,NORBT*NORBT*NZ*NZ)
+C        !        CALL CL244(H2YX,HMAT44,N2ORBX,irepij,
+C     &  !                indxb12(1,ixy+nijoff),
+C     &  !                indxb34_reod(1,1))
+         !       
+         !       CALL INT44GU(H2YX,H2GU,H2UG,IXU .EQ. IYU)
+         !       CALL raddfq90_mlf(FQ_TEST,h2gu,h2ug,pvmolf,
+     &   !            IUU,IXU,IYU,nz,lupri,norbt,nasht,NFSYM,NASH,ipqtoq)
+!        !    CALL raddfq90_test(FQ,h2gu,h2ug,pv,
+!     &  !           IUU,IXU,IYU,nz,lupri,norbt,nasht,NFSYM,NNASHX,ipqtoq)                   
+         !   ENDIF
+
+
 C
 C           Get (gu) and (ug) blocks + H2AC
 C           -------------------------------
 C
+c            CALL X2GU(hmat,h2xy,h2yx,
+c     &                H2AC,H2GAC,IUU,IXU .EQ. IYU, DOFQ, DOH2AC)
             CALL X2GU(hmat,h2xy,h2yx,
      &                H2AC,IUU,IXU .EQ. IYU, DOFQ, DOH2AC)
 C           CALL X2GU(HX,H2XY,H2YX,H2AC,IUU,ONLYXY,DOFQ,DOH2AC)
@@ -1386,6 +1421,9 @@ C
 C           Do the gazillion matrix multiplies to construct
 C           the auxiliary Fock matrix FQ: (B.40) - (B.43)
 C
+
+
+
             IF (DOFQ) THEN
                CALL RADDFQ90(FQ,H2XY,H2YX,PV,
      &              IUU,IXU,IYU,IREPIJ,IPRINT,
@@ -1395,6 +1433,99 @@ C
  20      CONTINUE
          NIJOFF  = NIJOFF  + NFPCK12(IREPIJ)
  10   CONTINUE
+
+C     MvH debug: H2AC/FQ cross-check in Molfdir format (print level >= 30)
+      if (dofq .and. iprint .ge. 30) then
+      allocate(H2AC_MLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2))
+      WRITE(6,*) 'BELOW YOU CAN FIND THE H2AC TRANSFORMATION TEST'
+      CALL CHKNZ3R(H2AC)
+
+
+
+
+
+      CALL DNZ32M(H2AC,H2AC_MLF,IPROPT)
+
+
+c         CALL M2DNZ390(.FALSE.,.FALSE.,.FALSE.,
+c     &           H2AC_MLF,H2AC,PVMOLF,IPROPT,
+c     &           IPQTOQ,NASH,NASHT,NNASHX,NZ,2,2,
+c     &           NBSYM,NFSYM,6,.false.,.false.)
+c      call quit("MVH STOP CALCULATION")
+c      WRITE(6,*) 'DIT IS NOG EEN TEST'
+c      WRITE(6,*) 'HIERONDER H2AC IN MOLFDIR FORMAT'
+c      CALL GETPV(PVMOLF)
+
+c      DO I = 1, 2*NASHT 
+c        DO J = 1, 2*NASHT 
+c          DO K = 1, 2*NASHT 
+c            DO L = 1, 2*NASHT  
+c            PVMOLF(I,J,K,L,1) = PVMOLF(I,J,K,L,1) + PVMOLF(K,L,I,J,1)
+c            PVMOLF(I,J,K,L,2) = PVMOLF(I,J,K,L,2) + PVMOLF(K,L,I,J,2)
+c            END DO 
+c          ENDDO 
+c        ENDDO 
+c      ENDDO
+c      WRITE(6,*) 'TRACEPV FROM KRMCTRA'
+c      CALL TRACEPV(PVMOLF)
+c
+      ETEST = 0.0D00
+      DO I = 1, 2*NASHT 
+        DO J = 1, 2*NASHT 
+          DO K = 1, 2*NASHT 
+            DO L = 1, 2*NASHT  
+                ETEST = ETEST + PVMOLF(I,J,K,L,1)*H2AC_MLF(I,J,K,L,1)
+                IF (NZ.GE.2) THEN
+                ETEST = ETEST - PVMOLF(I,J,K,L,2)*H2AC_MLF(I,J,K,L,2)
+                ENDIF
+            END DO 
+          ENDDO 
+        ENDDO 
+      ENDDO
+
+      DO I = 1, 2*NASHT 
+        DO J = 1, 2*NASHT 
+          DO K = 1, 2*NASHT 
+            DO L = 1, 2*NASHT 
+                DO M = 1, 2*NASHT 
+c   original                FQ_TEST(I,J,1) = FQ_TEST(I,J,1)
+c     &             + PVMOLF(I,K,L,M,1)*H2AC_MLF(J,K,L,M,1)
+                   FQ_TEST(I,J,1) = FQ_TEST(I,J,1)
+     &             + PVMOLF(I,K,L,M,1)*H2AC_MLF(J,K,L,M,1)
+                   IF (NZ.GE.2) THEN
+                   FQ_TEST(I,J,1) = FQ_TEST(I,J,1)
+     &             - PVMOLF(I,K,L,M,2)*H2AC_MLF(J,K,L,M,2)
+                    FQ_TEST(I,J,2) = FQ_TEST(I,J,2)
+     &             + PVMOLF(I,K,L,M,1)*H2AC_MLF(J,K,L,M,2)
+                    FQ_TEST(I,J,2) = FQ_TEST(I,J,2)
+     &             - PVMOLF(I,K,L,M,2)*H2AC_MLF(J,K,L,M,1)
+                   ENDIF
+                ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDDO
+
+      WRITE(6,*) 'MVH: THIS IS FQ THAT I CONSTRUCTED'
+      DO IC = 1,NZ_in_CI
+        WRITE(6,*) 'MATRIX COMPONENT ', IC
+        CALL OUTPUT(FQ_TEST(1,1,IC),1,2*NASHT,1,2*NASHT,2*NASHT,2*NASHT 
+     &                      ,2,LUPRI ) 
+      ENDDO
+
+      ETEST = ETEST*0.5D00
+      WRITE(6,*) 'MVH ACTIVE ENERGY TEST: ', ETEST
+      deallocate(H2AC_MLF)
+      endif
+
+      !MvH: remove later
+!      IF (DOFQ) THEN
+!        WRITE(6,*) 'output H2AC_MLF'
+!        CALL GGUUDNZ32M(H2GAC,H2FULL,NORBT,NORB,NASHT,NASH,NNASHX, 
+!     &                       NZ,NBSYM,NFSYM,IPQTOQ,IPRINT,idxu2g,maxash)
+!        CALL raddfq90_mlf(fq_test,h2full,pvmolf,nz,lupri,norbt,nasht
+!     &                                        ,maxash,idxu2g)
+c      ENDIF
 
 C
 C     Close integral files
@@ -1438,6 +1569,23 @@ C
      &     'NXY    = ',NXY
       CALL QUIT('*** ERROR in RGTETH21 *** Error reading integral file')
       END
+      subroutine blabla(h2xy,nclass, nkl,J)
+c
+c     debug routine. Sets all integral classes but one (J) to zero
+c
+      INTEGER NCLASS,NKL,J,I 
+      REAL*8 H2XY(NKL,NCLASS)
+
+      DO I = 1, NCLASS
+        IF (I.NE.J) THEN
+            H2XY(1:NKL,I) = 0.0D0
+        ENDIF 
+
+
+      ENDDO
+      write(6,*) 'MvH kept integral class ',J 
+      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck raddfq */
       SUBROUTINE RADDFQ(FQ,H2XY,H2YX,PV,NXY,IX,IY,IREPIJ,IPRINT)
@@ -2303,6 +2451,7 @@ C     Last revision : S. Knecht - modifications for spinfree MCSCF
 C
 C***********************************************************************
       use memory_allocator
+      use mcscf_routines
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -2640,10 +2789,11 @@ C                 the gazillion matrix multiplies to construct
 C                 the auxiliary Fock matrix FQT.
 C
                   DO ICSIM = 1, NCSIM
-                     CALL RADDFQ(FQT(1,1,1,ICSIM),
-     &                           WORK(KH2XY),WORK(KH2YX),
-     &                           PVT(1,1,1,1,1,ICSIM),
-     &                           IUU,IXU,IYU,IREPXY,IPRINT)
+                     CALL RADDFQ90(FQT(1,1,1,ICSIM),
+     &                             WORK(KH2XY),WORK(KH2YX),
+     &                             PVT(1,1,1,1,1,ICSIM),
+     &                             IUU,IXU,IYU,IREPXY,IPRINT,
+     &                             NZ,IPQTOQ,LUPRI,NORBT,NASHT,NNASHX)
                   END DO
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE_extra
                   if (ncsim .gt. 0 .and. nosim .gt. 0) then
@@ -2709,9 +2859,10 @@ C                   Calculate ``matrix-multiply'' part of FQX:
 C                   ------------------------------------------
 C
                     IF ( DOFQX ) THEN
-                       CALL RADDFQ(FQX(1,1,1,I),
-     &                             WORK(KH2XY),WORK(KH2YX),PV,
-     &                             IUU,IXU,IYU,IREPXY,IPRINT)
+                       CALL RADDFQ90(FQX(1,1,1,I),
+     &                               WORK(KH2XY),WORK(KH2YX),PV,
+     &                               IUU,IXU,IYU,IREPXY,IPRINT,
+     &                               NZ,IPQTOQ,LUPRI,NORBT,NASHT,NNASHX)
                     END IF
 C
                   END DO
@@ -2781,10 +2932,10 @@ C
 C                 Add contribution to FQX
 C                 -----------------------
 C
-                  CALL RADDFQX(FQX(1,1,1,I),
+               CALL RADDFQX(FQX(1,1,1,I),
      &                         WORK(KH2XY),PV,
      &                         IX,IY,IREPXY,IPRINT)
-C
+
                END DO
 C
             END IF
@@ -2968,9 +3119,9 @@ C
       ELSE
          NZ_local = NZ
       END IF
-      if (NZ_local .eq. 4) then
-         call quit('SYMMH2AX1: nz=4 not implemented')
-      end if
+c      if (NZ_local .eq. 4) then
+c         call quit('SYMMH2AX1: nz=4 not implemented')
+c      end if
       DO IN = 1, N
          CALL DCOPY(NASHT*NASHT*NNASHX*3*NZ,H2AC(1,1,1,1,1,IN),1,
      &        H2ACO,1)
@@ -2995,6 +3146,7 @@ C
                      H2AC(K,L,NIJ,1,1,IN) =
      &                    H2AC(K,L,NIJ,1,1,IN)
      &                    + H2ACO(J,I,NKL,1,1)
+cm                    write(6,*), K,L,NIJ, H2AC(K,L,NIJ,1,1,IN)
 C
 C                    (kL|iJ) + (iJ|kL) = (kL|iJ) - (iJ|lK)
 C
@@ -3002,12 +3154,14 @@ C
                      H2AC(K,L,NIJ,1,2,IN) =
      &                    H2AC(K,L,NIJ,1,2,IN)
      &                    - H2ACO(I,J,NKL,1,2)
+cm                     write(6,*), K,L,NIJ, H2AC(K,L,NIJ,1,2,IN)
 C
 C                    (Kl|iJ) + (iJ|Kl) = (Kl|iJ) + (Ji|lK)^*
 C
                      H2AC(K,L,NIJ,1,3,IN) =
      &                    H2AC(K,L,NIJ,1,3,IN)
      &                    + H2ACO(J,I,NKL,1,3)
+cm                    write(6,*), K,L,NIJ, H2AC(K,L,NIJ,1,3,IN)
 C
 C                    NZ = 2:
 C                    -------
@@ -3019,18 +3173,21 @@ C
                         H2AC(K,L,NIJ,2,1,IN) =
      &                       H2AC(K,L,NIJ,2,1,IN)
      &                       - H2ACO(J,I,NKL,2,1)
+cm                    write(6,*), K,L,NIJ, H2AC(K,L,NIJ,2,1,IN)
 C
 C                       (kL|iJ) + (iJ|kL) = (kL|iJ) - (iJ|lK)
 C
                         H2AC(K,L,NIJ,2,2,IN) =
      &                       H2AC(K,L,NIJ,2,2,IN)
      &                       - H2ACO(I,J,NKL,2,2)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,2,2,IN)
 C
 C                       (Kl|iJ) + (iJ|Kl) = (Kl|iJ) + (Ji|lK)^*
 C
                         H2AC(K,L,NIJ,2,3,IN) =
      &                       H2AC(K,L,NIJ,2,3,IN)
      &                       - H2ACO(J,I,NKL,2,3)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,2,3,IN)
 C
                      END IF
 C
@@ -3044,30 +3201,36 @@ C
                         H2AC(K,L,NIJ,3,1,IN) =
      &                       H2AC(K,L,NIJ,3,1,IN)
      &                       + H2ACO(J,I,NKL,3,3)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,3,1,IN)
 C
                         H2AC(K,L,NIJ,4,1,IN) =
      &                       H2AC(K,L,NIJ,4,1,IN)
      &                       - H2ACO(J,I,NKL,4,3)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,4,1,IN)
 C
 C                       (kL|ij) + (ij|kL) = (kL|ij) - (ij|lK)
 C
                         H2AC(K,L,NIJ,3,2,IN) =
      &                       H2AC(K,L,NIJ,3,2,IN)
      &                       - H2ACO(I,J,NKL,3,1)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,3,2,IN)
 C
                         H2AC(K,L,NIJ,4,2,IN) =
      &                       H2AC(K,L,NIJ,4,2,IN)
      &                       - H2ACO(I,J,NKL,4,1)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,4,2,IN)
 C
-C                       (Kl|ij) + (ij|Kl) = (Kl|ij) - (ij|Lk)
+C                       (Kl|ij) + (ij|Kl) = (Kl|ij) + (ji|lK)^*
 C
                         H2AC(K,L,NIJ,3,3,IN) =
      &                       H2AC(K,L,NIJ,3,3,IN)
-     &                       - H2ACO(I,J,NKL,3,2)
+     &                       + H2ACO(J,I,NKL,3,1)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,3,3,IN)
 C
                         H2AC(K,L,NIJ,4,3,IN) =
      &                       H2AC(K,L,NIJ,4,3,IN)
-     &                       - H2ACO(I,J,NKL,4,2)
+     &                       - H2ACO(J,I,NKL,4,1)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,4,3,IN)
 C
                      END IF
                      endif
@@ -3087,6 +3250,7 @@ C
                      H2AC(K,L,NIJ,1,1,IN) =
      &                    H2AC(K,L,NIJ,1,1,IN) +
      &                    H2ACO(I,J,NKL,1,1)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,1,1,IN)
 
                      if(.not.spinfr_krmc)then
 C
@@ -3095,12 +3259,14 @@ C
                      H2AC(K,L,NIJ,1,2,IN) =
      &                    H2AC(K,L,NIJ,1,2,IN) +
      &                    H2ACO(I,J,NKL,1,2)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,1,2,IN)
 C
 C                    (Kl|iJ) + (iJ|Kl) = (Kl|iJ) + (Ij|kL)^*
 C
                      H2AC(K,L,NIJ,1,3,IN) =
      &                    H2AC(K,L,NIJ,1,3,IN) +
      &                    H2ACO(I,J,NKL,1,3)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,1,3,IN)
 C
                      IF (NZ_local .GE. 2) THEN
 C
@@ -3112,18 +3278,21 @@ C
                         H2AC(K,L,NIJ,2,1,IN) =
      &                       H2AC(K,L,NIJ,2,1,IN) +
      &                       H2ACO(I,J,NKL,2,1)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,2,1,IN)
 C
 C                       (kL|iJ) + (iJ|kL)
 C
                         H2AC(K,L,NIJ,2,2,IN) =
      &                       H2AC(K,L,NIJ,2,2,IN) +
      &                       H2ACO(I,J,NKL,2,2)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,2,2,IN)
 C
 C                       (Kl|iJ) + (iJ|Kl) = (Kl|iJ) + (Ij|kL)^*
 C
                         H2AC(K,L,NIJ,2,3,IN) =
      &                       H2AC(K,L,NIJ,2,3,IN) -
      &                       H2ACO(I,J,NKL,2,3)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,2,3,IN)
 C
                      END IF
 C
@@ -3137,30 +3306,36 @@ C
                         H2AC(K,L,NIJ,3,1,IN) =
      &                       H2AC(K,L,NIJ,3,1,IN) +
      &                       H2ACO(I,J,NKL,3,2)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,3,1,IN)
 C
                         H2AC(K,L,NIJ,4,1,IN) =
      &                       H2AC(K,L,NIJ,4,1,IN) +
      &                       H2ACO(I,J,NKL,4,2)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,4,1,IN)
 C
 C                       (kL|ij) + (ij|kL)
 C
                         H2AC(K,L,NIJ,3,2,IN) =
      &                       H2AC(K,L,NIJ,3,2,IN) +
      &                       H2ACO(I,J,NKL,3,1)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,3,2,IN)
 C
                         H2AC(K,L,NIJ,4,2,IN) =
      &                       H2AC(K,L,NIJ,4,2,IN) +
      &                       H2ACO(I,J,NKL,4,1)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,4,2,IN)
 C
 C                       (Kl|ij) + (ij|Kl) = (Kl|ij) - (ji|kL)^*
 C
                         H2AC(K,L,NIJ,3,3,IN) =
      &                       H2AC(K,L,NIJ,3,3,IN) -
      &                       H2ACO(J,I,NKL,3,1)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,3,3,IN)
 C
                         H2AC(K,L,NIJ,4,3,IN) =
      &                       H2AC(K,L,NIJ,4,3,IN) +
      &                       H2ACO(J,I,NKL,4,1)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,4,3,IN)
 C
                      END IF
                      endif
@@ -3182,7 +3357,7 @@ C
 C     Calculate one-index transform of the integrals in HMAT.
 C
 C     Input:
-C        I: orbital trial vector no.
+C        ITRVEC: orbital trial vector no.
 C        BEVEC, BPVEC: orbital trial vectors
 C        IBEVC, IBPVC, IBTYP: usual index vectors
 C        HMAT: integrals in double quaternion format
@@ -3521,71 +3696,74 @@ C
       DIMENSION iQVINT(2,4,3,4)
 C
       DATA szPV /
-     &     'PV', 'PV', 'PV', 'PV', ! real FQ
      &     'PV', 'PV', 'PV', 'PV',
-     &     'PV', 'PV', 'VP', 'VP',
-     &     'PV', 'PV', 'PV', 'PV', ! i-imag FQ
      &     'PV', 'PV', 'PV', 'PV',
-     &     'PV', 'PV', 'VP', 'VP',
-     &     'PV', 'PV', 'PV', 'PV', ! j-imag FQ
+     &     'PV', 'PV', 'PV', 'PV',
+     &     'PV', 'PV', 'PV', 'PV',
+     &     'PV', 'PV', 'PV', 'PV',
      &     'PV', 'PV', 'PV', 'PV',
      &     'VP', 'VP', 'PV', 'PV',
-     &     'PV', 'PV', 'PV', 'PV', ! k-imag FQ
      &     'PV', 'PV', 'PV', 'PV',
-     &     'VP', 'VP', 'PV', 'PV' /
+     &     'PV', 'PV', 'PV', 'PV',
+     &     'VP', 'VP', 'PV', 'PV',
+     &     'PV', 'PV', 'PV', 'PV',
+     &     'PV', 'PV', 'PV', 'PV' /
       DATA szQV /
-     &     'QV', 'QV', 'QV', 'QV', ! real FQ
+     &     'QV', 'QV', 'QV', 'QV',
+     &     'QV', 'QV', 'QV', 'QV',
+     &     'QV', 'QV', 'QV', 'QV',
+     &     'QV', 'QV', 'QV', 'QV',
+     &     'QV', 'QV', 'QV', 'QV',
      &     'QV', 'QV', 'QV', 'QV',
      &     'QV', 'QV', 'VQ', 'VQ',
-     &     'QV', 'QV', 'QV', 'QV', ! i-imag FQ
+     &     'QV', 'QV', 'QV', 'QV',
      &     'QV', 'QV', 'QV', 'QV',
      &     'QV', 'QV', 'VQ', 'VQ',
-     &     'QV', 'QV', 'VQ', 'VQ', ! j-imag FQ
-     &     'QV', 'QV', 'VQ', 'VQ',
      &     'QV', 'QV', 'QV', 'QV',
-     &     'QV', 'QV', 'VQ', 'VQ', ! k-imag FQ
-     &     'QV', 'QV', 'VQ', 'VQ',
      &     'QV', 'QV', 'QV', 'QV' /
       DATA dFAC /
-     &     D1  , DM1 , DP5 , DMP5,
-     &     DP5 , DMP5, D1  , DM1,
+     &     D1  , DM1 , D1  , DM1 ,
      &     DP5 , DMP5, DP5 , DMP5,
-     &     D1  , D1  , DP5 , DP5,
-     &     DP5 , DP5 , D1  , D1,
-     &     DMP5, DMP5, DMP5, DMP5,
-     &     D1  , DM1 , D1  , DM1,
-     &     DMP5, DP5 , DP5 , DMP5,
-     &     DMP5, DP5 , DP5 , DMP5,
-     &     D1  , D1  , D1  , D1,
-     &     DP5 , DP5 , DP5 , DP5,
-     &     DP5 , DP5 , DP5 , DP5 /
+     &     DP5 , DMP5, DP5 , DMP5,
+     &     D1  , D1  , D1  , D1  ,
+     &     DP5 , DP5 , DP5 , DP5 ,
+     &     DP5 , DP5 , DP5 , DP5 ,
+     &     DM1 , D1  , D1  , DM1 ,
+     &     DMP5, DMP5, DP5 , DP5 ,
+     &     DMP5, DMP5, DP5 , DP5 ,
+     &     D1  , D1  , D1  , D1  ,
+     &     DP5 , DMP5, DMP5, DP5 ,
+     &     DP5 , DMP5, DMP5, DP5  /
       DATA iPVINT /
-     &     1,1, 2,1, 3,1, 4,3,
-     &     1,2, 2,2, 3,2, 4,2,
-     &     1,3, 2,3, 3,1, 4,1,
      &     1,1, 2,1, 3,1, 4,1,
      &     1,2, 2,2, 3,2, 4,2,
-     &     1,3, 2,3, 3,1, 4,1,
-     &     1,1, 2,1, 3,2, 4,2,
-     &     1,3, 2,3, 1,2, 2,2,
-     &     3,1, 4,1, 3,1, 4,1,
-     &     1,1, 2,1, 3,2, 4,2,
-     &     1,3, 2,3, 1,2, 2,2,
-     &     3,1, 4,1, 3,1, 4,1/
-      DATA iQVINT /
-     &     1,1, 2,1, 3,1, 4,3,
+     &     1,3, 2,3, 3,3, 4,3,
+     &     1,1, 2,1, 3,1, 4,1,
      &     1,2, 2,2, 3,2, 4,2,
-     &     1,3, 2,3, 3,1, 4,1,
+     &     1,3, 2,3, 3,3, 4,3,
+     &     1,1, 2,1, 3,1, 4,1,
+     &     1,2, 2,2, 3,2, 4,2,
+     &     1,3, 2,3, 3,3, 4,3,
+     &     1,1, 2,1, 3,1, 4,1,
+     &     1,2, 2,2, 3,2, 4,2,
+     &     1,3, 2,3, 3,3, 4,3 /
+      DATA iQVINT /
+     &     1,1, 2,1, 3,1, 4,1,
+     &     1,2, 2,2, 3,2, 4,2,
+     &     1,3, 2,3, 3,3, 4,3,
      &     2,1, 1,1, 4,1, 3,1,
      &     2,2, 1,2, 4,2, 3,2,
-     &     2,3, 1,3, 4,1, 3,1,
-     &     3,3, 4,3, 1,1, 2,1,
-     &     3,1, 4,1, 3,1, 4,1,
-     &     1,2, 2,2, 1,3, 2,3,
-     &     4,3, 3,3, 2,1, 1,1,
-     &     4,1, 3,1, 4,1, 3,1,
-     &     2,2, 1,2, 2,3, 1,3/
-C
+     &     2,3, 1,3, 4,3, 3,3,
+     &     3,1, 4,1, 1,1, 2,1,
+     &     3,3, 4,3, 1,3, 2,3,
+     &     3,2, 4,2, 1,2, 2,2,
+     &     4,1, 3,1, 2,1, 1,1,
+     &     4,3, 3,3, 2,3, 1,3,
+     &     4,2, 3,2, 2,2, 1,2 /
+C     Nov 2026: tables re-derived (verified numerically against the
+C     spinor-basis definition and against RADDFQ90 for random
+C     time-reversal symmetric integrals and densities, NZ=1,2,4).
+C     Eqs. (B.35)-(B.38) of the thesis have several errors for NZ=4.
 C     So out of this we can establish the first term as:
 C
 C     D1 * \Twoint{pv,xy;1,1} P_{qv,xy;1,1}
@@ -3614,21 +3792,23 @@ C     (vp) is active-general
 C
       IVU = IDXG2U(IV)
       IF (IVU .GT. 0) THEN
-c        write(6,*) '(vp active general)'
          DO IQU = 1, NASHT
             NVQ = MAX(IVU,IQU) * ( MAX(IVU,IQU) - 1 ) / 2 + MIN(IQU,IVU)
             DO IZFQ = 1, NZ
                DO I3 = 1, 3
                   DO IZ = 1, NZ
 C
-#ifdef MOD_DEBUG
-                     WRITE(LUPRI,*)
-     &                    szPV(IZ,I3,IZFQ),szQV(IZ,I3,IZFQ),
-     &                    dFAC(IZ,I3,IZFQ),
-     &                    iPVINT(1,IZ,I3,IZFQ),iPVINT(2,IZ,I3,IZFQ),
-     &                    iQVINT(1,IZ,I3,IZFQ),iQVINT(2,IZ,I3,IZFQ),
-     &                    IVU,IQU,NVQ,IZFQ,I3,IZ
-#endif
+c MvH #ifdef MOD_DEBUG
+c      if (IZFQ.eq.4) then
+c                    write(lupri,*) 'IZ,I3,IZFQ ',IZ,I3,IZFQ
+c                     WRITE(LUPRI,*)
+c     &                    szPV(IZ,I3,IZFQ),szQV(IZ,I3,IZFQ),
+c     &                    dFAC(IZ,I3,IZFQ),
+c     &                    iPVINT(1,IZ,I3,IZFQ),iPVINT(2,IZ,I3,IZFQ),
+c     &                    iQVINT(1,IZ,I3,IZFQ),iQVINT(2,IZ,I3,IZFQ),
+c     &                    IVU,IQU,NVQ,IZFQ,I3,IZ
+c      endif
+c #endif
 C
                      FAC = dFAC(IZ,I3,IZFQ)
                      szPV1 = szPV(IZ,I3,IZFQ)
@@ -3637,13 +3817,23 @@ C
                      iPVINT2 = iPVINT(2,IZ,I3,IZFQ)
                      iQVINT1 = iQVINT(1,IZ,I3,IZFQ)
                      iQVINT2 = iQVINT(2,IZ,I3,IZFQ)
-                     NVQ1 = NVQ
                      CALL RADDFQX1(
      &                    szPV1,szQV1,FAC,
      &                    iPVINT1,iPVINT2,
      &                    iQVINT1,iQVINT2,
-     &                    H2VPX,PV,NVQ1,IQU,IVU,
+     &                    H2VPX,PV,NVQ,IQU,IVU,
      &                    FQX(IP,IQU,IZFQ))
+      if (IPRINT .GE. 40 .AND. IZFQ.eq.4) then
+                    write(lupri,*) 'IZ,I3,IZFQ ',IZ,I3,IZFQ
+                     WRITE(LUPRI,*)
+     &                    szPV(IZ,I3,IZFQ),szQV(IZ,I3,IZFQ),
+     &                    dFAC(IZ,I3,IZFQ),
+     &                    iPVINT(1,IZ,I3,IZFQ),iPVINT(2,IZ,I3,IZFQ),
+     &                    iQVINT(1,IZ,I3,IZFQ),iQVINT(2,IZ,I3,IZFQ),
+     &                    IVU,IQU,NVQ,IZFQ,I3,IZ
+                    write (lupri,*)'FQX(IP,IQU,IZFQ) ', FQX(IP,IQU,IZFQ)
+      endif
+
                   END DO
                END DO
             END DO
@@ -3654,7 +3844,6 @@ C     (pv) is active-general
 C
       IPU = IDXG2U(IP)
       IF (IPU .GT. 0 .AND. IPU .NE. IVU) THEN
-c        write(6,*) '(pv active general)'
          DO IQU = 1, NASHT
             NPQ = MAX(IPU,IQU) * ( MAX(IPU,IQU) - 1 ) / 2 + MIN(IPU,IQU)
             DO IZFQ = 1, NZ
@@ -3667,9 +3856,10 @@ C
      &                    dFAC(IZ,I3,IZFQ),
      &                    iPVINT(1,IZ,I3,IZFQ),iPVINT(2,IZ,I3,IZFQ),
      &                    iQVINT(1,IZ,I3,IZFQ),iQVINT(2,IZ,I3,IZFQ),
-     &                    IPU,IQU,-NPQ,IZFQ,I3,IZ
+     &                    IPU,IQU,NPQ,IZFQ,I3,IZ
 #endif
 C
+
                      FAC = dFAC(IZ,I3,IZFQ)
                      szPV1 = szPV(IZ,I3,IZFQ)
                      szQV1 = szQV(IZ,I3,IZFQ)
@@ -3677,13 +3867,30 @@ C
                      iPVINT2 = iPVINT(2,IZ,I3,IZFQ)
                      iQVINT1 = iQVINT(1,IZ,I3,IZFQ)
                      iQVINT2 = iQVINT(2,IZ,I3,IZFQ)
-                     NPQ1 = -NPQ
+                     ! (pv) is in fact active-general, so we need to do an extra swap to get general-active
+                     IF (szPV1.EQ. 'PV') THEN
+                        szPV1= 'VP'
+                     ELSE
+                        szPV1= 'PV'
+                     END IF
+
                      CALL RADDFQX1(
      &                    szPV1,szQV1,FAC,
      &                    iPVINT1,iPVINT2,
      &                    iQVINT1,iQVINT2,
-     &                    H2VPX,PV,NPQ1,IQU,IPU,
+     &                    H2VPX,PV,NPQ,IQU,IPU,
      &                    FQX(IV,IQU,IZFQ))
+      if (IPRINT .GE. 40 .AND. IZFQ.eq.4) then
+                    write(lupri,*) 'IZ,I3,IZFQ ',IZ,I3,IZFQ
+                     WRITE(LUPRI,*)
+     &                    szPV(IZ,I3,IZFQ),szQV(IZ,I3,IZFQ),
+     &                    dFAC(IZ,I3,IZFQ),
+     &                    iPVINT(1,IZ,I3,IZFQ),iPVINT(2,IZ,I3,IZFQ),
+     &                    iQVINT(1,IZ,I3,IZFQ),iQVINT(2,IZ,I3,IZFQ),
+     &                    IPU,IQU,-NPQ,IZFQ,I3,IZ
+                    write (lupri,*)'FQX(IV,IQU,IZFQ) ', FQX(IV,IQU,IZFQ)
+      endif
+
                   END DO
                END DO
             END DO
@@ -3701,7 +3908,15 @@ C
 C
       SUBROUTINE RADDFQX1(szPV,szQV,FAC,IZPV,I3PV,IZQV,I3QV,
      &     H2VPX,PV,NVQ,IQU,IVU,FQX)
+C
+C H2VPX(x,y,iz,i3) = {x~y~|vp}_iz,i3 where v .ge. p
+C ( x and y are one-index transformed orbitals x~ and y~)
+C
+C szPV='PV' or 'VP': we need {x~y~|pv}_iz,i3 or {x~y~|vp}_iz,i3
+C i.e. if szPV='PV' we need to swap
+
 #include "implicit.h"
+#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -3713,48 +3928,33 @@ C
 C
       CHARACTER szPVXY*2, szQVXY*2
 C
-C     Calculate \sum_{pv|xy}_{i,j} P_{qv,xy;k,l}
+C     Calculate \sum_{xy} {pv|xy}_{i,j} P_{qv,xy;k,l}
 C
-C     from integrals {xy|vp}
-C
-      IF (NVQ .LT. 0) THEN
-         IF (szPV .EQ. 'PV') THEN
-            szPV = 'VP'
-         ELSE
-            szPV = 'PV'
-         END IF
+C     integrals are (x~ y~ | v p), do we need to swap ?
+      szPVXY = 'XY'
+      IF (szPV .EQ. 'PV') THEN ! yes we do
+         CALL RADDFQX3(FAC,IZPV,I3PV,szPVXY)
       END IF
+C
 c     write(6,*) 'before RADDFQX2',szPV,FAC,IZPV,I3PV
-      CALL RADDFQX2(szPV,FAC,IZPV,I3PV,szPVXY)
+!     CALL RADDFQX2(szPV,FAC,IZPV,I3PV,szPVXY)
 c     write(6,*) 'after RADDFQX2',szPV,FAC,IZPV,I3PV,szPVXY
 C
-      IF (NVQ .LT. 0) THEN
-         IF (szQV .EQ. 'QV') THEN
-            szQV = 'VQ'
-         ELSE
-            szQV = 'QV'
-         END IF
-      END IF
 c     write(6,*) 'before RADDFQX2',szQV,FAC,IZQV,I3QV
-      CALL RADDFQX2(szQV,FAC,IZQV,I3QV,szQVXY)
+!     CALL RADDFQX2(szQV,FAC,IZQV,I3QV,szQVXY)
 c     write(6,*) 'after RADDFQX2',szQV,FAC,IZQV,I3QV,szQVXY
 C
-C     If NVQ > 0:
+C     We have density matrices: (**|qv) if q .ge. v, otherwise (**|vq) in PV
+C     We need (**|qv), so in the second case we need to swap indices, done
+C     in RADDFQX3 :
 C
-C     We have density matrices: (**|vq),
-C     so if v<q then get (**|qv) instead.
-C
-C     If NVQ < 0:
-C
-C     We have density matrices: (**|qp
-C
-      IF ( (IVU .LT. IQU) .AND. NVQ .GT. 0) THEN
-         CALL RADDFQX3(szQV,FAC,IZQV,I3QV,szQVXY)
+      szQVXY='XY'
+C     szQV = 'QV': we need P_{qv,xy}; 'VQ': we need P_{vq,xy}
+C     (szQV was ignored before Nov 2026; only matters for NZ = 4)
+      IF ( (szQV .EQ. 'QV' .AND. IQU .LT. IVU) .OR.
+     &     (szQV .EQ. 'VQ' .AND. IVU .LT. IQU) ) THEN
+         CALL RADDFQX3(FAC,IZQV,I3QV,szQVXY)
       END IF
-      IF ( (IQU .LT. IVU) .AND. NVQ .LT. 0) THEN
-         CALL RADDFQX3(szQV,FAC,IZQV,I3QV,szQVXY)
-      END IF
-      NVQ = ABS(NVQ)
 c     write(6,*) 'after RADDFQX3',szQV,FAC,IZQV,I3QV,szQVXY
 c     write(6,*) 'NVQ = ',NVQ
 C
@@ -3771,6 +3971,7 @@ C
 C
       SUBROUTINE RADDFQX4(szPVXY,szQVXY,FAC,H2VPX,PV,FQX)
 #include "implicit.h"
+#include "priunit.h"
 C
 #include "dcborb.h"
 C
@@ -3801,12 +4002,10 @@ C
       END
 C
 C
-      SUBROUTINE RADDFQX3(sz,FAC,IZ,I3,szXY)
+      SUBROUTINE RADDFQX3(FAC,IZ,I3,szXY)
 #include "implicit.h"
 C
-#include "consts.h"
-C
-      CHARACTER sz*2, szXY*2
+      CHARACTER szXY*2
 C
       LOGICAL INTCH
 C
@@ -3819,30 +4018,30 @@ C
             INTCH = .TRUE.
          ELSE IF (IZ .EQ. 2) THEN
             INTCH = .TRUE.
-            FAC = FAC * DM1
+            FAC = -FAC
          ELSE
-            FAC = FAC * DM1
+            FAC = -FAC
          ENDIF
-      ELSE IF (I3 .EQ. .2) THEN
+      ELSE IF (I3 .EQ. 2) THEN
          IF (IZ .EQ. 1 .OR. IZ .EQ. 2) THEN
-            FAC = FAC * DM1
+            FAC = -FAC
          ELSE IF (IZ .EQ. 3) THEN
             INTCH = .TRUE.
             I3 = 3
          ELSE
             INTCH = .TRUE.
-            FAC = FAC * DM1
+            FAC = -FAC
             I3 = 3
          END IF
       ELSE
          IF (IZ .EQ. 1 .OR. IZ .EQ. 2) THEN
-            FAC = FAC * DM1
+            FAC = -FAC
          ELSE IF (IZ .EQ. 3) THEN
             INTCH = .TRUE.
             I3 = 2
          ELSE
             INTCH = .TRUE.
-            FAC = FAC * DM1
+            FAC = -FAC
             I3 = 2
          END IF
       END IF
@@ -3860,128 +4059,97 @@ C
 C
 C
       SUBROUTINE RADDFQX2(sz,FAC,IZ,I3,szXY)
+C
+C
+C Note: e.g. Y means y-bar
+
 #include "implicit.h"
 C
-#include "consts.h"
+      CHARACTER sz*2, szXY*2
+      logical :: swap_PV
 C
-      CHARACTER SZ*2, szXY*2
-C
+C     integrals are (x~ y~ | v p), do we need to swap ?
+      IF (sz .EQ. 'PV') THEN
+         swap_PV = .true.
+      ELSE
+         swap_PV = .false.
+      END IF
+    
       szXY = 'XY'
       IF (I3 .EQ. 1) THEN
-C
-C
          IF (IZ .EQ. 1) THEN
-C
-C
-            IF (sz(2:2) .EQ. 'V') THEN
+            IF (swap_PV) THEN
 C              We want (pv|xy) = (xy|pv) = (yx|vp)^*
                szXY = 'YX'
 C           ELSE
 C              We want (vp|xy) = (xy|vp)
 C              szXY = 'XY'
             END IF
-C
-C
          ELSE IF (IZ .EQ. 2) THEN
-C
-C
-            IF (sz(2:2) .EQ. 'V') THEN
+            IF (swap_PV) THEN
                szXY = 'YX'
-               FAC = FAC * DM1
+               FAC = -FAC
             END IF
-C
-C
          ELSE IF (IZ .EQ. 3) THEN
-C
-C
-            IF (sz(2:2) .EQ. 'V') THEN
+            IF (swap_PV) THEN
 C              We want (pv|xY) = (xY|pv) = (Yx|vp)^* (class 3,2 and 4,2)
                szXY = 'YX'
-               I3 = 3
-            ELSE
+               FAC = -FAC
+c mvh               I3 = 3
+c            ELSE
 C              We want (vp|xY) = (xY|vp) (class 3,3 and 4,3)
-               IZ= 3
-               I3= 3
+
+c mvh               I3= 3
             END IF
-C
-C
-         ELSE
-C
-C
-            IF (sz(2:2) .EQ. 'V') THEN
+         ELSE ! IZ .eq. 4
+            IF (swap_PV) THEN
                szXY = 'YX'
                I3 = 4
-               FAC = FAC * DM1
+               FAC = -FAC
             ELSE
                IZ = 4
                I3 = 3
             END IF
-C
-C
          END IF
          RETURN
       ELSE IF (I3 .EQ. 2) THEN
-C
-C
          IF (IZ .EQ. 1 .OR. IZ .EQ. 2) THEN
-C
-C
-            IF (sz(2:2) .EQ. 'V') THEN
+            IF (swap_PV) THEN
 C              We want (pV|xY) = (xY|pV) = (yX|vP)
                szXY = 'YX'
 C           ELSE
 C              We want (vP|xY) = (xY|vP)
 C              szXY = 'XY'
             END IF
-C
-C
-         ELSE
-C
-C
-            IF (sz(2:2) .EQ. 'V') THEN
+         ELSE ! IZ is 3 or 4
+            IF (swap_PV) THEN
 C              We want (pV|xy) = (xy|pV) = - (xy|vP)
                I3 = 1
-               FAC = FAC * DM1
+               FAC = -FAC
             ELSE
 C              We want (vP|xy) = (xy|vP)
-               I3 = 1
+               I3 = 3
             END IF
-C
-C
          END IF
-C
-C
-      ELSE
-C
-C
+      ELSE ! I3 is 3
          IF (IZ .EQ. 1) THEN
-C
-C
-            IF (sz(2:2) .EQ. 'V') THEN
+            IF (swap_PV) THEN
 C              We want (Pv|xY) = (xY|Pv) = (Yx|vP)^*
                szXY = 'YX'
             ELSE
 C              We want (Vp|xY) = (xY|Vp) = - (xY|Pv) = - (Yx|vP)^*
                szXY = 'YX'
-               FAC = FAC * DM1
+               FAC = -FAC
             END IF
-C
-C
          ELSE IF (IZ .EQ. 2) THEN
-C
-C
-            IF (sz(2:2) .EQ. 'V') THEN
+            IF (swap_PV) THEN
                szXY = 'YX'
-               FAC = FAC * DM1
+               FAC = -FAC
             ELSE
                szXY = 'YX'
             END IF
-C
-C
          ELSE IF (IZ .EQ. 3) THEN
-C
-C
-            IF (sz(2:2) .EQ. 'V') THEN
+            IF (swap_PV) THEN
 C              We want (Pv|xy) = (xy|Pv) = (yx|vP)^*
                szXY = 'YX'
                I3 = 1
@@ -3989,29 +4157,22 @@ C              We want (Pv|xy) = (xy|Pv) = (yx|vP)^*
 C              We want (Vp|xy) = (xy|Vp) = - (xy|Pv) = - (yx|vP)^*
                szXY = 'YX'
                I3 = 1
-               FAC = FAC * DM1
+               FAC = -FAC
             END IF
-C
-C
-         ELSE
-C
-C
-            IF (sz(2:2) .EQ. 'V') THEN
+         ELSE ! Iz is 4
+            IF (swap_PV) THEN
                szXY = 'YX'
                I3 = 1
-               FAC = FAC * DM1
+               FAC = -FAC
             ELSE
                szXY = 'YX'
                I3 = 1
             END IF
-C
-C
          END IF
       END IF
       RETURN
       END
-C
-C
+
 
 #ifdef UNDEF
 C     Loop over q

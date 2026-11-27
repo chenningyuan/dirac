@@ -12,9 +12,13 @@ Joergen Aagaard Jensen. Linear symmetry adaptation by Stefan Knecht and Hans Joe
 
 For more details on the theory and actual implementation see :cite:`Jensen1996`, :cite:`Thyssen2004` , :cite:`Thyssen2008`, :cite:`Knecht2009`.
 
+All point groups are supported, including the quaternion groups :math:`C_1` and :math:`C_i`.
+
 
 Mandatory keywords  under \*KRMCSCF
 ===================================
+
+The active space must be specified, either with ``.GAS SHELLS`` or with ``.CASSCF`` (only one of them).
 
 keyword(GAS SHELLS)
 
@@ -53,9 +57,23 @@ if all orbitals (fullMCSCF, feasible only for systems with 2-3 active electrons)
      2 2 / all
 
 
+keyword(CASSCF)
+
+Alternative to ``.GAS SHELLS`` for a complete active space (CAS) wave function. The first line gives the number of active
+electrons, the second line the number of active orbitals per fermion corep. The CAS(10,10) example above reads
+
+::
+
+    .CASSCF
+     10
+     5  5
+
+Optional keywords under \*KRMCSCF
+=================================
+
 keyword(INACTIVE)
 
-Inactive orbitals per fermion corep. *default*: all orbitals are active. The example below for a molecule with inversion
+Inactive orbitals per fermion corep. *default*: no inactive orbitals. The example below for a molecule with inversion
 center marks the lowest 4 *gerade* and 2 *ungerade* orbitals as inactive, i.e. they are always kept doubly occupied in all determinants
 of the CI expansion:
 
@@ -66,16 +84,13 @@ of the CI expansion:
 
 All remaining orbitals above the inactive + active space are considered as secondary orbitals, i.e. they are kept empty
 in all determinants of the CI expansion. By default all orbital rotations between the inactive-active and active-secondary
-space are included. 
-
-Optional keywords under \*KRMCSCF
-=================================
+space are included.
 
 keyword(CI PROGRAM)
 
 specifies the CI module behind KRMCSCF, choices are *LUCIAREL* and *GASCIP*. 
 *Note*: GASCIP does not work with linear symmetry and for large-scale MCSCF (> :math:`1.0 \times 10^7` determinants) only
-LUCIAREL can be used efficiently. *default*:
+LUCIAREL can be used efficiently. LUCIAREL requires a DIRAC build with MPI (it may be run with a single process). *default*:
 
 ::
 
@@ -117,6 +132,15 @@ symmetry the input for an :math:`\Omega` = 2g state would read as
 
     4g
 
+keyword(STATE)
+
+integer value giving the number of the state (root), counted from the lowest one in the symmetry given by
+``.SYMMETRY``, to optimize on. *default*:
+
+::
+
+    1
+
 keyword(MAX MACRO)
 
 integer value giving the maximum number of MACRO iterations in the MCSCF optimization. *default*:
@@ -132,6 +156,15 @@ integer value giving the maximum number of MICRO iterations in the MCSCF optimiz
 ::
 
     50
+
+keyword(MAX BACKSTEPS)
+
+integer value giving the maximum number of backsteps (rejected steps that are repeated with a reduced trust radius) in
+one MACRO iteration. *default*:
+
+::
+
+    5
 
 keyword(FROZEN)
 
@@ -170,7 +203,8 @@ include e-p rotations (rotations between electronic-positronic spinors) in the g
 
 keyword(SKIPEP)
 
-skip e-p rotations (rotations between electronic-positronic spinors) in the gradient and Hessian calculation. *default*: skip e-p rotations.
+skip e-p rotations (rotations between electronic-positronic spinors) in the gradient and Hessian calculation. This is the
+default, so the keyword is only kept for backward compatibility; see ``.WITHEP``.
 
 keyword(MVOFAC)
 
@@ -185,9 +219,21 @@ but the non-active orbitals for post-MCSCF calculations (e.g. \*LUCITA or \*KRCI
    .MVOFAC
    0.0
 
+keyword(THRPCI)
+
+threshold for printing the CI coefficients: determinants are printed if their weight :math:`|c_\mu|^2` relative to the
+largest weight is above the threshold. Used for the final CI vector (printed for ``.PRINT`` :math:`\geq` 1) and for
+``.ANALYZ``. *default*:
+
+::
+
+    .THRPCI
+     1.0D-3
+
 keyword(PRINT)
 
-raise default print level to the given integer value. Please use with
+raise default print level to the given integer value. With print level 1 or higher the final CI vector is printed and
+analyzed (see ``.THRPCI``). Please use with
 care as you may get millions of output lines if you choose a too high value. *default*:
 
 ::
@@ -208,13 +254,16 @@ optional keywords under \*OPTIMI
 
 keyword(NOOCCN)
 
-compute natural orbital occupation numbers for the final optimized electronic state. *default*: do not compute natural orbital occupation numbers.
+compute natural orbital occupation numbers (eigenvalues of the active one-electron density matrix) for the final optimized
+electronic state; only the occupation numbers, not the natural orbitals. *default*: do not compute natural orbital occupation numbers.
 
 
 keyword(ANALYZ)
 
-analyze the final CI wave function printing the coefficients for each determinant above a given threshold
-:math:`10^{-2}`. *default*: do not analyze the final CI wave function.
+analyze the CI vector obtained in the initial CI iterations (start vector of the MCSCF optimization), printing the
+determinants with a weight above the threshold given by ``.THRPCI`` under \*KRMCSCF (*default*: :math:`10^{-3}` relative
+to the largest weight). The final CI vector is printed and analyzed in any case for ``.PRINT`` :math:`\geq` 1.
+*default*: do not analyze the start CI vector.
 
 
 keyword(MAX CI)
@@ -224,7 +273,7 @@ maximum number of initial CI iterations. *default*:
 ::
 
     .MAX CI
-     5
+     4
 
 keyword(MXCIVE)
 

@@ -3010,7 +3010,7 @@ C       F(NBAS,NBAS,NZ) --->  F(NORB,NORB,NZ)
 C
 C     and the MO-to-Ao-transformation can be set up as:
 C
-C       FAO = [(Ca)+t(Cb)j][(FMOa)+(FMOb)j][(Ca+)-(Cb)j]
+C       FAO = [(Ca)+t(Cb)j][(FMOa)+(FMOb)j][(Ca+)-(CbT)j]
 C
 C       F(NORB,NORB,NZ) --->  F(NBAS,NBAS,NZ)
 C
@@ -3201,6 +3201,24 @@ C
      &   '                   current work space ',LBUF
              CALL QUIT('ERROR: need more work space')
           ENDIF
+
+          IF (IPRINT.GE.12) THEN
+            CALL HEADER('QTRANS: MO-to-AO-transformation',-1)
+
+            WRITE(LUPRI,'(2X,A,4I2)')
+     &      'QTRANS: The MO matrix; IQMO=',(IQMO(IZ),IZ=1,NZMO)
+            CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)
+
+            WRITE(LUPRI,'(/2X,A,4I2)')
+     &      'QTRANS: The transformation matrix TM1; IQTM1=',
+     &      (IQTM1(IZ),IZ=1,NZTM1)
+            CALL PRQMAT(TM1,NRAO,NRMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
+
+            WRITE(LUPRI,'(/2X,A,4I2)')
+     &      'QTRANS: The transformation matrix TM2; IQTM2=',
+     &      (IQTM2(IZ),IZ=1,NZTM2)
+            CALL PRQMAT(TM2,NCAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
+          ENDIF
 C
 C         First part of transformation: W = Fmo(C+)
 C
@@ -3208,6 +3226,13 @@ C
      &       'N','N',IQMO,FMO,LRMO,LCMO,NZMO,
      &       'H','N',IQTM2,TM2,LR2,LC2,NZTM2,
      &       D0,IQW,BUF,NRMO,NCAO,NZW)
+
+          IF (IPRINT.GE.13) THEN
+            WRITE(LUPRI,'(/2X,A,4I2)')
+     &      'QTRANS: First part transformation matrix W, W=F(C+);'//
+     &      ' IQW=',(IQW(IZ),IZ=1,NZW)
+            CALL PRQMAT(BUF,NRMO,NCAO,NRMO,NCAO,NZW,IQW,LUPRI)
+          ENDIF
 C
 C         Second part of transformation: Fao = CW
 C
@@ -3224,6 +3249,24 @@ C
      &   '                   current work space ',LBUF
              CALL QUIT('ERROR: need more work space')
           ENDIF
+
+          IF (IPRINT.GE.12) THEN
+            CALL HEADER('QTRANS: bbb MO-to-AO-transformation',-1)
+
+            WRITE(LUPRI,'(2X,A,4I2)')
+     &      'QTRANS: The MO matrix; IQMO=',(IQMO(IZ),IZ=1,NZMO)
+            CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)
+
+            WRITE(LUPRI,'(/2X,A,4I2)')
+     &      'QTRANS: The transformation matrix TM1; IQTM1=',
+     &      (IQTM1(IZ),IZ=1,NZTM1)
+            CALL PRQMAT(TM1,NRAO,NRMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
+
+            WRITE(LUPRI,'(/2X,A,4I2)')
+     &      'QTRANS: The transformation matrix TM2; IQTM2=',
+     &      (IQTM2(IZ),IZ=1,NZTM2)
+            CALL PRQMAT(TM2,NCAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
+          ENDIF
 C
 C         First part of transformation: W = CFmo
 C
@@ -3231,6 +3274,13 @@ C
      &       'N',TRA,IQTM1,TM1 ,LR1,LC1,NZTM1,
      &       'N','N',IQMO,FMO,LRMO,LCMO,NZMO,
      &       D0,IQW,BUF,NRAO,NCMO,NZW)
+
+          IF (IPRINT.GE.13) THEN
+            WRITE(LUPRI,'(/2X,A,4I2)')
+     &      'QTRANS: First part transformation matrix W, W=CF ;'//
+     &      ' IQW=',(IQW(IZ),IZ=1,NZW)
+            CALL PRQMAT(BUF,NRAO,NCMO,NRAO,NCMO,NZW,IQW,LUPRI)
+          ENDIF
 C
 C         Second part of transformation: Fao = W(C+)
 C
@@ -3240,7 +3290,7 @@ C
      &       FADD,IQAO,FAO,LRAO,LCAO,NZAO)
         ENDIF
        IF(IPRINT.GE.11) THEN
-          CALL HEADER('QTRANS: MO-to-AO-transformed Fock matrix',-1)
+          CALL HEADER('QTRANS: MO-to-AO back-transformed matrix',-1)
           CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
         ENDIF
       ELSE

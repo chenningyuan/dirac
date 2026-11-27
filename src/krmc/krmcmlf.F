@@ -289,9 +289,9 @@ C
          ENDDO
          IF (NZ.GE.2) THEN
             DO J = 1, NASH(IFSYM)
-               CALL DCOPY(NASH(IFSYM), DMFC(1+IOFF2,J+IOFF2,2), 1,
+               CALL DAXPY(NASH(IFSYM),DM1, DMFC(1+IOFF2,J+IOFF2,2), 1,
      &              DQFC (1+IOFF1,J+IOFF1,2),1 )
-               IF (KSYMM) CALL DAXPY(NASH(IFSYM),DM1,
+               IF (KSYMM) CALL DAXPY(NASH(IFSYM),D1,
      &              DMFC(1+IOFF3,J+IOFF3,2),1,
      &              DQFC(1+IOFF1,J+IOFF1,2),1)
             ENDDO
@@ -300,15 +300,16 @@ C
             DO J = 1, NASH(IFSYM)
                CALL DCOPY(NASH(IFSYM), DMFC(1+IOFF2,J+IOFF3,1), 1,
      &              DQFC (1+IOFF1,J+IOFF1,3), 1)
-               CALL DCOPY(NASH(IFSYM), DMFC(1+IOFF2,J+IOFF3,2), 1,
+               CALL DAXPY(NASH(IFSYM),DM1, DMFC(1+IOFF2,J+IOFF3,2), 1,
      &              DQFC (1+IOFF1,J+IOFF1,4), 1)
                IF (KSYMM) THEN
                   CALL DAXPY(NASH(IFSYM),DM1,
      &                 DMFC(1+IOFF3,J+IOFF2,1),1,
      &                 DQFC(1+IOFF1,J+IOFF1,3),1)
-                  CALL DAXPY(NASH(IFSYM),D1,
+                  CALL DAXPY(NASH(IFSYM),DM1,
      &                 DMFC(1+IOFF3,J+IOFF2,2),1,
      &                 DQFC(1+IOFF1,J+IOFF1,4),1)
+
                END IF
             ENDDO
          ENDIF
@@ -1131,6 +1132,19 @@ C                       (KL|jI) = -(kl|Ji)^* = -(lk|iJ)
                         VMUUUU(KTR,LTR,J,ITR,1) = - VDUUUU(LL,KK,IJ,3,1)
                         VMUUUU(KTR,LTR,J,ITR,2) = - VDUUUU(LL,KK,IJ,4,1)
                      END IF
+c MvH inserted my code here
+c                        VMUUUU(KTR,LTR,I,JTR,1) = VDUUUU(LL,KK,IJ,3,1)
+c                        VMUUUU(KTR,LTR,I,JTR,2) = VDUUUU(LL,KK,IJ,4,1)
+c                       IF (II .NE. JJ) THEN
+cC                       (KL|Ji) = -(kl|jI)^* = -(jI|kl)^*
+c                        VMUUUU(KTR,LTR,JTR,I,1) = VDUUUU(KK,LL,IJ,3,1)
+c                        VMUUUU(KTR,LTR,JTR,I,2) = -VDUUUU(KK,LL,IJ,4,1)
+c                       END IF
+
+
+
+
+c MVH original code below
 
                      IF (KK .GE. LL) THEN
                         KL = (KK*(KK-1))/2 + LL
@@ -1157,7 +1171,7 @@ C                       (KL|Ji) = -(kl|jI)^* = -(jI|kl)^* = -(Ij|lk)
                         VMUUUU(KTR,LTR,JTR,I,2) = - VDUUUU(II,JJ,LK,4,3)
                        END IF
                      END IF
-C
+
                   END IF
                END DO
             END DO
@@ -1197,7 +1211,7 @@ C
          WRITE(LUPRI,'(A,1P,D10.2)')
      &   ' (DNZ32M) Output VUUUU matrix in Molfdir format,'//
      &   ' print threshold =',THROUT
-#ifdef old_code
+c#ifdef old_code
 ! hjaaj mar 2018: new code below groups the 2-electron integrals,
 ! making it easier to spot some problems (particle symmetry, hermiticity)
 ! but not Kramers conjugation problems - that requires 2**4=16 times lot more
@@ -1206,34 +1220,35 @@ C
             DO K = 1,2*NASHT
                DO J = 1,2*NASHT
                   DO I = 1,2*NASHT
-                     IF ( ABS(VMUUUU(I,J,K,L,1)) .GT. THROUT .OR.
-     &                    ABS(VMUUUU(I,J,K,L,NZ_in_CI)) .GT. THROUT)
-     &                    WRITE(LUPRI,9001)
+                    !MVH ORIGINAL CODE WITH 2*NASHT
+                    ! IF ( ABS(VMUUUU(I,J,K,L,1)) .GT. THROUT .OR.
+!     &                    ABS(VMUUUU(I,J,K,L,NZ_in_CI)) .GT. THROUT)
+                         WRITE(LUPRI,9001)
      &                    I,J,K,L,(VMUUUU(I,J,K,L,IZ),IZ=1,NZ_in_CI)
                   END DO
                END DO
             END DO
          END DO
-      ELSE IF (iprint_local .GE. 10) THEN
-#endif
-         DO I = 1, 2*NASHT
-            DO J = 1, I
-               DO L = 1, I
-                  DO K = 1, L
-                  WRITE(LUPRI,'(A)')
-     & 'New quadruplet re(ij|kl), re(kl|ij), im(ij|kl), im(kl|ij)'
-                  WRITE(LUPRI,9001)
-     & I,J,K,L,(VMUUUU(I,J,K,L,IZ),VMUUUU(K,L,I,J,IZ),IZ=1,NZ_in_CI)
-                  WRITE(LUPRI,9001)
-     & J,I,L,K,(VMUUUU(J,I,L,K,IZ),VMUUUU(L,K,J,I,IZ),IZ=1,NZ_in_CI)
-                  WRITE(LUPRI,9001)
-     & I,J,L,K,(VMUUUU(I,J,L,K,IZ),VMUUUU(L,K,I,J,IZ),IZ=1,NZ_in_CI)
-                  WRITE(LUPRI,9001)
-     & J,I,K,L,(VMUUUU(J,I,K,L,IZ),VMUUUU(K,L,J,I,IZ),IZ=1,NZ_in_CI)
-                  END DO
-               END DO
-            END DO
-         END DO
+c      ELSE IF (iprint_local .GE. 10) THEN
+c#endif
+c         DO I = 1, 2*NASHT
+c            DO J = 1, I
+c               DO L = 1, I
+c                  DO K = 1, L
+c                  WRITE(LUPRI,'(A)')
+c     & 'New quadruplet re(ij|kl), re(kl|ij), im(ij|kl), im(kl|ij)'
+c                  WRITE(LUPRI,9001)
+c     & I,J,K,L,(VMUUUU(I,J,K,L,IZ),VMUUUU(K,L,I,J,IZ),IZ=1,NZ_in_CI)
+c                  WRITE(LUPRI,9001)
+c     & J,I,L,K,(VMUUUU(J,I,L,K,IZ),VMUUUU(L,K,J,I,IZ),IZ=1,NZ_in_CI)
+c                  WRITE(LUPRI,9001)
+c     & I,J,L,K,(VMUUUU(I,J,L,K,IZ),VMUUUU(L,K,I,J,IZ),IZ=1,NZ_in_CI)
+c                  WRITE(LUPRI,9001)
+c     & J,I,K,L,(VMUUUU(J,I,K,L,IZ),VMUUUU(K,L,J,I,IZ),IZ=1,NZ_in_CI)
+c                  END DO
+c               END DO
+c            END DO
+c         END DO
       END IF
 C
       RETURN

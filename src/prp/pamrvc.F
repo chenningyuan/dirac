@@ -249,7 +249,14 @@ C        Finish sigma vector: - E[0] b_{\mu}
 C
          CALL DAXPY(NZCONFQ,-ENRGY,
      &              BCVEC(1,I),1,SCVEC(1,I+NOSIM),1)
+         IF ( IPRXRS .GE. 30 ) THEN
+            WRITE(LUPRI,'(A,I2,A)') '( XRSSCIM) SCVEC(',I,')>'
+            IF (MZ.EQ.2) WRITE(LUPRI,'(T12,A)') '(real and imag parts)'
+            CALL OUTPUT(SCVEC(1,I+NOSIM),1,NZCONF,1,MZ,
+     &                  NZCONF,MZ,1,LUPRI)
+         END IF
 C
+
       END DO
 C
       CALL MEMREL('XRSSCIM',WORK,1,KFRSAV,KFREE,LFREE)
@@ -299,13 +306,14 @@ C
       KCREFI = KCREF + NZCONF
 C     ... pointer to imaginary part of CREF
       DO ICSIM = 1, NTSIM
+C        overlap t = <CREF|SCVEC> = sum_i conjg(c_i) s_i
          TTR = DDOT(NZCONF,WORK(KCREF),1,SCVEC(1,ICSIM),1)
          IF (NZ .GE. 2) THEN
             TTR = TTR
-     &          - DDOT(NZCONF,WORK(KCREFI),1,SCVEC(1+NZCONF,ICSIM),1)
+     &          + DDOT(NZCONF,WORK(KCREFI),1,SCVEC(1+NZCONF,ICSIM),1)
             TTI =
      &           DDOT(NZCONF,WORK(KCREF ),1,SCVEC(1+NZCONF,ICSIM),1)
-     &         + DDOT(NZCONF,WORK(KCREFI),1,SCVEC(1,ICSIM),1)
+     &         - DDOT(NZCONF,WORK(KCREFI),1,SCVEC(1,ICSIM),1)
          ELSE
             TTI = D0
          END IF
@@ -319,9 +327,11 @@ C
             CALL DAXPY(NZCONF,-TTR,WORK(KCREF),1,SCVEC(1,ICSIM),1)
             IF (NZ .GE. 2) THEN
                CALL DAXPY(NZCONF, TTI,WORK(KCREFI),1,SCVEC(1,ICSIM),1)
+C              SCVEC := SCVEC - CREF * t  (complex)
                CALL DAXPY(NZCONF,-TTR,WORK(KCREFI),1,
      &              SCVEC(1+NZCONF,ICSIM),1)
-               CALL DAXPY(NZCONF,-TTI,WORK(KCREF ),1,SCVEC(1,ICSIM),1)
+               CALL DAXPY(NZCONF,-TTI,WORK(KCREF ),1,
+     &              SCVEC(1+NZCONF,ICSIM),1)
             END IF
             IF (IPRXRS .GE. 5) WRITE(LUPRI,9000) ICSIM,TTR,TTI
          END IF
@@ -466,8 +476,12 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
+      LOGICAL NOGBDBG
 C
       CALL QENTER('XRSSEP')
+C     Debug (.FDCHEK): optionally mask the orbital trial vectors
+      IF (XRS_FDCHK .AND. NESIM.GT.0)
+     &   CALL FDMASKB(BEVEC,get_orbital_rotation_indices_pp())
       CALL RTKTIME(.TRUE.,13)
 C
       KFRSAV = KFREE
@@ -592,6 +606,18 @@ C
 C        Dispose PV
 C
          CALL MEMREL('after RGETH2TX',WORK,1,KPV,KFREE,LFREE)
+C
+C        Debug (.FDCHEK): finite-difference check of the one-index
+C        transformed matrices of the first orbital trial vector
+C
+         IF (XRS_FDCHK .AND. NESIM.GT.0) THEN
+            CALL MEMGET('REAL',KCRFD,MAX(1,NZCONFQ),WORK,KFREE,LFREE)
+            IF (NZCONF.GT.0) CALL READ_DX(LUBCI,1,NZCONFQ,WORK(KCRFD))
+            CALL KRMC_FDCHKI(WORK(KCRFD),BEVEC,
+     &           WORK(KF+NCSIM*N2ORBXQ),WORK(KF+(NCSIM+1)*N2ORBXQ),
+     &           WORK(KFQX),WORK(KH2ACX),XRS_FDEPS,WORK,KFREE,LFREE)
+            CALL MEMREL('FDCHKI',WORK,1,KCRFD,KFREE,LFREE)
+         END IF
       ELSE
          KFQT   = KFREE
          KFQX   = KFREE
@@ -623,7 +649,7 @@ C
      &        get_orbital_rotation_indices_pp(),NZXOPE,
      &        get_orbital_rotation_indices_pn(),NZXOPP,
      &        IBEVC,IBPVC,IBTYP,WORK(KFREE),LFREE)
-         IF (FKRMC) THEN
+         IF (FKRMC .AND. .NOT. (XRS_FDCHK .AND. NOGBDBG())) THEN
             CALL RSIGOOGB(SEVEC,SPVEC,
      &           GPOE,GPOP,BEVEC,BPVEC,
      &           get_orbital_rotation_indices_pp(),
@@ -787,8 +813,8 @@ C
      &                  DMAT(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),
      &                  NZ,IPQTOQ(1,IREP),
      &                  BMAT(IS,II,1),NORBT,NORBT,NZ,IPQTOQ(1,IREP),
-     &                  CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,IREP),
-     &                  CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,IREP),
+     &                  CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
+     &                  CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &                  IPRXRS)
 C
 C
@@ -969,7 +995,7 @@ C
             CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
      &           IPQTOQ(1,IREP),LUPRI)
             WRITE(LUPRI,'(/A,I5)')
-     &           '* FMOLI: QXC no.:',I
+     &           '* FMOLI: FCX no.:',I
             CALL PRQMAT(FMO(1,IM),NORBT,NORBT,NORBT,NORBT,NZ,
      &           IPQTOQ(1,IREP),LUPRI)
             WRITE(LUPRI,'(/A,I5)')
@@ -1089,7 +1115,7 @@ C
             CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
      &           IPQTOQ(1,IREP),LUPRI)
             WRITE(LUPRI,'(/A,I5)')
-     &           '* FMOLI: QCX no.:',I
+     &           '* FMOLI: FCX no.:',I
             CALL PRQMAT(FMO(1,IM),NORBT,NORBT,NORBT,NORBT,NZ,
      &           IPQTOQ(1,IREP),LUPRI)
             WRITE(LUPRI,'(/A,I5)')
@@ -2336,7 +2362,7 @@ C           Print section
             IF(IPRXRS.GE.5) THEN
               WRITE(LUPRI,'(/I5,A)') MFREQ,
      &          ' configurational X(+) solution vectors'
-              CALL PRBVEC(LUPRI,BCVEC,MFREQ,NZCONF)
+              CALL PRCVEC(LUPRI,BCVEC,MFREQ,NZCONF)
             ENDIF
           ELSE
             CALL DZERO(XNORM(1,IPCP),NCSIM)
@@ -2577,10 +2603,10 @@ C
             IF(IPRXRS.GE.5) THEN
               WRITE(LUPRI,'(/I5,A)') MFREQ,
      &          ' configurational X(+) solution vectors'
-              CALL PRBVEC(LUPRI,BCVEC,MFREQ,NZCONF)
+              CALL PRCVEC(LUPRI,BCVEC,MFREQ,NZCONF)
               WRITE(LUPRI,'(/I5,A)') MFREQ,
      &          ' configurational X(-) solution vectors'
-              CALL PRBVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
+              CALL PRCVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
             ENDIF
           ELSE
             CALL DZERO(XNORM(1,IPCP),MFREQ)
@@ -2708,11 +2734,11 @@ C     Print section
         IF(NZCONF.GT.0) THEN
           WRITE(LUPRI,'(/I5,A)') MFREQ,
      &     ' configurational -WS[2]X(-) residual vectors'
-          CALL PRBVEC(LUPRI,BCVEC,MFREQ,NZCONF)
+          CALL PRCVEC(LUPRI,BCVEC,MFREQ,NZCONF)
           IF(.NOT.STATIC) THEN
             WRITE(LUPRI,'(/I5,A)') MFREQ,
      &       ' configurational -WS[2]X(+) residual vectors'
-            CALL PRBVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
+            CALL PRCVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
           ENDIF
         ENDIF
       ENDIF
@@ -2784,11 +2810,11 @@ C
         IF(NZCONF.GT.0) THEN
           WRITE(LUPRI,'(/I5,A)') MFREQ,
      &     ' configurational (E[2]X(+)-WS[2]X(-)) residual vectors'
-          CALL PRBVEC(LUPRI,BCVEC,MFREQ,NZCONF)
+          CALL PRCVEC(LUPRI,BCVEC,MFREQ,NZCONF)
           IF(.NOT.STATIC) THEN
             WRITE(LUPRI,'(/I5,A)') MFREQ,
      &       'configurational (E[2]X(-)-WS[2]X(+)) residual vectors'
-            CALL PRBVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
+            CALL PRCVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
           ENDIF
         ENDIF
       ENDIF ! from IF(IPRXRS.GE.5) THEN
@@ -2864,11 +2890,11 @@ CPP...need to take care of complex case printing
         IF(NZCONF.GT.0) THEN
           WRITE(LUPRI,'(/I5,A)') MFREQ,
      &     ' configurational (E[2]X(+)-WS[2]X(-)+G) residual vectors'
-          CALL PRBVEC(LUPRI,BCVEC,MFREQ,NZCONF)
+          CALL PRCVEC(LUPRI,BCVEC,MFREQ,NZCONF)
           IF(.NOT.STATIC) THEN
             WRITE(LUPRI,'(/I5,A)') MFREQ,
      &       ' configurational (E[2]X(-)-WS[2]X(+)) residual vectors'
-            CALL PRBVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
+            CALL PRCVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
             ENDIF
           ENDIF
         ENDIF
@@ -3282,8 +3308,9 @@ C
 C     Configuration type trial vectors
 C
       IF(NZCONF.GT.0) THEN
-        KPREC  = KFREE
-        KCDIAS = KFREE
+        CALL MEMGET('REAL',KPREC,0,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KCDIAS,NZCONF,WORK,KFREE,LFREE)
+        WORK(KCDIAS:KCDIAS-1+NZCONF) = 1.0D0 ! metric is one for CI parameters
         CALL XBVGEN(BCVEC,USEXVC,WORK(KCDIAH),WORK(KCDIAS),EVALR,EVECR,
      &              IBTYP,IBCVC,IVECS(1,IPCP),
      &              MFREQ,JBCNDX,IBOFF,NCPREV,NZCONF,
@@ -3412,13 +3439,17 @@ C         X(+) - vector
             BNRMP = DNRM2(NVARQ,BVEC(1,1,IP),1)
             IF (JBTYP .EQ. JBCNDX) THEN
               IVAR = IDAMAX(NVARQ,BVEC(1,1,IP),1)
-              THRBVEC = ABS(BVEC(IVAR,1,IP))*1.0D-1
+C             IVAR counts over all MZ components: split into (element, component)
+              IZVAR = (IVAR-1)/NVAR + 1
+              IVAR  = IVAR - (IZVAR-1)*NVAR
+              THRBVEC = ABS(BVEC(IVAR,IZVAR,IP))*1.0D-1
 CHJ           THRBVEC = BNRMP/SQRT(1.0D2*NVAR)
 CHJ           THRBVEC = THCXRS/SQRT(1.0D6*NVAR)
 CHJ 16-jun-2004: try use BNRMP instead of THCXRS to zero BCVEC elements
 CHJ could this give problems for MZ.eq.2 (e.g. real part included, imag. not)?
             ELSE
               THRBVEC = THRZER
+!              THRBVEC = 1.0D-10 !MvH
 !sk+hjaaj testTHRBVEC = THCXRS*1.0D-4
             END IF
             DO IZ = 1,MZ
@@ -3742,8 +3773,11 @@ C
       DIMENSION WORK(*)
       DIMENSION CLREF(*), CRREF(*)
       DIMENSION DV(*), PV(*)
+      real*8, allocatable :: PVMOLF(:,:,:,:,:)
 C
       CALL QENTER('XRSDM')
+C     (heap, not stack: (2*NASHT)**4 elements)
+      allocate(PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2))
       KFRSAV = KFREE
 C
 C
@@ -3798,8 +3832,8 @@ C
          CALL DZERO(PV,NASHT**4 * MIN(2,NZ))
 !
          NM5 = MIN(2,NZ)
-         CALL M2DNZ390(TSYMM,.TRUE.,.TRUE.,WORK(KPVMOLF),PV,IPRXRS,
-     &                 IPQTOQ,NASH,NASHT,NNASHX,NZ,NZ_in_CI,NM5,
+         CALL M2DNZ390(TSYMM,.TRUE.,.TRUE.,WORK(KPVMOLF),PV
+     &       ,PVMOLF,IPRXRS,IPQTOQ,NASH,NASHT,NNASHX,NZ,NZ_in_CI,NM5,
      &                 NBSYM,NFSYM,LUPRI,SPINFR,LEVYLE)
 C        CALL M2DNZ3(TSYMM,KSYMM,PSYMM,PVM,PV,IPRINT)
 C
@@ -4228,10 +4262,10 @@ C
             CALL GMOLITX2(JZ,JREP,FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &           WORK(KFREE),LFREE)
             IF ( IPRXRS .GE. 10) THEN
-               WRITE(LUPRI,9011) 'e-e inactive QCX', I
+               WRITE(LUPRI,9011) 'e-e inactive FCX_ao', I
                CALL PRQMAT(FAO(1,IAOMAT),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-               WRITE(LUPRI,9012) 'e-e inactive QCX', I
+               WRITE(LUPRI,9012) 'e-e inactive FCX', I
                CALL PRQMAT(FMO(1,IMOMAT),NORBT,NORBT,
      &              NORBT,NORBT,NZ,IPQTOQ(1,IREP),LUPRI)
             END IF
@@ -4243,7 +4277,7 @@ C
             CALL GMOLITX2(JZ,JREP,FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &           WORK(KFREE),LFREE)
             IF ( IPRXRS .GE. 8) THEN
-               WRITE(LUPRI,9011) 'e-e active FVX', I
+               WRITE(LUPRI,9011) 'e-e active FVX_ao', I
                CALL PRQMAT(FAO(1,IAOMAT),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
                WRITE(LUPRI,9012) 'e-e active FVX', I
@@ -4271,10 +4305,10 @@ C
             CALL GMOLITX2(JZ,JREP,FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &           WORK(KFREE),LFREE)
             IF ( IPRXRS .GE. 10) THEN
-               WRITE(LUPRI,9011) 'e-p inactive QCX', I
+               WRITE(LUPRI,9011) 'e-p inactive FCX_ao', I
                CALL PRQMAT(FAO(1,IAOMAT),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-               WRITE(LUPRI,9012) 'e-p inactive QCX', I
+               WRITE(LUPRI,9012) 'e-p inactive FCX', I
                CALL PRQMAT(FMO(1,IMOMAT),NORBT,NORBT,
      &              NORBT,NORBT,NZ,IPQTOQ(1,IREP),LUPRI)
             END IF
@@ -4286,7 +4320,7 @@ C
             CALL GMOLITX2(-1,JREP,FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &           WORK(KFREE),LFREE)
             IF ( IPRXRS .GE. 8) THEN
-               WRITE(LUPRI,9011) 'e-p active FVX', I
+               WRITE(LUPRI,9011) 'e-p active FVX_ao', I
                CALL PRQMAT(FAO(1,IAOMAT),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
                WRITE(LUPRI,9012) 'e-p active FVX', I
@@ -4553,33 +4587,38 @@ C
      &           D0,IPQTOQ(1,0),BMAT,NORBT,NORBT,NZ)
             CALL MEMREL('active e-e',WORK,1,KFRSAV,KFREE,LFREE)
 #else
-            CALL QGEMM(NORBT,NORBT,NORBT,D1,
-     &           'T','N',IPQTOQ(1,0),WORK(KBTMP),NORBT,NORBT,NZ,
+!ST&hjaaj   DVX = B^T D with B^T the transpose in spinor representation.
+!           NB: XOPSCT stores the trial vector at the transposed position
+!           compared to RUPKWOP (the orbital step), so WORK(KBTMP) already
+!           is (minus) that transpose; the j-transform 'J' used earlier
+!           was wrong for NZ > 1 (verified by finite differences, Nov 2026).
+            CALL QGEMM(NORBT,NORBT,NORBT,-D1,
+     &           'N','N',IPQTOQ(1,0),WORK(KBTMP),NORBT,NORBT,NZ,
      &           'N','N',IPQTOQ(1,0),WORK(KDVF),NORBT,NORBT,NZ,
      &           D0,IPQTOQ(1,0),BMAT,NORBT,NORBT,NZ)
             CALL MEMREL('active e-e',WORK,1,KFRSAV,KFREE,LFREE)
 #endif
 C
-C           Take symmetric/antisymmetric combinations to form BMAT
+C           Take symmetric/antisymmetric combinations to form Hermitian DMAT
 C
-#ifdef UNDEF
-            IH = IHRMOP(IM)
-            IZOFF = 1
-            DO IZ = 1,NZ
-               IQ = IPQTOQ(IZ,IREP)
-               IS = IHQMAT(IQ,IH)
-               IF(IS.EQ.1) THEN
-                  CALL FULMAT('A',NORBT,NORBT,BMAT(IZOFF))
-               ELSEIF(IS.EQ.2) THEN
-                  CALL FULMAT('S',NORBT,NORBT,BMAT(IZOFF))
-               ENDIF
-               IZOFF = IZOFF + N2ORBX
-            ENDDO
-#endif
+!  Note:    DMOLI3 is written only for half of the one-index trasformation of 
+!           active density matrix
+!           IH = IHRMOP(IM)
+!           IZOFF = 1
+!           DO IZ = 1,NZ
+!              IQ = IPQTOQ(IZ,IREP)
+!              IS = IHQMAT(IQ,IH)
+!              IF(IS.EQ.1) THEN
+!                 CALL FULMAT('S',NORBT,NORBT,BMAT(IZOFF))
+!              ELSEIF(IS.EQ.2) THEN
+!                 CALL FULMAT('A',NORBT,NORBT,BMAT(IZOFF))
+!              ENDIF
+!              IZOFF = IZOFF + N2ORBX
+!           ENDDO
 C
             IF(IPRXRS.GE.10) THEN
                WRITE(LUPRI,'(A,I5)')
-     &              '* DMOLI: DV * B (e-e) vector no.:',I
+     &              '* DMOLI: BT * DV (e-e) vector no.:',I
                CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
      &              IPQTOQ(1,IREP),LUPRI)
             END IF
@@ -4709,8 +4748,10 @@ C           FIXME: run over symmetries instead of transforming the
 C           whole matrix.
 C
             CALL DVSCT(DV,WORK(KDVF))
-            CALL QGEMM(NORBT,NORBT,NORBT,D1,
-     &           'T','N',IPQTOQ(1,0),WORK(KBTMP),NORBT,NORBT,NZ,
+!ST&hjaaj   Transposed complex representation of matrix will
+!           transform to -j transformed quaterion representation of that matrix
+            CALL QGEMM(NORBT,NORBT,NORBT,-D1,
+     &           'N','J',IPQTOQ(1,0),WORK(KBTMP),NORBT,NORBT,NZ,
      &           'N','N',IPQTOQ(1,0),WORK(KDVF),NORBT,NORBT,NZ,
      &           D0,IPQTOQ(1,0),BMAT,NORBT,NORBT,NZ)
             CALL MEMREL('active e-p',WORK,1,KFRSAV,KFREE,LFREE)
@@ -5347,14 +5388,28 @@ C
 C        Calculate G * b^t
 C        -----------------
 C
+C        UGB = B*G - G*B (plain quaternion matrix products).
+C        With kappa = -B and the packed inner product a.b =
+C        1/2 Re tr(A^+ B), the BCH expansion of exp(-eps*kappa_b)
+C        exp(-kappa_d) gives for the symmetric Hessian
+C           sigma = sigma(one-index transformed gradient)
+C                 + pack( 1/2 (B G - G B) ),
+C        packed like XOPSCT, i.e. element (L,K) for rotation (K,L).
+C        For real matrices this equals the old expression
+C        -1/2 [ (G B^t)(K,L) - (G B^t)(L,K) ]; the old form with
+C        transposes is wrong for NZ = 4 (Nov 2026).
          CALL QGEMM(NORBT,NORBT,NORBT,D1,
+     &        'N','N',IPQTOQ(1,0),UBO,NORBT,NORBT,NZ,
      &        'N','N',IPQTOQ(1,0),UGO,NORBT,NORBT,NZ,
-     &        'T','N',IPQTOQ(1,0),UBO,NORBT,NORBT,NZ,
      &           D0,IPQTOQ(1,0),UGB,NORBT,NORBT,NZ)
+         CALL QGEMM(NORBT,NORBT,NORBT,DM1,
+     &        'N','N',IPQTOQ(1,0),UGO,NORBT,NORBT,NZ,
+     &        'N','N',IPQTOQ(1,0),UBO,NORBT,NORBT,NZ,
+     &           D1,IPQTOQ(1,0),UGB,NORBT,NORBT,NZ)
 C
          IF ( IPRXRS .GE. 30 ) THEN
             WRITE(LUPRI,'(1X,A)')
-     &           '(RSIGOOGB1) G * b^t matrix (e-e trial vector)'
+     &           '(RSIGOOGB1) B*G - G*B matrix (e-e trial vector)'
             CALL PRQMAT(UGO,NORBT,NORBT,NORBT,NORBT,NZ,
      &           IPQTOQ(1,0),LUPRI)
             CALL PRQMAT(UBO,NORBT,NORBT,NORBT,NORBT,NZ,
@@ -5365,21 +5420,21 @@ C
          DO IOP = 1, NZXOPE
             K = JXOPE(1,IOP)
             L = JXOPE(2,IOP)
-            SEVEC(IOP,1,I) = SEVEC(IOP,1,I) -
-     &          DP5 * (UGB(K,L,1) - UGB(L,K,1) )
+            SEVEC(IOP,1,I) = SEVEC(IOP,1,I) +
+     &          DP5 * UGB(L,K,1)
             DO IZ = 2, NZ
-               SEVEC(IOP,IZ,I) = SEVEC(IOP,IZ,I) -
-     &              DP5 * (UGB(K,L,IZ) - UGB(L,K,IZ))
+               SEVEC(IOP,IZ,I) = SEVEC(IOP,IZ,I) +
+     &              DP5 * UGB(L,K,IZ)
             END DO
          END DO
          DO IOP = 1, NZXOPP
             K = JXOPP(1,IOP)
             L = JXOPP(2,IOP)
-            SPVEC(IOP,1,I) = SPVEC(IOP,1,I) -
-     &           DP5*(UGB(K,L,1) - UGB(L,K,1))
+            SPVEC(IOP,1,I) = SPVEC(IOP,1,I) +
+     &           DP5*UGB(L,K,1)
             DO IZ = 2, NZ
-               SPVEC(IOP,IZ,I) = SPVEC(IOP,IZ,I) -
-     &              DP5*(UGB(K,L,IZ) - UGB(L,K,IZ))
+               SPVEC(IOP,IZ,I) = SPVEC(IOP,IZ,I) +
+     &              DP5*UGB(L,K,IZ)
             END DO
          END DO
       END DO
@@ -5408,14 +5463,28 @@ C
 C        Calculate G * b^t
 C        -----------------
 C
+C        UGB = B*G - G*B (plain quaternion matrix products).
+C        With kappa = -B and the packed inner product a.b =
+C        1/2 Re tr(A^+ B), the BCH expansion of exp(-eps*kappa_b)
+C        exp(-kappa_d) gives for the symmetric Hessian
+C           sigma = sigma(one-index transformed gradient)
+C                 + pack( 1/2 (B G - G B) ),
+C        packed like XOPSCT, i.e. element (L,K) for rotation (K,L).
+C        For real matrices this equals the old expression
+C        -1/2 [ (G B^t)(K,L) - (G B^t)(L,K) ]; the old form with
+C        transposes is wrong for NZ = 4 (Nov 2026).
          CALL QGEMM(NORBT,NORBT,NORBT,D1,
+     &        'N','N',IPQTOQ(1,0),UBO,NORBT,NORBT,NZ,
      &        'N','N',IPQTOQ(1,0),UGO,NORBT,NORBT,NZ,
-     &        'T','N',IPQTOQ(1,0),UBO,NORBT,NORBT,NZ,
      &           D0,IPQTOQ(1,0),UGB,NORBT,NORBT,NZ)
+         CALL QGEMM(NORBT,NORBT,NORBT,DM1,
+     &        'N','N',IPQTOQ(1,0),UGO,NORBT,NORBT,NZ,
+     &        'N','N',IPQTOQ(1,0),UBO,NORBT,NORBT,NZ,
+     &           D1,IPQTOQ(1,0),UGB,NORBT,NORBT,NZ)
 C
          IF ( IPRXRS .GE. 30 ) THEN
             WRITE(LUPRI,'(1X,A)')
-     &           '(RSIGOOGB1) G * b^t matrix (e-p trial vector)'
+     &           '(RSIGOOGB1) B*G - G*B matrix (e-p trial vector)'
             CALL PRQMAT(UGO,NORBT,NORBT,NORBT,NORBT,NZ,
      &           IPQTOQ(1,0),LUPRI)
             CALL PRQMAT(UBO,NORBT,NORBT,NORBT,NORBT,NZ,
@@ -5427,21 +5496,21 @@ C
          DO IOP = 1, NZXOPE
             K = JXOPE(1,IOP)
             L = JXOPE(2,IOP)
-            SEVEC(IOP,1,I+NESIM) = SEVEC(IOP,1,I+NESIM) -
-     &           DP5 * (UGB(K,L,1) - UGB(L,K,1))
+            SEVEC(IOP,1,I+NESIM) = SEVEC(IOP,1,I+NESIM) +
+     &           DP5 * UGB(L,K,1)
             DO IZ = 2, NZ
-               SEVEC(IOP,IZ,I+NESIM) = SEVEC(IOP,IZ,I+NESIM) -
-     &              DP5*(UGB(K,L,IZ) - UGB(L,K,IZ))
+               SEVEC(IOP,IZ,I+NESIM) = SEVEC(IOP,IZ,I+NESIM) +
+     &              DP5*UGB(L,K,IZ)
             END DO
          END DO
          DO IOP = 1, NZXOPP
             K = JXOPP(1,IOP)
             L = JXOPP(2,IOP)
-            SPVEC(IOP,1,I+NESIM) = SPVEC(IOP,1,I+NESIM) -
-     &           DP5*(UGB(K,L,1) - UGB(L,K,1))
+            SPVEC(IOP,1,I+NESIM) = SPVEC(IOP,1,I+NESIM) +
+     &           DP5*UGB(L,K,1)
             DO IZ = 2, NZ
-               SPVEC(IOP,IZ,I+NESIM) = SPVEC(IOP,IZ,I+NESIM) -
-     &              DP5*(UGB(K,L,IZ) - UGB(L,K,IZ))
+               SPVEC(IOP,IZ,I+NESIM) = SPVEC(IOP,IZ,I+NESIM) +
+     &              DP5*UGB(L,K,IZ)
             END DO
          END DO
       END DO
@@ -5449,13 +5518,13 @@ C
 C
       IF(IPRXRS.GE.30) THEN
          WRITE(LUPRI,'(/1X,A,I5,A)')
-     &        '(RSIGOOGB1) ',NOSIM,' (e-e) orbital part(s) of orbital'//
+     &        '(RSIGOOGB1) ',NESIM,' (e-e) orbital part(s) of orbital'//
      &        ' sigma vector(s) after G * B'
-         CALL PRBVEC(LUPRI,SEVEC(1,1,1),NOSIM,NZXOPE)
+         CALL PRBVEC(LUPRI,SEVEC(1,1,1),NESIM,NZXOPE)
          WRITE(LUPRI,'(/1X,A,I5,A)')
-     &        '(RSIGOOGB1) ',NOSIM,' (e-p) orbital part(s) of orbital'//
+     &        '(RSIGOOGB1) ',NPSIM,' (e-p) orbital part(s) of orbital'//
      &        ' sigma vector(s) after G * B'
-         CALL PRBVEC(LUPRI,SPVEC(1,1,1),NOSIM,NZXOPP)
+         CALL PRBVEC(LUPRI,SPVEC(1,1,1),NPSIM,NZXOPP)
       ENDIF
 C
       CALL QEXIT('RSIGOOGB1')
@@ -5917,3 +5986,77 @@ C  Take care of Real or Imaginary case
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck fdmaskb */
+      SUBROUTINE FDMASKB(BEVEC,JXOPE)
+C***********************************************************************
+C     Debug helper for .FDCHEK: mask e-e orbital trial vectors according
+C     to the environment variable DIRAC_FDMASK
+C       0 (default): no masking
+C       1: keep only rotations without an active orbital
+C       2: keep only rotations involving an active orbital
+C     Only meaningful for one macro iteration (.MAX MACRO 1).
+C***********************************************************************
+      use os_utils
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbxrs.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      DIMENSION BEVEC(NZXOPE,NZ,*), JXOPE(2,*)
+      LOGICAL ACT
+      ACT(K) = K.GT.IORB(1)+NPSH(1)+NISH(1) .AND.
+     &         K.LE.IORB(1)+NPSH(1)+NISH(1)+NASH(1)
+      IUNIT = get_environment_integer('DIRAC_FDUNIT',0)
+      IF (IUNIT .GT. 0) THEN
+C        replace trial vector(s) by a unit vector (stored scaled by 1/2)
+         IZU = get_environment_integer('DIRAC_FDUNITZ',1)
+         DO I = 1, NESIM
+            DO IZ = 1, NZ
+               DO IOP = 1, NZXOPE
+                  BEVEC(IOP,IZ,I) = 0.0D0
+               END DO
+            END DO
+            BEVEC(IUNIT,IZU,I) = 0.5D0
+         END DO
+         WRITE(LUPRI,'(A,2I4,A,2I4)')
+     &      ' (FDMASKB) unit trial vector: rotation, component',
+     &      IUNIT,IZU,'   orbitals',JXOPE(1,IUNIT),JXOPE(2,IUNIT)
+         RETURN
+      END IF
+      MASK = get_environment_integer('DIRAC_FDMASK',0)
+      IF (MASK .EQ. 0) RETURN
+      IF (NFSYM .NE. 1) CALL QUIT('FDMASKB: only for NFSYM = 1')
+      NKEEP = 0
+      DO IOP = 1, NZXOPE
+         K = JXOPE(1,IOP)
+         L = JXOPE(2,IOP)
+         IF (MASK .EQ. 1) THEN
+            IZAP = 0
+            IF (ACT(K) .OR. ACT(L)) IZAP = 1
+         ELSE
+            IZAP = 1
+            IF (ACT(K) .OR. ACT(L)) IZAP = 0
+         END IF
+         IF (IZAP .EQ. 1) THEN
+            DO I = 1, NESIM
+               DO IZ = 1, NZ
+                  BEVEC(IOP,IZ,I) = 0.0D0
+               END DO
+            END DO
+         ELSE
+            NKEEP = NKEEP + 1
+         END IF
+      END DO
+      WRITE(LUPRI,'(A,I2,A,I4,A,I4)') ' (FDMASKB) DIRAC_FDMASK =',MASK,
+     &   ': kept',NKEEP,' of',NZXOPE
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      LOGICAL FUNCTION NOGBDBG()
+C     Debug (.FDCHEK): environment variable DIRAC_NOGB=1 skips the
+C     G*B term (RSIGOOGB) of the orbital sigma vector.
+      use os_utils
+      NOGBDBG = get_environment_integer('DIRAC_NOGB',0) .EQ. 1
+      END
+

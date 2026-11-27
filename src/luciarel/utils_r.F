@@ -662,7 +662,7 @@ C
      &                            .or. myproc .eq. master
 
 !       get integrals on t_unsort
-        call rgeth2(dummy,t_unsort,dummy,ibeig,.false.,
+        call rgeth2(dummy,t_unsort,dummy,dummy,ibeig,.false.,
      &              .true.,int_file_is_master_file,hmat,lfree)
 
 !       release scratch space
