@@ -1,0 +1,1568 @@
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+
+Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
+
+ *******************************************************************************
+ *                                                                             *
+ *                                O U T P U T                                  *
+ *                                   from                                      *
+ *                                                                             *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                    *
+ *                   @@  @@        @@  @@   @@  @@   @@                        *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                        *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                        *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                    *
+ *                                                                             *
+ *                                                                             *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:%
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::$
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::(
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:$
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.S
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::S
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::?
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.S
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.(
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/$
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:iS
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::c
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::S
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::$
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::$
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::(
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:Z
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|(
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||S
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:$
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::%
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:$
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::$
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/)
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii$
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////$
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/Z
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::$
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::&
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/=
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|$
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>M
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:M
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%M
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;M
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<SM
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$SM
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<M
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></M
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&M
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SFM
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]ZkM
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&M
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&M
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&FM
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&M
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6M
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969kM
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&M
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1M
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&M
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9ZM
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6M
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][FM
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&M
+ *******************************************************************************
+ *                                                                             *
+ *         =========================================================           *
+ *                     Program for Atomic and Molecular                        *
+ *          Direct Iterative Relativistic All-electron Calculations            *
+ *         =========================================================           *
+ *                                                                             *
+ *                                                                             *
+ *    Written by:                                                              *
+ *                                                                             *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *    Trond Saue               Universite Toulouse III           France        *
+ *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *                                                                             *
+ *    with contributions from:                                                 *
+ *                                                                             *
+ *    Minori Abe               Tokyo Uni. of Agriculture & Tech. Japan         *
+ *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
+ *    Juan Jose Aucar          CONICET/Northeastern University   Argentina     *
+ *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Jan Brandejs             Universite Toulouse III           France        *
+ *    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joel Creutzberg          University of Southern Denmark    Denmark       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
+ *    Sebastien Dubillard      University of Strasbourg          France        *
+ *    Ulf Ekstroem             University of Oslo                Norway        *
+ *    Ephraim Eliav            University of Tel Aviv            Israel        *
+ *    Gabriele Fabbro          Universite Toulouse III           France        *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
+ *    Elke Fasshauer           University of Tubingen            Germany       *
+ *    Timo Fleig               Universite Toulouse III           France        *
+ *    Olav Fossgaard           UiT The Arctic University of      Norway        *
+ *    Konstantin J. Gaul       Helmholtz Institute Mainz         Germany       *
+ *    Loic Halbert             Universite de Lille               France        *
+ *    Erik D. Hedegaard        University of Southern Denmark    Denmark       *
+ *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
+ *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Martin van Horn          Universite Toulouse III           France        *
+ *    Miroslav Ilias           Matej Bel University              Slovakia      *
+ *    Sumika Iwamuro           NTT Data Group Corp.              Japan         *
+ *    Christoph R. Jacob       TU Braunschweig                   Germany       *
+ *    Stefan Knecht            Algorithmiq Ltd / ETH Zuerich     Finland/CH    *
+ *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
+ *    Ossama Kullie            University of Kassel              Germany       *
+ *    Jon K. Laerdahl          University of Oslo                Norway        *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
+ *    Ernst D. Larsson         University of Southern Denmark    Denmark       *
+ *    Maxime Le                Universite de Lille               France        *
+ *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Thomas Lejeune           Universite Paris Saclay           France        *
+ *    Nanna Holmgaard List     Stockholm Inst. of Technology     Sweden        *
+ *    Yasuto Masuda            Hiroshima University              Japan         *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
+ *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
+ *    Kohei Noda               Saver Corp.                       Japan         *
+ *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
+ *    Andreas Nyvang           Aarhus University                 Denmark       *
+ *    Malgorzata Olejniczak    University of Warsaw              Poland        *
+ *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Anastasios Papadopoulos  Max Planck Institute f. Coal Res. Germany       *
+ *    Young Choon Park         KAIST, Daejeon                    South Korea   *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
+ *    Markus Pernpointner      University of Heidelberg          Germany       *
+ *    Johann V. Pototschnig    Technical University Graz         Austria       *
+ *    Roberto Di Remigio Eikas Algorithmiq Ltd                   Finland       *
+ *    Michal Repisky           UiT & Comenius University         Norway/SK     *
+ *    Carlos M. R. Rocha       Netherlands eScience Center       Netherlands   *
+ *    Kenneth Ruud             UiT The Arctic University of      Norway        *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
+ *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
+ *    Bruno Senjean            CNRS/Universite de Montpellier    France        *
+ *    Avijit Shee              University of Berkeley            USA           *
+ *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Ayaki Sunaga             Kyoto University                  Japan         *
+ *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
+ *    Joern Thyssen            University of Southern Denmark    Denmark       *
+ *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
+ *    Marta L. Vidal           Cardiff University                UK            *
+ *    Sebastien Villaume       Linkoeping University             Sweden        *
+ *    Olivier Visser           University of Groningen           Netherlands   *
+ *    Lasse K. Sorensen        University of Southern Denmark    Denmark       *
+ *    Toke Winther             University of Southern Denmark    Denmark       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *    Xiang Yuan               Universite de Lille               France        *
+ *                                                                             *
+ *    For more information about the DIRAC code see http://diracprogram.org    *
+ *                                                                             *
+ *    This is an experimental code. The authors accept no responsibility       *
+ *    for the performance of the code or for the correctness of the results.   *
+ *                                                                             *
+ *    This program is free software; you can redistribute it and/or            *
+ *    modify it under the terms of the GNU Lesser General Public               *
+ *    License version 2.1 as published by the Free Software Foundation.        *
+ *                                                                             *
+ *    If results obtained with this code are published, an                     *
+ *    appropriate citation would be:                                           *
+ *                                                                             *
+ *    DIRAC, a relativistic ab initio electronic structure program,            *
+ *    Release DIRAC26.1 (2026), written by                                     *
+ *    A. S. P. Gomes, T. Saue, L. Visscher, H. J. Aa. Jensen, and R. Bast      *
+ *    with contributions from M. Abe, I. A. Aucar, J. J. Aucar, V. Bakken,     *
+ *    J. Brandejs, C. Chibueze, J. Creutzberg, K. G. Dyall, S. Dubillard,      *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, G. Fabbro, E. Fasshauer, T. Fleig, *
+ *    O. Fossgaard, K. J. Gaul, L. Halbert, E. D. Hedegaard, T. Helgaker,      *
+ *    B. Helmich-Paris, J. Henriksson, M. van Horn, M. Ilias, S. Iwamuro,      *
+ *    Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie, J. K. Laerdahl,       *
+ *    C. V. Larsen, E.D Laersson, M. Le, Y. S. Lee, T. Lejeune, N. H. List,    *
+ *    Y. Masuda, H. S. Nataraj, M. K. Nayak, K. Noda, P. Norman, A. Nyvang,    *
+ *    M. Olejniczak, J. Olsen, J. M. H. Olsen, A. Papadopoulos, Y. C. Park,    *
+ *    J. K. Pedersen, M. Pernpointner, J. V. Pototschnig, R. Di Remigio Eikas, *
+ *    M. Repisky, C. M. R. Rocha, K. Ruud, P. Salek, B. Schimmelpfennig,       *
+ *    B. Senjean, A. Shee, J. Sikkema, A. Sunaga, A. J. Thorvaldsen,           *
+ *    J. Thyssen, J. N. P. van Stralen, M. L. Vidal, S. Villaume,              *
+ *    O. Visser, L. K. Sorensen, T. Winther, S. Yamamoto and X. Yuan           *
+ *    (see http://diracprogram.org).                                           *
+ *                                                                             *
+ *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104         *
+ *                                    https://doi.org/10.1063/5.0004844        *
+ *                                                                             *
+ *******************************************************************************
+
+
+Version information
+-------------------
+
+Branch        | master
+Commit hash   | 61d4a7d4b-dirty
+Commit author | Lucas Visscher
+Commit date   | Wed Nov 25 08:32:30 2026 +0100
+
+
+Configuration and build information
+-----------------------------------
+
+Who compiled             | saue
+Compiled on server       | lpqlx134
+Operating system         | Linux-7.0.0-44-generic
+CMake version            | 4.2.3
+CMake generator          | Unix Makefiles
+CMake build type         | release
+Configuration time       | 2026-11-25 13:00:34.400361+00:00
+Fortran compiler         | /usr/bin/gfortran
+Fortran compiler version | 15.2.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -ffree-line-length-none -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto
+C compiler               | /usr/bin/gcc
+C compiler version       | 15.2.0
+C compiler flags         |  -g -fopenmp -fno-lto
+C++ compiler             | /usr/bin/g++
+C++ compiler version     | 15.2.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto
+Static linking           | False
+64-bit integers          | False
+MPI parallelization      | False
+MPI launcher             | unknown
+Math libraries           | /usr/lib/x86_64-linux-gnu/libopenblas.so;/usr/lib/x86_64-linux-gnu/libopenblas.so
+Builtin BLAS library     | OFF
+Builtin LAPACK library   | OFF
+Explicit libraries       | unknown
+Compile definitions      | HAVE_OPENBLAS_BLAS;HAVE_OPENBLAS_LAPACK;HAVE_OPENMP;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT
+
+EXACORR dependencies
+--------------------
+Exatensor source repo    | unknown
+Exatensor git hash       | unknown
+Exatensor configuration  | unknown
+
+
+ LAPACK integer*4/8 selftest passed
+ Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+
+Execution time and host
+-----------------------
+
+ 
+     Date and time (Linux)  : Wed Nov 25 14:28:49 2026
+     Host name              : lpqlx134                                
+
+ * Opening checkpoint file 
+    - New checkpoint file created
+
+
+Contents of the input file
+--------------------------
+
+**DIRAC                                                                                             
+**HAMILTONIAN                                                                                       
+.LEVY-LEBLOND                                                                                       
+**WAVE FUNCTION                                                                                     
+*END OF                                                                                             
+
+
+Contents of the molecule file
+-----------------------------
+
+INTGRL                                                                                              
+B12H12 icosahedral cluster, I(h)                                                                    
+C5 axes through atoms; tests D2h (not C2h) orientation                                              
+C   2                                                                                               
+       5.0   12                                                                                     
+B1       -2.207487219767     -1.940380579564     -1.290745281231                                    
+B2       -0.269682025459     -2.926661617633      1.290745281231                                    
+B3        1.095772205137     -2.451320523170     -1.759093791455                                    
+B4       -2.626746994572     -0.556676979377      1.759093791455                                    
+B5       -0.417395639386      0.212441067713     -3.175649488368                                    
+B6        2.718039028580     -1.383395174342      1.001289983332                                    
+B7       -2.718039028580      1.383395174342     -1.001289983332                                    
+B8        0.417395639386     -0.212441067713      3.175649488368                                    
+B9        2.626746994572      0.556676979377     -1.759093791455                                    
+B10      -1.095772205137      2.451320523170      1.759093791455                                    
+B11       0.269682025459      2.926661617633     -1.290745281231                                    
+B12       2.207487219767      1.940380579564      1.290745281231                                    
+LARGE BASIS STO-3G                                                                                  
+       1.0   12                                                                                     
+H1       -3.754791345771     -3.300460425052     -2.195473282093                                    
+H2       -0.458711482556     -4.978059947749      2.195473282093                                    
+H3        1.863836834906     -4.169535843149     -2.992103458363                                    
+H4       -4.467924794506     -0.946871123801      2.992103458363                                    
+H5       -0.709962676339      0.361348358166     -5.401572026943                                    
+H6        4.623206571978     -2.353064689068      1.703128756695                                    
+H7       -4.623206571978      2.353064689068     -1.703128756695                                    
+H8        0.709962676339     -0.361348358166      5.401572026943                                    
+H9        4.467924794506      0.946871123801     -2.992103458363                                    
+H10      -1.863836834906      4.169535843149      2.992103458363                                    
+H11       0.458711482556      4.978059947749     -2.195473282093                                    
+H12       3.754791345771      3.300460425052      2.195473282093                                    
+LARGE BASIS STO-3G                                                                                  
+FINISH                                                                                              
+
+
+    *************************************************************************
+    ********************* DIRAC: No title specified !!! *********************
+    *************************************************************************
+
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 2022  
+     Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor    
+         Reviews of Modern Physics, Vol. 97, 025002 (2025)                
+ * The speed of light :        137.035999177
+ * Running in four-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+
+   ***************************************************************************
+   ****************** Output from MOLECULE input processing ******************
+   ***************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  B12H12 icosahedral cluster, I(h)                                        
+  C5 axes through atoms; tests D2h (not C2h) orientation                  
+  Nuclear Gaussian exponent for atom of charge    5.000 :     7.1178699218D+08   (using mass   11.0)
+  Nuclear Gaussian exponent for atom of charge    1.000 :     2.1248236082D+09   (using mass    1.0)
+
+
+                     SYMADD: Detection of molecular symmetry
+                     ---------------------------------------
+
+ Symmetry test threshold:  5.00E-06
+
+    The molecule has been centered at center of mass.
+
+ Symmetry point group found: I(h)           
+
+ Rotational Axes
+ ---------------
+       5 :      0.52573111    -0.85065081     0.00000000  Isotope  0
+       5 :     -0.85065081     0.00000000    -0.52573111  Isotope  0
+       5 :      0.52573111     0.85065081    -0.00000000  Isotope  0
+       5 :     -0.00000000    -0.52573111    -0.85065081  Isotope  0
+       5 :      0.00000000     0.52573111    -0.85065081  Isotope  0
+       5 :     -0.85065081     0.00000000     0.52573111  Isotope  0
+       3 :     -0.57735027    -0.57735027     0.57735027  Isotope  0
+       3 :      0.93417236    -0.35682209    -0.00000000  Isotope  0
+       3 :     -0.57735027     0.57735027    -0.57735027  Isotope  0
+       3 :      0.00000000     0.93417236     0.35682209  Isotope  0
+       3 :      0.57735027     0.57735027     0.57735027  Isotope  0
+       3 :      0.00000000     0.93417236    -0.35682209  Isotope  0
+       3 :     -0.57735027     0.57735027     0.57735027  Isotope  0
+       3 :      0.35682209     0.00000000     0.93417236  Isotope  0
+       3 :      0.93417236     0.35682209    -0.00000000  Isotope  0
+       3 :      0.35682209    -0.00000000    -0.93417236  Isotope  0
+       2 :     -0.00000000     0.00000000     1.00000000  Isotope  0
+       2 :     -0.30901699     0.80901699     0.50000000  Isotope  0
+       2 :      0.80901699     0.50000000     0.30901699  Isotope  0
+       2 :      0.80901699    -0.50000000     0.30901699  Isotope  0
+       2 :      0.50000000     0.30901699     0.80901699  Isotope  0
+       2 :      0.00000000     1.00000000     0.00000000  Isotope  0
+       2 :      0.50000000    -0.30901699    -0.80901699  Isotope  0
+       2 :     -1.00000000     0.00000000     0.00000000  Isotope  0
+       2 :     -0.50000000    -0.30901699     0.80901699  Isotope  0
+       2 :      0.30901699    -0.80901699     0.50000000  Isotope  0
+       2 :      0.80901699     0.50000000    -0.30901699  Isotope  0
+       2 :      0.50000000    -0.30901699     0.80901699  Isotope  0
+       2 :      0.30901699     0.80901699     0.50000000  Isotope  0
+       2 :      0.80901699    -0.50000000    -0.30901699  Isotope  0
+       2 :     -0.30901699    -0.80901699     0.50000000  Isotope  0
+
+ Due to number of improper rotational axes, they were not determined.
+
+ Mirror planes
+ -----------------------------
+ #1 = Type: 2=h, 1=v, 0=other
+ #2 = Number of atoms in plane
+ #3-5 = normal vector of plane
+ -----------------------------
+ 0     1 :     -0.00000000     0.00000000    -1.00000000
+ 0     1 :     -0.80901699    -0.50000000    -0.30901699
+ 0     1 :     -0.50000000    -0.30901699     0.80901699
+ 0     1 :      0.80901699     0.50000000    -0.30901699
+ 0     1 :     -0.50000000    -0.30901699    -0.80901699
+ 0     0 :     -0.30901699     0.80901699    -0.50000000
+ 0     0 :      0.00000000     1.00000000    -0.00000000
+ 0     0 :     -1.00000000     0.00000000     0.00000000
+ 0     0 :      0.30901699     0.80901699     0.50000000
+ 0     0 :     -0.50000000     0.30901699     0.80901699
+ 0     0 :     -0.80901699     0.50000000    -0.30901699
+ 0     0 :      0.50000000    -0.30901699     0.80901699
+ 0     0 :      0.30901699    -0.80901699    -0.50000000
+ 0     0 :      0.80901699    -0.50000000    -0.30901699
+ 0     0 :     -0.30901699    -0.80901699     0.50000000
+
+ The following symmetry elements were found: X  Y  Z  
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 3
+
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Full group is:  I(h)           
+Represented as: D2h
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+      Reflection in the xy-plane
+
+   * Group multiplication table
+
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+     E  |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+    C2z | C2z   E   C2x  C2y  Oxy   i   Oyz  Oxz
+    C2y | C2y  C2x   E   C2z  Oxz  Oyz   i   Oxy
+    C2x | C2x  C2y  C2z   E   Oyz  Oxz  Oxy   i 
+     i  |  i   Oxy  Oxz  Oyz   E   C2z  C2y  C2x
+    Oxy | Oxy   i   Oyz  Oxz  C2z   E   C2x  C2y
+    Oxz | Oxz  Oyz   i   Oxy  C2y  C2x   E   C2z
+    Oyz | Oyz  Oxz  Oxy   i   C2x  C2y  C2z   E 
+
+   * Character table
+
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+    Ag  |   1    1    1    1    1    1    1    1
+    B3u |   1   -1   -1    1   -1    1    1   -1
+    B2u |   1   -1    1   -1   -1    1   -1    1
+    B1g |   1    1   -1   -1    1    1   -1   -1
+    B1u |   1    1   -1   -1   -1   -1    1    1
+    B2g |   1   -1    1   -1    1   -1    1   -1
+    B3g |   1   -1   -1    1    1   -1   -1    1
+    Au  |   1    1    1    1   -1   -1   -1   -1
+
+   * Direct product table
+
+        | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
+   -----+----------------------------------------
+    Ag  | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
+    B3u | B3u  Ag   B1g  B2u  B2g  B1u  Au   B3g
+    B2u | B2u  B1g  Ag   B3u  B3g  Au   B1u  B2g
+    B1g | B1g  B2u  B3u  Ag   Au   B3g  B2g  B1u
+    B1u | B1u  B2g  B3g  Au   Ag   B3u  B2u  B1g
+    B2g | B2g  B1u  Au   B3g  B3u  Ag   B1g  B2u
+    B3g | B3g  Au   B1u  B2g  B2u  B1g  Ag   B3u
+    Au  | Au   B3g  B2g  B1u  B1g  B2u  B3u  Ag 
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * Two fermion irreps:  E1g  E1u
+   * Real group. NZ = 1
+   * Direct product decomposition:
+          E1g x E1g : Ag  + B1g + B2g + B3g
+          E1u x E1g : Au  + B1u + B2u + B3u
+          E1u x E1u : Ag  + B1g + B2g + B3g
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1            * Fermion irrep no.: 2
+
+      La  |  Ag (1)  B1g(2)  |                La  |  Au (1)  B1u(2)  |
+      Sa  |  Au (1)  B1u(2)  |                Sa  |  Ag (1)  B1g(2)  |
+      Lb  |  B2g(3)  B3g(4)  |                Lb  |  B2u(3)  B3u(4)  |
+      Sb  |  B2u(3)  B3u(4)  |                Sb  |  B2g(3)  B3g(4)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    Ag   1
+    B3u  k
+    B2u  j
+    B1g  i
+    B1u  i
+    B2g  j
+    B3g  k
+    Au   1
+
+  Nuclear repulsion energy                       :    526.346728846038 Hartree
+
+  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000    0.000000000000 a.u.;  origin (0,0,0)
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:   24
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  B3         12       5      15       5      L  - [6s3p|2s1p]                                                    
+                             39      39      S  - [3s6p3d|3s6p3d]                                                
+  H3         12       1       3       1      L  - [3s|1s]                                                        
+                              9       9      S  - [3p|3p]                                                        
+  ----------------------------------------------------------------------
+                            216      72      L  - large components
+                            576     576      S  - small components
+  ----------------------------------------------------------------------
+  total:     24      72     792     648
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1   2
+   Elements      Contraction                       References                     
+   H - He: (3s)         -> [1s]       W.J. Hehre, R.F. Stewart and J.A. Pople,    
+   Li - Ne: (6s,3p)     -> [2s,1p]    J. Chem. Phys. 2657 (1969).                 
+   Na - Ar: (9s,6p)     -> [3s,2p]    W.J. Hehre, R. Ditchfield, R.F. Stewart,    
+                                      J.A. Pople, J. Chem. Phys.  2769 (1970).    
+   K,Ca - : (12s,9p)    -> [4s,3p]    W.J. Pietro, B.A. Levy, W.J. Hehre and R.F. 
+   Ga - Kr                            Stewart, Inorg. Chem. 19, 2225 (1980).      
+   Sc - Zn: (12s,9p,3d) -> [4s,3p,1d] W.J. Pietro and W.J. Hehre, J. Comp. Chem.  
+   Y - Cd: (15s,12p,6d) -> [5s,4p,2d] 4, 241 (1983).                              
+  ***********************************************************************         
+
+
+  Cartesian Coordinates (bohr)
+  ----------------------------
+
+  Total number of coordinates: 72
+
+
+   B1  /1      1.6875968699   2.7305890948   0.0000000000
+   B1  /2     -1.6875968699   2.7305890948   0.0000000000
+   B1  /3      1.6875968699  -2.7305890948   0.0000000000
+   B1  /4     -1.6875968699  -2.7305890948   0.0000000000
+   B2  /1      2.7305890948   0.0000000000   1.6875968699
+   B2  /2     -2.7305890948   0.0000000000   1.6875968699
+   B2  /3      2.7305890948   0.0000000000  -1.6875968699
+   B2  /4     -2.7305890948   0.0000000000  -1.6875968699
+   B3  /1      0.0000000000   1.6875968699   2.7305890948
+   B3  /2      0.0000000000  -1.6875968699   2.7305890948
+   B3  /3      0.0000000000   1.6875968699  -2.7305890948
+   B3  /4      0.0000000000  -1.6875968699  -2.7305890948
+   H1  /1      2.8704918722   4.6445534136   0.0000000000
+   H1  /2     -2.8704918722   4.6445534136   0.0000000000
+   H1  /3      2.8704918722  -4.6445534136   0.0000000000
+   H1  /4     -2.8704918722  -4.6445534136   0.0000000000
+   H2  /1      4.6445534136   0.0000000000   2.8704918722
+   H2  /2     -4.6445534136   0.0000000000   2.8704918722
+   H2  /3      4.6445534136   0.0000000000  -2.8704918722
+   H2  /4     -4.6445534136   0.0000000000  -2.8704918722
+   H3  /1      0.0000000000   2.8704918722   4.6445534136
+   H3  /2      0.0000000000  -2.8704918722   4.6445534136
+   H3  /3      0.0000000000   2.8704918722  -4.6445534136
+   H3  /4      0.0000000000  -2.8704918722  -4.6445534136
+
+
+  Cartesian coordinates in XYZ format (Angstrom)
+  ----------------------------------------------
+
+   24
+
+B1     0.8930378041   1.4449655203   0.0000000000
+B1    -0.8930378041   1.4449655203   0.0000000000
+B1     0.8930378041  -1.4449655203   0.0000000000
+B1    -0.8930378041  -1.4449655203   0.0000000000
+B2     1.4449655203   0.0000000000   0.8930378041
+B2    -1.4449655203   0.0000000000   0.8930378041
+B2     1.4449655203   0.0000000000  -0.8930378041
+B2    -1.4449655203   0.0000000000  -0.8930378041
+B3     0.0000000000   0.8930378041   1.4449655203
+B3     0.0000000000  -0.8930378041   1.4449655203
+B3     0.0000000000   0.8930378041  -1.4449655203
+B3     0.0000000000  -0.8930378041  -1.4449655203
+H1     1.5189988818   2.4577918196   0.0000000000
+H1    -1.5189988818   2.4577918196   0.0000000000
+H1     1.5189988818  -2.4577918196   0.0000000000
+H1    -1.5189988818  -2.4577918196   0.0000000000
+H2     2.4577918196   0.0000000000   1.5189988818
+H2    -2.4577918196   0.0000000000   1.5189988818
+H2     2.4577918196   0.0000000000  -1.5189988818
+H2    -2.4577918196   0.0000000000  -1.5189988818
+H3     0.0000000000   1.5189988818   2.4577918196
+H3     0.0000000000  -1.5189988818   2.4577918196
+H3     0.0000000000   1.5189988818  -2.4577918196
+H3     0.0000000000  -1.5189988818  -2.4577918196
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:    12   10   10    8   10    8    8    6
+
+
+  Symmetry  Ag ( 1)
+
+    1   B1    x    [  1  -    4  +    7  -   10 ]/4
+    2   B1    y    [  2  +    5  -    8  -   11 ]/4
+    3   B2    x    [ 13  -   16  +   19  -   22 ]/4
+    4   B2    z    [ 15  +   18  -   21  -   24 ]/4
+    5   B3    y    [ 26  -   29  +   32  -   35 ]/4
+    6   B3    z    [ 27  +   30  -   33  -   36 ]/4
+    7   H1    x    [ 37  -   40  +   43  -   46 ]/4
+    8   H1    y    [ 38  +   41  -   44  -   47 ]/4
+    9   H2    x    [ 49  -   52  +   55  -   58 ]/4
+   10   H2    z    [ 51  +   54  -   57  -   60 ]/4
+   11   H3    y    [ 62  -   65  +   68  -   71 ]/4
+   12   H3    z    [ 63  +   66  -   69  -   72 ]/4
+
+
+  Symmetry  B3u( 2)
+
+   13   B1    x    [  1  +    4  +    7  +   10 ]/4
+   14   B1    y    [  2  -    5  -    8  +   11 ]/4
+   15   B2    x    [ 13  +   16  +   19  +   22 ]/4
+   16   B2    z    [ 15  -   18  -   21  +   24 ]/4
+   17   B3    x    [ 25  +   28  +   31  +   34 ]/4
+   18   H1    x    [ 37  +   40  +   43  +   46 ]/4
+   19   H1    y    [ 38  -   41  -   44  +   47 ]/4
+   20   H2    x    [ 49  +   52  +   55  +   58 ]/4
+   21   H2    z    [ 51  -   54  -   57  +   60 ]/4
+   22   H3    x    [ 61  +   64  +   67  +   70 ]/4
+
+
+  Symmetry  B2u( 3)
+
+   23   B1    x    [  1  -    4  -    7  +   10 ]/4
+   24   B1    y    [  2  +    5  +    8  +   11 ]/4
+   25   B2    y    [ 14  +   17  +   20  +   23 ]/4
+   26   B3    y    [ 26  +   29  +   32  +   35 ]/4
+   27   B3    z    [ 27  -   30  -   33  +   36 ]/4
+   28   H1    x    [ 37  -   40  -   43  +   46 ]/4
+   29   H1    y    [ 38  +   41  +   44  +   47 ]/4
+   30   H2    y    [ 50  +   53  +   56  +   59 ]/4
+   31   H3    y    [ 62  +   65  +   68  +   71 ]/4
+   32   H3    z    [ 63  -   66  -   69  +   72 ]/4
+
+
+  Symmetry  B1g( 4)
+
+   33   B1    x    [  1  +    4  -    7  -   10 ]/4
+   34   B1    y    [  2  -    5  +    8  -   11 ]/4
+   35   B2    y    [ 14  -   17  +   20  -   23 ]/4
+   36   B3    x    [ 25  -   28  +   31  -   34 ]/4
+   37   H1    x    [ 37  +   40  -   43  -   46 ]/4
+   38   H1    y    [ 38  -   41  +   44  -   47 ]/4
+   39   H2    y    [ 50  -   53  +   56  -   59 ]/4
+   40   H3    x    [ 61  -   64  +   67  -   70 ]/4
+
+
+  Symmetry  B1u( 5)
+
+   41   B1    z    [  3  +    6  +    9  +   12 ]/4
+   42   B2    x    [ 13  -   16  -   19  +   22 ]/4
+   43   B2    z    [ 15  +   18  +   21  +   24 ]/4
+   44   B3    y    [ 26  -   29  -   32  +   35 ]/4
+   45   B3    z    [ 27  +   30  +   33  +   36 ]/4
+   46   H1    z    [ 39  +   42  +   45  +   48 ]/4
+   47   H2    x    [ 49  -   52  -   55  +   58 ]/4
+   48   H2    z    [ 51  +   54  +   57  +   60 ]/4
+   49   H3    y    [ 62  -   65  -   68  +   71 ]/4
+   50   H3    z    [ 63  +   66  +   69  +   72 ]/4
+
+
+  Symmetry  B2g( 6)
+
+   51   B1    z    [  3  -    6  +    9  -   12 ]/4
+   52   B2    x    [ 13  +   16  -   19  -   22 ]/4
+   53   B2    z    [ 15  -   18  +   21  -   24 ]/4
+   54   B3    x    [ 25  +   28  -   31  -   34 ]/4
+   55   H1    z    [ 39  -   42  +   45  -   48 ]/4
+   56   H2    x    [ 49  +   52  -   55  -   58 ]/4
+   57   H2    z    [ 51  -   54  +   57  -   60 ]/4
+   58   H3    x    [ 61  +   64  -   67  -   70 ]/4
+
+
+  Symmetry  B3g( 7)
+
+   59   B1    z    [  3  +    6  -    9  -   12 ]/4
+   60   B2    y    [ 14  +   17  -   20  -   23 ]/4
+   61   B3    y    [ 26  +   29  -   32  -   35 ]/4
+   62   B3    z    [ 27  -   30  +   33  -   36 ]/4
+   63   H1    z    [ 39  +   42  -   45  -   48 ]/4
+   64   H2    y    [ 50  +   53  -   56  -   59 ]/4
+   65   H3    y    [ 62  +   65  -   68  -   71 ]/4
+   66   H3    z    [ 63  -   66  +   69  -   72 ]/4
+
+
+  Symmetry  Au ( 8)
+
+   67   B1    z    [  3  -    6  -    9  +   12 ]/4
+   68   B2    y    [ 14  -   17  -   20  +   23 ]/4
+   69   B3    x    [ 25  -   28  -   31  +   34 ]/4
+   70   H1    z    [ 39  -   42  -   45  +   48 ]/4
+   71   H2    y    [ 50  -   53  -   56  +   59 ]/4
+   72   H3    x    [ 61  -   64  -   67  +   70 ]/4
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            B1 1        B1 2        B1 3        B1 4        B2 1        B2 2
+
+   B1 1    0.000000
+   B1 2    1.786076    0.000000
+   B1 3    2.889931    3.397318    0.000000
+   B1 4    3.397318    2.889931    1.786076    0.000000
+   B2 1    1.786076    2.889931    1.786076    2.889931    0.000000
+   B2 2    2.889931    1.786076    2.889931    1.786076    2.889931    0.000000
+   B2 3    1.786076    2.889931    1.786076    2.889931    1.786076    3.397318
+   B2 4    2.889931    1.786076    2.889931    1.786076    3.397318    1.786076
+   B3 1    1.786076    1.786076    2.889931    2.889931    1.786076    1.786076
+   B3 2    2.889931    2.889931    1.786076    1.786076    1.786076    1.786076
+   B3 3    1.786076    1.786076    2.889931    2.889931    2.889931    2.889931
+   B3 4    2.889931    2.889931    1.786076    1.786076    2.889931    2.889931
+   H1 1    1.190649    2.616054    3.952637    4.587966    2.616054    3.952637
+   H1 2    2.616054    1.190649    4.587966    3.952637    3.952637    2.616054
+   H1 3    3.952637    4.587966    1.190649    2.616054    2.616054    3.952637
+   H1 4    4.587966    3.952637    2.616054    1.190649    3.952637    2.616054
+   H2 1    2.616054    3.952637    2.616054    3.952637    1.190649    3.952637
+   H2 2    3.952637    2.616054    3.952637    2.616054    3.952637    1.190649
+   H2 3    2.616054    3.952637    2.616054    3.952637    2.616054    4.587966
+   H2 4    3.952637    2.616054    3.952637    2.616054    4.587966    2.616054
+   H3 1    2.616054    2.616054    3.952637    3.952637    2.616054    2.616054
+   H3 2    3.952637    3.952637    2.616054    2.616054    2.616054    2.616054
+   H3 3    2.616054    2.616054    3.952637    3.952637    3.952637    3.952637
+   H3 4    3.952637    3.952637    2.616054    2.616054    3.952637    3.952637
+
+            B2 3        B2 4        B3 1        B3 2        B3 3        B3 4
+
+   B2 3    0.000000
+   B2 4    2.889931    0.000000
+   B3 1    2.889931    2.889931    0.000000
+   B3 2    2.889931    2.889931    1.786076    0.000000
+   B3 3    1.786076    1.786076    2.889931    3.397318    0.000000
+   B3 4    1.786076    1.786076    3.397318    2.889931    1.786076    0.000000
+   H1 1    2.616054    3.952637    2.616054    3.952637    2.616054    3.952637
+   H1 2    3.952637    2.616054    2.616054    3.952637    2.616054    3.952637
+   H1 3    2.616054    3.952637    3.952637    2.616054    3.952637    2.616054
+   H1 4    3.952637    2.616054    3.952637    2.616054    3.952637    2.616054
+   H2 1    2.616054    4.587966    2.616054    2.616054    3.952637    3.952637
+   H2 2    4.587966    2.616054    2.616054    2.616054    3.952637    3.952637
+   H2 3    1.190649    3.952637    3.952637    3.952637    2.616054    2.616054
+   H2 4    3.952637    1.190649    3.952637    3.952637    2.616054    2.616054
+   H3 1    3.952637    3.952637    1.190649    2.616054    3.952637    4.587966
+   H3 2    3.952637    3.952637    2.616054    1.190649    4.587966    3.952637
+   H3 3    2.616054    2.616054    3.952637    4.587966    1.190649    2.616054
+   H3 4    2.616054    2.616054    4.587966    3.952637    2.616054    1.190649
+
+            H1 1        H1 2        H1 3        H1 4        H2 1        H2 2
+
+   H1 1    0.000000
+   H1 2    3.037998    0.000000
+   H1 3    4.915584    5.778615    0.000000
+   H1 4    5.778615    4.915584    3.037998    0.000000
+   H2 1    3.037998    4.915584    3.037998    4.915584    0.000000
+   H2 2    4.915584    3.037998    4.915584    3.037998    4.915584    0.000000
+   H2 3    3.037998    4.915584    3.037998    4.915584    3.037998    5.778615
+   H2 4    4.915584    3.037998    4.915584    3.037998    5.778615    3.037998
+   H3 1    3.037998    3.037998    4.915584    4.915584    3.037998    3.037998
+   H3 2    4.915584    4.915584    3.037998    3.037998    3.037998    3.037998
+   H3 3    3.037998    3.037998    4.915584    4.915584    4.915584    4.915584
+   H3 4    4.915584    4.915584    3.037998    3.037998    4.915584    4.915584
+
+            H2 3        H2 4        H3 1        H3 2        H3 3        H3 4
+
+   H2 3    0.000000
+   H2 4    4.915584    0.000000
+   H3 1    4.915584    4.915584    0.000000
+   H3 2    4.915584    4.915584    3.037998    0.000000
+   H3 3    3.037998    3.037998    4.915584    5.778615    0.000000
+   H3 4    3.037998    3.037998    5.778615    4.915584    3.037998    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    B1 2       B1 1                           1.786076
+  bond distance:    B1 4       B1 3                           1.786076
+  bond distance:    B2 1       B1 1                           1.786076
+  bond distance:    B2 1       B1 3                           1.786076
+  bond distance:    B2 2       B1 2                           1.786076
+  bond distance:    B2 2       B1 4                           1.786076
+  bond distance:    B2 3       B1 1                           1.786076
+  bond distance:    B2 3       B1 3                           1.786076
+  bond distance:    B2 3       B2 1                           1.786076
+  bond distance:    B2 4       B1 2                           1.786076
+  bond distance:    B2 4       B1 4                           1.786076
+  bond distance:    B2 4       B2 2                           1.786076
+  bond distance:    B3 1       B1 1                           1.786076
+  bond distance:    B3 1       B1 2                           1.786076
+  bond distance:    B3 1       B2 1                           1.786076
+  bond distance:    B3 1       B2 2                           1.786076
+  bond distance:    B3 2       B1 3                           1.786076
+  bond distance:    B3 2       B1 4                           1.786076
+  bond distance:    B3 2       B2 1                           1.786076
+  bond distance:    B3 2       B2 2                           1.786076
+  bond distance:    B3 2       B3 1                           1.786076
+  bond distance:    B3 3       B1 1                           1.786076
+  bond distance:    B3 3       B1 2                           1.786076
+  bond distance:    B3 3       B2 3                           1.786076
+  bond distance:    B3 3       B2 4                           1.786076
+  bond distance:    B3 4       B1 3                           1.786076
+  bond distance:    B3 4       B1 4                           1.786076
+  bond distance:    B3 4       B2 3                           1.786076
+  bond distance:    B3 4       B2 4                           1.786076
+  bond distance:    B3 4       B3 3                           1.786076
+  bond distance:    H1 1       B1 1                           1.190649
+  bond distance:    H1 2       B1 2                           1.190649
+  bond distance:    H1 3       B1 3                           1.190649
+  bond distance:    H1 4       B1 4                           1.190649
+  bond distance:    H2 1       B2 1                           1.190649
+  bond distance:    H2 2       B2 2                           1.190649
+  bond distance:    H2 3       B2 3                           1.190649
+  bond distance:    H2 4       B2 4                           1.190649
+  bond distance:    H3 1       B3 1                           1.190649
+  bond distance:    H3 2       B3 2                           1.190649
+  bond distance:    H3 3       B3 3                           1.190649
+  bond distance:    H3 4       B3 4                           1.190649
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       B2 1       B1 1       B1 2                 108.000
+  bond angle:       B2 3       B1 1       B1 2                 108.000
+  bond angle:       B2 3       B1 1       B2 1                  60.000
+  bond angle:       B3 1       B1 1       B1 2                  60.000
+  bond angle:       B3 1       B1 1       B2 1                  60.000
+  bond angle:       B3 1       B1 1       B2 3                 108.000
+  bond angle:       B3 3       B1 1       B1 2                  60.000
+  bond angle:       B3 3       B1 1       B2 1                 108.000
+  bond angle:       B3 3       B1 1       B2 3                  60.000
+  bond angle:       B3 3       B1 1       B3 1                 108.000
+  bond angle:       H1 1       B1 1       B1 2                 121.717
+  bond angle:       H1 1       B1 1       B2 1                 121.717
+  bond angle:       H1 1       B1 1       B2 3                 121.717
+  bond angle:       H1 1       B1 1       B3 1                 121.717
+  bond angle:       H1 1       B1 1       B3 3                 121.717
+  bond angle:       B2 2       B1 2       B1 1                 108.000
+  bond angle:       B2 4       B1 2       B1 1                 108.000
+  bond angle:       B2 4       B1 2       B2 2                  60.000
+  bond angle:       B3 1       B1 2       B1 1                  60.000
+  bond angle:       B3 1       B1 2       B2 2                  60.000
+  bond angle:       B3 1       B1 2       B2 4                 108.000
+  bond angle:       B3 3       B1 2       B1 1                  60.000
+  bond angle:       B3 3       B1 2       B2 2                 108.000
+  bond angle:       B3 3       B1 2       B2 4                  60.000
+  bond angle:       B3 3       B1 2       B3 1                 108.000
+  bond angle:       H1 2       B1 2       B1 1                 121.717
+  bond angle:       H1 2       B1 2       B2 2                 121.717
+  bond angle:       H1 2       B1 2       B2 4                 121.717
+  bond angle:       H1 2       B1 2       B3 1                 121.717
+  bond angle:       H1 2       B1 2       B3 3                 121.717
+  bond angle:       B2 1       B1 3       B1 4                 108.000
+  bond angle:       B2 3       B1 3       B1 4                 108.000
+  bond angle:       B2 3       B1 3       B2 1                  60.000
+  bond angle:       B3 2       B1 3       B1 4                  60.000
+  bond angle:       B3 2       B1 3       B2 1                  60.000
+  bond angle:       B3 2       B1 3       B2 3                 108.000
+  bond angle:       B3 4       B1 3       B1 4                  60.000
+  bond angle:       B3 4       B1 3       B2 1                 108.000
+  bond angle:       B3 4       B1 3       B2 3                  60.000
+  bond angle:       B3 4       B1 3       B3 2                 108.000
+  bond angle:       H1 3       B1 3       B1 4                 121.717
+  bond angle:       H1 3       B1 3       B2 1                 121.717
+  bond angle:       H1 3       B1 3       B2 3                 121.717
+  bond angle:       H1 3       B1 3       B3 2                 121.717
+  bond angle:       H1 3       B1 3       B3 4                 121.717
+  bond angle:       B2 2       B1 4       B1 3                 108.000
+  bond angle:       B2 4       B1 4       B1 3                 108.000
+  bond angle:       B2 4       B1 4       B2 2                  60.000
+  bond angle:       B3 2       B1 4       B1 3                  60.000
+  bond angle:       B3 2       B1 4       B2 2                  60.000
+  bond angle:       B3 2       B1 4       B2 4                 108.000
+  bond angle:       B3 4       B1 4       B1 3                  60.000
+  bond angle:       B3 4       B1 4       B2 2                 108.000
+  bond angle:       B3 4       B1 4       B2 4                  60.000
+  bond angle:       B3 4       B1 4       B3 2                 108.000
+  bond angle:       H1 4       B1 4       B1 3                 121.717
+  bond angle:       H1 4       B1 4       B2 2                 121.717
+  bond angle:       H1 4       B1 4       B2 4                 121.717
+  bond angle:       H1 4       B1 4       B3 2                 121.717
+  bond angle:       H1 4       B1 4       B3 4                 121.717
+  bond angle:       B1 3       B2 1       B1 1                 108.000
+  bond angle:       B2 3       B2 1       B1 1                  60.000
+  bond angle:       B2 3       B2 1       B1 3                  60.000
+  bond angle:       B3 1       B2 1       B1 1                  60.000
+  bond angle:       B3 1       B2 1       B1 3                 108.000
+  bond angle:       B3 1       B2 1       B2 3                 108.000
+  bond angle:       B3 2       B2 1       B1 1                 108.000
+  bond angle:       B3 2       B2 1       B1 3                  60.000
+  bond angle:       B3 2       B2 1       B2 3                 108.000
+  bond angle:       B3 2       B2 1       B3 1                  60.000
+  bond angle:       H2 1       B2 1       B1 1                 121.717
+  bond angle:       H2 1       B2 1       B1 3                 121.717
+  bond angle:       H2 1       B2 1       B2 3                 121.717
+  bond angle:       H2 1       B2 1       B3 1                 121.717
+  bond angle:       H2 1       B2 1       B3 2                 121.717
+  bond angle:       B1 4       B2 2       B1 2                 108.000
+  bond angle:       B2 4       B2 2       B1 2                  60.000
+  bond angle:       B2 4       B2 2       B1 4                  60.000
+  bond angle:       B3 1       B2 2       B1 2                  60.000
+  bond angle:       B3 1       B2 2       B1 4                 108.000
+  bond angle:       B3 1       B2 2       B2 4                 108.000
+  bond angle:       B3 2       B2 2       B1 2                 108.000
+  bond angle:       B3 2       B2 2       B1 4                  60.000
+  bond angle:       B3 2       B2 2       B2 4                 108.000
+  bond angle:       B3 2       B2 2       B3 1                  60.000
+  bond angle:       H2 2       B2 2       B1 2                 121.717
+  bond angle:       H2 2       B2 2       B1 4                 121.717
+  bond angle:       H2 2       B2 2       B2 4                 121.717
+  bond angle:       H2 2       B2 2       B3 1                 121.717
+  bond angle:       H2 2       B2 2       B3 2                 121.717
+  bond angle:       B1 3       B2 3       B1 1                 108.000
+  bond angle:       B2 1       B2 3       B1 1                  60.000
+  bond angle:       B2 1       B2 3       B1 3                  60.000
+  bond angle:       B3 3       B2 3       B1 1                  60.000
+  bond angle:       B3 3       B2 3       B1 3                 108.000
+  bond angle:       B3 3       B2 3       B2 1                 108.000
+  bond angle:       B3 4       B2 3       B1 1                 108.000
+  bond angle:       B3 4       B2 3       B1 3                  60.000
+  bond angle:       B3 4       B2 3       B2 1                 108.000
+  bond angle:       B3 4       B2 3       B3 3                  60.000
+  bond angle:       H2 3       B2 3       B1 1                 121.717
+  bond angle:       H2 3       B2 3       B1 3                 121.717
+  bond angle:       H2 3       B2 3       B2 1                 121.717
+  bond angle:       H2 3       B2 3       B3 3                 121.717
+  bond angle:       H2 3       B2 3       B3 4                 121.717
+  bond angle:       B1 4       B2 4       B1 2                 108.000
+  bond angle:       B2 2       B2 4       B1 2                  60.000
+  bond angle:       B2 2       B2 4       B1 4                  60.000
+  bond angle:       B3 3       B2 4       B1 2                  60.000
+  bond angle:       B3 3       B2 4       B1 4                 108.000
+  bond angle:       B3 3       B2 4       B2 2                 108.000
+  bond angle:       B3 4       B2 4       B1 2                 108.000
+  bond angle:       B3 4       B2 4       B1 4                  60.000
+  bond angle:       B3 4       B2 4       B2 2                 108.000
+  bond angle:       B3 4       B2 4       B3 3                  60.000
+  bond angle:       H2 4       B2 4       B1 2                 121.717
+  bond angle:       H2 4       B2 4       B1 4                 121.717
+  bond angle:       H2 4       B2 4       B2 2                 121.717
+  bond angle:       H2 4       B2 4       B3 3                 121.717
+  bond angle:       H2 4       B2 4       B3 4                 121.717
+  bond angle:       B1 2       B3 1       B1 1                  60.000
+  bond angle:       B2 1       B3 1       B1 1                  60.000
+  bond angle:       B2 1       B3 1       B1 2                 108.000
+  bond angle:       B2 2       B3 1       B1 1                 108.000
+  bond angle:       B2 2       B3 1       B1 2                  60.000
+  bond angle:       B2 2       B3 1       B2 1                 108.000
+  bond angle:       B3 2       B3 1       B1 1                 108.000
+  bond angle:       B3 2       B3 1       B1 2                 108.000
+  bond angle:       B3 2       B3 1       B2 1                  60.000
+  bond angle:       B3 2       B3 1       B2 2                  60.000
+  bond angle:       H3 1       B3 1       B1 1                 121.717
+  bond angle:       H3 1       B3 1       B1 2                 121.717
+  bond angle:       H3 1       B3 1       B2 1                 121.717
+  bond angle:       H3 1       B3 1       B2 2                 121.717
+  bond angle:       H3 1       B3 1       B3 2                 121.717
+  bond angle:       B1 4       B3 2       B1 3                  60.000
+  bond angle:       B2 1       B3 2       B1 3                  60.000
+  bond angle:       B2 1       B3 2       B1 4                 108.000
+  bond angle:       B2 2       B3 2       B1 3                 108.000
+  bond angle:       B2 2       B3 2       B1 4                  60.000
+  bond angle:       B2 2       B3 2       B2 1                 108.000
+  bond angle:       B3 1       B3 2       B1 3                 108.000
+  bond angle:       B3 1       B3 2       B1 4                 108.000
+  bond angle:       B3 1       B3 2       B2 1                  60.000
+  bond angle:       B3 1       B3 2       B2 2                  60.000
+  bond angle:       H3 2       B3 2       B1 3                 121.717
+  bond angle:       H3 2       B3 2       B1 4                 121.717
+  bond angle:       H3 2       B3 2       B2 1                 121.717
+  bond angle:       H3 2       B3 2       B2 2                 121.717
+  bond angle:       H3 2       B3 2       B3 1                 121.717
+  bond angle:       B1 2       B3 3       B1 1                  60.000
+  bond angle:       B2 3       B3 3       B1 1                  60.000
+  bond angle:       B2 3       B3 3       B1 2                 108.000
+  bond angle:       B2 4       B3 3       B1 1                 108.000
+  bond angle:       B2 4       B3 3       B1 2                  60.000
+  bond angle:       B2 4       B3 3       B2 3                 108.000
+  bond angle:       B3 4       B3 3       B1 1                 108.000
+  bond angle:       B3 4       B3 3       B1 2                 108.000
+  bond angle:       B3 4       B3 3       B2 3                  60.000
+  bond angle:       B3 4       B3 3       B2 4                  60.000
+  bond angle:       H3 3       B3 3       B1 1                 121.717
+  bond angle:       H3 3       B3 3       B1 2                 121.717
+  bond angle:       H3 3       B3 3       B2 3                 121.717
+  bond angle:       H3 3       B3 3       B2 4                 121.717
+  bond angle:       H3 3       B3 3       B3 4                 121.717
+  bond angle:       B1 4       B3 4       B1 3                  60.000
+  bond angle:       B2 3       B3 4       B1 3                  60.000
+  bond angle:       B2 3       B3 4       B1 4                 108.000
+  bond angle:       B2 4       B3 4       B1 3                 108.000
+  bond angle:       B2 4       B3 4       B1 4                  60.000
+  bond angle:       B2 4       B3 4       B2 3                 108.000
+  bond angle:       B3 3       B3 4       B1 3                 108.000
+  bond angle:       B3 3       B3 4       B1 4                 108.000
+  bond angle:       B3 3       B3 4       B2 3                  60.000
+  bond angle:       B3 3       B3 4       B2 4                  60.000
+  bond angle:       H3 4       B3 4       B1 3                 121.717
+  bond angle:       H3 4       B3 4       B1 4                 121.717
+  bond angle:       H3 4       B3 4       B2 3                 121.717
+  bond angle:       H3 4       B3 4       B2 4                 121.717
+  bond angle:       H3 4       B3 4       B3 3                 121.717
+
+
+
+   Nuclear repulsion energy                          :  526.346728846038 Hartree
+
+                       * Total mass:   144.205560 amu
+                       * Natural abundance:   6.963 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.000000000000000
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.000000000000000
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:   60
+     1  L B1  1 s        2  L B1  2 s        3  L B1  3 s        4  L B1  4 s        5  L B1  1 px       6  L B1  1 py  
+     7  L B1  1 pz       8  L B1  2 px       9  L B1  2 py      10  L B1  2 pz      11  L B1  3 px      12  L B1  3 py  
+    13  L B1  3 pz      14  L B1  4 px      15  L B1  4 py      16  L B1  4 pz      17  L B2  1 s       18  L B2  2 s   
+    19  L B2  3 s       20  L B2  4 s       21  L B2  1 px      22  L B2  1 py      23  L B2  1 pz      24  L B2  2 px  
+    25  L B2  2 py      26  L B2  2 pz      27  L B2  3 px      28  L B2  3 py      29  L B2  3 pz      30  L B2  4 px  
+    31  L B2  4 py      32  L B2  4 pz      33  L B3  1 s       34  L B3  2 s       35  L B3  3 s       36  L B3  4 s   
+    37  L B3  1 px      38  L B3  1 py      39  L B3  1 pz      40  L B3  2 px      41  L B3  2 py      42  L B3  2 pz  
+    43  L B3  3 px      44  L B3  3 py      45  L B3  3 pz      46  L B3  4 px      47  L B3  4 py      48  L B3  4 pz  
+    49  L H1  1 s       50  L H1  2 s       51  L H1  3 s       52  L H1  4 s       53  L H2  1 s       54  L H2  2 s   
+    55  L H2  3 s       56  L H2  4 s       57  L H3  1 s       58  L H3  2 s       59  L H3  3 s       60  L H3  4 s   
+   * Small components:  156
+    61  S B1  1 s       62  S B1  2 s       63  S B1  3 s       64  S B1  4 s       65  S B1  1 px      66  S B1  1 py  
+    67  S B1  1 pz      68  S B1  2 px      69  S B1  2 py      70  S B1  2 pz      71  S B1  3 px      72  S B1  3 py  
+    73  S B1  3 pz      74  S B1  4 px      75  S B1  4 py      76  S B1  4 pz      77  S B1  1 dxx     78  S B1  1 dxy 
+    79  S B1  1 dxz     80  S B1  1 dyy     81  S B1  1 dyz     82  S B1  1 dzz     83  S B1  2 dxx     84  S B1  2 dxy 
+    85  S B1  2 dxz     86  S B1  2 dyy     87  S B1  2 dyz     88  S B1  2 dzz     89  S B1  3 dxx     90  S B1  3 dxy 
+    91  S B1  3 dxz     92  S B1  3 dyy     93  S B1  3 dyz     94  S B1  3 dzz     95  S B1  4 dxx     96  S B1  4 dxy 
+    97  S B1  4 dxz     98  S B1  4 dyy     99  S B1  4 dyz    100  S B1  4 dzz    101  S B2  1 s      102  S B2  2 s   
+   103  S B2  3 s      104  S B2  4 s      105  S B2  1 px     106  S B2  1 py     107  S B2  1 pz     108  S B2  2 px  
+   109  S B2  2 py     110  S B2  2 pz     111  S B2  3 px     112  S B2  3 py     113  S B2  3 pz     114  S B2  4 px  
+   115  S B2  4 py     116  S B2  4 pz     117  S B2  1 dxx    118  S B2  1 dxy    119  S B2  1 dxz    120  S B2  1 dyy 
+   121  S B2  1 dyz    122  S B2  1 dzz    123  S B2  2 dxx    124  S B2  2 dxy    125  S B2  2 dxz    126  S B2  2 dyy 
+   127  S B2  2 dyz    128  S B2  2 dzz    129  S B2  3 dxx    130  S B2  3 dxy    131  S B2  3 dxz    132  S B2  3 dyy 
+   133  S B2  3 dyz    134  S B2  3 dzz    135  S B2  4 dxx    136  S B2  4 dxy    137  S B2  4 dxz    138  S B2  4 dyy 
+   139  S B2  4 dyz    140  S B2  4 dzz    141  S B3  1 s      142  S B3  2 s      143  S B3  3 s      144  S B3  4 s   
+   145  S B3  1 px     146  S B3  1 py     147  S B3  1 pz     148  S B3  2 px     149  S B3  2 py     150  S B3  2 pz  
+   151  S B3  3 px     152  S B3  3 py     153  S B3  3 pz     154  S B3  4 px     155  S B3  4 py     156  S B3  4 pz  
+   157  S B3  1 dxx    158  S B3  1 dxy    159  S B3  1 dxz    160  S B3  1 dyy    161  S B3  1 dyz    162  S B3  1 dzz 
+   163  S B3  2 dxx    164  S B3  2 dxy    165  S B3  2 dxz    166  S B3  2 dyy    167  S B3  2 dyz    168  S B3  2 dzz 
+   169  S B3  3 dxx    170  S B3  3 dxy    171  S B3  3 dxz    172  S B3  3 dyy    173  S B3  3 dyz    174  S B3  3 dzz 
+   175  S B3  4 dxx    176  S B3  4 dxy    177  S B3  4 dxz    178  S B3  4 dyy    179  S B3  4 dyz    180  S B3  4 dzz 
+   181  S H1  1 px     182  S H1  1 py     183  S H1  1 pz     184  S H1  2 px     185  S H1  2 py     186  S H1  2 pz  
+   187  S H1  3 px     188  S H1  3 py     189  S H1  3 pz     190  S H1  4 px     191  S H1  4 py     192  S H1  4 pz  
+   193  S H2  1 px     194  S H2  1 py     195  S H2  1 pz     196  S H2  2 px     197  S H2  2 py     198  S H2  2 pz  
+   199  S H2  3 px     200  S H2  3 py     201  S H2  3 pz     202  S H2  4 px     203  S H2  4 py     204  S H2  4 pz  
+   205  S H3  1 px     206  S H3  1 py     207  S H3  1 pz     208  S H3  2 px     209  S H3  2 py     210  S H3  2 pz  
+   211  S H3  3 px     212  S H3  3 py     213  S H3  3 pz     214  S H3  4 px     215  S H3  4 py     216  S H3  4 pz  
+
+
+                                GETLAB: SO-labels
+                                -----------------
+
+   * Large components:   60
+     1  L Ag B1 s        2  L Ag B1 px       3  L Ag B1 py       4  L Ag B2 s        5  L Ag B2 px       6  L Ag B2 pz  
+     7  L Ag B3 s        8  L Ag B3 py       9  L Ag B3 pz      10  L Ag H1 s       11  L Ag H2 s       12  L Ag H3 s   
+    13  L B3uB1 s       14  L B3uB1 px      15  L B3uB1 py      16  L B3uB2 s       17  L B3uB2 px      18  L B3uB2 pz  
+    19  L B3uB3 px      20  L B3uH1 s       21  L B3uH2 s       22  L B2uB1 s       23  L B2uB1 px      24  L B2uB1 py  
+    25  L B2uB2 py      26  L B2uB3 s       27  L B2uB3 py      28  L B2uB3 pz      29  L B2uH1 s       30  L B2uH3 s   
+    31  L B1gB1 s       32  L B1gB1 px      33  L B1gB1 py      34  L B1gB2 py      35  L B1gB3 px      36  L B1gH1 s   
+    37  L B1uB1 pz      38  L B1uB2 s       39  L B1uB2 px      40  L B1uB2 pz      41  L B1uB3 s       42  L B1uB3 py  
+    43  L B1uB3 pz      44  L B1uH2 s       45  L B1uH3 s       46  L B2gB1 pz      47  L B2gB2 s       48  L B2gB2 px  
+    49  L B2gB2 pz      50  L B2gB3 px      51  L B2gH2 s       52  L B3gB1 pz      53  L B3gB2 py      54  L B3gB3 s   
+    55  L B3gB3 py      56  L B3gB3 pz      57  L B3gH3 s       58  L Au B1 pz      59  L Au B2 py      60  L Au B3 px  
+   * Small components:  156
+    61  S Ag B1 s       62  S Ag B1 px      63  S Ag B1 py      64  S Ag B1 dxx     65  S Ag B1 dxy     66  S Ag B1 dyy 
+    67  S Ag B1 dzz     68  S Ag B2 s       69  S Ag B2 px      70  S Ag B2 pz      71  S Ag B2 dxx     72  S Ag B2 dxz 
+    73  S Ag B2 dyy     74  S Ag B2 dzz     75  S Ag B3 s       76  S Ag B3 py      77  S Ag B3 pz      78  S Ag B3 dxx 
+    79  S Ag B3 dyy     80  S Ag B3 dyz     81  S Ag B3 dzz     82  S Ag H1 px      83  S Ag H1 py      84  S Ag H2 px  
+    85  S Ag H2 pz      86  S Ag H3 py      87  S Ag H3 pz      88  S B3uB1 s       89  S B3uB1 px      90  S B3uB1 py  
+    91  S B3uB1 dxx     92  S B3uB1 dxy     93  S B3uB1 dyy     94  S B3uB1 dzz     95  S B3uB2 s       96  S B3uB2 px  
+    97  S B3uB2 pz      98  S B3uB2 dxx     99  S B3uB2 dxz    100  S B3uB2 dyy    101  S B3uB2 dzz    102  S B3uB3 px  
+   103  S B3uB3 dxy    104  S B3uB3 dxz    105  S B3uH1 px     106  S B3uH1 py     107  S B3uH2 px     108  S B3uH2 pz  
+   109  S B3uH3 px     110  S B2uB1 s      111  S B2uB1 px     112  S B2uB1 py     113  S B2uB1 dxx    114  S B2uB1 dxy 
+   115  S B2uB1 dyy    116  S B2uB1 dzz    117  S B2uB2 py     118  S B2uB2 dxy    119  S B2uB2 dyz    120  S B2uB3 s   
+   121  S B2uB3 py     122  S B2uB3 pz     123  S B2uB3 dxx    124  S B2uB3 dyy    125  S B2uB3 dyz    126  S B2uB3 dzz 
+   127  S B2uH1 px     128  S B2uH1 py     129  S B2uH2 py     130  S B2uH3 py     131  S B2uH3 pz     132  S B1gB1 s   
+   133  S B1gB1 px     134  S B1gB1 py     135  S B1gB1 dxx    136  S B1gB1 dxy    137  S B1gB1 dyy    138  S B1gB1 dzz 
+   139  S B1gB2 py     140  S B1gB2 dxy    141  S B1gB2 dyz    142  S B1gB3 px     143  S B1gB3 dxy    144  S B1gB3 dxz 
+   145  S B1gH1 px     146  S B1gH1 py     147  S B1gH2 py     148  S B1gH3 px     149  S B1uB1 pz     150  S B1uB1 dxz 
+   151  S B1uB1 dyz    152  S B1uB2 s      153  S B1uB2 px     154  S B1uB2 pz     155  S B1uB2 dxx    156  S B1uB2 dxz 
+   157  S B1uB2 dyy    158  S B1uB2 dzz    159  S B1uB3 s      160  S B1uB3 py     161  S B1uB3 pz     162  S B1uB3 dxx 
+   163  S B1uB3 dyy    164  S B1uB3 dyz    165  S B1uB3 dzz    166  S B1uH1 pz     167  S B1uH2 px     168  S B1uH2 pz  
+   169  S B1uH3 py     170  S B1uH3 pz     171  S B2gB1 pz     172  S B2gB1 dxz    173  S B2gB1 dyz    174  S B2gB2 s   
+   175  S B2gB2 px     176  S B2gB2 pz     177  S B2gB2 dxx    178  S B2gB2 dxz    179  S B2gB2 dyy    180  S B2gB2 dzz 
+   181  S B2gB3 px     182  S B2gB3 dxy    183  S B2gB3 dxz    184  S B2gH1 pz     185  S B2gH2 px     186  S B2gH2 pz  
+   187  S B2gH3 px     188  S B3gB1 pz     189  S B3gB1 dxz    190  S B3gB1 dyz    191  S B3gB2 py     192  S B3gB2 dxy 
+   193  S B3gB2 dyz    194  S B3gB3 s      195  S B3gB3 py     196  S B3gB3 pz     197  S B3gB3 dxx    198  S B3gB3 dyy 
+   199  S B3gB3 dyz    200  S B3gB3 dzz    201  S B3gH1 pz     202  S B3gH2 py     203  S B3gH3 py     204  S B3gH3 pz  
+   205  S Au B1 pz     206  S Au B1 dxz    207  S Au B1 dyz    208  S Au B2 py     209  S Au B2 dxy    210  S Au B2 dyz 
+   211  S Au B3 px     212  S Au B3 dxy    213  S Au B3 dxz    214  S Au H1 pz     215  S Au H2 py     216  S Au H3 px  
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          114    92    92    70    92    70    70    48
+  Number of large orbitals in each symmetry:     15    11    11     7    11     7     7     3
+  Number of small orbitals in each symmetry:     99    81    81    63    81    63    63    45
+
+* Large component functions
+
+  Symmetry  Ag ( 1)
+
+        2 functions:    B1 s   1+2+3+4
+        1 functions:    B1 px  1-2+3-4
+        1 functions:    B1 py  1+2-3-4
+        2 functions:    B2 s   1+2+3+4
+        1 functions:    B2 px  1-2+3-4
+        1 functions:    B2 pz  1+2-3-4
+        2 functions:    B3 s   1+2+3+4
+        1 functions:    B3 py  1-2+3-4
+        1 functions:    B3 pz  1+2-3-4
+        1 functions:    H1 s   1+2+3+4
+        1 functions:    H2 s   1+2+3+4
+        1 functions:    H3 s   1+2+3+4
+
+  Symmetry  B3u( 2)
+
+        2 functions:    B1 s   1-2+3-4
+        1 functions:    B1 px  1+2+3+4
+        1 functions:    B1 py  1-2-3+4
+        2 functions:    B2 s   1-2+3-4
+        1 functions:    B2 px  1+2+3+4
+        1 functions:    B2 pz  1-2-3+4
+        1 functions:    B3 px  1+2+3+4
+        1 functions:    H1 s   1-2+3-4
+        1 functions:    H2 s   1-2+3-4
+
+  Symmetry  B2u( 3)
+
+        2 functions:    B1 s   1+2-3-4
+        1 functions:    B1 px  1-2-3+4
+        1 functions:    B1 py  1+2+3+4
+        1 functions:    B2 py  1+2+3+4
+        2 functions:    B3 s   1-2+3-4
+        1 functions:    B3 py  1+2+3+4
+        1 functions:    B3 pz  1-2-3+4
+        1 functions:    H1 s   1+2-3-4
+        1 functions:    H3 s   1-2+3-4
+
+  Symmetry  B1g( 4)
+
+        2 functions:    B1 s   1-2-3+4
+        1 functions:    B1 px  1+2-3-4
+        1 functions:    B1 py  1-2+3-4
+        1 functions:    B2 py  1-2+3-4
+        1 functions:    B3 px  1-2+3-4
+        1 functions:    H1 s   1-2-3+4
+
+  Symmetry  B1u( 5)
+
+        1 functions:    B1 pz  1+2+3+4
+        2 functions:    B2 s   1+2-3-4
+        1 functions:    B2 px  1-2-3+4
+        1 functions:    B2 pz  1+2+3+4
+        2 functions:    B3 s   1+2-3-4
+        1 functions:    B3 py  1-2-3+4
+        1 functions:    B3 pz  1+2+3+4
+        1 functions:    H2 s   1+2-3-4
+        1 functions:    H3 s   1+2-3-4
+
+  Symmetry  B2g( 6)
+
+        1 functions:    B1 pz  1-2+3-4
+        2 functions:    B2 s   1-2-3+4
+        1 functions:    B2 px  1+2-3-4
+        1 functions:    B2 pz  1-2+3-4
+        1 functions:    B3 px  1+2-3-4
+        1 functions:    H2 s   1-2-3+4
+
+  Symmetry  B3g( 7)
+
+        1 functions:    B1 pz  1+2-3-4
+        1 functions:    B2 py  1+2-3-4
+        2 functions:    B3 s   1-2-3+4
+        1 functions:    B3 py  1+2-3-4
+        1 functions:    B3 pz  1-2+3-4
+        1 functions:    H3 s   1-2-3+4
+
+  Symmetry  Au ( 8)
+
+        1 functions:    B1 pz  1-2-3+4
+        1 functions:    B2 py  1-2-3+4
+        1 functions:    B3 px  1-2-3+4
+
+* Small component functions
+
+  Symmetry  Ag ( 1)
+
+        3 functions:    B1 s   1+2+3+4
+        6 functions:    B1 px  1-2+3-4
+        6 functions:    B1 py  1+2-3-4
+        3 functions:    B1 dxx 1+2+3+4
+        3 functions:    B1 dxy 1-2-3+4
+        3 functions:    B1 dyy 1+2+3+4
+        3 functions:    B1 dzz 1+2+3+4
+        3 functions:    B2 s   1+2+3+4
+        6 functions:    B2 px  1-2+3-4
+        6 functions:    B2 pz  1+2-3-4
+        3 functions:    B2 dxx 1+2+3+4
+        3 functions:    B2 dxz 1-2-3+4
+        3 functions:    B2 dyy 1+2+3+4
+        3 functions:    B2 dzz 1+2+3+4
+        3 functions:    B3 s   1+2+3+4
+        6 functions:    B3 py  1-2+3-4
+        6 functions:    B3 pz  1+2-3-4
+        3 functions:    B3 dxx 1+2+3+4
+        3 functions:    B3 dyy 1+2+3+4
+        3 functions:    B3 dyz 1-2-3+4
+        3 functions:    B3 dzz 1+2+3+4
+        3 functions:    H1 px  1-2+3-4
+        3 functions:    H1 py  1+2-3-4
+        3 functions:    H2 px  1-2+3-4
+        3 functions:    H2 pz  1+2-3-4
+        3 functions:    H3 py  1-2+3-4
+        3 functions:    H3 pz  1+2-3-4
+
+  Symmetry  B3u( 2)
+
+        3 functions:    B1 s   1-2+3-4
+        6 functions:    B1 px  1+2+3+4
+        6 functions:    B1 py  1-2-3+4
+        3 functions:    B1 dxx 1-2+3-4
+        3 functions:    B1 dxy 1+2-3-4
+        3 functions:    B1 dyy 1-2+3-4
+        3 functions:    B1 dzz 1-2+3-4
+        3 functions:    B2 s   1-2+3-4
+        6 functions:    B2 px  1+2+3+4
+        6 functions:    B2 pz  1-2-3+4
+        3 functions:    B2 dxx 1-2+3-4
+        3 functions:    B2 dxz 1+2-3-4
+        3 functions:    B2 dyy 1-2+3-4
+        3 functions:    B2 dzz 1-2+3-4
+        6 functions:    B3 px  1+2+3+4
+        3 functions:    B3 dxy 1-2+3-4
+        3 functions:    B3 dxz 1+2-3-4
+        3 functions:    H1 px  1+2+3+4
+        3 functions:    H1 py  1-2-3+4
+        3 functions:    H2 px  1+2+3+4
+        3 functions:    H2 pz  1-2-3+4
+        3 functions:    H3 px  1+2+3+4
+
+  Symmetry  B2u( 3)
+
+        3 functions:    B1 s   1+2-3-4
+        6 functions:    B1 px  1-2-3+4
+        6 functions:    B1 py  1+2+3+4
+        3 functions:    B1 dxx 1+2-3-4
+        3 functions:    B1 dxy 1-2+3-4
+        3 functions:    B1 dyy 1+2-3-4
+        3 functions:    B1 dzz 1+2-3-4
+        6 functions:    B2 py  1+2+3+4
+        3 functions:    B2 dxy 1-2+3-4
+        3 functions:    B2 dyz 1+2-3-4
+        3 functions:    B3 s   1-2+3-4
+        6 functions:    B3 py  1+2+3+4
+        6 functions:    B3 pz  1-2-3+4
+        3 functions:    B3 dxx 1-2+3-4
+        3 functions:    B3 dyy 1-2+3-4
+        3 functions:    B3 dyz 1+2-3-4
+        3 functions:    B3 dzz 1-2+3-4
+        3 functions:    H1 px  1-2-3+4
+        3 functions:    H1 py  1+2+3+4
+        3 functions:    H2 py  1+2+3+4
+        3 functions:    H3 py  1+2+3+4
+        3 functions:    H3 pz  1-2-3+4
+
+  Symmetry  B1g( 4)
+
+        3 functions:    B1 s   1-2-3+4
+        6 functions:    B1 px  1+2-3-4
+        6 functions:    B1 py  1-2+3-4
+        3 functions:    B1 dxx 1-2-3+4
+        3 functions:    B1 dxy 1+2+3+4
+        3 functions:    B1 dyy 1-2-3+4
+        3 functions:    B1 dzz 1-2-3+4
+        6 functions:    B2 py  1-2+3-4
+        3 functions:    B2 dxy 1+2+3+4
+        3 functions:    B2 dyz 1-2-3+4
+        6 functions:    B3 px  1-2+3-4
+        3 functions:    B3 dxy 1+2+3+4
+        3 functions:    B3 dxz 1-2-3+4
+        3 functions:    H1 px  1+2-3-4
+        3 functions:    H1 py  1-2+3-4
+        3 functions:    H2 py  1-2+3-4
+        3 functions:    H3 px  1-2+3-4
+
+  Symmetry  B1u( 5)
+
+        6 functions:    B1 pz  1+2+3+4
+        3 functions:    B1 dxz 1-2+3-4
+        3 functions:    B1 dyz 1+2-3-4
+        3 functions:    B2 s   1+2-3-4
+        6 functions:    B2 px  1-2-3+4
+        6 functions:    B2 pz  1+2+3+4
+        3 functions:    B2 dxx 1+2-3-4
+        3 functions:    B2 dxz 1-2+3-4
+        3 functions:    B2 dyy 1+2-3-4
+        3 functions:    B2 dzz 1+2-3-4
+        3 functions:    B3 s   1+2-3-4
+        6 functions:    B3 py  1-2-3+4
+        6 functions:    B3 pz  1+2+3+4
+        3 functions:    B3 dxx 1+2-3-4
+        3 functions:    B3 dyy 1+2-3-4
+        3 functions:    B3 dyz 1-2+3-4
+        3 functions:    B3 dzz 1+2-3-4
+        3 functions:    H1 pz  1+2+3+4
+        3 functions:    H2 px  1-2-3+4
+        3 functions:    H2 pz  1+2+3+4
+        3 functions:    H3 py  1-2-3+4
+        3 functions:    H3 pz  1+2+3+4
+
+  Symmetry  B2g( 6)
+
+        6 functions:    B1 pz  1-2+3-4
+        3 functions:    B1 dxz 1+2+3+4
+        3 functions:    B1 dyz 1-2-3+4
+        3 functions:    B2 s   1-2-3+4
+        6 functions:    B2 px  1+2-3-4
+        6 functions:    B2 pz  1-2+3-4
+        3 functions:    B2 dxx 1-2-3+4
+        3 functions:    B2 dxz 1+2+3+4
+        3 functions:    B2 dyy 1-2-3+4
+        3 functions:    B2 dzz 1-2-3+4
+        6 functions:    B3 px  1+2-3-4
+        3 functions:    B3 dxy 1-2-3+4
+        3 functions:    B3 dxz 1+2+3+4
+        3 functions:    H1 pz  1-2+3-4
+        3 functions:    H2 px  1+2-3-4
+        3 functions:    H2 pz  1-2+3-4
+        3 functions:    H3 px  1+2-3-4
+
+  Symmetry  B3g( 7)
+
+        6 functions:    B1 pz  1+2-3-4
+        3 functions:    B1 dxz 1-2-3+4
+        3 functions:    B1 dyz 1+2+3+4
+        6 functions:    B2 py  1+2-3-4
+        3 functions:    B2 dxy 1-2-3+4
+        3 functions:    B2 dyz 1+2+3+4
+        3 functions:    B3 s   1-2-3+4
+        6 functions:    B3 py  1+2-3-4
+        6 functions:    B3 pz  1-2+3-4
+        3 functions:    B3 dxx 1-2-3+4
+        3 functions:    B3 dyy 1-2-3+4
+        3 functions:    B3 dyz 1+2+3+4
+        3 functions:    B3 dzz 1-2-3+4
+        3 functions:    H1 pz  1+2-3-4
+        3 functions:    H2 py  1+2-3-4
+        3 functions:    H3 py  1+2-3-4
+        3 functions:    H3 pz  1-2+3-4
+
+  Symmetry  Au ( 8)
+
+        6 functions:    B1 pz  1-2-3+4
+        3 functions:    B1 dxz 1+2-3-4
+        3 functions:    B1 dyz 1-2+3-4
+        6 functions:    B2 py  1-2-3+4
+        3 functions:    B2 dxy 1+2-3-4
+        3 functions:    B2 dyz 1-2+3-4
+        6 functions:    B3 px  1-2-3+4
+        3 functions:    B3 dxy 1+2-3-4
+        3 functions:    B3 dxz 1-2+3-4
+        3 functions:    H1 pz  1-2-3+4
+        3 functions:    H2 py  1-2-3+4
+        3 functions:    H3 px  1-2-3+4
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+
+ One-electron operator origins:
+ - General operator origin (a.u.)       :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Magnetic gauge origin (a.u.)         :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Dipole (and multipole) origin (a.u.) :   0.000000000000000   0.000000000000000   0.000000000000000
+ * Print level:    0
+ * Levy-Leblond Hamiltonian
+   - Spin-orbit interactions neglected
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     0
+   - SS-integrals:     0
+   - GT-integrals:     0
+
+
+ Information about the restricted kinetic balance scheme:
+ * Default RKB projection:
+   1: Pre-projection in scalar basis
+   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+
+ * Initial Automatic occupation based on:
+   Total charge of atoms =  72
+   Charge of molecule    =   0
+   i.e. no. of electrons =  72
+===========================================================================
+ *SCF: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 2
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                    All dipole components are zero by symmetry
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   Ag    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.92E+00
+   L   B1g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.92E+00
+   L   B2g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.92E+00
+   L   B3g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.92E+00
+   S   B3u   * Deleted:          6(Proj:          6, Lindep:          0) Smin: 0.76E-03
+   S   B2u   * Deleted:          6(Proj:          6, Lindep:          0) Smin: 0.76E-03
+   S   B1u   * Deleted:          6(Proj:          6, Lindep:          0) Smin: 0.76E-03
+   S   Au    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.73E-03
+   L   B3u   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.89E+00
+   L   B2u   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.89E+00
+   L   B1u   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.89E+00
+   L   Au    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.19E+01
+   S   Ag    * Deleted:          9(Proj:          9, Lindep:          0) Smin: 0.12E-02
+   S   B1g   * Deleted:          3(Proj:          3, Lindep:          0) Smin: 0.93E-04
+   S   B2g   * Deleted:          3(Proj:          3, Lindep:          0) Smin: 0.93E-04
+   S   B3g   * Deleted:          3(Proj:          3, Lindep:          0) Smin: 0.93E-04
+
+
+                                Output from MODHAM
+                                ------------------
+
+ * All positronic solutions deleted !
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+                                   Irrep 1 Irrep 2   Sum
+No. of electronic orbitals (NESH):    36      36      72
+No. of positronic orbitals (NPSH):     0       0       0
+Total no. of orbitals      (NORB):    36      36      72
+
+ * Closing HDF5 checkpoint file 
+    - Required data set /result/wavefunctions/scf/energy is missing
+    - Required data set /result/wavefunctions/scf/mobasis/eigenvalues is missing
+    - Required data set /result/wavefunctions/scf/mobasis/n_basis is missing
+    - Required data set /result/wavefunctions/scf/mobasis/n_fsym is missing
+    - Required data set /result/wavefunctions/scf/mobasis/n_mo is missing
+    - Required data set /result/wavefunctions/scf/mobasis/nz is missing
+    - Required data set /result/wavefunctions/scf/mobasis/orbitals is missing
+    - Checkpoint file does not contains all required data, can not be used for restarts
+    - Checkpoint file closed
+
+*****************************************************
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+
+ 
+     Date and time (Linux)  : Wed Nov 25 14:28:50 2026
+     Host name              : lpqlx134                                
+
+>>>> Node 0, utime: 0, stime: 0, minflt: 11236, majflt: 0, nvcsw: 0, nivcsw: 0, maxrss: 56708
+>>>> Total WALL time used in DIRAC: 1s
+  
+  Dynamical Memory Usage Summary for Master
+  
+  Mean allocation size (Mb) :       130.60
+  
+  Largest          10  allocations
+  
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
+        3.20 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
+        1.60 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.76 Mb at subroutine __allocator_track_if_MOD_allocator_registe for PAMINP WORK array                         
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTREP in XPLDEF                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
+  
+  Peak memory usage:       491.48 MB
+  Peak memory usage:        0.480 GB
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
+              for variable   : buf in butobs                             
+  
+ MEMGET high-water mark:    0.00 MB
+
+*****************************************************
+DIRAC pam run in /tmp/claude-1000/-home-saue-Dirac/f2fd3fc1-f48c-445d-9c2c-7572f2297fb8/scratchpad/ref
