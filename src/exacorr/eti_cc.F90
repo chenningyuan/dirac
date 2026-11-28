@@ -70,7 +70,7 @@ module eti_cc
          type(tensor_t) :: native_t1, native_t2
          type(eti_comm_tens_t) :: paper_comm
          type(cmo) :: cspinor
-         real(8) :: paper_energy
+         real(8) :: paper_energy, paper_triples_energy
          integer, allocatable :: mo_all(:)
          character(len=512) :: qcbench_record_dir
          integer :: qcbench_record_length, qcbench_record_status
@@ -405,6 +405,11 @@ module eti_cc
            end if
            call qcbench_x2camf_ccsd_energy(comm_t,int_t,paper_energy)
            write(*,*) ' X2CAMF paper-route correlation energy = ',paper_energy
+           if (do_perturbative .and. perturbative_scheme.eq.30) then
+             call qcbench_x2camf_ccsd_t_energy(comm_t,chol_mo,eps_occ,eps_vir, &
+                                                nocc,nvir,paper_triples_energy)
+             write(*,*) ' X2CAMF paper-route (T) energy = ',paper_triples_energy
+           end if
            call qcbench_record_residual(native_r1,native_r2)
            ierr=destroy_tensor_t(native_t1)
            ierr=destroy_tensor_t(native_t2)
@@ -438,6 +443,9 @@ module eti_cc
               else
                 call t3_energy (pert_energy,eps_occ,eps_vir, comm_t%t1,comm_t%t2,comm_t%fov, &
                            int_t%ooov,int_t%vovv,int_t%oovv,exa_input%print_level)
+              end if
+              if (exa_input%moint_scheme.eq.43) then
+                call qcbench_record_triples(pert_energy(1)+pert_energy(2))
               end if
               call print_date('-End- Triples')
            end if

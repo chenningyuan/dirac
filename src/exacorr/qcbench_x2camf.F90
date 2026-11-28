@@ -1,5 +1,5 @@
 module qcbench_x2camf
-! Canonical X2CAMF-CCSD paper binaries and operand recording for qcbench.
+! Canonical X2CAMF-CCSD/CCSD(T) paper binaries and operand recording for qcbench.
 
         use tensor_algebra
         use exacorr_tensor_interface
@@ -16,7 +16,9 @@ module qcbench_x2camf
         public qcbench_pack_coefficients
         public qcbench_x2camf_ccsd_residual
         public qcbench_x2camf_ccsd_energy
+        public qcbench_x2camf_ccsd_t_energy
         public qcbench_record_residual
+        public qcbench_record_triples
 
         character(len=512) :: record_dir = ''
         integer :: record_calls = 0
@@ -42,8 +44,12 @@ module qcbench_x2camf
             value = '-1/2'
           case ('energy.tau_oovv')
             value = '+1/4'
+          case ('T.energy.w_v')
+            value = '+1/36'
           case ('wmbej.t1_oo','wmbej.tau','wmbej.cd_outer_m','fae.cd_outer_o', &
-                't1.foo','t1.cd_outer','t1.ovov','t2.foo','t2.last_bare','t2.ao_last')
+                't1.foo','t1.cd_outer','t1.ovov','t2.foo','t2.last_bare','t2.ao_last', &
+                'T.connected.cd_exchange_outer','T.connected.occupied', &
+                'T.integral.bcjk_exchange','T.integral.jkma_exchange')
             value = '-1'
           case default
             value = '+1'
@@ -763,5 +769,169 @@ module qcbench_x2camf
           ierr = destroy_tensor_t(result)
           ierr = destroy_tensor_t(unit)
         end subroutine qcbench_x2camf_ccsd_energy
+
+        subroutine qcbench_x2camf_ccsd_t_energy(comm_t, chol_mo, eps_occ, eps_vir, nocc, nvir, energy)
+          type(eti_comm_tens_t), intent(inout) :: comm_t
+          type(tensor_t), intent(inout) :: chol_mo
+          real(8), intent(in) :: eps_occ(:), eps_vir(:)
+          integer, intent(in) :: nocc, nvir
+          real(8), intent(out) :: energy
+          type(tensor_t) :: t1, t2, unit, loo, lov, lvo, lvv
+          type(tensor_t) :: direct_inner, direct_outer, exchange_inner, exchange_outer
+          type(tensor_t) :: e_jkma_direct, e_jkma_exchange, e_jkma, e_jkma_conj, occupied
+          type(tensor_t) :: e_bcjk_direct, e_bcjk_exchange, e_bcjk, disconnected
+          type(tensor_t) :: connected, cyclic, w, v, result
+          complex(8), pointer :: connected_data(:,:,:,:,:,:), disconnected_data(:,:,:,:,:,:)
+          complex(8), pointer :: direct_data(:,:,:,:,:,:), exchange_data(:,:,:,:,:,:)
+          complex(8), pointer :: occupied_data(:,:,:,:,:,:), cyclic_data(:,:,:,:,:,:)
+          complex(8), pointer :: w_data(:,:,:,:,:,:), v_data(:,:,:,:,:,:), scalar(:)
+          type(C_PTR) :: body_p
+          integer :: ierr, i, j, k, a, b, c, o, nv
+          integer(C_INT) :: unit_dims(1), triple_dims(6)
+          real(8) :: den
+          o = nocc
+          nv = nvir
+          triple_dims = (/o,o,o,nv,nv,nv/)
+          unit_dims = 1
+          ierr = construct_tensor_t(unit,C8,unit_dims(1:0),init_val=Q_ONE)
+          ierr = construct_tensor_t(t1,C8,(/o,nv/),init_val=Q_ZERO)
+          ierr = t_einsum('T(i,a)+=X(a,i)*K()',t1,comm_t%t1,unit)
+          ierr = construct_tensor_t(t2,C8,(/o,o,nv,nv/),init_val=Q_ZERO)
+          ierr = t_einsum('T(i,j,a,b)+=X(a,b,i,j)*K()',t2,comm_t%t2,unit)
+          if (len_trim(record_dir)>0) then
+            call record_array(t1,'input_triples_t1','A',0)
+            call record_array(t2,'input_triples_t2','A',0)
+          end if
+
+          loo = cholesky_block(chol_mo,1,o,1,o)
+          lov = cholesky_block(chol_mo,1,o,o+1,nv)
+          lvo = cholesky_block(chol_mo,o+1,nv,1,o)
+          lvv = cholesky_block(chol_mo,o+1,nv,o+1,nv)
+          direct_inner = paper_binary('T.connected.cd_direct_inner', &
+                                      'jkae,Pbe->jkabP',t2,lvv)
+          direct_outer = paper_binary('T.connected.cd_direct_outer', &
+                                      'jkabP,Pci->ijkabc',direct_inner,lvo)
+          exchange_inner = paper_binary('T.connected.cd_exchange_inner', &
+                                        'jkae,Pce->jkacP',t2,lvv)
+          exchange_outer = paper_binary('T.connected.cd_exchange_outer', &
+                                        'jkacP,Pbi->ijkabc',exchange_inner,lvo)
+          e_jkma_direct = paper_binary('T.integral.jkma_direct', &
+                                       'Pjm,Pka->jkma',loo,lov)
+          e_jkma_exchange = paper_binary('T.integral.jkma_exchange', &
+                                         'Pja,Pkm->jkma',lov,loo)
+          e_jkma = clone_tensor(e_jkma_direct)
+          call add_scaled(e_jkma,e_jkma_exchange,(-1.D0)*Q_ONE)
+          e_jkma_conj = clone_zero(e_jkma)
+          ierr = t_einsum('G(j,k,m,a)+=V+(j,k,m,a)*K()',e_jkma_conj,e_jkma,unit)
+          occupied = paper_binary('T.connected.occupied', &
+                                  'imbc,jkma->ijkabc',t2,e_jkma_conj)
+          e_bcjk_direct = paper_binary('T.integral.bcjk_direct', &
+                                       'Pbj,Pck->bcjk',lvo,lvo)
+          e_bcjk_exchange = paper_binary('T.integral.bcjk_exchange', &
+                                         'Pbk,Pcj->bcjk',lvo,lvo)
+          e_bcjk = clone_tensor(e_bcjk_direct)
+          call add_scaled(e_bcjk,e_bcjk_exchange,(-1.D0)*Q_ONE)
+          disconnected = paper_binary('T.disconnected.t1_ovov', &
+                                      'ia,bcjk->ijkabc',t1,e_bcjk)
+
+          ierr = construct_tensor_t(connected,C8,triple_dims,init_val=Q_ZERO)
+          ierr = direct_data_pointer(connected,body_p)
+          call c_f_pointer(body_p,connected_data,triple_dims)
+          ierr = direct_data_pointer(direct_outer,body_p)
+          call c_f_pointer(body_p,direct_data,triple_dims)
+          ierr = direct_data_pointer(exchange_outer,body_p)
+          call c_f_pointer(body_p,exchange_data,triple_dims)
+          ierr = direct_data_pointer(occupied,body_p)
+          call c_f_pointer(body_p,occupied_data,triple_dims)
+          connected_data = direct_data - exchange_data - occupied_data
+          ierr = construct_tensor_t(cyclic,C8,triple_dims,init_val=Q_ZERO)
+          ierr = construct_tensor_t(w,C8,triple_dims,init_val=Q_ZERO)
+          ierr = construct_tensor_t(v,C8,triple_dims,init_val=Q_ZERO)
+          ierr = direct_data_pointer(cyclic,body_p)
+          call c_f_pointer(body_p,cyclic_data,triple_dims)
+          ierr = direct_data_pointer(disconnected,body_p)
+          call c_f_pointer(body_p,disconnected_data,triple_dims)
+          ierr = direct_data_pointer(w,body_p)
+          call c_f_pointer(body_p,w_data,triple_dims)
+          ierr = direct_data_pointer(v,body_p)
+          call c_f_pointer(body_p,v_data,triple_dims)
+          do c=1,nv
+            do b=1,nv
+              do a=1,nv
+                do k=1,o
+                  do j=1,o
+                    do i=1,o
+                      cyclic_data(i,j,k,a,b,c) = connected_data(i,j,k,a,b,c) + &
+                           connected_data(k,i,j,a,b,c) + connected_data(j,k,i,a,b,c)
+                    end do
+                  end do
+                end do
+              end do
+            end do
+          end do
+          do c=1,nv
+            do b=1,nv
+              do a=1,nv
+                do k=1,o
+                  do j=1,o
+                    do i=1,o
+                      den = eps_occ(i)+eps_occ(j)+eps_occ(k)-eps_vir(a)-eps_vir(b)-eps_vir(c)
+                      if (a>b .and. b>c) then
+                        w_data(i,j,k,a,b,c) = (cyclic_data(i,j,k,a,b,c) + &
+                             cyclic_data(i,j,k,c,a,b) - cyclic_data(i,j,k,b,a,c)) / den
+                      end if
+                      v_data(i,j,k,a,b,c) = conjg(connected_data(i,j,k,a,b,c) + &
+                           disconnected_data(i,j,k,a,b,c) + connected_data(i,j,k,c,a,b) + &
+                           disconnected_data(i,j,k,c,a,b) - connected_data(i,j,k,b,a,c) - &
+                           disconnected_data(i,j,k,b,a,c))
+                    end do
+                  end do
+                end do
+              end do
+            end do
+          end do
+          result = paper_binary('T.energy.w_v','ijkabc,ijkabc->',w,v)
+          ierr = direct_data_pointer(result,body_p)
+          call c_f_pointer(body_p,scalar,(/1/))
+          energy = 0.5D0*real(scalar(1),8)
+
+          ierr = destroy_tensor_t(t1)
+          ierr = destroy_tensor_t(t2)
+          ierr = destroy_tensor_t(unit)
+          ierr = destroy_tensor_t(loo)
+          ierr = destroy_tensor_t(lov)
+          ierr = destroy_tensor_t(lvo)
+          ierr = destroy_tensor_t(lvv)
+          ierr = destroy_tensor_t(direct_inner)
+          ierr = destroy_tensor_t(direct_outer)
+          ierr = destroy_tensor_t(exchange_inner)
+          ierr = destroy_tensor_t(exchange_outer)
+          ierr = destroy_tensor_t(e_jkma_direct)
+          ierr = destroy_tensor_t(e_jkma_exchange)
+          ierr = destroy_tensor_t(e_jkma)
+          ierr = destroy_tensor_t(e_jkma_conj)
+          ierr = destroy_tensor_t(occupied)
+          ierr = destroy_tensor_t(e_bcjk_direct)
+          ierr = destroy_tensor_t(e_bcjk_exchange)
+          ierr = destroy_tensor_t(e_bcjk)
+          ierr = destroy_tensor_t(disconnected)
+          ierr = destroy_tensor_t(connected)
+          ierr = destroy_tensor_t(cyclic)
+          ierr = destroy_tensor_t(w)
+          ierr = destroy_tensor_t(v)
+          ierr = destroy_tensor_t(result)
+        end subroutine qcbench_x2camf_ccsd_t_energy
+
+        subroutine qcbench_record_triples(native_energy)
+          real(8), intent(in) :: native_energy
+          integer :: unit
+          complex(8) :: value
+          if (len_trim(record_dir)==0) return
+          value = dcmplx(native_energy,0.D0)
+          open(newunit=unit,file=trim(record_dir)//'/native_T__000000__A.c8', &
+               form='unformatted',access='stream',status='replace')
+          write(unit) value
+          close(unit)
+        end subroutine qcbench_record_triples
 
 end module qcbench_x2camf
