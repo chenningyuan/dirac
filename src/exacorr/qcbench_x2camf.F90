@@ -1,5 +1,5 @@
 module qcbench_x2camf
-! Canonical X2CAMF-CCSD/CCSD(T) paper binaries and operand recording for qcbench.
+! Canonical X2CAMF-CCSD/CCSD(T)/EOM-CCSD paper binaries and operand recording for qcbench.
 
         use tensor_algebra
         use exacorr_tensor_interface
@@ -19,11 +19,15 @@ module qcbench_x2camf
         public qcbench_x2camf_ccsd_t_energy
         public qcbench_record_residual
         public qcbench_record_triples
+        public qcbench_x2camf_eom_probe
 
         character(len=512) :: record_dir = ''
         integer :: record_calls = 0
         integer :: record_nocc = 0, record_nvir = 0, record_naux = 0, record_nao = 0
         character(len=64) :: record_case_ids(10000)
+        character(len=64) :: record_call_sites(10000)
+        character(len=16) :: record_routes(10000)
+        character(len=8) :: record_coefficients(10000)
         character(len=16) :: record_components(10000)
         character(len=128) :: record_equations(10000)
         character(len=64) :: record_shapes(3,10000)
@@ -38,18 +42,20 @@ module qcbench_x2camf
           value = '+1'
           select case (trim(case_id))
           case ('fmi.tau_oovv','wmnij.tau','t2.oooo','t2.ao_occ', &
-                't2.ao_project_a','t2.foo_dress')
+                't2.ao_project_a','t2.foo_dress','response.t3','response.t4')
             value = '+1/2'
-          case ('fmi.fme','fae.fme','fae.tau_oovv','t1.ooov','t2.fvv_dress')
+          case ('fmi.fme','fae.fme','fae.tau_oovv','t1.ooov','t2.fvv_dress', &
+                'sigma1.i6','sigma1.i7','ao.t1_correction')
             value = '-1/2'
-          case ('energy.tau_oovv')
+          case ('energy.tau_oovv','quartic.tau')
             value = '+1/4'
           case ('T.energy.w_v')
             value = '+1/36'
           case ('wmbej.t1_oo','wmbej.tau','wmbej.cd_outer_m','fae.cd_outer_o', &
                 't1.foo','t1.cd_outer','t1.ovov','t2.foo','t2.last_bare','t2.ao_last', &
                 'T.connected.cd_exchange_outer','T.connected.occupied', &
-                'T.integral.bcjk_exchange','T.integral.jkma_exchange')
+                'T.integral.bcjk_exchange','T.integral.jkma_exchange', &
+                'i6.t1_oovv','i7.t1_oovv','sigma2.wovoo','sigma2.i3','sigma2.foo')
             value = '-1'
           case default
             value = '+1'
@@ -101,7 +107,7 @@ module qcbench_x2camf
           if (len_trim(record_dir)==0) return
           open(newunit=unit,file=trim(record_dir)//'/manifest.json',status='replace',action='write')
           write(unit,'(a)') '{'
-          write(unit,'(a)') '  "route": "DIRAC X2CAMF-CCSD paper route (Z2023 Eqs. 5-12 and Table 2)",'
+          write(unit,'(a)') '  "route": "DIRAC X2CAMF-CCSD/CCSD(T)/EOM-CCSD paper routes (Z2023 Eqs. 5-17 and Table 2)",'
           write(unit,'(a)') '  "corpus": "cd_x2camf_ccsd_corpus",'
           write(unit,'(a,i0,a)') '  "n_contractions": ',record_calls,','
           write(unit,'(a,i0,a,i0,a,i0,a,i0,a)') '  "dimensions": {"o": ',record_nocc,', "v": ',record_nvir, &
@@ -111,8 +117,10 @@ module qcbench_x2camf
             write(unit,'(a)') '    {'
             write(unit,'(a)') '      "case": "'//trim(record_case_ids(i))//'",'
             write(unit,'(a)') '      "corpus_case": "'//trim(record_case_ids(i))//'",'
+            write(unit,'(a)') '      "call_site": "'//trim(record_call_sites(i))//'",'
+            write(unit,'(a)') '      "route": "'//trim(record_routes(i))//'",'
             write(unit,'(a)') '      "equation": "'//trim(record_equations(i))//'",'
-            write(unit,'(a)') '      "coefficient": "'//trim(coefficient(record_case_ids(i)))//'",'
+            write(unit,'(a)') '      "coefficient": "'//trim(record_coefficients(i))//'",'
             write(unit,'(a)') '      "component": "'//trim(record_components(i))//'",'
             write(unit,'(a,i0,a)') '      "n_call": ',i,','
             do role=1,3
@@ -162,6 +170,17 @@ module qcbench_x2camf
           write(unit) data
           close(unit)
         end subroutine record_array
+
+        subroutine record_complex_scalar(value, name)
+          complex(8), intent(in) :: value
+          character(len=*), intent(in) :: name
+          integer :: unit
+          if (len_trim(record_dir)==0) return
+          open(newunit=unit,file=trim(record_dir)//'/'//trim(name)//'__000000__A.c8', &
+               form='unformatted',access='stream',status='replace')
+          write(unit) value
+          close(unit)
+        end subroutine record_complex_scalar
 
         function clone_tensor(source) result(dest)
           type(tensor_t), intent(inout) :: source
@@ -241,19 +260,28 @@ module qcbench_x2camf
           ierr = construct_tensor_t(C,C8,dims_c(1:len_trim(c_labels)),init_val=Q_ZERO)
         end function construct_output
 
-        function paper_binary(case_id, expression, A, B, record, component) result(C)
+        function paper_binary(case_id, expression, A, B, record, component, call_site, route_name, &
+                              coefficient_value) result(C)
           character(len=*), intent(in) :: case_id, expression
           type(tensor_t), intent(inout) :: A, B
           logical, intent(in), optional :: record
-          character(len=*), intent(in), optional :: component
+          character(len=*), intent(in), optional :: component, call_site, route_name, coefficient_value
           type(tensor_t) :: C, at, bt, ct
           integer :: ierr, contraction_ierr
           logical :: record_this
-          character(len=16) :: this_component
+          character(len=16) :: this_component, this_route
+          character(len=64) :: this_call_site
+          character(len=8) :: this_coefficient
           record_this = .true.
           if (present(record)) record_this = record
           this_component = 'full'
           if (present(component)) this_component = component
+          this_call_site = case_id
+          if (present(call_site)) this_call_site = call_site
+          this_route = 'ground'
+          if (present(route_name)) this_route = route_name
+          this_coefficient = coefficient(case_id)
+          if (present(coefficient_value)) this_coefficient = coefficient_value
           C = construct_output(A,B,expression)
           ierr = convert(A,at,out_executor=1,destroy=0)
           ierr = convert(B,bt,out_executor=1,destroy=0)
@@ -271,6 +299,9 @@ module qcbench_x2camf
           if (len_trim(record_dir)>0 .and. record_this) then
             record_calls = record_calls + 1
             record_case_ids(record_calls) = trim(case_id)
+            record_call_sites(record_calls) = trim(this_call_site)
+            record_routes(record_calls) = trim(this_route)
+            record_coefficients(record_calls) = trim(this_coefficient)
             record_components(record_calls) = trim(this_component)
             record_equations(record_calls) = trim(expression)
             record_shapes(1,record_calls) = shape_string(A)
@@ -425,6 +456,43 @@ module qcbench_x2camf
           ierr = t_einsum('T(a,b)+=S(a,b)',target,source,scale=factor)
           if (ierr/=0) stop 'QCBENCH rank-2 scaled addition failed'
         end subroutine add_scaled_2d
+
+        subroutine add_binary_2d(case_id, expression, A, B, target, factor, call_site, route_name, &
+                                 coefficient_value)
+          character(len=*), intent(in) :: case_id, expression
+          type(tensor_t), intent(inout) :: A, B, target
+          complex(8), intent(in) :: factor
+          character(len=*), intent(in), optional :: call_site, route_name, coefficient_value
+          type(tensor_t) :: C
+          integer :: ierr
+          C = paper_binary(case_id,expression,A,B,call_site=call_site,route_name=route_name, &
+                           coefficient_value=coefficient_value)
+          call add_scaled_2d(target,C,factor)
+          ierr = destroy_tensor_t(C)
+        end subroutine add_binary_2d
+
+        subroutine add_binary_4d(case_id, expression, A, B, target, factor, permutation, &
+                                 call_site, route_name, coefficient_value)
+          character(len=*), intent(in) :: case_id, expression
+          type(tensor_t), intent(inout) :: A, B, target
+          complex(8), intent(in) :: factor
+          integer, intent(in) :: permutation
+          character(len=*), intent(in), optional :: call_site, route_name, coefficient_value
+          type(tensor_t) :: C, P
+          integer :: ierr
+          C = paper_binary(case_id,expression,A,B,call_site=call_site,route_name=route_name, &
+                           coefficient_value=coefficient_value)
+          if (permutation==0) then
+            call add_scaled(target,C,factor)
+          else
+            if (permutation==1) call make_permutation_ab(C,P)
+            if (permutation==2) call make_permutation_ij(C,P)
+            if (permutation==3) call permute_ij_ab(C,P)
+            call add_scaled(target,P,factor)
+            ierr = destroy_tensor_t(P)
+          end if
+          ierr = destroy_tensor_t(C)
+        end subroutine add_binary_4d
 
         subroutine destroy_many(tensors)
           type(tensor_t), intent(inout) :: tensors(:)
@@ -700,17 +768,35 @@ module qcbench_x2camf
           ierr = destroy_tensor_t(unit)
         end subroutine qcbench_x2camf_ccsd_residual
 
-        subroutine ao_ladder(amplitude, coefficients, chol_ao, result, shared_g)
+        subroutine ao_ladder(amplitude, coefficients, chol_ao, result, shared_g, eom_route)
           type(tensor_t), intent(inout) :: amplitude, coefficients, chol_ao, result
           type(tensor_t), intent(inout), optional :: shared_g
+          logical, intent(in), optional :: eom_route
           type(tensor_t) :: ao_amp, direct, exchange, ao_g, tmp
           integer :: ierr
-          ao_amp = paper_binary('ao.virtual_transform_e','ijef,se->ijsf',amplitude,coefficients)
+          logical :: use_eom_route
+          use_eom_route = .false.
+          if (present(eom_route)) use_eom_route = eom_route
+          if (use_eom_route) then
+            ao_amp = paper_binary('ao.virtual_transform_e','ijef,se->ijsf',amplitude,coefficients, &
+                                  route_name='eom')
+          else
+            ao_amp = paper_binary('ao.virtual_transform_e','ijef,se->ijsf',amplitude,coefficients)
+          end if
           tmp = ao_amp
-          ao_amp = paper_binary('ao.virtual_transform_f','ijsf,rf->ijsr',tmp,coefficients)
+          if (use_eom_route) then
+            ao_amp = paper_binary('ao.virtual_transform_f','ijsf,rf->ijsr',tmp,coefficients, &
+                                  route_name='eom')
+          else
+            ao_amp = paper_binary('ao.virtual_transform_f','ijsf,rf->ijsr',tmp,coefficients)
+          end if
           ierr = destroy_tensor_t(tmp)
           if (present(shared_g)) then
-            result = paper_binary('ao.ladder','uvsr,ijsr->ijuv',shared_g,ao_amp)
+            if (use_eom_route) then
+              result = paper_binary('ao.ladder','uvsr,ijsr->ijuv',shared_g,ao_amp,route_name='eom')
+            else
+              result = paper_binary('ao.ladder','uvsr,ijsr->ijuv',shared_g,ao_amp)
+            end if
           else
             direct = paper_binary('ao.eri_direct','Pus,Pvr->uvsr',chol_ao,chol_ao)
             exchange = paper_binary('ao.eri_exchange','Pur,Pvs->uvsr',chol_ao,chol_ao)
@@ -933,5 +1019,256 @@ module qcbench_x2camf
           write(unit) value
           close(unit)
         end subroutine qcbench_record_triples
+
+        subroutine qcbench_x2camf_eom_probe(int_t, interm_t, chol_ao, coefficients)
+          use eti_sigma_eomccsd, only: eti_sigma_eomccsd_rhs_ee
+          type(eti_intg_tens_t), intent(inout) :: int_t
+          type(eti_intermediates_tens_t), intent(inout) :: interm_t
+          type(tensor_t), intent(inout) :: chol_ao, coefficients
+          type(eti_sa_tens_t) :: r_tensor, native_sigma
+          type(tensor_t) :: raw_r2
+          complex(8), pointer :: r1_data(:,:), r2_data(:,:,:,:), raw_data(:,:,:,:)
+          type(C_PTR) :: body_p
+          integer :: ierr, i, j, a, b, o, nv
+          o = interm_t%nocc
+          nv = interm_t%nvir
+          ierr = construct_tensor_t(r_tensor%s1,C8,(/nv,o/),init_val=Q_ZERO)
+          ierr = construct_tensor_t(r_tensor%s2,C8,(/nv,nv,o,o/),init_val=Q_ZERO)
+          ierr = construct_tensor_t(raw_r2,C8,(/nv,nv,o,o/),init_val=Q_ZERO)
+          ierr = construct_tensor_t(native_sigma%s1,C8,(/nv,o/),init_val=Q_ZERO)
+          ierr = construct_tensor_t(native_sigma%s2,C8,(/nv,nv,o,o/),init_val=Q_ZERO)
+          ierr = direct_data_pointer(r_tensor%s1,body_p)
+          call c_f_pointer(body_p,r1_data,(/nv,o/))
+          ierr = direct_data_pointer(r_tensor%s2,body_p)
+          call c_f_pointer(body_p,r2_data,(/nv,nv,o,o/))
+          ierr = direct_data_pointer(raw_r2,body_p)
+          call c_f_pointer(body_p,raw_data,(/nv,nv,o,o/))
+          do i=1,o
+            do a=1,nv
+              r1_data(a,i) = dcmplx(0.003D0*(a+2*i),0.002D0*(2*a-i))
+            end do
+          end do
+          do j=1,o
+            do i=1,o
+              do b=1,nv
+                do a=1,nv
+                  raw_data(a,b,i,j) = dcmplx(0.001D0*(a+3*b+5*i+7*j), &
+                                             0.0007D0*(2*a-b+3*i-j))
+                end do
+              end do
+            end do
+          end do
+          do j=1,o
+            do i=1,o
+              do b=1,nv
+                do a=1,nv
+                  r2_data(a,b,i,j) = 0.25D0*(raw_data(a,b,i,j)-raw_data(b,a,i,j) &
+                       -raw_data(a,b,j,i)+raw_data(b,a,j,i))
+                end do
+              end do
+            end do
+          end do
+          call eti_sigma_eomccsd_rhs_ee(int_t,interm_t,r_tensor,native_sigma)
+          call paper_eom_sigma(int_t,interm_t,chol_ao,coefficients,r_tensor,native_sigma)
+          ierr = destroy_tensor_t(raw_r2)
+          ierr = destroy_tensor_t(r_tensor%s1)
+          ierr = destroy_tensor_t(r_tensor%s2)
+          ierr = destroy_tensor_t(native_sigma%s1)
+          ierr = destroy_tensor_t(native_sigma%s2)
+        end subroutine qcbench_x2camf_eom_probe
+
+        subroutine paper_eom_sigma(int_t, interm_t, chol_ao, coefficients, r_tensor, native_sigma)
+          type(eti_intg_tens_t), intent(inout) :: int_t
+          type(eti_intermediates_tens_t), intent(inout) :: interm_t
+          type(tensor_t), intent(inout) :: chol_ao, coefficients
+          type(eti_sa_tens_t), intent(inout) :: r_tensor, native_sigma
+          type(tensor_t) :: unit, t1, t2, r1, r2, native_s1, native_s2, s1, s2
+          type(tensor_t) :: outer, outer_swap, tau, fvv, foo, fov, w_mnij, w_mbej, w_mbij, i3, ovvv
+          type(tensor_t) :: tmp, i6, i7, resp1, resp2, resp3, resp3_raw, resp4, resp4_raw
+          type(tensor_t) :: scalar_a, scalar_b, cvn, cv, co, direct, exchange, ao_g, response_ao
+          type(tensor_t) :: project_a, ao_virtual, ao_am, quartic_response
+          complex(8), pointer :: scalar(:)
+          complex(8) :: s0
+          type(C_PTR) :: body_p
+          integer :: ierr, o, nv
+          integer(C_INT) :: unit_dims(1)
+          o = interm_t%nocc
+          nv = interm_t%nvir
+          unit_dims = 1
+          ierr = construct_tensor_t(unit,C8,unit_dims(1:0),init_val=Q_ONE)
+          ierr = construct_tensor_t(t1,C8,(/o,nv/),init_val=Q_ZERO)
+          ierr = t_einsum('T(i,a)+=X(a,i)*K()',t1,interm_t%gs%r1,unit)
+          ierr = construct_tensor_t(t2,C8,(/o,o,nv,nv/),init_val=Q_ZERO)
+          ierr = t_einsum('T(i,j,a,b)+=X(a,b,i,j)*K()',t2,interm_t%gs%r2,unit)
+          ierr = construct_tensor_t(r1,C8,(/o,nv/),init_val=Q_ZERO)
+          ierr = t_einsum('T(i,a)+=X(a,i)*K()',r1,r_tensor%s1,unit)
+          ierr = construct_tensor_t(r2,C8,(/o,o,nv,nv/),init_val=Q_ZERO)
+          ierr = t_einsum('T(i,j,a,b)+=X(a,b,i,j)*K()',r2,r_tensor%s2,unit)
+          ierr = construct_tensor_t(native_s1,C8,(/o,nv/),init_val=Q_ZERO)
+          ierr = t_einsum('T(i,a)+=X(a,i)*K()',native_s1,native_sigma%s1,unit)
+          ierr = construct_tensor_t(native_s2,C8,(/o,o,nv,nv/),init_val=Q_ZERO)
+          ierr = t_einsum('T(i,j,a,b)+=X(a,b,i,j)*K()',native_s2,native_sigma%s2,unit)
+          s1 = clone_zero(r1)
+          s2 = clone_zero(r2)
+
+          outer = paper_binary('tau.outer','ia,jb->ijab',t1,t1,record=.false.)
+          outer_swap = clone_zero(outer)
+          ierr = t_einsum('T(i,j,b,a)+=X(i,j,a,b)*K()',outer_swap,outer,unit)
+          tau = clone_tensor(t2)
+          call add_scaled(tau,outer,Q_ONE)
+          call add_scaled(tau,outer_swap,(-1.D0)*Q_ONE)
+          fvv = clone_tensor(interm_t%fbar_vv)
+          foo = clone_tensor(interm_t%fbar_oo)
+          fov = clone_tensor(interm_t%fbar_ov)
+          w_mnij = clone_tensor(interm_t%w_oooo)
+          w_mbij = clone_tensor(interm_t%w_ovoo)
+          ierr = construct_tensor_t(w_mbej,C8,(/o,nv,nv,o/),init_val=Q_ZERO)
+          ierr = t_einsum('W(m,b,e,j)+=X(b,m,e,j)*K()',w_mbej,interm_t%w_vovo,unit,scale=-Q_ONE)
+          ierr = construct_tensor_t(i3,C8,(/o,nv,nv,nv/),init_val=Q_ZERO)
+          ierr = t_einsum('I(j,c,a,b)+=X(a,b,c,j)*K()',i3,interm_t%w_vvvo,unit,scale=-Q_ONE)
+          ierr = construct_tensor_t(ovvv,C8,(/o,nv,nv,nv/),init_val=Q_ZERO)
+          ierr = t_einsum('O(m,a,e,f)+=X(a,m,e,f)*K()',ovvv,int_t%vovv,unit)
+          if (len_trim(record_dir)>0) then
+            call record_array(r1,'input_eom_r1','A',0)
+            call record_array(r2,'input_eom_r2','A',0)
+            call record_array(t1,'input_eom_t1','A',0)
+            call record_array(t2,'input_eom_t2','A',0)
+            call record_array(tau,'input_eom_tau','A',0)
+            call record_array(int_t%fov,'input_eom_bare_fov','A',0)
+            call record_array(fov,'input_eom_fov','A',0)
+            call record_array(fvv,'input_eom_fvv','A',0)
+            call record_array(foo,'input_eom_foo','A',0)
+            call record_array(w_mnij,'input_eom_w_mnij','A',0)
+            call record_array(w_mbej,'input_eom_w_mbej','A',0)
+            call record_array(w_mbij,'input_eom_w_mbij','A',0)
+            call record_array(i3,'input_eom_i3','A',0)
+            call record_array(int_t%ooov,'input_eom_ooov','A',0)
+            call record_array(int_t%oovv,'input_eom_oovv','A',0)
+            call record_array(ovvv,'input_eom_ovvv','A',0)
+          end if
+
+          i6 = clone_tensor(int_t%ooov)
+          tmp = paper_binary('i6.t1_oovv','id,klcd->klic',t1,int_t%oovv,route_name='eom')
+          call add_scaled(i6,tmp,(-1.D0)*Q_ONE)
+          ierr = destroy_tensor_t(tmp)
+          i7 = clone_tensor(ovvv)
+          tmp = paper_binary('i7.t1_oovv','la,klcd->kacd',t1,int_t%oovv,route_name='eom')
+          call add_scaled(i7,tmp,(-1.D0)*Q_ONE)
+          ierr = destroy_tensor_t(tmp)
+          resp1 = paper_binary('response.t1','kc,jkic->ij',r1,i6,route_name='eom')
+          resp2 = paper_binary('response.t2','kc,kabc->ab',r1,i7,route_name='eom')
+          resp3_raw = paper_binary('response.t3','jkab,ikab->ij',int_t%oovv,r2,route_name='eom')
+          resp3 = clone_tensor(resp3_raw)
+          call add_scaled_2d(resp3,resp3_raw,(-0.5D0)*Q_ONE)
+          ierr = destroy_tensor_t(resp3_raw)
+          resp4_raw = paper_binary('response.t4','ijbc,ijac->ab',int_t%oovv,r2,route_name='eom')
+          resp4 = clone_tensor(resp4_raw)
+          call add_scaled_2d(resp4,resp4_raw,(-0.5D0)*Q_ONE)
+          ierr = destroy_tensor_t(resp4_raw)
+
+          scalar_a = paper_binary('energy.t1_fov','ia,ia->',r1,int_t%fov, &
+                                  call_site='sigma0.singles',route_name='eom')
+          scalar_b = paper_binary('energy.tau_oovv','ijab,ijab->',r2,int_t%oovv, &
+                                  call_site='sigma0.doubles',route_name='eom')
+          ierr = direct_data_pointer(scalar_a,body_p)
+          call c_f_pointer(body_p,scalar,(/1/))
+          s0 = scalar(1)
+          ierr = direct_data_pointer(scalar_b,body_p)
+          call c_f_pointer(body_p,scalar,(/1/))
+          s0 = s0 + 0.25D0*scalar(1)
+          call record_complex_scalar(s0,'paper_eom_sigma0')
+          ierr = destroy_tensor_t(scalar_a)
+          ierr = destroy_tensor_t(scalar_b)
+
+          call add_binary_2d('t1.fvv','ie,ae->ia',r1,fvv,s1,Q_ONE, &
+                             call_site='sigma1.fvv',route_name='eom')
+          call add_binary_2d('t1.foo','ma,mi->ia',r1,foo,s1,-Q_ONE, &
+                             call_site='sigma1.foo',route_name='eom')
+          call add_binary_2d('sigma1.wovvo','maei,me->ia',w_mbej,r1,s1,Q_ONE,route_name='eom')
+          call add_binary_2d('t1.fov','imae,me->ia',r2,fov,s1,Q_ONE, &
+                             call_site='sigma1.fov',route_name='eom')
+          call add_binary_2d('sigma1.i6','jkib,jkab->ia',i6,r2,s1,(-0.5D0)*Q_ONE,route_name='eom')
+          call add_binary_2d('sigma1.i7','jabc,ijbc->ia',i7,r2,s1,(-0.5D0)*Q_ONE,route_name='eom')
+
+          call add_binary_4d('sigma2.wovoo','mbij,ma->ijab',w_mbij,r1,s2,-Q_ONE,1,route_name='eom')
+          call add_binary_4d('sigma2.i3','jcab,ic->ijab',i3,r1,s2,-Q_ONE,2,route_name='eom')
+          call add_binary_4d('sigma2.t1','il,jlab->ijab',resp1,t2,s2,Q_ONE,2,route_name='eom')
+          call add_binary_4d('sigma2.t2','ad,ijbd->ijab',resp2,t2,s2,Q_ONE,1,route_name='eom')
+          call add_binary_4d('sigma2.foo','mjab,mi->ijab',r2,foo,s2,-Q_ONE,2,route_name='eom')
+          call add_binary_4d('sigma2.fvv','ijac,bc->ijab',r2,fvv,s2,Q_ONE,1,route_name='eom')
+          call add_binary_4d('sigma2.wovvo','mbej,imae->ijab',w_mbej,r2,s2,Q_ONE,3,route_name='eom')
+          call add_binary_4d('t2.oooo','mnab,mnij->ijab',r2,w_mnij,s2,0.5D0*Q_ONE,0, &
+                             call_site='sigma2.woooo',route_name='eom')
+          call add_binary_4d('sigma2.t3','il,jlab->ijab',resp3,t2,s2,Q_ONE,2,route_name='eom')
+          call add_binary_4d('sigma2.t4','ad,ijbd->ijab',resp4,t2,s2,Q_ONE,1,route_name='eom')
+
+          cvn = coefficient_block(coefficients,o+1,nv)
+          cv = coefficient_block(coefficients,o+1,nv,conjugate=.true.)
+          co = coefficient_block(coefficients,1,o,conjugate=.true.)
+          direct = paper_binary('ao.eri_direct','Pus,Pvr->uvsr',chol_ao,chol_ao,route_name='eom')
+          exchange = paper_binary('ao.eri_exchange','Pur,Pvs->uvsr',chol_ao,chol_ao, &
+                                  coefficient_value='-1',route_name='eom')
+          ao_g = clone_tensor(direct)
+          call add_scaled(ao_g,exchange,(-1.D0)*Q_ONE)
+          call ao_ladder(r2,cvn,chol_ao,response_ao,shared_g=ao_g,eom_route=.true.)
+          project_a = paper_binary('t2.ao_project_a','ijuv,ua->ijva',response_ao,cv, &
+                                   call_site='ao.project_a',route_name='eom')
+          call add_binary_4d('t2.ao_project_b','ijva,vb->ijab',project_a,cv,s2,0.5D0*Q_ONE,0, &
+                             call_site='ao.project_b',route_name='eom')
+          ao_virtual = paper_binary('t2.ao_project_a','ijuv,ua->ijva',response_ao,cv, &
+                                    call_site='ao.virtual_for_correction',route_name='eom', &
+                                    coefficient_value='+1')
+          ao_am = paper_binary('ao.occupied_for_correction','ijva,vm->ijam',ao_virtual,co,route_name='eom')
+          call add_binary_4d('ao.t1_correction','mb,ijam->ijab',t1,ao_am,s2,(-0.5D0)*Q_ONE,1, &
+                             route_name='eom')
+          quartic_response = paper_binary('quartic.response_oovv','ijef,mnef->ijmn',r2,int_t%oovv, &
+                                          route_name='eom')
+          call add_binary_4d('quartic.tau','mnab,ijmn->ijab',tau,quartic_response,s2,0.25D0*Q_ONE,0, &
+                             route_name='eom')
+
+          if (len_trim(record_dir)>0) then
+            call record_array(native_s1,'native_eom_sigma1','A',0)
+            call record_array(native_s2,'native_eom_sigma2','A',0)
+            call record_array(s1,'paper_eom_sigma1','A',0)
+            call record_array(s2,'paper_eom_sigma2','A',0)
+          end if
+          ierr = destroy_tensor_t(unit)
+          ierr = destroy_tensor_t(t1)
+          ierr = destroy_tensor_t(t2)
+          ierr = destroy_tensor_t(r1)
+          ierr = destroy_tensor_t(r2)
+          ierr = destroy_tensor_t(native_s1)
+          ierr = destroy_tensor_t(native_s2)
+          ierr = destroy_tensor_t(s1)
+          ierr = destroy_tensor_t(s2)
+          ierr = destroy_tensor_t(outer)
+          ierr = destroy_tensor_t(outer_swap)
+          ierr = destroy_tensor_t(tau)
+          ierr = destroy_tensor_t(fvv)
+          ierr = destroy_tensor_t(foo)
+          ierr = destroy_tensor_t(fov)
+          ierr = destroy_tensor_t(w_mnij)
+          ierr = destroy_tensor_t(w_mbej)
+          ierr = destroy_tensor_t(w_mbij)
+          ierr = destroy_tensor_t(i3)
+          ierr = destroy_tensor_t(ovvv)
+          ierr = destroy_tensor_t(i6)
+          ierr = destroy_tensor_t(i7)
+          ierr = destroy_tensor_t(resp1)
+          ierr = destroy_tensor_t(resp2)
+          ierr = destroy_tensor_t(resp3)
+          ierr = destroy_tensor_t(resp4)
+          ierr = destroy_tensor_t(cvn)
+          ierr = destroy_tensor_t(cv)
+          ierr = destroy_tensor_t(co)
+          ierr = destroy_tensor_t(direct)
+          ierr = destroy_tensor_t(exchange)
+          ierr = destroy_tensor_t(ao_g)
+          ierr = destroy_tensor_t(response_ao)
+          ierr = destroy_tensor_t(project_a)
+          ierr = destroy_tensor_t(ao_virtual)
+          ierr = destroy_tensor_t(ao_am)
+          ierr = destroy_tensor_t(quartic_response)
+        end subroutine paper_eom_sigma
 
 end module qcbench_x2camf

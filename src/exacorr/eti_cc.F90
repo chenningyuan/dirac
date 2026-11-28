@@ -74,6 +74,7 @@ module eti_cc
          integer, allocatable :: mo_all(:)
          character(len=512) :: qcbench_record_dir
          integer :: qcbench_record_length, qcbench_record_status
+         logical :: keep_qcbench_eom
 !        Lambda tensors
 !        1- and 2-body cc intermediates 
          type(eti_intermediates_tens_t) :: interm_t
@@ -388,6 +389,7 @@ module eti_cc
          end if
          call print_date('-End- CC Iterations')
 
+         keep_qcbench_eom = .false.
          if (exa_input%moint_scheme.eq.43) then
            paper_comm = comm_t
            paper_comm%t1 = native_t1
@@ -417,8 +419,11 @@ module eti_cc
            ierr=destroy_tensor_t(native_r2)
            ierr=destroy_tensor_t(paper_r1)
            ierr=destroy_tensor_t(paper_r2)
-           ierr=destroy_tensor_t(coefficients)
-           ierr=destroy_tensor_t(chol_ao)
+           if (eom) keep_qcbench_eom = trim(exa_input%eom_input(1)%flavor)=='EE'
+           if (.not.keep_qcbench_eom) then
+             ierr=destroy_tensor_t(coefficients)
+             ierr=destroy_tensor_t(chol_ao)
+           end if
            ierr=destroy_tensor_t(chol_mo)
            deallocate(mo_all)
          end if
@@ -582,6 +587,11 @@ module eti_cc
 
 ! create eom intermediates
             call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t)
+            if (exa_input%moint_scheme.eq.43 .and. keep_qcbench_eom) then
+              call qcbench_x2camf_eom_probe(int_t,interm_t,chol_ao,coefficients)
+              ierr=destroy_tensor_t(coefficients)
+              ierr=destroy_tensor_t(chol_ao)
+            end if
 
 ! solve eom eigenvalue equations; right now we do only one flavor but there's no reason not to handle different flavors in the same calculation,
 ! we just need different results instances

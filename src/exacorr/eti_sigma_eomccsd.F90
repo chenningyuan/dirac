@@ -530,8 +530,8 @@ module eti_sigma_eomccsd
       type(eti_sa_tens_t), intent(inout) :: r_tensor
       type(eti_sa_tens_t), intent(inout) :: sigma_tensor
 !     auxiliary tensor
-      type(tensor_t) :: oo_aux, vv_aux
-      integer            :: oo_dims(2), vv_dims(2)
+      type(tensor_t) :: oo_aux, vv_aux, vo_aux
+      integer            :: oo_dims(2), vv_dims(2), vo_dims(2)
 !     error code
       integer :: ierr
 
@@ -539,6 +539,7 @@ module eti_sigma_eomccsd
 
       oo_dims = (/interm_t%nocc,interm_t%nocc/)
       vv_dims = (/interm_t%nvir,interm_t%nvir/)
+      vo_dims = (/interm_t%nocc,interm_t%nvir/)
 
       ! ierr=construct_tensor_t(test_tensor,C8,(/interm_t%nvir,interm_t%nvir,interm_t%nocc,interm_t%nocc/),init_val=ZERO)
 
@@ -617,15 +618,17 @@ module eti_sigma_eomccsd
       ! call print_tensor(sigma_tensor%s2, 1.0d-10, "diagm8")
 
 !-------------------------------------------------------------------------
-!     term 3: S2(a,b,i,j) += P(a,b) ( W(b,m,f,e) * R(e,m) ) * T(a,f,i,j) |
+!     term 3: S2(a,b,i,j) += P(a,b) ( I7(b,m,f,e) * R(e,m) ) * T(a,f,i,j) |
 !-------------------------------------------------------------------------
 
       ierr=construct_tensor_t(vv_aux,C8,vv_dims,init_val=ZERO)
-      ierr=t_einsum("U(b,f)+=W(b,m,f,e)*R(e,m)",vv_aux,interm_t%w_vovv,r_tensor%s1)
-      ierr=t_einsum("S(a,b,i,j)+=U(b,f)*T2(a,f,i,j)",sigma_tensor%s2,vv_aux,interm_t%gs%r2)     !Used
-      ! ierr=t_einsum("S(a,b,i,j)+=U(a,f)*T2(f,b,i,j)",sigma_tensor%s2,vv_aux,interm_t%gs%r2)
-
-      ierr=t_einsum("S(a,b,i,j)+=U(a,f)*T2(b,f,i,j)",sigma_tensor%s2,vv_aux,interm_t%gs%r2,scale=MINUS_ONE)      !XY
+      ierr=construct_tensor_t(vo_aux,C8,vo_dims,init_val=ZERO)
+      ierr=t_einsum("U(b,f)+=V(b,m,f,e)*R(e,m)",vv_aux,int_t%vovv,r_tensor%s1)
+      ierr=t_einsum("U(n,f)+=V(m,n,f,e)*R(e,m)",vo_aux,int_t%oovv,r_tensor%s1)
+      ierr=t_einsum("U(b,f)+=T(b,n)*X(n,f)",vv_aux,interm_t%gs%r1,vo_aux,scale=MINUS_ONE)
+      ierr=t_einsum("S(a,b,i,j)+=U(b,f)*T2(a,f,i,j)",sigma_tensor%s2,vv_aux,interm_t%gs%r2,scale=MINUS_ONE)
+      ierr=t_einsum("S(a,b,i,j)+=U(a,f)*T2(b,f,i,j)",sigma_tensor%s2,vv_aux,interm_t%gs%r2)
+      ierr=destroy_tensor_t(vo_aux)
       ierr=destroy_tensor_t(vv_aux)
       ! call print_tensor(interm_t%w_vovv, 1.0d-10, "w_vovv")
       ! call print_tensor(sigma_tensor%s2, 1.0d-10, "diagm9")
