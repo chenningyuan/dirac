@@ -10,6 +10,7 @@ module eti_cholesky_integrals
         use exacorr_global
         use eti_ao_to_mo
         use eti_CD_routines
+        use qcbench_x2camf, only: qcbench_pack_chol_ao, qcbench_pack_chol_mo
 
         use, intrinsic:: ISO_C_BINDING
 
@@ -22,7 +23,7 @@ module eti_cholesky_integrals
 
        contains
 
-       subroutine get_CC_integrals_chol (nocc,nvir,mo_occ,mo_vir,int_t,t_cholesky,print_level)
+       subroutine get_CC_integrals_chol (nocc,nvir,mo_occ,mo_vir,int_t,t_cholesky,print_level,chol_ao,chol_mo)
 
 !        Written by Johann Pototschnig, summer 2019
 
@@ -42,7 +43,8 @@ module eti_cholesky_integrals
 
 !        cholesky
          type(tensor_t)              :: chol_tensor, temp_tensor
-         type(tensor_t)              :: uoo_tensor, uov_tensor, uvv_tensor
+         type(tensor_t)              :: uoo_tensor, uov_tensor, uvo_tensor, uvv_tensor
+         type(tensor_t), intent(out), optional :: chol_ao, chol_mo
          integer, dimension(3)           :: chol_dims, dims3
          integer(C_INT)                  :: rank
          integer, allocatable         :: mo_list(:)
@@ -101,6 +103,19 @@ module eti_cholesky_integrals
         if (print_level.gt.2) call print_date(' uvv done ')
         if(print_level > 1) write(*,*) "uvv=",tensor_norm2(uvv_tensor)
 
+        if (present(chol_mo)) then
+          dims3=chol_dims
+          dims3(1)=nvir
+          dims3(2)=nocc
+          ierr=construct_tensor_t(uvo_tensor,C8,dims3,init_val=ZERO)
+          ierr=initialize_tensor_t(temp_tensor)
+          call ao2mo_ind(chol_tensor,temp_tensor,nvir,mo_vir,11)
+          call ao2mo_ind(temp_tensor,uvo_tensor,nocc,mo_occ,21)
+          ierr=initialize_tensor_t(temp_tensor)
+          call ao2mo_ind(chol_tensor,temp_tensor,nvir,mo_vir,12)
+          call ao2mo_ind(temp_tensor,uvo_tensor,nocc,mo_occ,22)
+        end if
+        if (present(chol_ao)) call qcbench_pack_chol_ao(chol_tensor,chol_ao)
         ierr=destroy_tensor_t(temp_tensor)
         ierr=destroy_tensor_t(chol_tensor)
 
@@ -166,6 +181,11 @@ module eti_cholesky_integrals
          ierr=t_einsum("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,one_chol,scale=MINUS_ONE)
          ierr=destroy_tensor_t(ovvo_tensor)
          if (print_level.gt.2) call print_date(' vovo done ')
+
+         if (present(chol_mo)) then
+           call qcbench_pack_chol_mo(uoo_tensor,uov_tensor,uvo_tensor,uvv_tensor,chol_mo)
+           ierr=destroy_tensor_t(uvo_tensor)
+         end if
 
 !        Clean-up
          ierr=destroy_tensor_t(uoo_tensor)

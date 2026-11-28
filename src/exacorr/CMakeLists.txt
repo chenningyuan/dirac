@@ -85,6 +85,7 @@ if(ENABLE_EXATENSOR)
    eti_integrals.F90
    eti_cholesky_integrals.F90
    eti_common_routines.F90
+   qcbench_x2camf.F90
    eti_sigma_eomccsd.F90
    eti_trial_eomccsd.F90
    eti_drivers_eomccsd.F90

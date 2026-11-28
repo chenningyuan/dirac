@@ -32,7 +32,8 @@ module eti_drivers_gs_ccsd
 !-------------------------------------------------------------------------------------------
 
         subroutine solve_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
-                                ccsd_energy,CCD,iterative_level,iterative_scheme,ncycles,print_level)
+                                ccsd_energy,CCD,iterative_level,iterative_scheme,ncycles,print_level, &
+                                native_r1,native_r2,native_t1,native_t2)
 
 !        Routine for solving the t amplitude equations
 
@@ -50,6 +51,7 @@ module eti_drivers_gs_ccsd
          type(tensor_t) :: hov_aux_tensor, hoo_aux_tensor
 !        solution tensors
          type(tensor_t) :: s1_tensor, s2_tensor
+         type(tensor_t), intent(inout), optional :: native_r1, native_r2, native_t1, native_t2
          type(tensor_t) :: vvvo_aux_tensor
 !        scalars (need to be defined as tensor types)
          type(tensor_t) :: result_tensor
@@ -243,6 +245,8 @@ module eti_drivers_gs_ccsd
           end if
 
 !         prepare for next iteration
+          if (present(native_t1)) ierr=copy_tensor_t(native_t1,comm_t%t1)
+          if (present(native_t2)) ierr=copy_tensor_t(native_t2,comm_t%t2)
           if (.not.CCD) then
             ierr=initialize_tensor_t(comm_t%t1)
             ierr=t_einsum("T1(a,i)+=S1(a,i)",comm_t%t1,s1_tensor)
@@ -290,6 +294,11 @@ module eti_drivers_gs_ccsd
 
          if (t_convergence .gt. t_target_precision) write(*,*) "WARNING: Non-converged amplitudes!"
          write(*,*) ""
+
+         if (.not.CCD) then
+            if (present(native_r1)) ierr=copy_tensor_t(native_r1,s1_tensor)
+         end if
+         if (present(native_r2)) ierr=copy_tensor_t(native_r2,s2_tensor)
 
          if (.not.CCD) then
             ierr=destroy_tensor_t(s1_tensor)

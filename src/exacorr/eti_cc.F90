@@ -50,6 +50,8 @@ module eti_cc
          use eti_cholesky_integrals
          use eti_integrals
          use eti_triples
+         use qcbench_x2camf
+         use exacorr_mo
 
          type(exacc_input), intent(in) :: exa_input
          type(file_info_t)      :: exacc_file
@@ -64,6 +66,14 @@ module eti_cc
          type(eti_comm_tens_t) :: comm_t
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
          type(eti_intg_tens_t) :: int_t
+         type(tensor_t) :: chol_ao, chol_mo, coefficients, paper_r1, paper_r2, native_r1, native_r2
+         type(tensor_t) :: native_t1, native_t2
+         type(eti_comm_tens_t) :: paper_comm
+         type(cmo) :: cspinor
+         real(8) :: paper_energy
+         integer, allocatable :: mo_all(:)
+         character(len=512) :: qcbench_record_dir
+         integer :: qcbench_record_length, qcbench_record_status
 !        Lambda tensors
 !        1- and 2-body cc intermediates 
          type(eti_intermediates_tens_t) :: interm_t
@@ -201,12 +211,22 @@ module eti_cc
          ! print *,' eps_vir:',eps_vir
 !        Get fixed two-body tensors
          call print_date('-Start- Integral Transformation')
-         if (exa_input%moint_scheme.eq.42) then
+         if (exa_input%moint_scheme.eq.43) then
+           call get_CC_integrals_chol (nocc,nvir,mo_occ,mo_vir,int_t,exa_input%t_cholesky,exa_input%print_level,chol_ao,chol_mo)
+         else if (exa_input%moint_scheme.eq.42) then
            call get_CC_integrals_chol (nocc,nvir,mo_occ,mo_vir,int_t,exa_input%t_cholesky,exa_input%print_level)
          else
            call get_CC_integrals(nocc,nvir,mo_occ,mo_vir,int_t,exa_input%moint_scheme,exa_input%print_level)
          end if
          call print_date('-End- Integral Transformation')
+         if (exa_input%moint_scheme.eq.43) then
+           allocate(mo_all(nocc+nvir))
+           mo_all(1:nocc) = mo_occ
+           mo_all(nocc+1:nocc+nvir) = mo_vir
+           call get_mo_coefficients(cspinor,mo_all,nocc+nvir)
+           call qcbench_pack_coefficients(cspinor,coefficients)
+           call dealloc_mo(cspinor)
+         end if
 
 !        Get fixed one-body tensors (Fock matrices)
          ! build using orbital energies supplied by SCF program unless MRCONEE is present
@@ -358,11 +378,45 @@ module eti_cc
          else if (CC2) then
             call solve_CC2_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
                                  cc_energy,CCD,ncycles,exa_input%print_level)
+         else if (exa_input%moint_scheme.eq.43) then
+            call solve_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
+                                 cc_energy,CCD,iterative_level,iterative_scheme,ncycles,exa_input%print_level, &
+                                 native_r1,native_r2,native_t1,native_t2)
          else
             call solve_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
                                  cc_energy,CCD,iterative_level,iterative_scheme,ncycles,exa_input%print_level)
          end if
          call print_date('-End- CC Iterations')
+
+         if (exa_input%moint_scheme.eq.43) then
+           paper_comm = comm_t
+           paper_comm%t1 = native_t1
+           paper_comm%t2 = native_t2
+           qcbench_record_dir = ''
+           call get_environment_variable('QCBENCH_RECORD_DIR',qcbench_record_dir, &
+                                        length=qcbench_record_length,status=qcbench_record_status)
+           if (qcbench_record_status==-1) stop 'QCBENCH_RECORD_DIR exceeds 512 characters'
+           if (qcbench_record_status==0 .and. qcbench_record_length>0) then
+             call qcbench_x2camf_ccsd_residual(paper_comm,int_t,chol_ao,chol_mo,coefficients, &
+                                                nocc,nvir,paper_r1,paper_r2,outdir=trim(qcbench_record_dir))
+           else
+             call qcbench_x2camf_ccsd_residual(paper_comm,int_t,chol_ao,chol_mo,coefficients, &
+                                                nocc,nvir,paper_r1,paper_r2)
+           end if
+           call qcbench_x2camf_ccsd_energy(comm_t,int_t,paper_energy)
+           write(*,*) ' X2CAMF paper-route correlation energy = ',paper_energy
+           call qcbench_record_residual(native_r1,native_r2)
+           ierr=destroy_tensor_t(native_t1)
+           ierr=destroy_tensor_t(native_t2)
+           ierr=destroy_tensor_t(native_r1)
+           ierr=destroy_tensor_t(native_r2)
+           ierr=destroy_tensor_t(paper_r1)
+           ierr=destroy_tensor_t(paper_r2)
+           ierr=destroy_tensor_t(coefficients)
+           ierr=destroy_tensor_t(chol_ao)
+           ierr=destroy_tensor_t(chol_mo)
+           deallocate(mo_all)
+         end if
 
          if (.not.CCD) then
             ! calculate T1 diagnostic
